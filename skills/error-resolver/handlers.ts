@@ -147,11 +147,16 @@ function findMatchingErrors(
     // Keyword matching
     if (matches.length === 0) {
       const keywords = lowerMessage.split(/\s+/).filter(w => w.length > 3);
-      for (const entry of ALL_ERRORS) {
-        const entryText = `${entry.message} ${entry.explanation} ${entry.causes.join(" ")}`.toLowerCase();
-        const matchCount = keywords.filter(k => entryText.includes(k)).length;
-        if (matchCount >= Math.ceil(keywords.length * 0.5)) {
-          matches.push(entry);
+      // Skip keyword matching when no keywords exist (all tokens were ≤3 chars)
+      // This prevents matching everything when keywords.length === 0 (which makes
+      // matchCount >= Math.ceil(0 * 0.5) always true)
+      if (keywords.length > 0) {
+        for (const entry of ALL_ERRORS) {
+          const entryText = `${entry.message} ${entry.explanation} ${entry.causes.join(" ")}`.toLowerCase();
+          const matchCount = keywords.filter(k => entryText.includes(k)).length;
+          if (matchCount >= Math.ceil(keywords.length * 0.5)) {
+            matches.push(entry);
+          }
         }
       }
     }
