@@ -1,0 +1,33 @@
+{
+  "name": "vc-pdf-renderer",
+  "version": "2.0.0",
+  "description": "Render W3C Verifiable Credentials as print-ready PDF documents with verification QR codes",
+  "main": "scripts/render_vc_pdf.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "render": "node scripts/render_vc_pdf.js"
+  },
+  "keywords": [
+    "verifiable-credentials",
+    "w3c",
+    "pdf",
+    "qr-code",
+    "ixo",
+    "did",
+    "ssi"
+  ],
+  "author": "IXO World",
+  "license": "MIT",
+  "dependencies": {
+    "multiformats": "^13.0.0",
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^21.0.0",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/qrcode": "^1.5.0",
+    "typescript": "^5.0.0"
+  }
+}
