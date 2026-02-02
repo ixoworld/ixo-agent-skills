@@ -1,0 +1,185 @@
+schema_version: "1.0"
+name: "ixo_oracle_scaffold"
+version: "1.0.0"
+description: |
+  Scaffolds and manages IXO Agentic Oracle projects using the ixo-oracles-boilerplate framework.
+  Creates intelligent AI oracles with LangGraph workflows, Matrix secure communication,
+  NestJS API layer, and automatic IXO blockchain marketplace integration.
+  
+  Core capabilities:
+  - Project initialization with complete boilerplate structure
+  - Entity creation on IXO blockchain with linked Matrix resources
+  - Matrix account provisioning for secure E2EE communication
+  - Environment configuration for LangGraph, OpenAI, Langfuse integration
+  - Docker deployment preparation
+  - Knowledge base and memory engine setup guidance
+
+author: "IXO Foundation"
+license: "Apache-2.0"
+repository: "https://github.com/ixoworld/ixo-oracles-boilerplate"
+documentation: "https://docs.ixo.world/guides/ixo-oracles-architecture"
+
+requirements:
+  capabilities:
+    - name: "oracle_scaffold"
+      resource: "did:qi:ixo:oracle:scaffold"
+      ability: "create"
+      description: "Permission to scaffold new IXO Oracle projects"
+    
+    - name: "oracle_entity_create"
+      resource: "did:qi:ixo:entity:oracle"
+      ability: "create"
+      description: "Permission to create oracle entities on IXO blockchain"
+    
+    - name: "matrix_account_provision"
+      resource: "did:qi:matrix:account"
+      ability: "create"
+      description: "Permission to provision Matrix accounts for oracles"
+    
+    - name: "oracle_config_read"
+      resource: "did:qi:ixo:oracle:config"
+      ability: "read"
+      description: "Permission to read oracle configuration templates"
+    
+    - name: "oracle_env_generate"
+      resource: "did:qi:ixo:oracle:environment"
+      ability: "create"
+      description: "Permission to generate environment configuration files"
+
+  dependencies:
+    - name: "node"
+      version: ">=22.0.0"
+    - name: "pnpm"
+      version: ">=10.0.0"
+
+tools:
+  # ============================================
+  # READ-ONLY TOOLS (Information & Guidance)
+  # ============================================
+  
+  - name: "get_prerequisites"
+    description: |
+      Returns the prerequisites and requirements for creating an IXO Oracle project.
+      Includes Node.js version, package manager requirements, IXO mobile app setup,
+      and recommended development environment.
+    handler: "src/handlers.ts#getPrerequisites"
+    type: "read_only"
+    required_auth: null
+    
+  - name: "get_architecture_overview"
+    description: |
+      Provides a comprehensive overview of the IXO Oracles architecture including:
+      - LangGraph integration for AI conversation flows
+      - Matrix E2EE secure communication layer
+      - NestJS API layer
+      - IXO blockchain entity registration
+      - Memory Engine (Neo4j) for personalization
+      - Knowledge management system
+    handler: "src/handlers.ts#getArchitectureOverview"
+    type: "read_only"
+    required_auth: null
+    
+  - name: "get_project_structure"
+    description: |
+      Returns the expected project structure after scaffolding an IXO Oracle,
+      including all packages, apps, and configuration files.
+    handler: "src/handlers.ts#getProjectStructure"
+    type: "read_only"
+    required_auth: null
+    
+  - name: "get_package_info"
+    description: |
+      Returns detailed information about a specific package in the boilerplate:
+      @ixo/common, @ixo/data-store, @ixo/matrix, @ixo/events, @ixo/slack,
+      @ixo/oracles-chain-client, @ixo/api-keys-manager, @ixo/logger
+    handler: "src/handlers.ts#getPackageInfo"
+    type: "read_only"
+    required_auth: null
+    
+  - name: "get_environment_template"
+    description: |
+      Returns the environment variable template required for an IXO Oracle,
+      including Matrix config, AI service keys, and blockchain credentials.
+    handler: "src/handlers.ts#getEnvironmentTemplate"
+    type: "read_only"
+    required_auth: "oracle_config_read"
+    
+  - name: "get_cli_commands"
+    description: |
+      Returns all available ixo-oracles-cli commands with descriptions and usage examples.
+      Commands: --init, create-entity, logout, help
+    handler: "src/handlers.ts#getCliCommands"
+    type: "read_only"
+    required_auth: null
+
+  # ============================================
+  # TRANSITION TOOLS (State Changes)
+  # ============================================
+  
+  - name: "scaffold_oracle_project"
+    description: |
+      Generates the complete scaffolding instructions and configuration for a new
+      IXO Oracle project. Returns step-by-step commands to initialize the project
+      using the ixo-oracles-cli. This tool provides guidance; actual execution
+      requires the CLI with SignX authentication via IXO Mobile App.
+    handler: "src/handlers.ts#scaffoldOracleProject"
+    type: "transition"
+    required_auth: "oracle_scaffold"
+    
+  - name: "generate_langgraph_flow"
+    description: |
+      Generates a LangGraph conversation flow template for the oracle.
+      Includes nodes, edges, state management, and tool integration patterns
+      following IXO Oracles framework conventions.
+    handler: "src/handlers.ts#generateLangGraphFlow"
+    type: "transition"
+    required_auth: "oracle_scaffold"
+    
+  - name: "generate_environment_config"
+    description: |
+      Generates a complete .env configuration file for an IXO Oracle project
+      with placeholders and comments explaining each variable.
+    handler: "src/handlers.ts#generateEnvironmentConfig"
+    type: "transition"
+    required_auth: "oracle_env_generate"
+    
+  - name: "generate_docker_config"
+    description: |
+      Generates Docker and docker-compose configuration for deploying an IXO Oracle.
+      Includes multi-stage builds optimized for the NestJS/pnpm workspace structure.
+    handler: "src/handlers.ts#generateDockerConfig"
+    type: "transition"
+    required_auth: "oracle_scaffold"
+    
+  - name: "generate_knowledge_schema"
+    description: |
+      Generates the knowledge base schema and configuration for the oracle's
+      data store. Supports semantic search, document storage, and dynamic retrieval.
+    handler: "src/handlers.ts#generateKnowledgeSchema"
+    type: "transition"
+    required_auth: "oracle_scaffold"
+
+metadata:
+  tags:
+    - "ixo"
+    - "oracle"
+    - "langgraph"
+    - "matrix"
+    - "blockchain"
+    - "ai-agent"
+    - "agentic-oracle"
+    - "scaffold"
+  
+  related_resources:
+    - url: "https://github.com/ixoworld/ixo-oracles-boilerplate"
+      type: "repository"
+      description: "Main IXO Oracles boilerplate framework"
+    - url: "https://github.com/ixoworld/ixo-oracles-cli"
+      type: "repository"
+      description: "CLI tool for scaffolding oracle projects"
+    - url: "https://www.npmjs.com/package/ixo-oracles-cli"
+      type: "package"
+      description: "NPM package for the CLI"
+    - url: "https://docs.ixo.world/guides/ixo-oracles-architecture"
+      type: "documentation"
+      description: "IXO Oracles Architecture documentation"
