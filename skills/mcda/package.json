@@ -1,0 +1,29 @@
+{
+  "name": "@qi-skills/mcda",
+  "version": "1.1.0",
+  "description": "Multi-Criteria Decision Analysis Qi Skill for the Qi Flow Engine",
+  "type": "module",
+  "main": "dist/handlers.js",
+  "types": "dist/handlers.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test:python": "python3 tests/test_mcda_engine.py -v",
+    "test": "npm run test:python",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/",
+    "scripts/",
+    "SKILL.md"
+  ]
+}
