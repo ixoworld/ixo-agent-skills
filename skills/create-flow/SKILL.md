@@ -123,36 +123,47 @@ Apply these BEFORE outputting the JSON:
 
 ## Action Catalog
 
+Each action lists its `nb` fields in two categories:
+- **Plan-time** — set in the JSON plan. Use `""` for strings, `{}` for objects, `[]` for arrays when the value will be configured in the editor UI after compilation.
+- **Runtime** — filled automatically during execution from upstream outputs, the actor's context, or the UI. NEVER include these in `nb`.
+
+---
+
 ### bid/submit
 **What it does:** Submit a bid/application to a collection.
-**nb inputs:**
-- `collectionId` (string) — the collection to submit to
-- `role` (string) — "service_agent" or "evaluation_agent"
-- `surveyAnswers` (object, optional) — form data for the bid
-- `deedDid` (string, optional) — deed identifier
+**Plan-time nb:**
+- `collectionId` (string, REQUIRED) — the collection to submit to. Set to `""` if configured in editor.
+- `role` (string, REQUIRED) — `"service_agent"` or `"evaluation_agent"`
+
+**Runtime (do NOT put in nb):** `surveyAnswers` (filled by user in form UI), `deedDid` (from flow context)
 
 **Outputs:** `bidId`, `collectionId`, `role`, `submitterDid`, `deedDid`
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{ "collectionId": "", "role": "service_agent" }
+```
 
 ---
 
 ### bid/evaluate
 **What it does:** Approve or reject a submitted bid.
-**nb inputs:**
-- `decision` (string) — "approve" or "reject"
-- `reason` (string, optional) — rejection reason
-- `bidId` (string) — the bid being evaluated
-- `collectionId` (string) — the collection
-- `deedDid` (string) — deed identifier
-- `role` (string) — applicant's role
-- `applicantDid` (string) — applicant's DID
-- `applicantAddress` (string) — applicant's address
-- `adminAddress` (string) — admin address for on-chain tx
+**Plan-time nb:**
+- `decision` (string) — set to `""`. User picks approve/reject in UI at execution time.
+- `reason` (string, optional) — set to `""`. Filled on rejection.
+
+**Runtime (do NOT put in nb):** `bidId`, `collectionId`, `deedDid`, `role`, `applicantDid`, `applicantAddress`, `adminAddress` — all come from the upstream `bid/submit` output or flow context.
 
 **Outputs:** `bidId`, `decision`, `status`, `evaluatedByDid`, `evaluatedAt`, `reason`, `collectionId`, `role`, `deedDid`, `applicantDid`, `applicantAddress`
 **Side effect:** Yes | **Requires confirmation:** Yes
 
-**Common condition pattern:** Downstream steps often branch on `decision`:
+**Example nb:**
+```json
+{ "decision": "", "reason": "" }
+```
+
+**Common condition pattern:** Downstream steps branch on `decision`:
 ```json
 { "sourceId": "evaluate-bid", "field": "decision", "operator": "eq", "value": "approve" }
 ```
@@ -161,30 +172,35 @@ Apply these BEFORE outputting the JSON:
 
 ### claim/submit
 **What it does:** Submit an on-chain verifiable claim.
-**nb inputs:**
-- `deedDid` (string) — deed identifier
-- `collectionId` (string) — claim collection
-- `adminAddress` (string) — admin address for tx
-- `surveyAnswers` (object, optional) — claim form data
+**Plan-time nb:**
+- `collectionId` (string, REQUIRED) — claim collection. Set to `""` if configured in editor.
+
+**Runtime (do NOT put in nb):** `deedDid`, `adminAddress`, `surveyAnswers`, `pin` — from flow context, user form, and PIN prompt.
 
 **Outputs:** `claimId`, `transactionHash`, `collectionId`, `deedDid`, `submittedByDid`, `submittedAt`
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{ "collectionId": "" }
+```
 
 ---
 
 ### claim/evaluate
 **What it does:** Approve or reject a submitted claim.
-**nb inputs:**
-- `decision` (string) — "approve" or "reject"
-- `claimId` (string) — the claim being evaluated
-- `collectionId` (string) — claim collection
-- `deedDid` (string) — deed identifier
-- `adminAddress` (string) — admin address
-- `verificationProof` (string) — proof CID
-- `amount` (object, optional) — payment amount `{ denom, amount }`
+**Plan-time nb:**
+- `decision` (string) — set to `""`. User picks approve/reject in UI.
+
+**Runtime (do NOT put in nb):** `claimId`, `collectionId`, `deedDid`, `adminAddress`, `verificationProof`, `amount`, `granteeAddress` — from upstream `claim/submit` output and flow context.
 
 **Outputs:** `claimId`, `decision`, `status`, `verificationProof`, `collectionId`, `deedDid`, `evaluatedByDid`, `evaluatedAt`
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{ "decision": "" }
+```
 
 **Common condition pattern:** Same as bid/evaluate — branch on `decision`.
 
@@ -192,149 +208,213 @@ Apply these BEFORE outputting the JSON:
 
 ### domain/create
 **What it does:** Create an on-chain entity (domain card).
-**nb inputs:**
-- `entityType` (string) — e.g., "asset", "deed", "dao", "oracle"
-- `surveyData` (object, optional) — entity metadata
+**Plan-time nb:**
+- `entityType` (string, REQUIRED) — `"asset"`, `"deed"`, `"dao"`, or `"oracle"`
+
+**Runtime (do NOT put in nb):** `surveyData` — filled from domain creator form in UI.
 
 **Outputs:** `entityDid`, `transactionHash`, `credentialId`, `entityType`
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{ "entityType": "asset" }
+```
 
 ---
 
 ### domain/sign
 **What it does:** Sign/finalize a domain entity.
-**nb inputs:**
-- `domainCardData` (object, optional) — card metadata
-- `entityType` (string, optional) — entity type
-- `linkedEntities` (array, optional) — linked entity references
+**Plan-time nb:** None required. All inputs come from the upstream `domain/create` step and the UI.
+
+**Runtime (do NOT put in nb):** `domainCardData`, `entityType`, `linkedEntities` — from upstream domain/create output and editor UI.
 
 **Outputs:** `entityDid`, `transactionHash`
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{}
+```
 
 ---
 
 ### credential/store
 **What it does:** Store a verifiable credential in Matrix.
-**nb inputs:**
-- `credentialKey` (string) — key name, e.g., "vendor-cert"
-- `credential` (object, optional) — the credential data
-- `roomId` (string, optional) — Matrix room ID
+**Plan-time nb:**
+- `credentialKey` (string, REQUIRED) — key name, e.g., `"vendor-cert"`, `"kycamllevel1"`
+
+**Runtime (do NOT put in nb):** `credential` (built from upstream outputs), `roomId` (from flow context).
 
 **Outputs:** `credentialKey`, `cid`, `storedAt`, `duplicate`
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{ "credentialKey": "vendor-onboarding-cert" }
+```
 
 ---
 
 ### email/send
 **What it does:** Send an email via the email service.
-**nb inputs:**
-- `to` (string) — recipient email
-- `subject` (string) — email subject
-- `templateName` (string) — email template identifier
-- `templateVersion` (string, optional) — template version
-- `variables` (object, optional) — template variables
+**Plan-time nb:**
+- `to` (string) — recipient email. Set to `""` if dynamic.
+- `subject` (string, REQUIRED) — email subject line
+- `templateName` (string, REQUIRED) — email template identifier
+- `variables` (object, optional) — template variables. Use `"{{fieldName}}"` syntax for dynamic values.
 - `cc` (string, optional) — CC recipients
 - `bcc` (string, optional) — BCC recipients
 - `replyTo` (string, optional) — reply-to address
 
+**Runtime (do NOT put in nb):** `templateVersion` — resolved by the email service.
+
 **Outputs:** `messageId`, `sentAt`
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{
+  "to": "",
+  "subject": "Your application has been approved",
+  "templateName": "vendor-approved",
+  "variables": { "vendorName": "{{applicantName}}" }
+}
+```
 
 ---
 
 ### matrix/dm
 **What it does:** Send a direct message via Matrix.
-**nb inputs:**
-- `targetDid` (string) — recipient DID
-- `message` (string) — message content
+**Plan-time nb:**
+- `message` (string, REQUIRED) — message content
+- `targetDid` (string) — recipient DID. Set to `""` if resolved from upstream.
 
 **Outputs:** `roomId`, `sentAt`
 **Side effect:** Yes | **Requires confirmation:** No
 
+**Example nb:**
+```json
+{ "targetDid": "", "message": "Welcome aboard! Your application has been approved." }
+```
+
 ---
 
 ### notification/push
-**What it does:** Send a notification via configured channel (email, push, etc.).
-**nb inputs:**
-- `channel` (string) — "email", "push", etc.
-- `to` (array of strings, optional) — recipients
+**What it does:** Send a notification via configured channel.
+**Plan-time nb:**
+- `channel` (string, REQUIRED) — `"email"`, `"push"`, etc.
 - `subject` (string, optional) — notification subject
-- `body` (string) — notification body
-- `bodyType` (string, optional) — "text" or "html"
-- `from` (string, optional) — sender
-- `replyTo` (string, optional) — reply-to
+- `body` (string, REQUIRED) — notification body
+
+**Runtime (do NOT put in nb):** `to`, `from`, `replyTo`, `cc`, `bcc`, `bodyType` — configured in editor UI or from flow context.
 
 **Outputs:** None defined
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{ "channel": "email", "subject": "Application update", "body": "Unfortunately your application was not approved at this time." }
+```
 
 ---
 
 ### http/request
 **What it does:** Make an HTTP request to an external API.
-**nb inputs:**
-- `endpoint` (string) — full URL, e.g., "https://api.example.com/data"
-- `method` (string) — "GET", "POST", "PUT", "DELETE", "PATCH"
-- `headers` (array of `{key, value}`, optional) — request headers
-- `body` (array of `{key, value}`, optional) — request body fields (ignored for GET)
-- `responseSchema` (object, optional) — `{ fields: [{ path, displayName, type, description }] }`
+**Plan-time nb:**
+- `endpoint` (string, REQUIRED) — full URL. **IMPORTANT: this field is `endpoint`, NOT `url`.**
+- `method` (string, REQUIRED) — `"GET"`, `"POST"`, `"PUT"`, `"DELETE"`, `"PATCH"`
+- `headers` (array of `{key, value}`) — request headers. Use `[]` if none.
+- `body` (array of `{key, value}`) — request body fields. Use `[]` if none or GET.
+- `responseSchema` (object, optional) — define expected response shape: `{ "fields": [{ "path": "data.id", "displayName": "ID", "type": "string", "description": "" }] }`
+
+**IMPORTANT:** `headers` and `body` are arrays of `{"key": "...", "value": "..."}` objects, NOT plain `Record<string, string>` objects.
 
 **Outputs:** `status`, `data`, `response` (JSON string)
 **Side effect:** No | **Requires confirmation:** No
 
-**Note:** `headers` and `body` are arrays of `{key, value}` objects, NOT plain objects.
+**Example nb:**
+```json
+{
+  "endpoint": "https://api.example.com/vendors",
+  "method": "GET",
+  "headers": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+  "body": []
+}
+```
 
 ---
 
 ### oracle/query
 **What it does:** Send a prompt to the AI companion.
-**nb inputs:**
-- `prompt` (string) — the question or instruction
+**Plan-time nb:**
+- `prompt` (string, REQUIRED) — the question or instruction
 
 **Outputs:** `prompt`
 **Side effect:** No | **Requires confirmation:** No
+
+**Example nb:**
+```json
+{ "prompt": "Analyze the submitted application and suggest an approval decision" }
+```
 
 ---
 
 ### payment/execute
 **What it does:** Execute a payment transaction.
-**nb inputs:**
-- `paymentConfig` (object) — payment configuration
+**Plan-time nb:**
+- `paymentConfig` (object) — payment configuration. Shape depends on payment provider. Set to `{}` if configured in editor.
 
 **Outputs:** `transactionId`, `status`, `proposal` (object), `summary` (object)
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{ "paymentConfig": {} }
+```
 
 ---
 
 ### proposal/create
 **What it does:** Create an on-chain governance proposal.
-**nb inputs:**
-- `coreAddress` (string) — DAO core contract address
-- `title` (string) — proposal title
-- `description` (string) — proposal description
-- `actions` (array) — proposal actions
+**Plan-time nb:**
+- `coreAddress` (string) — DAO core contract address. Set to `""` if configured in editor.
+- `title` (string) — proposal title. Set to `""` if dynamic.
+- `description` (string) — proposal description. Set to `""` if dynamic.
+
+**Runtime (do NOT put in nb):** `actions` — built from proposal form in UI.
 
 **Outputs:** `proposalId`, `status`, `proposalContractAddress`, `coreAddress`, `createdAt`
 **Side effect:** Yes | **Requires confirmation:** Yes
+
+**Example nb:**
+```json
+{ "coreAddress": "", "title": "", "description": "" }
+```
 
 ---
 
 ### proposal/vote
 **What it does:** Cast a vote on a governance proposal.
-**nb inputs:**
-- `proposalId` (string) — proposal to vote on
-- `vote` (string) — "yes", "no", "no_with_veto", "abstain"
-- `rationale` (string, optional) — vote rationale
-- `proposalContractAddress` (string) — proposal contract
+**Plan-time nb:**
+- `vote` (string) — set to `""`. User selects `"yes"`, `"no"`, `"no_with_veto"`, or `"abstain"` in UI.
+- `rationale` (string, optional) — set to `""`. User fills in UI.
+
+**Runtime (do NOT put in nb):** `proposalId`, `proposalContractAddress` — from upstream `proposal/create` output.
 
 **Outputs:** `vote`, `rationale`, `proposalId`, `votedAt`
 **Side effect:** Yes | **Requires confirmation:** Yes
 
+**Example nb:**
+```json
+{ "vote": "", "rationale": "" }
+```
+
 ---
 
 ### human/checkbox
-**What it does:** A manual checkbox step — human confirms by checking it.
-**nb inputs:**
-- `checked` (boolean, optional) — defaults to true when executed
+**What it does:** A manual checkbox step — human confirms by checking it. No `nb` needed.
+**Plan-time nb:** None. Omit `nb` entirely or use `{}`.
 
 **Outputs:** None defined
 **Side effect:** Yes | **Requires confirmation:** No
@@ -345,10 +425,9 @@ Apply these BEFORE outputting the JSON:
 
 ### protocol/select
 **What it does:** Select a protocol from the protocol registry.
-**nb inputs:**
-- `selectedProtocolDid` (string) — protocol DID
-- `selectedProtocolName` (string) — protocol display name
-- `selectedProtocolType` (string) — protocol type
+**Plan-time nb:** None. User selects in UI. Omit `nb` or use `{}`.
+
+**Runtime (do NOT put in nb):** `selectedProtocolDid`, `selectedProtocolName`, `selectedProtocolType` — from picker UI.
 
 **Outputs:** `selectedProtocolDid`, `selectedProtocolName`, `selectedProtocolType`
 **Side effect:** No | **Requires confirmation:** No
@@ -357,8 +436,9 @@ Apply these BEFORE outputting the JSON:
 
 ### form/submit
 **What it does:** Submit a form with structured answers.
-**nb inputs:**
-- `answers` (object) — form answer data
+**Plan-time nb:** None. Form structure is defined in the editor, answers filled by user. Omit `nb` or use `{}`.
+
+**Runtime (do NOT put in nb):** `answers` — from form UI.
 
 **Outputs:** `form.answers` (JSON string), `answers` (object)
 **Side effect:** Yes | **Requires confirmation:** No
