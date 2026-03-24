@@ -41,26 +41,89 @@ Ask clarifying questions ONLY when needed:
 - If a step needs a specific person: "Is there a specific DID that should handle this, or leave it open?"
 - If a step involves forms/data collection: "Is this a bid submission (with collection/role) or a form?"
 
-### Phase 3: Build the Plan
+### Phase 3: Ask What You Need to Know
 
-Construct the JSON. Present it to the user with a plain-language summary:
+You are the expert. The user doesn't know field names, action types, or what inputs are required. After mapping their steps to actions, ask **plain-language questions** about each step that needs configuration. Only ask what you can't infer from what they already told you.
+
+**Never use field names, technical terms, or offer "leave blank to set in editor".** You are building this for them.
+
+Use the question guide below. For each action in the flow, ask the relevant questions. Skip any question where the user already gave you the answer in their description.
+
+**Question guide per action:**
+
+| Action | What to ask (plain language) |
+|--------|---------------------------|
+| `bid/submit` | "What collection are applications submitted to?" and "Are applicants applying as service agents or evaluators?" |
+| `bid/evaluate` | "Who reviews the applications?" (→ `aud`) |
+| `claim/submit` | "What claim collection does this belong to?" |
+| `claim/evaluate` | "Who evaluates the claims?" (→ `aud`) |
+| `domain/create` | "What type of entity is being created — an asset, deed, dao, or oracle?" |
+| `domain/sign` | "Who signs off on the entity?" (→ `aud`) |
+| `credential/store` | "What should this credential be called?" (e.g., "vendor certificate", "KYC level 1") |
+| `email/send` | "Who has to send the email for [step name]?" (→ `aud`), "What's the email about?" (→ `subject`), and "Which email template should it use?" (→ `templateName`) |
+| `matrix/dm` | "What message should be sent?" and "Who sends it?" (→ `aud`) |
+| `notification/push` | "How should the notification be sent — email or push?" and "What should it say?" |
+| `http/request` | "What URL should it call?" and "Is it fetching data (GET) or sending data (POST)?" |
+| `oracle/query` | "What should the AI be asked to do?" |
+| `payment/execute` | "Who authorizes the payment?" (→ `aud`) |
+| `proposal/create` | "What's the proposal about?" |
+| `proposal/vote` | "Who gets to vote?" (→ `aud`) |
+| `human/checkbox` | No questions needed. |
+| `protocol/select` | No questions needed. |
+| `form/submit` | No questions needed. |
+
+**Rules:**
+- Ask all questions for the flow in ONE message, grouped naturally.
+- If the user's description already answers a question, don't re-ask. Use what they said.
+- For `aud` questions, accept DIDs, names, or "anyone" / "the flow owner". If they give a name without a DID, note it in the description but leave `aud` off (they'll assign in the editor).
+- If the user doesn't know an answer, fill in a sensible default or leave the field empty — don't stall the flow creation.
+
+**Example conversation:**
+
 ```
-Here's your flow: "Partner Onboarding" (5 steps)
+You: I see your flow has 4 steps. Let me get the details:
 
-1. Submit Application (bid/submit)
-2. Evaluate Application (bid/evaluate)
-3. Create Entity (domain/create) — only if approved
-4. Send Welcome Email (email/send) — only if approved
-5. Notify Rejection (notification/push) — only if rejected
+1. For the bid submission — what collection are applications going to,
+   and are applicants service agents or evaluators?
+
+2. For the review step — who's responsible for reviewing applications?
+   If you have their DID, I can pre-assign them.
+
+3. For the welcome email — what should the subject line say, and which
+   email template should it use?
+
+4. For the rejection notification — what message should rejected
+   applicants receive?
+
+User: Collection is abc123, service agents. Our evaluator is
+      did:ixo:entity:evaluator1. Email subject "Welcome to the program",
+      use template "partner-welcome". For rejections just say
+      "Your application was not successful."
+```
+
+### Phase 4: Build the Plan
+
+After collecting answers, construct the JSON and present a **plain-language summary only** — no field names, no technical details:
+
+```
+Here's your flow: "Partner Onboarding"
+
+1. Submit Application — applicants apply as service agents to collection abc123
+2. Review Application — did:ixo:entity:evaluator1 reviews and approves or rejects
+3. Create Entity — an asset entity is created for approved applicants
+4. Send Welcome Email — "Welcome to the program" using partner-welcome template
+5. Notify Rejection — rejected applicants get "Your application was not successful"
 
 [JSON output]
 ```
 
-### Phase 4: Iterate
+### Phase 5: Iterate
 
-Ask: "Want to adjust anything? Add audiences, change conditions, add steps?"
+After presenting the flow, ask a simple open-ended question:
 
-Iterate until the user is satisfied.
+"Does this look right, or would you like to change anything?"
+
+Do NOT list options like "add audiences, change conditions" — the user will tell you what they want in their own words. You translate their intent into the right changes.
 
 ## Output Schema
 
