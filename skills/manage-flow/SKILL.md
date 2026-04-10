@@ -14,7 +14,7 @@ license: Apache-2.0
 compatibility: claude
 metadata:
   author: ixo
-  version: "2.2.0"
+  version: "2.3.0"
   category: flow-builder
 ---
 
@@ -39,14 +39,20 @@ All reads and writes go through two browser tools — `read_flow` and `setup_flo
 
 | User intent | What to do |
 |-------------|------------|
-| "Create / build / make / design a flow for..." | Build new plan → `setup_flow({ plan })` |
+| "Create / build / make / design a flow for..." | Build new plan → `setup_flow({ plan, strategy: "full" })` |
 | "Show me / what's in / read the current flow" | `read_flow({})` → summarize in plain language |
-| "Add a step that..." | `read_flow({})` → append capability → `setup_flow({ plan, strategy: "merge" })` |
-| "Change / update / fix the [step name] step" | `read_flow({})` → modify capability in place → `setup_flow({ plan, strategy: "patch" })` |
-| "Remove the [step name] step" | `read_flow({})` → drop capability and clean up any `condition.sourceId` or `trigger.sourceBlockId` references to it → `setup_flow({ plan, strategy: "full" })` |
+| "Add a step that..." (order doesn't matter) | `read_flow({})` (must succeed) → build a plan containing **ONLY the new capability** → `setup_flow({ plan, strategy: "merge" })` |
+| "Add a step before/after [X]" (order matters) | `read_flow({})` (must succeed) → build a **full plan** with all existing capabilities (preserving their original IDs) plus the new one in the right position → `setup_flow({ plan, strategy: "full" })` |
+| "Change / update / fix the [step name] step" | `read_flow({})` (must succeed) → build a plan containing **ONLY the modified capability** with its **original `id`** → `setup_flow({ plan, strategy: "patch" })` |
+| "Remove the [step name] step" | `read_flow({})` (must succeed) → build a full plan minus the dropped capability, cleaning up any `condition.sourceId` or `trigger.sourceBlockId` references to it → `setup_flow({ plan, strategy: "full" })` |
 | "Rebuild / start over / replace the flow" | Build new plan → `setup_flow({ plan, strategy: "full" })` |
 
-When in doubt: **read first**, reason about the current state, then write with the appropriate strategy.
+**Critical rules for any modify operation:**
+1. `read_flow` MUST succeed. If it returns `null` and the user is modifying, STOP and ask — do not silently rebuild. See Step 2 of the Update Path for the full rule.
+2. NEVER use `merge` strategy with a plan that contains both existing AND new capabilities. That is the duplicate-blocks bug. With `merge`, the plan must contain ONLY the additions.
+3. NEVER invent fresh `id` values for blocks that already exist in the flow. The IDs from `read_flow` are the source of truth — preserve them character for character.
+
+When in doubt: **read first**, preserve IDs, then write with the strategy that matches your plan's contents.
 
 ## Conversation Pattern (Create Path)
 
@@ -158,43 +164,102 @@ Do NOT list options like "add audiences, change conditions" — the user will te
 
 Use this pattern whenever the user wants to inspect or modify an existing flow.
 
-### Step 1: Read First
+### Step 1: Determine the user's intent BEFORE you read
+
+Before calling `read_flow`, classify the user's request as one of:
+- **CREATE** — "create a flow", "build a flow", "make a flow", "design a flow for X", "new flow", any phrasing where the user is starting fresh
+- **INSPECT** — "show me", "what's in the flow", "summarize the flow", "list the steps"
+- **MODIFY** — "add a step", "remove a step", "change the X", "fix the X", "update the X", "replace the X", any phrasing that references something the user expects to already exist
+
+This classification controls how you handle Step 2.
+
+### Step 2: Read the current flow
 
 Always call `read_flow({})` before answering any question about the current flow or making any change. Never assume what the flow contains.
 
-If `read_flow` returns `null`, the room has no flow yet — switch to the **Create Path** above.
+**Then handle the result based on intent:**
 
-### Step 2: Understand the Ask
+| Intent | `read_flow` returns a plan | `read_flow` returns `null` |
+|---|---|---|
+| **CREATE** | The room already has a flow. Tell the user and ask whether to extend it or replace it. Do not silently overwrite. | Proceed to the Create Path. |
+| **INSPECT** | Summarize the plan in plain language. | Tell the user "There is no flow in this room yet. Want me to create one?" Do not invent a summary. |
+| **MODIFY** | Use the plan as the base for your edit. Preserve every existing `id`. | **STOP.** Do NOT switch to the Create Path. The user is referencing a flow you cannot see — that means either the room context is wrong, the flow exists in the editor but was never compiled, or there is a sync race. Tell the user: *"I tried to read the current flow but found nothing. Can you confirm we're in the right room, or send a fresh `setup_flow` first? I don't want to silently rebuild and lose anything."* Wait for the user to resolve it. |
+
+**This is a hard rule:** never silently switch from MODIFY to CREATE when `read_flow` returns null. The bug it prevents — duplicate blocks because the agent rebuilt with new IDs and merged into an invisible existing flow — is the most common and most damaging failure mode of this skill.
+
+### Step 3: Understand the Ask
 
 - **Inspection ("show me / what's in the flow"):** Summarize the flow in plain language — title, goal, and an ordered list of steps with what each one does. Do NOT dump JSON unless asked.
 - **Modification ("add / change / remove..."):** Identify exactly which capability/capabilities the user wants to touch. Ask one focused clarifying question only if you genuinely cannot tell.
 
-### Step 3: Reason and Modify
+### Step 4: Reason and Modify
 
 Build the updated plan from the result of `read_flow`. Apply the principle of least change:
 
 - **Adding a step:** Append a new capability with a unique kebab-case `id`. If it should fire automatically when an upstream block emits an event, set `trigger`. If it branches on a decision, set `condition`. Otherwise just append it — order in the `capabilities[]` array is the visual order.
-- **Modifying a step:** Change only the fields the user asked about. Keep the existing `id` so `patch` strategy can target it.
+- **Modifying a step:** Change only the fields the user asked about. **Keep the existing `id` exactly as it came back from `read_flow`.** Inventing a new id for an existing block is the duplicate-blocks bug.
 - **Removing a step:** Drop the capability AND remove its `id` from any other capability's `condition.sourceId` or `trigger.sourceBlockId`. Use `full` strategy after a removal so stale state cannot linger.
+
+**ID PRESERVATION IS NON-NEGOTIABLE.** When modifying a flow, every capability you carry forward from the previous `read_flow` result MUST keep its original `id`. The merge and patch strategies use `id` as the collision key. If you invent fresh ids for blocks that already exist, the merge strategy treats them as additions and you get duplicates. There is no recovery from this except `full` rebuild + asking the user to clean up.
 
 Re-validate against the **Validation Rules** below before writing.
 
-### Step 4: Write with the Right Strategy
+### Step 5: Write with the Right Strategy
 
-| Change type | Strategy |
-|-------------|----------|
-| Adding new steps, leaving existing ones alone | `merge` |
-| Modifying specific existing steps in place | `patch` |
-| Removing steps, or any structural rebuild | `full` |
-| Creating from scratch | `full` (default) |
+The choice of strategy depends on **what your plan contains**, not just what the user asked for. Two distinct cases:
 
-### Step 5: Confirm in Plain Language
+**Case A: Your plan contains ONLY the new/changed capabilities** (the "delta" approach):
+| Change type | Strategy | Plan contents |
+|---|---|---|
+| Adding new step(s), leaving existing ones alone | `merge` | ONLY the new capability/capabilities |
+| Modifying specific existing step(s) in place | `patch` | ONLY the modified capability/capabilities, with their original IDs |
+
+**Case B: Your plan contains the FULL set** (the "rebuild" approach):
+| Change type | Strategy | Plan contents |
+|---|---|---|
+| Reordering, removing, or any structural rebuild | `full` | ALL capabilities — both unchanged ones (with original IDs) and any new/modified ones |
+| Creating from scratch | `full` (default) | The full new plan |
+
+**Forbidden combination:** never use `merge` with a full plan that contains both existing AND new capabilities. That is the duplicate-blocks bug. If you have the full plan in hand, use `full` strategy. If you only want to add a step, your plan should contain ONLY that step and you use `merge`.
+
+### Step 6: Confirm in Plain Language
 
 Tell the user what changed in plain language — never field names or JSON. Example:
 
 > Done. I added a "Send approval email" step after the review step, using the `partner-welcome` template.
 
 Then ask: "Anything else to change?"
+
+## Worked Example: Adding a Step to an Existing Flow
+
+User has a 4-step flow and says: *"add a bid action before claim submission"*.
+
+**Wrong approach (the duplicate-blocks bug):**
+1. Call `read_flow({})` → returns null for some reason
+2. Decide to "rebuild" with 5 steps
+3. Invent 5 fresh IDs
+4. Call `setup_flow({ plan: <5 caps>, strategy: "merge" })`
+5. Result: existing 4 + new 5 = 9 blocks. Disaster.
+
+**Right approach when `read_flow` returns null:**
+1. Call `read_flow({})` → returns null
+2. **STOP.** The user said "before claim submission" — they're referencing an existing flow. Tell the user: *"I tried to read your current flow but found nothing. Can you confirm we're in the right room, or run `setup_flow` first to make sure the flow is registered? I don't want to silently rebuild and create duplicates."*
+3. Wait for the user to fix the read.
+
+**Right approach when `read_flow` succeeds:**
+1. Call `read_flow({})` → returns the 4-capability plan
+2. Read the IDs of the existing capabilities. Suppose claim submission is `submit-claim`.
+3. Build a delta plan with ONLY the new bid capability (one item in `capabilities[]`):
+   ```json
+   { "id": "submit-bid", "can": "bid/submit", "nb": { "collectionId": "", "role": "service_agent" }, "title": "Submit Bid", ... }
+   ```
+4. Call `setup_flow({ plan: <1 cap>, strategy: "merge" })`. The merge strategy adds the new capability without touching the existing 4. Result: 5 blocks.
+5. **About ordering:** with the delta-merge approach, the new capability is appended at the end of the array. If the user specifically said "before claim submission" and the visual order matters, you need the rebuild approach instead:
+   - Build a FULL plan with all 5 capabilities — the 4 existing ones (with their original IDs from `read_flow`) plus the new bid in the right position
+   - Call `setup_flow({ plan: <5 caps>, strategy: "full" })`. The full strategy replaces everything. Result: 5 blocks in the requested order.
+6. Confirm in plain language: *"Done. I added a Submit Bid step before the claim submission."*
+
+The two right approaches differ on ordering control. Use delta-merge when ordering doesn't matter. Use full-rebuild when it does. **Never mix the two** by using a full plan with merge strategy.
 
 ## Output Schema
 
@@ -872,6 +937,9 @@ Use `strategy: "patch"` when updating specific steps (incoming nodes overwrite o
 - Only include `ttl` when the user specifies time constraints
 - Use descriptive `id` values in kebab-case that reflect what the step does
 - **There is no `dependsOn` field.** Do not write it. Sequencing is the order of capabilities in the array. Runtime relationships go in `trigger` or `condition`
+- **NEVER invent fresh `id` values for blocks that already exist.** When modifying a flow, every capability you carry forward from `read_flow` must keep its original `id` exactly. Inventing new IDs is the duplicate-blocks bug
+- **NEVER use `merge` strategy with a plan containing both existing and new capabilities.** Merge is for delta plans (additions only). If you have the full plan in hand, use `full`. The combination of "full plan + merge strategy" creates duplicates because the merge keeps the existing version of every collision and adds your "rebuilt" version alongside it
+- **If `read_flow` returns null and the user is modifying, STOP.** Do not silently switch to create mode. The user is referencing a flow you cannot see — ask them to confirm the room or run `setup_flow` first. See the Update Path Step 2 table for the full decision tree
 - **Only `email/send` and `http/request` are eligible for `block.event` triggers.** Setting one on any other action type is a compile error
 - **Triggered listeners cannot be invoked manually.** Once `trigger.type === "block.event"`, the user can only act on queued pending invocations (one per source emission)
 - Inside a triggered listener's `nb`, prefer `{$ref: "trigger.payload.X"}` over `{$ref: "blockId.output.X"}` when the field is in the event payload — both work but trigger payload refs are cleaner and document the listener's contract more clearly
