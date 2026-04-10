@@ -14,7 +14,7 @@ license: Apache-2.0
 compatibility: claude
 metadata:
   author: ixo
-  version: "2.1.0"
+  version: "2.2.0"
   category: flow-builder
 ---
 
@@ -43,7 +43,7 @@ All reads and writes go through two browser tools — `read_flow` and `setup_flo
 | "Show me / what's in / read the current flow" | `read_flow({})` → summarize in plain language |
 | "Add a step that..." | `read_flow({})` → append capability → `setup_flow({ plan, strategy: "merge" })` |
 | "Change / update / fix the [step name] step" | `read_flow({})` → modify capability in place → `setup_flow({ plan, strategy: "patch" })` |
-| "Remove the [step name] step" | `read_flow({})` → drop capability and clean up `dependsOn` → `setup_flow({ plan, strategy: "full" })` |
+| "Remove the [step name] step" | `read_flow({})` → drop capability and clean up any `condition.sourceId` or `trigger.sourceBlockId` references to it → `setup_flow({ plan, strategy: "full" })` |
 | "Rebuild / start over / replace the flow" | Build new plan → `setup_flow({ plan, strategy: "full" })` |
 
 When in doubt: **read first**, reason about the current state, then write with the appropriate strategy.
@@ -173,9 +173,9 @@ If `read_flow` returns `null`, the room has no flow yet — switch to the **Crea
 
 Build the updated plan from the result of `read_flow`. Apply the principle of least change:
 
-- **Adding a step:** Append a new capability with a unique kebab-case `id`. Wire `dependsOn` to the right upstream step. If it branches off a decision, set `condition`.
+- **Adding a step:** Append a new capability with a unique kebab-case `id`. If it should fire automatically when an upstream block emits an event, set `trigger`. If it branches on a decision, set `condition`. Otherwise just append it — order in the `capabilities[]` array is the visual order.
 - **Modifying a step:** Change only the fields the user asked about. Keep the existing `id` so `patch` strategy can target it.
-- **Removing a step:** Drop the capability AND remove its `id` from any other capability's `dependsOn`. Re-wire downstream steps to the removed step's upstream parent if needed. Use `full` strategy after a removal so stale state cannot linger.
+- **Removing a step:** Drop the capability AND remove its `id` from any other capability's `condition.sourceId` or `trigger.sourceBlockId`. Use `full` strategy after a removal so stale state cannot linger.
 
 Re-validate against the **Validation Rules** below before writing.
 
@@ -221,7 +221,6 @@ Each capability:
   id: string,                     // stable kebab-case identifier, e.g., "submit-bid"
   can: string,                    // MUST be from the action catalog below
   nb?: Record<string, unknown>,   // inputs — shape depends on the action
-  dependsOn?: string[],           // IDs of upstream steps — VISUAL TOPOLOGY ONLY (see Triggers section)
   condition?: {                   // conditional visibility/enable in the editor UI
     sourceId: string,             // ID of upstream step whose output is checked
     field: string,                // output field to inspect
@@ -247,17 +246,11 @@ Each capability:
 }
 ```
 
+**Note:** There is no `dependsOn` field. The order of capabilities in the `capabilities[]` array is the visual order on the canvas. There is no inferred sequencing — express runtime relationships explicitly through `trigger` (for event-driven listeners) or `condition` (for visibility/enable gating).
+
 ## Triggers and Events (CRITICAL — read this before wiring sequential flows)
 
-The flow engine has two ways to wire blocks together. They look similar but mean different things, and getting them wrong is the most common mistake the agent makes.
-
-### `dependsOn` is visual topology, not execution gating
-
-`dependsOn` says "step B comes after step A in the visual layout and the topological sort." It does **not** gate when B runs. After the activation system was removed, every block is available from the moment it appears in the document — `dependsOn` just affects how the canvas draws the flow and the order steps are presented.
-
-Use `dependsOn` for: visual organization, documentation of intent, constraining the topological sort, catching dependency cycles at compile time.
-
-**Do NOT** use `dependsOn` to mean "B should fire automatically after A finishes." For that, use a `trigger`.
+The flow engine has exactly two mechanisms for wiring blocks together at runtime: **triggers** (event-driven listeners) and **conditions** (visibility/enable gating in the editor UI). There is no other "B comes after A" field. If you want B to fire when A emits an event, use a `trigger`. If you want B to be visible/enabled only when A's output meets some criteria, use a `condition`. If neither — just place B after A in the `capabilities[]` array.
 
 ### `trigger` is how event-driven blocks actually fire
 
@@ -336,17 +329,16 @@ What happens at runtime: every time `evaluate-claim` is run with decision `appro
 Apply these BEFORE outputting the JSON:
 
 1. **`can` must be from the catalog.** Do not invent new `can` values.
-2. **`dependsOn` must reference existing IDs.** Every ID in `dependsOn` must be the `id` of another capability in the same plan.
-3. **`condition.sourceId` must be an upstream dependency.** It must appear in the same capability's `dependsOn` array.
-4. **No circular dependencies.** If A depends on B, B cannot depend on A (directly or transitively).
-5. **No `with` field.** The `with` is derived at runtime as `ixo:flow:{roomId}:{can}`. Never include it in the plan.
-6. **`nb` keys should match the action's expected inputs.** Refer to the catalog for each action's `nb` shape.
-7. **`id` values must be unique.** No two capabilities can share an `id`.
-8. **`aud` is an array of DID strings.** Each DID results in a separate UCAN delegation at instantiation.
-9. **Trigger eligibility.** A `block.event` trigger may ONLY be set on action types marked eligible (`email/send`, `http/request`). Setting one on any other action type is a compile error.
-10. **Trigger references must exist.** `trigger.sourceBlockId` must be the `id` of another capability in the plan, and `trigger.eventName` must be a declared event of that source action (see the Triggers section's emitter table).
-11. **Triggered listeners require `aud`.** Any block with `trigger.type === "block.event"` must declare `aud` with at least one DID. The runtime DMs that actor when pending invocations are queued.
-12. **No trigger cycles.** If A's trigger fires B, B's trigger cannot transitively fire A. Compile error.
+2. **`id` values must be unique.** No two capabilities can share an `id`.
+3. **No `with` field.** The `with` is derived at runtime as `ixo:flow:{roomId}:{can}`. Never include it in the plan.
+4. **No `dependsOn` field.** It does not exist on `FlowCapability`. Do not write it. Sequencing is the array order; runtime relationships are `trigger` and `condition`.
+5. **`nb` keys should match the action's expected inputs.** Refer to the catalog for each action's `nb` shape.
+6. **`aud` is an array of DID strings.** Each DID results in a separate UCAN delegation at instantiation.
+7. **`condition.sourceId` must reference a capability that exists in the plan.** No other constraint on ordering — there is no `dependsOn` array to check against.
+8. **Trigger eligibility.** A `block.event` trigger may ONLY be set on action types marked eligible (`email/send`, `http/request`). Setting one on any other action type is a compile error.
+9. **Trigger references must exist.** `trigger.sourceBlockId` must be the `id` of another capability in the plan, and `trigger.eventName` must be a declared event of that source action (see the Triggers section's emitter table).
+10. **Triggered listeners require `aud`.** Any block with `trigger.type === "block.event"` must declare `aud` with at least one DID. The runtime DMs that actor when pending invocations are queued.
+11. **No trigger cycles.** If A's trigger fires B, B's trigger cannot transitively fire A. Compile error.
 
 ## Action Catalog
 
@@ -434,7 +426,7 @@ Each action lists its `nb` fields in two categories:
 { "decision": "" }
 ```
 
-**Common condition pattern:** Same as bid/evaluate — branch on `decision`. But for "do X after every approval," prefer wiring an event listener via `trigger: { type: "block.event", sourceBlockId: "...", eventName: "approved" }` on the downstream block instead of relying on `condition` + `dependsOn`. See the Triggers and Events section above.
+**Common condition pattern:** Same as bid/evaluate — branch on `decision`. But for "do X after every approval," prefer wiring an event listener via `trigger: { type: "block.event", sourceBlockId: "...", eventName: "approved" }` on the downstream block. The triggered listener fires per emission with a frozen payload — that's the right model for "fire X after Y." See the Triggers and Events section above.
 
 ---
 
@@ -718,7 +710,7 @@ claim/submit → claim/evaluate ━━event:approved━━▶ email/send (listen
                               ━━event:rejected━━▶ notification/push (manual)
 ```
 
-The double-arrow `━━event:X━━▶` denotes a `block.event` trigger, NOT a `dependsOn`. The email block has `trigger: { type: "block.event", sourceBlockId: "evaluate-claim", eventName: "approved" }`, fires per emission with the frozen payload, and DMs its assignee. The notification block on the rejection branch is a regular manual block — `notification/push` is not eligible for triggers, so the user invokes it after the rejection (or wires it via `condition` instead).
+The double-arrow `━━event:X━━▶` denotes a `block.event` trigger. The email block has `trigger: { type: "block.event", sourceBlockId: "evaluate-claim", eventName: "approved" }`, fires per emission with the frozen payload, and DMs its assignee. The notification block on the rejection branch is a regular manual block — `notification/push` is not eligible for triggers, so the user invokes it after the rejection (or wires it via `condition` instead).
 
 ## Default Icons by Action
 
@@ -772,7 +764,6 @@ User says: "I need a flow where we fetch data from an API, then someone reviews 
     {
       "id": "review-data",
       "can": "human/checkbox",
-      "dependsOn": ["fetch-data"],
       "phase": "review",
       "title": "Review fetched data",
       "description": "Reviewer checks the data and confirms it is valid"
@@ -783,7 +774,6 @@ User says: "I need a flow where we fetch data from an API, then someone reviews 
       "nb": {
         "entityType": "asset"
       },
-      "dependsOn": ["review-data"],
       "phase": "execution",
       "title": "Create entity",
       "description": "Create the on-chain entity from reviewed data"
@@ -797,7 +787,6 @@ User says: "I need a flow where we fetch data from an API, then someone reviews 
         "templateName": "entity-created",
         "variables": {}
       },
-      "dependsOn": ["create-entity"],
       "phase": "completion",
       "title": "Send completion notification",
       "description": "Notify stakeholders that the entity was created"
@@ -882,7 +871,7 @@ Use `strategy: "patch"` when updating specific steps (incoming nodes overwrite o
 - Only include `condition` when there is a decision point with branching logic
 - Only include `ttl` when the user specifies time constraints
 - Use descriptive `id` values in kebab-case that reflect what the step does
-- **`dependsOn` does not gate execution** — it is visual topology only. If you need a block to fire after an event, use `trigger`, not `dependsOn`
+- **There is no `dependsOn` field.** Do not write it. Sequencing is the order of capabilities in the array. Runtime relationships go in `trigger` or `condition`
 - **Only `email/send` and `http/request` are eligible for `block.event` triggers.** Setting one on any other action type is a compile error
 - **Triggered listeners cannot be invoked manually.** Once `trigger.type === "block.event"`, the user can only act on queued pending invocations (one per source emission)
 - Inside a triggered listener's `nb`, prefer `{$ref: "trigger.payload.X"}` over `{$ref: "blockId.output.X"}` when the field is in the event payload — both work but trigger payload refs are cleaner and document the listener's contract more clearly
