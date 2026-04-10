@@ -14,7 +14,7 @@ license: Apache-2.0
 compatibility: claude
 metadata:
   author: ixo
-  version: "2.3.0"
+  version: "2.4.0"
   category: flow-builder
 ---
 
@@ -40,11 +40,11 @@ All reads and writes go through two browser tools — `read_flow` and `setup_flo
 | User intent | What to do |
 |-------------|------------|
 | "Create / build / make / design a flow for..." | Build new plan → `setup_flow({ plan, strategy: "full" })` |
-| "Show me / what's in / read the current flow" | `read_flow({})` → summarize in plain language |
-| "Add a step that..." (order doesn't matter) | `read_flow({})` (must succeed) → build a plan containing **ONLY the new capability** → `setup_flow({ plan, strategy: "merge" })` |
-| "Add a step before/after [X]" (order matters) | `read_flow({})` (must succeed) → build a **full plan** with all existing capabilities (preserving their original IDs) plus the new one in the right position → `setup_flow({ plan, strategy: "full" })` |
-| "Change / update / fix the [step name] step" | `read_flow({})` (must succeed) → build a plan containing **ONLY the modified capability** with its **original `id`** → `setup_flow({ plan, strategy: "patch" })` |
-| "Remove the [step name] step" | `read_flow({})` (must succeed) → build a full plan minus the dropped capability, cleaning up any `condition.sourceId` or `trigger.sourceBlockId` references to it → `setup_flow({ plan, strategy: "full" })` |
+| "Show me / what's in / read the current flow" | `read_flow()` → summarize in plain language |
+| "Add a step that..." (order doesn't matter) | `read_flow()` (must succeed) → build a plan containing **ONLY the new capability** → `setup_flow({ plan, strategy: "merge" })` |
+| "Add a step before/after [X]" (order matters) | `read_flow()` (must succeed) → build a **full plan** with all existing capabilities (preserving their original IDs) plus the new one in the right position → `setup_flow({ plan, strategy: "full" })` |
+| "Change / update / fix the [step name] step" | `read_flow()` (must succeed) → build a plan containing **ONLY the modified capability** with its **original `id`** → `setup_flow({ plan, strategy: "patch" })` |
+| "Remove the [step name] step" | `read_flow()` (must succeed) → build a full plan minus the dropped capability, cleaning up any `condition.sourceId` or `trigger.sourceBlockId` references to it → `setup_flow({ plan, strategy: "full" })` |
 | "Rebuild / start over / replace the flow" | Build new plan → `setup_flow({ plan, strategy: "full" })` |
 
 **Critical rules for any modify operation:**
@@ -175,7 +175,7 @@ This classification controls how you handle Step 2.
 
 ### Step 2: Read the current flow
 
-Always call `read_flow({})` before answering any question about the current flow or making any change. Never assume what the flow contains.
+Always call `read_flow()` before answering any question about the current flow or making any change. Never assume what the flow contains.
 
 **Then handle the result based on intent:**
 
@@ -235,19 +235,19 @@ Then ask: "Anything else to change?"
 User has a 4-step flow and says: *"add a bid action before claim submission"*.
 
 **Wrong approach (the duplicate-blocks bug):**
-1. Call `read_flow({})` → returns null for some reason
+1. Call `read_flow()` → returns null for some reason
 2. Decide to "rebuild" with 5 steps
 3. Invent 5 fresh IDs
 4. Call `setup_flow({ plan: <5 caps>, strategy: "merge" })`
 5. Result: existing 4 + new 5 = 9 blocks. Disaster.
 
 **Right approach when `read_flow` returns null:**
-1. Call `read_flow({})` → returns null
+1. Call `read_flow()` → returns null
 2. **STOP.** The user said "before claim submission" — they're referencing an existing flow. Tell the user: *"I tried to read your current flow but found nothing. Can you confirm we're in the right room, or run `setup_flow` first to make sure the flow is registered? I don't want to silently rebuild and create duplicates."*
 3. Wait for the user to fix the read.
 
 **Right approach when `read_flow` succeeds:**
-1. Call `read_flow({})` → returns the 4-capability plan
+1. Call `read_flow()` → returns the 4-capability plan
 2. Read the IDs of the existing capabilities. Suppose claim submission is `submit-claim`.
 3. Build a delta plan with ONLY the new bid capability (one item in `capabilities[]`):
    ```json
@@ -866,32 +866,31 @@ Two browser tools are available for reading and writing flows in the editor.
 
 ### read_flow
 
-Read the current flow from a Matrix room as a BaseUcanFlow plan. Returns the same JSON structure the agent originally authored so it can inspect the document, reason about it, and decide what to change.
+Read the current flow from the editor as a BaseUcanFlow plan. Returns the same JSON structure the agent originally authored so it can inspect the document, reason about it, and decide what to change.
 
-**Params:**
-- `roomId` (optional) — Matrix room ID to read from. Defaults to the current editor room.
+**Takes no parameters.** The editor instance already knows which flow you're working on — there is no roomId, no matrixClient, no nothing to pass. Always call it as `read_flow()`.
 
-**Returns:** The BaseUcanFlow plan, or `null` if the room has no flow.
+**Returns:** The BaseUcanFlow plan, or `null` ONLY if the editor has no flow state at all.
 
-**Examples:**
+**Example:**
 ```
-read_flow({})                                    // current editor room
-read_flow({ roomId: "!abc123:matrix.ixo.world" }) // specific room
+read_flow()
 ```
+
+**About `null` returns:** if `read_flow()` returns null, it means the editor's Y.Doc has zero flow state — no nodes, no meta, nothing. This is genuinely rare. It does NOT mean "the flow is empty" or "I'm in the wrong room" — those are different failure modes the editor's API does not produce. If you got `null` and the user is referencing an existing flow they expect you to see, something is wrong with the editor session, not with the flow. STOP and tell the user — do not silently rebuild. See Update Path Step 2 for the full decision tree.
 
 ### setup_flow
 
-Compile a BaseUcanFlow plan and write the resulting flow graph into a Matrix room's Y.Doc.
+Compile a BaseUcanFlow plan and write the resulting flow graph into the editor's Y.Doc.
 
 **Params:**
 - `plan` (REQUIRED) — A BaseUcanFlow JSON object with `kind`, `version`, `flowId`, `title`, and `capabilities[]`.
-- `roomId` (optional) — Matrix room ID. Defaults to the current editor room.
-- `creatorDid` (optional) — DID of the flow creator. Defaults to the current user's DID.
-- `docId` (optional) — Override document ID. Defaults to `plan.flowId`.
 - `strategy` (optional) — `"full"` (default), `"merge"`, or `"patch"`.
   - **full:** Clears all existing flow state and rebuilds from scratch.
-  - **merge:** Existing nodes win on ID collision; new IDs are added. Edges and order recomputed.
-  - **patch:** Incoming nodes win on ID collision (overwrite); new IDs added. Existing unmentioned nodes kept. Edges and order recomputed.
+  - **merge:** Existing nodes win on ID collision; new IDs are added.
+  - **patch:** Incoming nodes win on ID collision (overwrite); new IDs added. Existing unmentioned nodes are kept.
+
+The editor already knows its room and creator DID — do not pass them. Just `plan` and optionally `strategy`. Leave `flowId: ""` in the plan; the runtime fills it in.
 
 **Returns:** The compiled flow result with `compiled`, `flowId`, and `roomId`.
 
@@ -919,7 +918,7 @@ Do NOT just output the JSON and stop. Always call `setup_flow` to complete the f
 When modifying an existing flow, use this pattern:
 
 ```
-1. Call read_flow({}) to get the current plan
+1. Call read_flow() to get the current plan
 2. Inspect the capabilities, decide what to add or change
 3. Call setup_flow({ plan: updatedPlan, strategy: "patch" }) to write changes back
 ```
