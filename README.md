@@ -1,6 +1,6 @@
-# IXO Agent Skills
+# Qi Agent Skills
 
-Community-contributed AI agent skills for the IXO ecosystem.
+Community-contributed AI agent skills for the Qi ecosystem.
 
 [![Skills Server](https://img.shields.io/badge/Skills%20Server-Live-brightgreen)](https://capsules.skills.ixo.earth/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
@@ -18,7 +18,7 @@ Think of skills like apps for AI agents - they can learn to fill out PDF forms, 
 
 ## Submit Your Skill
 
-We welcome community contributions! To share your skill with IXO AI agents:
+We welcome community contributions! To share your skill with Qi AI agents:
 
 ### 1. Fork this repository
 
@@ -72,7 +72,7 @@ Push your changes and open a PR. Our team will review your skill for:
 - Security (no harmful prompts or scripts)
 - Compliance with the specification
 
-Once approved, your skill will be automatically published to the [IXO Skills Server](https://capsules.skills.ixo.earth/).
+Once approved, your skill will be automatically published to the [Qi Skills Server](https://capsules.skills.ixo.earth/).
 
 ## Why Are Skills Reviewed?
 
