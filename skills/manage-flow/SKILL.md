@@ -7,9 +7,12 @@ description: >
   "new flow", "make a flow", "show me the flow", "what's in the flow", "read the flow",
   "update the flow", "edit the flow", "modify the flow", "add a step", "remove a step",
   "change the flow", "rebuild the flow", or describes any multi-step workflow to automate.
-  Supports 18 action types including bids, claims, payments, governance proposals, emails,
-  notifications, and more. Uses the `read_flow` and `setup_flow` browser tools to read and
-  write flows in the editor room.
+  Also handles POD (Programmable Organisational Domain) creation flows — triggers include
+  "create a pod", "set up a pod", "new pod", "pod setup", "programmable organisational
+  domain" — using the built-in POD recipe.
+  Supports 24 action types including bids, claims, payments, governance proposals, emails,
+  notifications, POD setup steps, and more. Uses the `read_flow` and `setup_flow` browser
+  tools to read and write flows in the editor room.
 license: Apache-2.0
 compatibility: claude
 metadata:
@@ -23,6 +26,8 @@ metadata:
 **This is THE skill for anything flow-related.** The moment the user mentions a flow — creating one, reading one, changing one, adding a step, removing a step, asking what's in it — invoke this skill immediately. Do not try to handle flow operations any other way.
 
 Triggers include (but are not limited to): "create a flow", "build a flow", "design a flow", "new flow", "make a flow", "flow for...", "show me the flow", "what's in the flow", "read the flow", "inspect the flow", "update the flow", "edit the flow", "modify the flow", "change the flow", "add a step", "remove a step", "rebuild the flow", "fix the flow", or any multi-step workflow description.
+
+**POD-specific triggers** route to the POD recipe (see **Flow Recipes** below): "create a pod", "set up a pod", "new pod", "pod setup", "make a pod", "build a pod", "pod for...", "programmable organisational domain", "programmable org domain", "new organisational domain", "spin up a pod".
 
 ## What This Skill Does
 
@@ -46,6 +51,7 @@ All reads and writes go through two browser tools — `read_flow` and `setup_flo
 | "Change / update / fix the [step name] step" | `read_flow()` (must succeed) → build a plan containing **ONLY the modified capability** with its **original `id`** → `setup_flow({ plan, strategy: "patch" })` |
 | "Remove the [step name] step" | `read_flow()` (must succeed) → build a full plan minus the dropped capability, cleaning up any `condition.sourceId` or `trigger.sourceBlockId` references to it → `setup_flow({ plan, strategy: "full" })` |
 | "Rebuild / start over / replace the flow" | Build new plan → `setup_flow({ plan, strategy: "full" })` |
+| "Create / set up / make a pod" | Use the **POD Creation recipe** (see Flow Recipes) → `setup_flow({ plan, strategy: "full" })` |
 
 **Critical rules for any modify operation:**
 1. `read_flow` MUST succeed. If it returns `null` and the user is modifying, STOP and ask — do not silently rebuild. See Step 2 of the Update Path for the full rule.
@@ -92,7 +98,8 @@ Use the question guide below. For each action in the flow, ask the relevant ques
 | `bid/evaluate` | "Who reviews the applications?" (→ `aud`) |
 | `claim/submit` | "What claim collection does this belong to?" |
 | `claim/evaluate` | "Who evaluates the claims?" (→ `aud`) |
-| `domain/create` | "What type of entity is being created — an asset, deed, dao, or oracle?" |
+| `domain/card-build` | "What type of entity is being created — an asset, deed, dao, or oracle?" |
+| `domain/card-preview` | — (no planning question; reads from upstream `domain/card-build`) |
 | `domain/sign` | "Who signs off on the entity?" (→ `aud`) |
 | `credential/store` | "What should this credential be called?" (e.g., "vendor certificate", "KYC level 1") |
 | `email/send` | "Who has to send the email for [step name]?" (→ `aud`), "What's the email about?" (→ `subject`), and "Which email template should it use?" (→ `templateName`) |
@@ -404,6 +411,7 @@ Apply these BEFORE outputting the JSON:
 9. **Trigger references must exist.** `trigger.sourceBlockId` must be the `id` of another capability in the plan, and `trigger.eventName` must be a declared event of that source action (see the Triggers section's emitter table).
 10. **Triggered listeners require `aud`.** Any block with `trigger.type === "block.event"` must declare `aud` with at least one DID. The runtime DMs that actor when pending invocations are queued.
 11. **No trigger cycles.** If A's trigger fires B, B's trigger cannot transitively fire A. Compile error.
+12. **POD recipe constraints.** When building a POD creation flow: `domain/card-build.nb.entityType` must be `"dao"`; `pod/governance-config.nb.groupType` must be `""` or one of `categorical | multisig | nftStaking | tokenStaking`; never write concrete member DIDs, blueprint DIDs, contract addresses, or token configs into `nb` at plan time — those are runtime picker inputs. See the **POD Creation Recipe** in the Flow Recipes section.
 
 ## Action Catalog
 
@@ -495,28 +503,47 @@ Each action lists its `nb` fields in two categories:
 
 ---
 
-### domain/create
-**What it does:** Create an on-chain entity (domain card).
+### domain/card-build
+**What it does:** Collect the domain card survey (name, description, tags, image, etc.) and produce an unsigned W3C Verifiable Credential describing the entity. No on-chain effect.
 **Plan-time nb:**
 - `entityType` (string, REQUIRED) — `"asset"`, `"deed"`, `"dao"`, or `"oracle"`
 
-**Runtime (do NOT put in nb):** `surveyData` — filled from domain creator form in UI.
+**Runtime (do NOT put in nb):** `surveyData` — filled from the domain creator form in the UI.
 
-**Outputs:** `entityDid`, `transactionHash`, `credentialId`, `entityType`
-**Side effect:** Yes | **Requires confirmation:** Yes
+**Outputs:** `domainCardData` (unsigned W3C VC), `entityType`
+**Side effect:** No | **Requires confirmation:** No
 
 **Example nb:**
 ```json
-{ "entityType": "asset" }
+{ "entityType": "dao" }
+```
+
+---
+
+### domain/card-preview
+**What it does:** Pass `domainCardData` through oracle enrichment and present it to the user for human approval before signing.
+**Plan-time nb:** None required. Reads `domainCardData` from the upstream `domain/card-build` output.
+
+**Runtime (do NOT put in nb):** `domainCardData` — wired from upstream.
+
+**Outputs:** `domainCardData` (enriched), `approved` (boolean)
+**Side effect:** No | **Requires confirmation:** No
+
+**Example nb:**
+```json
+{}
 ```
 
 ---
 
 ### domain/sign
-**What it does:** Sign/finalize a domain entity.
-**Plan-time nb:** None required. All inputs come from the upstream `domain/create` step and the UI.
+**What it does:** Sign and broadcast `MsgCreateEntity` (and, in the POD recipe, `MsgCreateGroup` atomically in the same transaction).
+**Plan-time nb:** None required. All inputs are wired from upstream at runtime:
+- `domainCardData` from `domain/card-build` (or `domain/card-preview` if used)
+- Blueprint/protocol DID from `pod/domain-single-selection` (POD recipe only)
+- `linkedEntities` from the governance-group after-create hooks (POD recipe only)
 
-**Runtime (do NOT put in nb):** `domainCardData`, `entityType`, `linkedEntities` — from upstream domain/create output and editor UI.
+**Runtime (do NOT put in nb):** `domainCardData`, `entityType`, `linkedEntities`.
 
 **Outputs:** `entityDid`, `transactionHash`
 **Side effect:** Yes | **Requires confirmation:** Yes
@@ -740,11 +767,120 @@ Each action lists its `nb` fields in two categories:
 
 ---
 
+### pod/domain-indexer-lookup
+**What it does:** AI-assisted intent capture that queries the Domain Indexer for matching POD Blueprint candidates. Step 1 of the POD creation recipe.
+**Plan-time nb:**
+- `userMessage` (string) — the user's plain-language description of what the POD is for. Set to `""` if it will be filled at runtime by the user.
+- `agentMessage` (string, optional) — set to `""`.
+
+**Runtime (do NOT put in nb):** none — the user types `userMessage` at execution time if left empty.
+
+**Outputs:** `purposeDescription`, `blueprintCandidates` (array of `{did, name, description}`)
+**Side effect:** No | **Requires confirmation:** No
+
+**Example nb:**
+```json
+{ "userMessage": "" }
+```
+
+---
+
+### pod/domain-single-selection
+**What it does:** Single-select a Blueprint (protocol entity) from the candidate list produced by `pod/domain-indexer-lookup`. Step 2 of the POD creation recipe.
+**Plan-time nb:** None. The user picks in the UI from the upstream candidates. Omit `nb` or use `{}`.
+
+**Runtime (do NOT put in nb):** `selectedBlueprintDid`, `selectedBlueprintName`, `selectedBlueprintDescription` — from picker UI.
+
+**Outputs:** `selectedBlueprintDid`, `selectedBlueprintName`, `selectedBlueprintDescription`
+**Side effect:** No | **Requires confirmation:** No
+
+**Example nb:**
+```json
+{}
+```
+
+---
+
+### pod/entity-single-selection
+**What it does:** Optional parent-organisation picker. Lists IXO entities where the current user holds a controller role. The user may skip to leave `parentDID` as null. Step 3 of the POD creation recipe.
+**Plan-time nb:** None. Omit `nb` or use `{}`.
+
+**Runtime (do NOT put in nb):** `selectedEntityDid`, `selectedEntityName`, `skipped` — from picker UI.
+
+**Outputs:** `selectedEntityDid` (string or null when skipped), `selectedEntityName`, `skipped` (boolean)
+**Side effect:** No | **Requires confirmation:** No
+
+**Example nb:**
+```json
+{}
+```
+
+---
+
+### pod/governance-config
+**What it does:** Configure the Cosmos group type and decision policy for the POD. Step 4 of the POD creation recipe. The chosen `groupType` determines what `pod/member-multi-select` collects next.
+**Plan-time nb:**
+- `groupType` (string) — set to `""` so the user picks in the UI. Valid values: `"categorical"`, `"multisig"`, `"nftStaking"`, `"tokenStaking"`.
+- `governance` (object) — decision policy. Set to `{}` to be filled in the UI. Fields vary by group type:
+  - All types: `votingPeriod` (ISO 8601 duration, REQUIRED at runtime), `minExecutionDelay`, `executor`
+  - `categorical`, `nftStaking`, `tokenStaking`: `quorum` (0–1 decimal string), `threshold` (0–1), `vetoThreshold` (0–1). Constraint: `threshold + vetoThreshold ≤ 1`.
+  - `multisig`: `threshold` (positive integer — minimum signers)
+  - `nftStaking`, `tokenStaking`: `unstakingDuration` (ISO 8601 duration)
+
+**Runtime (do NOT put in nb):** the concrete values inside `governance` — all filled by the UI against the selected `groupType`.
+
+**Outputs:** `groupType`, `governance`
+**Side effect:** No | **Requires confirmation:** No
+
+**Example nb:**
+```json
+{ "groupType": "", "governance": {} }
+```
+
+---
+
+### pod/member-multi-select
+**What it does:** Configure POD membership. The shape of the member list depends on `groupType` from the upstream `pod/governance-config`. Step 5 of the POD creation recipe.
+**Plan-time nb:**
+- `groupType` (string) — set to `""`. Wired from upstream `pod/governance-config.output.groupType` at runtime, or left for the UI to inherit.
+
+**Runtime (do NOT put in nb), varies by groupType:**
+- `categorical`: `members[]` (each `{did, role, votingPower}`). At least one member must have role `"admin"`. No duplicate DIDs. Voting power must be a positive integer.
+- `multisig`: `members[]` (each `{did}`) + `multisigThreshold` (positive integer, `≥1` and `≤` member count).
+- `nftStaking`: `nftContractAddress` (bech32 contract address).
+- `tokenStaking`: `tokenConfig` object. If `isExistingToken: true`, requires `tokenAddress`. Otherwise requires `tokenName`, `tokenSymbol`, `tokenSupply` (positive integer).
+
+**Outputs:** `members`, `multisigThreshold`, `nftContractAddress`, `tokenConfig` (only the subset relevant to the chosen groupType is populated)
+**Side effect:** No | **Requires confirmation:** No
+
+**Example nb:**
+```json
+{ "groupType": "" }
+```
+
+---
+
+### pod/list-domain-flows
+**What it does:** Multi-select Flow Templates from the blueprint protocol entity. Zero selections is a valid state (protocol-default flows are still included). Step 6 of the POD creation recipe.
+**Plan-time nb:** None. Omit `nb` or use `{}`.
+
+**Runtime (do NOT put in nb):** `selectedFlowDids` (array) — from picker UI.
+
+**Outputs:** `selectedFlowDids`
+**Side effect:** No | **Requires confirmation:** No
+
+**Example nb:**
+```json
+{}
+```
+
+---
+
 ## Common Flow Patterns
 
 ### Bid-based Onboarding
 ```
-bid/submit → bid/evaluate → (approve) domain/create → domain/sign → credential/store
+bid/submit → bid/evaluate → (approve) domain/card-build → domain/card-preview → domain/sign → credential/store
                            → (reject)  notification/push
 ```
 
@@ -761,7 +897,7 @@ http/request → form/submit → email/send
 
 ### Governance
 ```
-proposal/create → proposal/vote → (passed) domain/create
+proposal/create → proposal/vote → (passed) domain/card-build → domain/card-preview → domain/sign
 ```
 
 ### Manual Approval with Notification
@@ -777,6 +913,135 @@ claim/submit → claim/evaluate ━━event:approved━━▶ email/send (listen
 
 The double-arrow `━━event:X━━▶` denotes a `block.event` trigger. The email block has `trigger: { type: "block.event", sourceBlockId: "evaluate-claim", eventName: "approved" }`, fires per emission with the frozen payload, and DMs its assignee. The notification block on the rejection branch is a regular manual block — `notification/push` is not eligible for triggers, so the user invokes it after the rejection (or wires it via `condition` instead).
 
+### POD Creation
+```
+pod/domain-indexer-lookup → pod/domain-single-selection
+  → pod/governance-config → pod/member-multi-select
+  → domain/card-build → domain/card-preview → domain/sign
+```
+
+See the **Flow Recipes** section below for the full canonical skeleton.
+
+## Flow Recipes
+
+Recipes are canonical, named flows that this skill knows how to build as a unit. When the user's request matches a recipe's triggers, build the recipe's capability list directly instead of running the generic Phase-1/2 question pattern. Ask only the recipe's specific questions, then present the plain-language summary and write it with `setup_flow({ plan, strategy: "full" })`.
+
+### POD Creation Recipe
+
+**Use when the user says:** "create a pod", "set up a pod", "new pod", "pod setup", "make a pod", "build a pod", "pod for …", "programmable organisational domain", "new organisational domain", "spin up a pod".
+
+**What a POD is** (for user-facing explanations only — do not dump this into the plan): A sovereign, on-chain organisational workspace represented by an IXO entity + Cosmos group. Created by two on-chain transactions — `MsgCreateEntity` (authored via `domain/card-build` → `domain/card-preview` → `domain/sign`) and `MsgCreateGroup` (configured by `pod/governance-config` + `pod/member-multi-select`, executed atomically by `domain/sign`).
+
+#### Questions to ask before building
+
+Ask these in **one** message, plain language, grouped naturally. Skip any the user already answered.
+
+1. **Purpose** — "What's the pod for?" (feeds `pod/domain-indexer-lookup.userMessage` and seeds `title` / `goal`)
+2. **Governance model** — "How should decisions be made — weighted voting by member (categorical), multi-signature threshold (multisig), NFT staking, or token staking?" (feeds `pod/governance-config.groupType`)
+3. **Publish?** — "Should the pod be publicly listed once created, or kept private?" (sets whether the final `human/checkbox` defaults on)
+
+**Do NOT ask** for blueprint DID, member DIDs, voting period, quorum, thresholds, domain card name/description, NFT contract address, or token config. All of that is collected at **runtime** by the POD block UIs. Your job is to author a plan with correct `can` values, IDs, and minimal `nb` scaffolding. The user fills the rest in the editor.
+
+#### Canonical capability skeleton
+
+Build this exact shape. IDs are stable kebab-case and must be preserved if the flow is later modified.
+
+```json
+{
+  "kind": "qi.flow.base-ucan",
+  "version": "1.0",
+  "flowId": "",
+  "title": "<from purpose, e.g. 'Reforestation Carbon POD'>",
+  "goal": "<one-line summary of the pod's purpose>",
+  "meta": {},
+  "capabilities": [
+    {
+      "id": "lookup-blueprint",
+      "can": "pod/domain-indexer-lookup",
+      "nb": { "userMessage": "" },
+      "phase": "intake",
+      "title": "Describe the POD purpose",
+      "description": "User describes what the POD is for; the indexer returns matching blueprint candidates"
+    },
+    {
+      "id": "select-blueprint",
+      "can": "pod/domain-single-selection",
+      "nb": {},
+      "phase": "intake",
+      "title": "Select a Blueprint",
+      "description": "Pick a blueprint from the candidates returned by the previous step"
+    },
+    {
+      "id": "configure-governance",
+      "can": "pod/governance-config",
+      "nb": { "groupType": "", "governance": {} },
+      "phase": "governance",
+      "title": "Configure governance",
+      "description": "Pick group type (categorical/multisig/nftStaking/tokenStaking) and decision policy"
+    },
+    {
+      "id": "configure-members",
+      "can": "pod/member-multi-select",
+      "nb": { "groupType": "" },
+      "phase": "governance",
+      "title": "Configure members",
+      "description": "Add members or staking config appropriate to the selected group type"
+    },
+    {
+      "id": "build-card",
+      "can": "domain/card-build",
+      "nb": { "entityType": "dao" },
+      "phase": "execution",
+      "title": "Build the POD domain card",
+      "description": "Fill the POD survey (name, description, tags, image) — produces an unsigned W3C VC in runtime.output.domainCardData"
+    },
+    {
+      "id": "preview-card",
+      "can": "domain/card-preview",
+      "nb": {},
+      "phase": "execution",
+      "title": "Preview and approve",
+      "description": "Oracle enriches the domain card; user reviews and approves before signing"
+    },
+    {
+      "id": "sign-domain",
+      "can": "domain/sign",
+      "nb": {},
+      "phase": "execution",
+      "title": "Sign and submit",
+      "description": "Sign MsgCreateEntity + MsgCreateGroup — consumes domainCardData from build-card, blueprint DID from select-blueprint, and linkedEntities from the governance-group after-create hooks"
+    }
+  ]
+}
+```
+
+#### Recipe-specific rules
+
+1. **`entityType` is `"dao"`** on `domain/card-build`. A POD is a DAO-class entity. Do not use `"asset"`, `"deed"`, or `"oracle"`.
+2. **Leave all POD-block runtime fields empty.** That includes `groupType`, `governance`, member DIDs, NFT contract addresses, token configs, and blueprint DIDs. They are picker-UI inputs, not plan-time values. The only non-empty plan-time `nb` field in the POD-specific steps is `userMessage: ""` on `pod/domain-indexer-lookup` (which is deliberately empty — the user types into it at runtime).
+3. **Never add `aud` to any POD recipe block** unless the user names a specific actor. None of the POD actions (including `domain/card-build`, `domain/card-preview`, and `domain/sign` in this recipe) require `aud` — the runtime does not need to DM a named actor.
+4. **`domain/sign` consumes three upstream sources atomically.** It reads `domainCardData` from `build-card.output`, the blueprint DID from `select-blueprint.output`, and `linkedEntities` from the governance-group after-create hooks (emitted once `pod/governance-config` + `pod/member-multi-select` resolve). All three are runtime wiring — do not write any of them into `nb` at plan time.
+5. **Always write with `strategy: "full"`** when creating a POD flow from scratch. If the user asks to modify an existing POD flow, follow the normal Update Path — `read_flow` first, preserve all IDs, then apply the delta rules.
+6. **Group-type branching is runtime, not plan-time.** Do not build four different recipes. One plan with `pod/governance-config` + `pod/member-multi-select` handles all four group types — the member-select block reads `groupType` from the upstream governance block at execution time and adapts its UI.
+
+#### Plain-language summary to present
+
+After building, summarise the flow to the user like this (adjust the purpose line):
+
+```
+Here's your pod setup flow: "<title>"
+
+1. Describe what the pod is for → the system suggests matching blueprints
+2. Pick a blueprint
+3. Pick a governance model and set the decision policy
+4. Add members (or set staking config) for that governance model
+5. Fill out the domain card survey (name, description, tags, image)
+6. Preview the enriched card and approve it
+7. Sign — creates the POD entity and group on-chain in one transaction
+```
+
+Then ask: "Does this look right, or would you like to change anything?"
+
 ## Default Icons by Action
 
 | can | icon |
@@ -790,7 +1055,8 @@ The double-arrow `━━event:X━━▶` denotes a `block.event` trigger. The e
 | matrix/dm | message-circle |
 | proposal/create | scroll |
 | proposal/vote | vote |
-| domain/create | globe |
+| domain/card-build | globe |
+| domain/card-preview | eye |
 | domain/sign | feather |
 | credential/store | shield |
 | payment/execute | credit-card |
@@ -799,6 +1065,12 @@ The double-arrow `━━event:X━━▶` denotes a `block.event` trigger. The e
 | human/checkbox | check-square |
 | form/submit | file-text |
 | oracle/query | cpu |
+| pod/domain-indexer-lookup | search |
+| pod/domain-single-selection | list-checks |
+| pod/entity-single-selection | building |
+| pod/governance-config | landmark |
+| pod/member-multi-select | users |
+| pod/list-domain-flows | workflow |
 
 ## Example Output
 
@@ -834,14 +1106,30 @@ User says: "I need a flow where we fetch data from an API, then someone reviews 
       "description": "Reviewer checks the data and confirms it is valid"
     },
     {
-      "id": "create-entity",
-      "can": "domain/create",
+      "id": "build-card",
+      "can": "domain/card-build",
       "nb": {
         "entityType": "asset"
       },
       "phase": "execution",
-      "title": "Create entity",
-      "description": "Create the on-chain entity from reviewed data"
+      "title": "Build entity card",
+      "description": "Collect the entity survey and produce an unsigned W3C VC"
+    },
+    {
+      "id": "preview-card",
+      "can": "domain/card-preview",
+      "nb": {},
+      "phase": "execution",
+      "title": "Preview entity card",
+      "description": "Oracle enriches the card; user approves before signing"
+    },
+    {
+      "id": "sign-entity",
+      "can": "domain/sign",
+      "nb": {},
+      "phase": "execution",
+      "title": "Sign and submit",
+      "description": "Sign MsgCreateEntity and broadcast on-chain"
     },
     {
       "id": "notify-complete",
@@ -942,4 +1230,5 @@ Use `strategy: "patch"` when updating specific steps (incoming nodes overwrite o
 - **Only `email/send` and `http/request` are eligible for `block.event` triggers.** Setting one on any other action type is a compile error
 - **Triggered listeners cannot be invoked manually.** Once `trigger.type === "block.event"`, the user can only act on queued pending invocations (one per source emission)
 - Inside a triggered listener's `nb`, prefer `{$ref: "trigger.payload.X"}` over `{$ref: "blockId.output.X"}` when the field is in the event payload — both work but trigger payload refs are cleaner and document the listener's contract more clearly
-- The `phase` field is for visual grouping — common values: "intake", "review", "execution", "onboarding", "completion"
+- The `phase` field is for visual grouping — common values: "intake", "review", "execution", "onboarding", "completion", "governance", "setup"
+- **When the user asks to create a POD**, use the POD Creation recipe in the Flow Recipes section. Do not run the generic Phase-1/2 question pattern and do not improvise the capability list — the recipe is the contract.
