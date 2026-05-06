@@ -20,6 +20,7 @@ REQUIRED_FILES = [
     "references/observability-and-replay.md",
     "templates/agent-command-examples.json",
     "templates/ralph-loop-checklist.json",
+    "templates/skill-routing-smoke-tests.json",
     "scripts/validate_flow_agent_package.py",
     "scripts/validate_command_templates.py",
 ]
@@ -128,4 +129,3 @@ if __name__ == "__main__":
     for error in result["errors"]:
         print(f"- {error}")
     sys.exit(1)
-

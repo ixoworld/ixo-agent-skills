@@ -5,7 +5,9 @@ description: >
   FlowAgentService, coordinating actors, maintaining node states, diagnosing blocked or
   overdue actions, checking UCAN guardrails, reviewing leases, outbox, ledger, claims, UDID
   monitoring, archive/restart cycles, or producing proposal-only config changes. Do not use
-  for BaseUcanFlow authoring or direct template edits; route those to manage-flow.
+  for BaseUcanFlow authoring, flow template inspection, action catalog selection, POD recipe
+  authoring, or direct template edits; route those to manage-flow. Use flow-agent for live
+  runtime state, not for `read_flow` or `setup_flow` template work.
 license: Apache-2.0
 compatibility: codex
 metadata:
@@ -32,6 +34,40 @@ Use `$flow-agent` for:
 
 Do not use this skill for BaseUcanFlow creation, editing, deleting, or rebuilding. Use `$manage-flow` for those authoring tasks. If a runtime issue requires a template change, emit a `propose_config_change` command and explain the governance approval needed.
 
+## Skill Boundary
+
+`$flow-agent` and `$manage-flow` are complementary and must not be merged.
+
+| Intent | Use |
+|---|---|
+| Authoring: create, inspect template, add/remove/reorder steps, configure `nb`, `aud`, `trigger`, `condition`, POD recipe | `$manage-flow` |
+| Runtime: node state, pending invocation, blocked/overdue, assignment, notify/escalate, UCAN proof, lease, outbox, ledger, execute action, validate external state, submit claim, watch UDID, archive/restart | `$flow-agent` |
+| Cross-boundary: stale config at runtime | `$flow-agent` proposes; `$manage-flow` applies only after approval |
+
+Same words can refer to different layers. In `$manage-flow`, `claim/submit`, `notification/push`, `aud`, `trigger`, `condition`, and "assign" are template fields that will be compiled into a BaseUcanFlow. In this skill, they mean live runtime command execution and actor coordination.
+
+### Template Handoff
+
+Route these authoring intents to `$manage-flow`:
+
+- "create a flow"
+- "add a claim step"
+- "add an email step after approved claim"
+- "configure the `aud` for this template step"
+- "apply the accepted config proposal to add a missing input field"
+- "build a POD creation flow"
+
+Keep these runtime intents in `$flow-agent`:
+
+- "why is the claim step blocked?"
+- "assign this overdue action"
+- "notify the assigned actor about this overdue node"
+- "watch for the UDID"
+- "replay the outbox"
+- "propose how to fix stale runtime config"
+
+Never call `read_flow` or `setup_flow` from this skill. `$flow-agent` emits `propose_config_change`; `$manage-flow` applies accepted proposals.
+
 ## Load Order
 
 Read references only as needed:
@@ -41,6 +77,7 @@ Read references only as needed:
 - `references/ucan-guardrails.md` before authorizing, assigning, notifying, mutating, claiming, or archiving.
 - `references/command-payloads.md` when constructing or validating `AgentCommand` payloads.
 - `references/observability-and-replay.md` when investigating stuck commands, duplicate-risk incidents, crashes, or replay.
+- `templates/skill-routing-smoke-tests.json` when checking whether an agent should select `$flow-agent` or `$manage-flow`.
 
 ## Runtime Rules
 
@@ -93,4 +130,3 @@ Validates Flow Agent command examples and checklist templates.
 ```bash
 python3 skills/flow-agent/scripts/validate_command_templates.py skills/flow-agent/templates/agent-command-examples.json
 ```
-
