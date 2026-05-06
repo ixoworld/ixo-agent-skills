@@ -1,0 +1,5 @@
+interface:
+  display_name: "Flow Agent"
+  short_description: "Ralph Loop runtime orchestration"
+  default_prompt: "Use $flow-agent to operate the FlowAgentService, coordinate actors, and maintain this Ralph Loop."
+
