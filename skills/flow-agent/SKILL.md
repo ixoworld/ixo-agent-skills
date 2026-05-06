@@ -6,8 +6,10 @@ description: >
   overdue actions, checking UCAN guardrails, reviewing leases, outbox, ledger, claims, UDID
   monitoring, archive/restart cycles, or producing proposal-only config changes. Do not use
   for BaseUcanFlow authoring, flow template inspection, action catalog selection, POD recipe
-  authoring, or direct template edits; route those to manage-flow. Use flow-agent for live
-  runtime state, not for `read_flow` or `setup_flow` template work.
+  authoring, aggregate UDID cohort analysis, fleet-level improvement synthesis, or direct
+  template edits; route authoring to manage-flow and cohort improvement analysis to
+  flow-improvement-agent. Use flow-agent for live runtime state, not for `read_flow` or
+  `setup_flow` template work.
 license: Apache-2.0
 compatibility: codex
 metadata:
@@ -42,6 +44,7 @@ Do not use this skill for BaseUcanFlow creation, editing, deleting, or rebuildin
 |---|---|
 | Authoring: create, inspect template, add/remove/reorder steps, configure `nb`, `aud`, `trigger`, `condition`, POD recipe | `$manage-flow` |
 | Runtime: node state, pending invocation, blocked/overdue, assignment, notify/escalate, UCAN proof, lease, outbox, ledger, execute action, validate external state, submit claim, watch UDID, archive/restart | `$flow-agent` |
+| Fleet learning: evaluate UDIDs/runtime logs across many flow instances and propose design/runtime improvements | `$flow-improvement-agent` |
 | Cross-boundary: stale config at runtime | `$flow-agent` proposes; `$manage-flow` applies only after approval |
 
 Same words can refer to different layers. In `$manage-flow`, `claim/submit`, `notification/push`, `aud`, `trigger`, `condition`, and "assign" are template fields that will be compiled into a BaseUcanFlow. In this skill, they mean live runtime command execution and actor coordination.
@@ -65,6 +68,13 @@ Keep these runtime intents in `$flow-agent`:
 - "watch for the UDID"
 - "replay the outbox"
 - "propose how to fix stale runtime config"
+
+Route these fleet-learning intents to `$flow-improvement-agent`:
+
+- "evaluate all UDIDs for this flow over the last week"
+- "compare blocked node patterns across data lanes"
+- "propose runtime engine improvements from validation mismatch patterns"
+- "identify recurring design defects across all flow instances"
 
 Never call `read_flow` or `setup_flow` from this skill. `$flow-agent` emits `propose_config_change`; `$manage-flow` applies accepted proposals.
 

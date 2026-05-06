@@ -1,0 +1,28 @@
+{
+  "proposalId": "proposal:flow-design:add-evidence-uri",
+  "proposalType": "flow-design",
+  "proposalOnly": true,
+  "affectedSurface": {
+    "flowId": "flow:example",
+    "templateArea": "claim submission inputs",
+    "affectedNodes": ["submit-claim"]
+  },
+  "evidenceSummary": "Six of thirty-nine UDID-backed instances stalled before claim submission because evidence URI input was absent.",
+  "supportingEvidence": {
+    "udids": ["udid:example:1", "udid:example:2"],
+    "runtimeObservations": ["blocked:missing_input:submit-claim"],
+    "cohortWindow": "2026-05-01/2026-05-06"
+  },
+  "proposedChange": {
+    "description": "Add a required evidence URI input to the claim submission step and clarify upstream condition text.",
+    "targetOwner": "$manage-flow",
+    "approvalPath": "human-or-governance-approval-before-template-edit"
+  },
+  "expectedBenefit": "Reduce claim submission stalls caused by missing evidence input.",
+  "risk": "May require migration guidance for active flow instances using the old template.",
+  "rollbackConsideration": "Revert the template change if post-patch missing-input rate does not improve.",
+  "approvalRequirement": "Human or governance approval is required before applying the template change.",
+  "handoffTarget": "governance-then-$manage-flow",
+  "regressionWatchMetric": "missing_input blocker rate on submit-claim over the next weekly cohort"
+}
+

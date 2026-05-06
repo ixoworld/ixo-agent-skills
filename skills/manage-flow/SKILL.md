@@ -40,6 +40,7 @@ Triggers include (but are not limited to): "create a flow", "build a flow", "des
 |---|---|
 | Authoring: create, inspect template, add/remove/reorder steps, configure `nb`, `aud`, `trigger`, `condition`, POD recipe | `$manage-flow` |
 | Runtime: node state, pending invocation, blocked/overdue, assignment, notify/escalate, UCAN proof, lease, outbox, ledger, execute action, validate external state, submit claim, watch UDID, archive/restart | `$flow-agent` |
+| Fleet learning: evaluate UDIDs/runtime logs across many flow instances and propose design/runtime improvements | `$flow-improvement-agent` |
 | Cross-boundary: stale config at runtime | `$flow-agent` proposes; `$manage-flow` applies only after approval |
 
 Same words can refer to different layers. In this skill, `claim/submit`, `notification/push`, `aud`, `trigger`, `condition`, and "assign" mean template fields that will be compiled into a BaseUcanFlow. In `$flow-agent`, they mean live runtime command execution and actor coordination.
@@ -47,6 +48,8 @@ Same words can refer to different layers. In this skill, `claim/submit`, `notifi
 ### Runtime Handoff
 
 Stop and route to `$flow-agent` when the user asks about live execution or Ralph Loop operation, including blocked nodes, overdue nodes, pending invocations, FlowAgentService, UCAN policy checks, missing or expired delegations, leases, agent outbox, audit ledger, replay, external mutation validation, claim submission monitoring, UDID watching, memory records, archiving, or restarting a completed cycle.
+
+Stop and route to `$flow-improvement-agent` when the user asks to evaluate UDIDs or runtime logs across many flow instances, compare outcomes across data lanes, identify recurring design/runtime defects, or propose improvements from aggregate evidence.
 
 Accepted `propose_config_change` outputs from `$flow-agent` may be implemented here only after human or governance approval. Diagnosis and proposal generation belong to `$flow-agent`; applying an accepted template change belongs to `$manage-flow`.
 

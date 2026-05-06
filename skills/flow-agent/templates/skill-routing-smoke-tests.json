@@ -30,6 +30,11 @@
       "prompt": "Propose how to fix stale config causing a runtime block",
       "expectedSkill": "flow-agent",
       "reason": "Runtime stale-config diagnosis emits propose_config_change without directly editing the template."
+    },
+    {
+      "prompt": "Evaluate all UDIDs for this flow over the last week",
+      "expectedSkill": "flow-improvement-agent",
+      "reason": "Aggregate UDID evaluation across many instances is fleet-level learning."
     }
   ],
   "negativeChecks": [
