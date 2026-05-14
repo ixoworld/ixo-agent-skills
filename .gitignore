@@ -16,5 +16,6 @@ Thumbs.db
 # Logs
 *.log
 
-# Node dependencies
+# Node build artifacts
 node_modules/
+dist/

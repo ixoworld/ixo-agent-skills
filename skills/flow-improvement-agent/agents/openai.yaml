@@ -1,0 +1,5 @@
+interface:
+  display_name: "Flow Improvement Agent"
+  short_description: "Evaluate UDIDs and propose flow improvements"
+  default_prompt: "Use $flow-improvement-agent to evaluate UDID outcomes across flow instances and propose governed flow/runtime improvements."
+

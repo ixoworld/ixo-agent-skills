@@ -1,0 +1,27 @@
+{
+  "proposalId": "proposal:runtime-engine:validator-mismatch-telemetry",
+  "proposalType": "runtime-engine",
+  "proposalOnly": true,
+  "affectedSurface": {
+    "runtimeComponent": "FlowAgentService validation and observability",
+    "affectedCommands": ["validate_external_state"],
+    "affectedNodes": ["submit-webhook"]
+  },
+  "evidenceSummary": "Repeated validation mismatches lack enough ledger detail to distinguish remote API delay from incorrect expected state.",
+  "supportingEvidence": {
+    "udids": ["udid:example:7", "udid:example:8"],
+    "runtimeObservations": ["agent.validation:mismatch:submit-webhook"],
+    "cohortWindow": "2026-05-01/2026-05-06"
+  },
+  "proposedChange": {
+    "description": "Add structured validation mismatch reason, read-back source, expected state hash, observed state hash, and retry eligibility to validation ledger events.",
+    "targetOwner": "runtime-engineering",
+    "approvalPath": "engineering-review-before-code-change"
+  },
+  "expectedBenefit": "Improve diagnosis of external validation failures and reduce unsafe retries.",
+  "risk": "Additional ledger detail may expose sensitive external-state metadata; redact or hash sensitive fields.",
+  "rollbackConsideration": "Disable extended validation telemetry if sensitive-field review fails.",
+  "approvalRequirement": "Engineering approval is required before runtime engine code changes.",
+  "handoffTarget": "runtime-engineering",
+  "regressionWatchMetric": "validation_mismatch incidents with actionable cause over the next weekly cohort"
+}

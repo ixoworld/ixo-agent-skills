@@ -1,0 +1,66 @@
+{
+  "name": "flow-skill-routing-smoke-tests",
+  "cases": [
+    {
+      "prompt": "Create a flow for vendor onboarding",
+      "expectedSkill": "manage-flow",
+      "reason": "Creating a BaseUcanFlow template is authoring work."
+    },
+    {
+      "prompt": "Add an email step after approved claim",
+      "expectedSkill": "manage-flow",
+      "reason": "Adding an action and configuring a trigger belongs to template authoring."
+    },
+    {
+      "prompt": "The approved-claim email listener is overdue",
+      "expectedSkill": "flow-agent",
+      "reason": "Overdue live runtime state belongs to Ralph Loop orchestration."
+    },
+    {
+      "prompt": "This claim node is blocked because a condition is unmet",
+      "expectedSkill": "flow-agent",
+      "reason": "Blocked live node diagnosis belongs to FlowAgentService runtime operation."
+    },
+    {
+      "prompt": "Apply the accepted proposal to add a missing input field",
+      "expectedSkill": "manage-flow",
+      "reason": "Applying an approved config proposal changes the BaseUcanFlow template."
+    },
+    {
+      "prompt": "Propose how to fix stale config causing a runtime block",
+      "expectedSkill": "flow-agent",
+      "reason": "Runtime stale-config diagnosis emits propose_config_change without directly editing the template."
+    },
+    {
+      "prompt": "Evaluate all UDIDs for this flow over the last week",
+      "expectedSkill": "flow-improvement-agent",
+      "reason": "Aggregate UDID evaluation across many instances is fleet-level learning."
+    }
+  ],
+  "negativeChecks": [
+    {
+      "skill": "flow-agent",
+      "mustNot": "call setup_flow"
+    },
+    {
+      "skill": "flow-agent",
+      "mustNot": "call read_flow"
+    },
+    {
+      "skill": "flow-agent",
+      "mustNot": "edit BaseUcanFlow templates directly"
+    },
+    {
+      "skill": "manage-flow",
+      "mustNot": "issue AgentCommand records"
+    },
+    {
+      "skill": "manage-flow",
+      "mustNot": "diagnose leases, outbox, ledger, or UDID runtime state"
+    },
+    {
+      "skill": "flow-agent",
+      "mustNot": "duplicate the manage-flow action catalog"
+    }
+  ]
+}

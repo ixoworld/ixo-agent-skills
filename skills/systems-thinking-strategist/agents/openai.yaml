@@ -1,0 +1,5 @@
+interface:
+  display_name: "Systems Thinking Strategist"
+  short_description: "Map systems and rank leverage points"
+  brand_color: "#3B82F6"
+  default_prompt: "Use $systems-thinking-strategist to map this complex challenge and identify high-leverage interventions."
