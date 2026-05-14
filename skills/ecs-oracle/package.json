@@ -1,0 +1,18 @@
+{
+  "name": "ecs-oracle-skill",
+  "version": "2.0.0",
+  "private": true,
+  "description": "ECS (Emerging Cooking Solutions / SupaMoto) business-data skill for IXO oracles. Runs inside the user's sandbox container, fetches ECS datasets over the server's gzip-compressed REST API, persists them as gzipped JSON artifacts on R2, and answers aggregate / filter queries via DuckDB.",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@duckdb/node-api": "^1.5.2-r.1"
+  },
+  "scripts": {
+    "smoke:fetch": "node scripts/fetch.js customers",
+    "smoke:query": "node scripts/query.js <artifactPath> 'SELECT count(*) FROM rows'"
+  },
+  "author": "ixo",
+  "license": "MIT"
+}
