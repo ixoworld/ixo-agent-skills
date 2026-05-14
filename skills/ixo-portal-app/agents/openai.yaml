@@ -1,0 +1,4 @@
+interface:
+  display_name: "IXO Portal App"
+  short_description: "Build and audit Portal iframe apps"
+  default_prompt: "Use $ixo-portal-app to build or review a static app for the IXO Portal domain iframe framework."

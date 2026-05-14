@@ -1,0 +1,21 @@
+{
+  "protocol": "ixo.portal.iframe.v1",
+  "appId": "{{APP_ID}}",
+  "name": "{{APP_NAME}}",
+  "iframe": {
+    "src": "{{IFRAME_URL}}",
+    "title": "{{APP_NAME}}"
+  },
+  "view": {
+    "defaultMode": "domains-panel",
+    "fullscreenReturnMode": "domains-panel"
+  },
+  "capabilities": [],
+  "features": {
+    "resize": true,
+    "navigate": true,
+    "transaction": false,
+    "assistantPrompt": true,
+    "actionBlock": false
+  }
+}

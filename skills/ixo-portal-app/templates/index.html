@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{{APP_NAME}}</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">IXO Portal App</p>
+          <h1>{{APP_NAME}}</h1>
+        </div>
+        <span class="status" id="portal-status">Waiting for Portal</span>
+      </header>
+
+      <section class="panel">
+        <h2>Domain context</h2>
+        <dl class="context-grid" id="domain-context">
+          <div>
+            <dt>Domain</dt>
+            <dd id="domain-name">Unavailable</dd>
+          </div>
+          <div>
+            <dt>Wallet</dt>
+            <dd id="wallet-address">Unavailable</dd>
+          </div>
+          <div>
+            <dt>Network</dt>
+            <dd id="chain-network">Unavailable</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="actions" aria-label="Portal actions">
+        <button type="button" id="fullscreen-button">Open fullscreen</button>
+        <button type="button" id="prompt-button">Ask assistant</button>
+        <button type="button" id="dirty-button">Mark unsaved</button>
+      </section>
+    </main>
+
+    <script src="./portal-bridge.js"></script>
+    <script>
+      const status = document.getElementById("portal-status");
+      const domainName = document.getElementById("domain-name");
+      const walletAddress = document.getElementById("wallet-address");
+      const chainNetwork = document.getElementById("chain-network");
+      const dirtyButton = document.getElementById("dirty-button");
+      let isDirty = false;
+
+      window.IxoPortalBridge.onInit((payload) => {
+        status.textContent = "Connected";
+        domainName.textContent = payload.domain.name || payload.domain.did;
+        walletAddress.textContent = payload.user.walletAddress || "Unavailable";
+        chainNetwork.textContent = payload.chain.network;
+        window.IxoPortalBridge.resize();
+      });
+
+      document.getElementById("fullscreen-button").addEventListener("click", () => {
+        window.IxoPortalBridge.navigate({ mode: "fullscreen" });
+      });
+
+      document.getElementById("prompt-button").addEventListener("click", async () => {
+        const ack = await window.IxoPortalBridge.requestAssistantPrompt("Summarize this domain app context.");
+        status.textContent = ack.status === "accepted" ? "Assistant opened" : ack.message || "Assistant request rejected";
+      });
+
+      dirtyButton.addEventListener("click", () => {
+        isDirty = !isDirty;
+        dirtyButton.textContent = isDirty ? "Mark saved" : "Mark unsaved";
+        window.IxoPortalBridge.setDirty(isDirty);
+      });
+    </script>
+  </body>
+</html>
