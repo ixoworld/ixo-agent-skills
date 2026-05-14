@@ -1,18 +1,21 @@
 ---
 name: manage-flow
 description: >
-  The single skill for ALL flow operations — create, read, inspect, update, modify, extend,
-  rebuild, or delete steps in a BaseUcanFlow. Always invoke this skill the moment the user
-  mentions anything flow-related: "flow", "create a flow", "build a flow", "design a flow",
-  "new flow", "make a flow", "show me the flow", "what's in the flow", "read the flow",
-  "update the flow", "edit the flow", "modify the flow", "add a step", "remove a step",
-  "change the flow", "rebuild the flow", or describes any multi-step workflow to automate.
-  Also handles POD (Programmable Organisational Domain) creation flows — triggers include
-  "create a pod", "set up a pod", "new pod", "pod setup", "programmable organisational
-  domain" — using the built-in POD recipe.
+  The single skill for BaseUcanFlow authoring operations — create, read, inspect, validate,
+  update, modify, extend, rebuild, or delete flow template steps through the editor's
+  `read_flow` and `setup_flow` tools. Use for "create a flow", "build a flow", "design a
+  flow", "new flow", "show me the flow template", "read the flow template", "update the
+  flow", "edit the flow", "add a step", "remove a step", "change the flow", "rebuild the
+  flow", accepted config proposals, or multi-step workflow template authoring. Do not use
+  for live runtime orchestration: blocked or overdue nodes, FlowAgentService, Ralph Loop
+  operation, UCAN policy checks, leases, outbox, ledger, pending invocations, UDID watching,
+  archive/restart, or runtime actor assignment; route those to flow-agent. Also handles POD
+  (Programmable Organisational Domain) creation templates — triggers include "create a pod",
+  "set up a pod", "new pod", "pod setup", "programmable organisational domain" — using the
+  built-in POD recipe.
   Supports 24 action types including bids, claims, payments, governance proposals, emails,
   notifications, POD setup steps, and more. Uses the `read_flow` and `setup_flow` browser
-  tools to read and write flows in the editor room.
+  tools to read and write BaseUcanFlow templates in the editor room.
 license: Apache-2.0
 compatibility: claude
 metadata:
@@ -21,13 +24,34 @@ metadata:
   category: flow-builder
 ---
 
-# Manage Flow (CRUD for BaseUcanFlow)
+# Manage Flow (CRUD for BaseUcanFlow Templates)
 
-**This is THE skill for anything flow-related.** The moment the user mentions a flow — creating one, reading one, changing one, adding a step, removing a step, asking what's in it — invoke this skill immediately. Do not try to handle flow operations any other way.
+Use this skill for BaseUcanFlow template authoring. It creates, reads, validates, updates, rebuilds, and deploys flow templates in the editor room. It does not operate live Ralph Loop runtime state.
 
-Triggers include (but are not limited to): "create a flow", "build a flow", "design a flow", "new flow", "make a flow", "flow for...", "show me the flow", "what's in the flow", "read the flow", "inspect the flow", "update the flow", "edit the flow", "modify the flow", "change the flow", "add a step", "remove a step", "rebuild the flow", "fix the flow", or any multi-step workflow description.
+Triggers include (but are not limited to): "create a flow", "build a flow", "design a flow", "new flow", "make a flow", "flow template for...", "show me the flow template", "what's in the flow template", "read the flow template", "inspect the flow template", "update the flow", "edit the flow", "modify the flow", "change the flow", "add a step", "remove a step", "rebuild the flow", "fix the template", "apply the accepted config proposal", or any multi-step workflow template description.
 
 **POD-specific triggers** route to the POD recipe (see **Flow Recipes** below): "create a pod", "set up a pod", "new pod", "pod setup", "make a pod", "build a pod", "pod for...", "programmable organisational domain", "programmable org domain", "new organisational domain", "spin up a pod".
+
+## Skill Boundary
+
+`$manage-flow` and `$flow-agent` are complementary and must not be merged.
+
+| Intent | Use |
+|---|---|
+| Authoring: create, inspect template, add/remove/reorder steps, configure `nb`, `aud`, `trigger`, `condition`, POD recipe | `$manage-flow` |
+| Runtime: node state, pending invocation, blocked/overdue, assignment, notify/escalate, UCAN proof, lease, outbox, ledger, execute action, validate external state, submit claim, watch UDID, archive/restart | `$flow-agent` |
+| Fleet learning: evaluate UDIDs/runtime logs across many flow instances and propose design/runtime improvements | `$flow-improvement-agent` |
+| Cross-boundary: stale config at runtime | `$flow-agent` proposes; `$manage-flow` applies only after approval |
+
+Same words can refer to different layers. In this skill, `claim/submit`, `notification/push`, `aud`, `trigger`, `condition`, and "assign" mean template fields that will be compiled into a BaseUcanFlow. In `$flow-agent`, they mean live runtime command execution and actor coordination.
+
+### Runtime Handoff
+
+Stop and route to `$flow-agent` when the user asks about live execution or Ralph Loop operation, including blocked nodes, overdue nodes, pending invocations, FlowAgentService, UCAN policy checks, missing or expired delegations, leases, agent outbox, audit ledger, replay, external mutation validation, claim submission monitoring, UDID watching, memory records, archiving, or restarting a completed cycle.
+
+Stop and route to `$flow-improvement-agent` when the user asks to evaluate UDIDs or runtime logs across many flow instances, compare outcomes across data lanes, identify recurring design/runtime defects, or propose improvements from aggregate evidence.
+
+Accepted `propose_config_change` outputs from `$flow-agent` may be implemented here only after human or governance approval. Diagnosis and proposal generation belong to `$flow-agent`; applying an accepted template change belongs to `$manage-flow`.
 
 ## What This Skill Does
 
@@ -38,7 +62,7 @@ This skill is full CRUD for `BaseUcanFlow` documents in the editor room:
 - **Update** — Modify steps, add new ones, remove old ones, change conditions/audiences/dependencies, then write the changes back.
 - **Rebuild** — Wipe and replace the flow entirely when the user wants to start over.
 
-All reads and writes go through two browser tools — `read_flow` and `setup_flow` — documented in the **Browser Tools** section below. **Always use these tools.** Never just print JSON and stop.
+All reads and writes go through two browser tools — `read_flow` and `setup_flow` — documented in the **Browser Tools** section below. These are template/editor tools, not runtime orchestration tools. **Always use these tools for template authoring.** Never just print JSON and stop.
 
 ## Choosing the Right Operation
 

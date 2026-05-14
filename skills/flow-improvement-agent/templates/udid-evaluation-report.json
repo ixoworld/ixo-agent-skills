@@ -1,0 +1,49 @@
+{
+  "reportId": "report:flow:example:2026-05-06",
+  "flowId": "flow:example",
+  "cohortWindow": {
+    "from": "2026-05-01T00:00:00Z",
+    "to": "2026-05-06T00:00:00Z"
+  },
+  "instanceCount": 42,
+  "udidCount": 39,
+  "dataLanes": ["lane:a", "lane:b"],
+  "evidenceSources": ["udid", "auditTrail", "agentOutbox", "agent.validation"],
+  "successPatterns": [
+    {
+      "pattern": "Instances with complete input evidence reached UDID within target window.",
+      "supportingCount": 31
+    }
+  ],
+  "failurePatterns": [
+    {
+      "pattern": "Missing evidence URI caused repeated claim submission stalls.",
+      "supportingCount": 6,
+      "affectedNodes": ["submit-claim"]
+    }
+  ],
+  "blockedOverduePatterns": [
+    {
+      "pattern": "Review node became overdue when assignee UCAN delegation expired.",
+      "supportingCount": 4,
+      "affectedNodes": ["review-claim"]
+    }
+  ],
+  "actorCapabilityPatterns": [
+    {
+      "pattern": "Assigned actor lacked flow/node/execute on one data lane.",
+      "supportingCount": 3,
+      "capability": "flow/node/execute"
+    }
+  ],
+  "recommendedProposals": [
+    {
+      "proposalId": "proposal:flow-design:add-evidence-uri",
+      "proposalType": "flow-design",
+      "proposalOnly": true,
+      "handoffTarget": "governance-then-$manage-flow"
+    }
+  ],
+  "uncertainty": "Three instances have runtime logs but no UDID yet; exclude them from success-rate conclusions until evaluation completes."
+}
+

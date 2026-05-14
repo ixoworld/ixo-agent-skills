@@ -1,0 +1,51 @@
+{
+  "name": "ralph-loop-maintenance-checklist",
+  "steps": [
+    {
+      "id": "snapshot-flow",
+      "label": "Snapshot flow and node states",
+      "checks": ["FlowAgentContext loaded", "Yjs state synchronized", "node snapshots classified"]
+    },
+    {
+      "id": "authorize-agent",
+      "label": "Check Flow Agent authority",
+      "checks": ["server signer DID scoped", "UCAN proofs current", "policy allows transition"]
+    },
+    {
+      "id": "process-pending",
+      "label": "Process pending nodes",
+      "checks": ["inputs valid", "conditions met or diagnosed", "execute or assign command selected"]
+    },
+    {
+      "id": "process-blocked",
+      "label": "Process blocked nodes",
+      "checks": ["blocker cause classified", "bounded unblock action selected", "notification or proposal emitted when needed"]
+    },
+    {
+      "id": "process-overdue",
+      "label": "Process overdue nodes",
+      "checks": ["dedupe key checked", "assigned actors notified", "escalation threshold applied"]
+    },
+    {
+      "id": "execute-with-lease",
+      "label": "Execute leased commands",
+      "checks": ["lease acquired", "lease epoch current", "zombie writes rejected"]
+    },
+    {
+      "id": "validate-effects",
+      "label": "Validate external effects",
+      "checks": ["confirmation received", "read-back validator passed", "ledger event recorded"]
+    },
+    {
+      "id": "claim-and-udid",
+      "label": "Submit claim and watch UDID",
+      "checks": ["claim submitted once", "UDID watcher active", "timeout notification configured"]
+    },
+    {
+      "id": "memory-and-archive",
+      "label": "Write memory and archive",
+      "checks": ["UDID result logged", "agent.memory recorded", "archive command confirmed", "repeat-cycle decision recorded"]
+    }
+  ]
+}
+
