@@ -1,0 +1,19 @@
+{
+  "name": "@ixo-agent-skills/error-resolver",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "resolve": "tsx scripts/handlers.ts",
+    "test": "tsx scripts/test-resolver.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
