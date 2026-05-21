@@ -1,22 +1,19 @@
 ---
 name: ixo-yellowcard
 description: >
-  YellowCard payment disbursement skill for paying task workers across Africa.
+  YellowCard payment disbursement skill for paying recipients across Africa.
   Supports payouts to bank accounts and mobile money (M-Pesa, MTN, Airtel, etc.)
   in 20+ African countries and 50+ currencies. Use when the user mentions
   "pay", "payout", "disburse", "send funds", "task payment", "mobile money",
-  "yellowcard", or needs to send money to recipients in Africa.
-version: 1.0.0
+  "yellowcard", or needs to send money to recipients in Africa. Batch-native:
+  every call accepts 1..N payouts in one request.
+version: 3.0.0
 author: ixo
 license: MIT
 compatibility: Node.js 18+
 allowed-tools: shell
 secrets:
-  oracle:
-    - YELLOWCARD_API_KEY: "YellowCard public API key"
-    - YELLOWCARD_SECRET_KEY: "YellowCard HMAC secret key for request signing"
-    - YELLOWCARD_BASE_URL: "YellowCard API base URL (sandbox or production)"
-    - YELLOWCARD_ADMIN_DIDS: "Comma-separated DIDs authorized to execute payouts and check balance"
+  oracle: []
   user: []
 context:
   - _SKILL_CONTEXT_USER_DID
@@ -28,588 +25,536 @@ context:
 
 ## Purpose
 
-Pay task workers via YellowCard's payment infrastructure. Users complete tasks on the ixo platform, and authorized administrators disburse payments to their bank accounts or mobile money wallets across Africa.
+Pay recipients via YellowCard's payment infrastructure through the **ixo-yellowcard-worker** (a Cloudflare Worker). All YellowCard API credentials and HMAC signing happen server-side in the worker — no payment secrets are exposed to the skill sandbox. Authentication is via UCAN.
 
-Recipients are identified by DID, which is stored as `customerUID` in YellowCard for reconciliation.
+**The worker is batch-only.** Every request body wraps an array; a single payout is a batch of length 1. This is intentional — the editor's payment block holds a worklist of rows, and the oracle's job is to translate "operator selected these N rows and clicked Propose / Execute / Check" into one batch call.
 
 ## Trigger Conditions
 
-Activate this skill when the user:
-- Wants to pay someone for completing a task
-- Mentions "payout", "disburse", "send funds", "yellowcard"
-- Asks about available payment channels in a country
-- Wants to check payment status or account balance
+Activate when the user:
+- Wants to pay one or more people via YellowCard
+- Asks about available payment channels or networks in a country
+- Wants to check payment status (one or many at a time)
 - Asks about exchange rates for African currencies
+- Is operating a payment block in an editor flow (companion prompt carries `Verb`, `Payment block ID`, `Row IDs`, `UCAN delegation CID`)
 
 ## Safety Rules
 
-1. **NEVER** log, echo, or print credentials or secret values
-2. **NEVER** make direct API calls — always use `node scripts/yellowcard.js <command>`
-3. **NEVER** skip the propose step — always propose before executing
-4. **NEVER** execute a payout without explicit user confirmation of the proposal
-5. **NEVER** modify a proposal after it has been generated — create a new one instead
-6. Only users whose DID is in `YELLOWCARD_ADMIN_DIDS` can execute payouts or check balance
+1. **NEVER** log, echo, or print the UCAN token contents.
+2. **NEVER** skip the propose step. Always propose before executing; the worker rejects executes whose `proposal_id` doesn't match a stored hash.
+3. **NEVER** execute a payout without explicit user (or operator) confirmation that the proposal is correct.
+4. **NEVER** modify a proposal after generation — create a new one instead. Even a single byte changed in `transfer_payload` invalidates the integrity hash.
+5. **One UCAN invocation authorizes one batch call.** Don't try to reuse a minted invocation across propose → execute → check — each protected request needs a fresh mint.
+
+## UCAN Auth — mint a fresh invocation per protected call
+
+The editor's payment block hands you a **delegation CID** (user → this oracle), not a pre-signed invocation. Worker invocations are single-use (D1-backed replay protection), so mint a fresh one before each protected call.
+
+### Workflow per protected command
+
+For every call to `balance`, `propose-payout`, `execute-payout`, or `check-payout`:
+
+1. **Read the companion prompt** for:
+   - `UCAN delegation CID: <cid>` — the user-signed delegation to you
+   - `Worker base URL: <url>` — pass on every command (see *Worker URL* below)
+2. **Mint a fresh UCAN invocation** with:
+   - `delegationCid: "<cid from prompt>"`
+   - `serviceUrl: "<workerBaseUrl from prompt>"`
+   - `can: "<route capability — see table below>"`
+   - `withResource: "ixo:yellowcard"`
+
+   How the host exposes the minting tool is host-specific. Always pass the delegation CID — never type out a base64 CAR yourself.
+3. **Ensure the directory exists** — once per session — by running `mkdir -p /workspace/data/ixo-yellowcard` in the sandbox.
+4. **Write the minted invocation** to `/workspace/data/ixo-yellowcard/ucan_token`. Use whatever mechanism your host provides for opaque-value file writes; if it supports blob-keyed writes (so the CAR never crosses the LLM), prefer that.
+5. **Run the protected command** — the script reads the file and sends it as `Authorization: Bearer …`.
+
+If the write reports the value is no longer available (e.g. expired between mint and write), simply re-mint and retry. Invocations are cheap.
+
+### Route → capability mapping
+
+| Command | HTTP route | `can` capability |
+|---|---|---|
+| `balance` | `GET /balance` | `yellowcard/balance` |
+| `propose-payout` | `POST /payouts/propose` (batch) | `yellowcard/payouts` |
+| `execute-payout` | `POST /payouts/execute` (batch) | `yellowcard/payouts` |
+| `check-payout` | `POST /payouts/status` (batch) | `yellowcard/payouts` |
+
+`withResource` is always `ixo:yellowcard`. Public commands (`discover`, `rates`) require no UCAN.
+
+### What NOT to do
+
+- Don't improvise a token from a delegation — only a freshly minted invocation is worker-acceptable.
+- Don't mint once and reuse across propose/execute — the second call gets a `REPLAY` rejection.
+- Don't substitute the raw delegation CAR for the invocation token.
+- Don't skip the prompt's delegation CID — never invent one from your own knowledge.
+
+## Worker URL — always forward
+
+Every command targets `DEFAULT_WORKER_BASE_URL` baked into the skill unless overridden by `--worker-url=<url>`. When the editor's payment block has `inputs.workerBaseUrl` set, **forward it on EVERY command**. The user's UCAN audience is bound to that worker's `did:web`; calls split across two workers get a 401.
 
 ## Commands
 
-All commands output JSON. Errors are returned as `{ "error": true, "message": "..." }`.
+All commands output JSON to stdout (and a copy to `/workspace/output/<command>.json` for downstream consumption). Errors are `{ "error": true, "message": "..." }`.
 
----
+**All payment commands are batch.** Pipe an `items` / `ids` / `countries` / `currencies` array on stdin. The skill also accepts CLI fallbacks (`--countries=NG,KE`, `--currencies=NGN,KES`, `--ids=id1,id2`, `--country=NG`, `--currency=NGN`, `--id=<single>`) for one-off CLI invocations.
 
-### 1. `discover` — Find available payment channels and networks
+The response envelope is uniform across every batch route:
 
-```bash
-node scripts/yellowcard.js discover --country <COUNTRY_CODE>
+```json
+{
+  "success": true,
+  "count": <N>,
+  "successful": <K>,
+  "failed": <N-K>,
+  "results": [
+    { "index": 0, "success": true,  /* per-item success shape */ },
+    { "index": 1, "success": false, "error": "...", "message": "...", "status": 502, /* ... */ }
+  ]
+}
 ```
 
-**Flags:**
+The `index` field on each result entry is the position in the request array — use it to map results back to the items you sent (or, equivalently, results come back in the same order as the input).
 
-| Flag | Required | Description |
-|------|----------|-------------|
-| `--country` | Yes | ISO 3166-1 alpha-2 country code (e.g. `NG`, `KE`, `GH`, `ZA`, `UG`) |
-
-**What it does:** Fetches available withdrawal channels and payment networks for a country. Filters to only active withdraw channels (deposit channels are excluded).
-
-**Output fields:**
-
-| Field | Description |
-|-------|-------------|
-| `channels` | Array of active withdraw channels. Each has `id` (use as `channelId`), `name`, `rampType`, `status`, `accountType` (`bank` or `momo`), `currency`, `country`, `minAmount`, `maxAmount` |
-| `networks` | Array of payment networks (specific banks or mobile providers). Each has `id` (use as `networkId`), `name`, `code`, `channelId`, `country`, `status` |
-
-**Use the returned values:**
-- `channelId` — from `channels[].id`
-- `networkId` — from `networks[].id`
-- `accountType` — from `channels[].accountType` (`bank` or `momo`)
-- `minAmount` / `maxAmount` — minimum and maximum local currency amounts for the channel
-
-**Supported countries include:** NG (Nigeria), KE (Kenya), GH (Ghana), ZA (South Africa), UG (Uganda), TZ (Tanzania), CM (Cameroon), CI (Cote d'Ivoire), SN (Senegal), RW (Rwanda), and more.
-
----
-
-### 2. `rates` — Get current exchange rates
+### 1. `discover` — Find payment channels and networks (batch)
 
 ```bash
-node scripts/yellowcard.js rates --currency <CURRENCY_CODE>
+# Stdin form (preferred when scripted)
+echo '{"countries":["NG","KE","GH"]}' | node scripts/yellowcard.js discover
+
+# CLI fallback (single or comma-separated)
+node scripts/yellowcard.js discover --countries=NG,KE
+node scripts/yellowcard.js discover --country NG
 ```
 
-**Flags:**
+**Public** — no UCAN required. Up to 20 countries per batch. Runs in parallel inside the worker.
 
-| Flag | Required | Description |
-|------|----------|-------------|
-| `--currency` | Yes | ISO 4217 currency code (e.g. `NGN`, `KES`, `GHS`, `ZAR`, `UGX`) |
-
-**Output fields:**
+Per-item success shape:
 
 | Field | Description |
-|-------|-------------|
-| `rates` | Array of rate objects with `buy`, `sell`, `code` (currency code), `channelId` |
+|---|---|
+| `country` | The country code that was looked up |
+| `channels` | Active withdraw channels (`id` → `channelId`, `name`, `accountType` `bank`/`momo`, `currency`, `minAmount`, `maxAmount`) |
+| `networks` | Banks / mobile providers (`id` → `networkId`, `name`, `code`, `channelId`) |
 
-Use to show the user how much the recipient will receive in local currency for a given USD amount.
+### 2. `rates` — Get current exchange rates (batch)
 
----
+```bash
+echo '{"currencies":["NGN","KES"]}' | node scripts/yellowcard.js rates
+node scripts/yellowcard.js rates --currencies=NGN,KES
+node scripts/yellowcard.js rates --currency NGN
+```
 
-### 3. `balance` — Check account balance (admin only)
+**Public** — no UCAN required. Up to 20 currencies per batch. Parallel.
+
+Per-item success shape: `{ currency, rates: [{ buy, sell, code, channelId }, ...] }`.
+
+### 3. `balance` — Org float balance
 
 ```bash
 node scripts/yellowcard.js balance
 ```
 
-**No flags.** Requires the caller's DID to be in `YELLOWCARD_ADMIN_DIDS`.
+**Requires UCAN** (`yellowcard/balance`). Not batched — there's only one org balance. Returns `{ invoker_did, accounts }`.
 
-**What it does:** Returns the primary USD fiat float balance via `GET /business/account`. This is the balance used to fund all payouts.
-
-**Important:** This is NOT the crypto vaults endpoint (`/custody/vaults`). Vaults are a separate YellowCard feature for on-chain digital asset custody. The balance command returns the fiat float balance you see in the YellowCard Treasury Portal dashboard.
-
-**Output fields:**
-
-| Field | Description |
-|-------|-------------|
-| `requester_did` | DID of the admin who requested the balance |
-| `accounts` | Account balance data from YellowCard |
-
----
-
-### 4. `propose-payout` — Validate and prepare a payout
+### 4. `propose-payout` — Validate and prepare payouts (batch)
 
 ```bash
-cat request.json | node scripts/yellowcard.js propose-payout
+echo '{"items":[ <item1>, <item2> ]}' | node scripts/yellowcard.js propose-payout
 ```
 
-**Reads JSON from stdin.** Requires admin DID. **No money moves at this step.**
+**Requires UCAN** (`yellowcard/payouts`). Up to 100 items per batch. Pure CPU on the worker side (validates + hashes each); no money moves. Items succeed or fail independently — one bad item doesn't abort the rest.
 
-Validates all fields, generates a SHA-256 proposal hash for integrity, generates a UUID `sequenceId` for idempotency, and returns a proposal summary for user review.
-
-#### Input JSON Schema
+Each item is the single-payout shape:
 
 ```json
 {
   "channelId": "<string>",
-  "currency": "<string>",
-  "amount": "<number — use this OR localAmount>",
-  "localAmount": "<number — use this OR amount>",
+  "currency": "<NGN / KES / GHS / … — destination LOCAL currency, never USD>",
+  "amount": "<number — USD amount; mutually exclusive with localAmount>",
+  "localAmount": "<number — local amount; mutually exclusive with amount>",
   "reason": "<string, optional>",
-  "customerType": "<string, optional>",
-  "recipientDid": "<string, optional>",
+  "customerType": "<string, optional, default retail>",
+  "recipientDid": "<did:ixo:..., optional — falls back to invoker DID>",
   "sender": {
-    "name": "<string>",
-    "country": "<string>",
-    "phone": "<string, optional>",
-    "email": "<string, optional>",
-    "address": "<string, optional>",
-    "dob": "<string, optional>",
-    "idType": "<string, optional>",
-    "idNumber": "<string, optional>"
+    "name":"<string>", "country":"<US/...>",
+    "phone":"<optional>", "email":"<optional>",
+    "address":"<optional>", "dob":"<MM/DD/YYYY optional>",
+    "idType":"<optional>", "idNumber":"<optional>"
   },
   "destination": {
-    "accountName": "<string>",
-    "accountNumber": "<string>",
-    "accountType": "<string>",
-    "networkId": "<string>",
-    "country": "<string>",
-    "accountBank": "<string, optional>"
+    "accountName":"<string>", "accountNumber":"<string>",
+    "accountType":"<bank|momo>", "networkId":"<from discover>",
+    "country":"<ISO 3166-1 alpha-2>", "accountBank":"<optional>"
   }
 }
 ```
 
-#### Input Fields Detail
+**`amount` vs `localAmount` vs `currency`** — pick exactly one of `amount` / `localAmount` per item:
+- `currency` is always the **destination local currency** (`NGN`, `KES`, ...), never `USD`.
+- `amount: 20` (no localAmount) = "send 20 USD worth"; YellowCard converts at the live rate.
+- `localAmount: 2000, currency: "NGN"` = "recipient receives exactly 2,000 NGN"; YellowCard computes the USD cost.
 
-**Top-level fields:**
+Mobile-money account numbers use international phone format: `+{countryCode}{number}`.
 
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| `channelId` | Yes | string | Payment channel ID from `discover` |
-| `currency` | Yes | string | ISO 4217 currency code (e.g. `NGN`, `KES`) |
-| `amount` | One of | number | Amount in USD. YellowCard converts to local currency at current rate. Use for fixed USD budget. |
-| `localAmount` | One of | number | Amount in local currency. YellowCard calculates the USD cost. Use for fixed local amount (recommended for task payments). |
-| `reason` | No | string | Payment reason. Default: `"other"` |
-| `customerType` | No | string | Customer type. Default: `"retail"` |
-| `recipientDid` | No | string | Recipient's DID in `did:ixo:...` format (e.g. `did:ixo:entity:abc123`). Stored as `customerUID` in YellowCard for reconciliation. Falls back to the caller's DID if omitted. **MUST be a DID, NOT a Matrix user ID** (e.g. NOT `@did-ixo-...:server`). |
-
-**`amount` vs `localAmount` — provide exactly one, not both:**
-- `"localAmount": 2000` with `"currency": "NGN"` — recipient gets exactly 2,000 NGN (recommended for task payments where the worker expects a fixed local amount)
-- `"amount": 5` — spend exactly $5 USD, YellowCard converts at current rate
-
-**`sender` fields:**
-
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| `name` | Yes | string | Sender organization or individual name |
-| `country` | Yes | string | Sender country code (e.g. `US`) |
-| `phone` | No | string | Phone number (e.g. `+10000000000`) |
-| `email` | No | string | Email address |
-| `address` | No* | string | Street address |
-| `dob` | No* | string | Date of birth (`MM/DD/YYYY`) |
-| `idType` | No* | string | ID document type (e.g. `passport`, `national_id`) |
-| `idNumber` | No* | string | ID document number |
-
-\* Required for full KYC when cumulative payments to a `customerUID` exceed $200 USD. For reduced KYC (under $200), only `name` and `country` are required.
-
-**`destination` fields:**
-
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| `accountName` | Yes | string | Recipient's name as it appears on the account |
-| `accountNumber` | Yes | string | Bank account number or mobile money phone number |
-| `accountType` | Yes | string | `"bank"` for bank transfer, `"momo"` for mobile money |
-| `networkId` | Yes | string | Network ID from `discover` (identifies specific bank or mobile provider) |
-| `country` | Yes | string | Recipient's country code (e.g. `NG`) |
-| `accountBank` | No | string | Bank name (optional, for bank transfers) |
-
-**Mobile money account numbers** use international phone format: `+{countryCode}{number}` (e.g. `+2341111111111` for Nigeria).
-
-#### Example Input
-
-```json
-{
-  "sender": {
-    "name": "IXO Foundation",
-    "country": "US",
-    "phone": "+10000000000",
-    "email": "payments@ixo.world",
-    "address": "1 Main St",
-    "dob": "01/01/2000",
-    "idType": "passport",
-    "idNumber": "X0000000"
-  },
-  "destination": {
-    "accountName": "John Doe",
-    "accountNumber": "1111111111",
-    "accountType": "bank",
-    "networkId": "3d4d08c1-4811-4fee-9349-a302328e55c1",
-    "country": "NG"
-  },
-  "channelId": "fe8f4989-3bf6-41ca-9621-ffe2bc127569",
-  "localAmount": 2000,
-  "currency": "NGN",
-  "reason": "other",
-  "recipientDid": "did:ixo:entity:recipient123"
-}
-```
-
-#### Output Fields
+Per-item success shape (per the worker's `ProposalResponseSchema`):
 
 | Field | Description |
-|-------|-------------|
-| `proposal_id` | SHA-256 hash of the transfer payload (used for integrity verification) |
-| `requester_did` | DID of the admin who created the proposal |
-| `sequenceId` | UUID for idempotency (YellowCard deduplicates by this) |
-| `transfer_payload` | Full YellowCard API request body (includes `forceAccept: true`) |
-| `summary` | Human-readable summary with: `recipient_name`, `recipient_account`, `recipient_country`, `account_type`, `amount_type`, `amount`, `currency`, `reason`, `recipient_did` |
-| `created_at` | Timestamp of proposal creation |
+|---|---|
+| `proposal_id` | SHA-256 hash of the transfer payload (integrity verification) |
+| `requester_did` | DID of the invoker who created the proposal |
+| `sequenceId` | UUID for idempotency |
+| `transfer_payload` | Full YC API request body (includes `forceAccept: true`) — **passed verbatim to execute** |
+| `summary` | Human-readable display block |
+| `created_at` | ISO timestamp |
 
-#### Generated `transfer_payload` Structure
+Per-item failure shape: `{ index, success: false, error, message, status }`.
 
-The `propose-payout` command builds the following YellowCard API payload from the input:
-
-```json
-{
-  "channelId": "...",
-  "sequenceId": "<auto-generated UUID>",
-  "localAmount": 2000,
-  "currency": "NGN",
-  "country": "NG",
-  "reason": "other",
-  "customerType": "retail",
-  "customerUID": "did:ixo:entity:recipient123",
-  "forceAccept": true,
-  "sender": {
-    "name": "IXO Foundation",
-    "country": "US",
-    "phone": "+10000000000",
-    "email": "payments@ixo.world",
-    "address": "1 Main St",
-    "dob": "01/01/2000",
-    "idType": "passport",
-    "idNumber": "X0000000"
-  },
-  "destination": {
-    "accountName": "John Doe",
-    "accountNumber": "1111111111",
-    "accountType": "bank",
-    "networkId": "3d4d08c1-4811-4fee-9349-a302328e55c1",
-    "country": "NG"
-  }
-}
-```
-
----
-
-### 5. `execute-payout` — Submit the confirmed payout (admin only)
+### 5. `execute-payout` — Submit confirmed payouts (batch)
 
 ```bash
-cat proposal.json | node scripts/yellowcard.js execute-payout
+echo '{"items":[ <proposal-result1>, <proposal-result2> ]}' | node scripts/yellowcard.js execute-payout
 ```
 
-**Reads the full proposal JSON from stdin** (the complete output of `propose-payout`).
+Each item is the trio `{ proposal_id, requester_did, transfer_payload }` from a successful propose result. The script accepts:
+- `{ "items": [...] }` (preferred wrapped form)
+- A bare array `[...]` (gets wrapped automatically)
+- A single object `{...}` (wrapped as a 1-item batch)
+- Full propose-response items (with `summary`, `sequenceId`, etc.) — the script strips to the trio.
 
-**Verification steps before submission:**
-1. **Hash integrity** — Recomputes SHA-256 of `transfer_payload` and compares to `proposal_id`. Fails if payload was tampered with.
-2. **DID match** — The current caller's DID must match `requester_did` in the proposal. Only the original proposer can execute.
-3. **Admin check** — Caller must be in `YELLOWCARD_ADMIN_DIDS`.
+**Requires UCAN** (`yellowcard/payouts`). Up to 100 items per batch. Worker processes **sequentially** (YellowCard rate-limits `/business/payments`). Items succeed or fail independently — earlier items may have moved money even if later ones fail.
 
-Submits to YellowCard's `POST /business/payments` with `forceAccept: true` (auto-accepts the payment request, bypassing the separate accept step since the user already confirmed at the propose step).
+Worker pre-flight per item:
+1. **Hash integrity** — recomputes SHA-256(`transfer_payload`) and rejects if it doesn't match `proposal_id` (rejection: per-item failure, `status: 400`).
+2. **DID match** — only the original proposer can execute (rejection: per-item failure, `status: 403`).
+3. **YellowCard call** — `POST /business/payments`. On 4xx/5xx upstream, returns per-item failure with `status: 502` and `details`.
 
-#### Output Fields
+Per-item success shape: `{ proposal_id, payment_id, sequenceId, status, requester_did, recipient_did, raw, executed_at }`.
 
-| Field | Description |
-|-------|-------------|
-| `proposal_id` | The proposal hash that was executed |
-| `payment_id` | YellowCard payment ID (use with `check-payout`) |
-| `sequenceId` | The idempotency UUID |
-| `status` | Initial payment status (typically `CREATED` or `PROCESS`) |
-| `requester_did` | Admin DID who executed |
-| `recipient_did` | Recipient's DID (`customerUID`) |
-| `raw` | Full raw response from YellowCard |
-| `executed_at` | ISO timestamp of execution |
-
----
-
-### 6. `check-payout` — Check payment status
+### 6. `check-payout` — Check payment statuses (batch)
 
 ```bash
-node scripts/yellowcard.js check-payout --id <PAYMENT_ID>
+echo '{"ids":["<payment_id1>","<payment_id2>"]}' | node scripts/yellowcard.js check-payout
+node scripts/yellowcard.js check-payout --ids=id1,id2
+node scripts/yellowcard.js check-payout --id <single-id>
 ```
 
-**Flags:**
+**Requires UCAN** (`yellowcard/payouts`). Up to 100 ids per batch. Runs in parallel (read-only).
 
-| Flag | Required | Description |
-|------|----------|-------------|
-| `--id` | Yes | Payment ID returned by `execute-payout` |
+Per-item success shape: `{ payment_id, status, amount, currency, localAmount, rate, recipient_did, raw }`.
 
-#### Output Fields
+Map each YellowCard `status` value to the editor's row-level state:
 
-| Field | Description |
-|-------|-------------|
-| `payment_id` | The payment ID queried |
-| `status` | Current status (see Payment Status Flow below) |
-| `amount` | USD amount |
-| `currency` | Local currency code |
-| `localAmount` | Amount in local currency |
-| `rate` | Exchange rate applied |
-| `recipient_did` | `customerUID` (recipient DID) |
-| `raw` | Full raw payment object from YellowCard |
-
----
-
-## Workflow
-
-1. **Discover** channels for the recipient's country
-2. **Get rates** to show the user the conversion
-3. **Check balance** to verify sufficient funds (admin only)
-4. **Propose** the payout — present the summary to the user
-5. **Wait for explicit user confirmation**
-6. **Execute** the confirmed payout
-7. **Check** status if needed
-
----
-
-## Editor Flow Execution (REQUIRED when running inside a flow document with a Payment action block)
-
-When this skill is triggered from an editor flow (e.g. via a `payment` action block companion prompt), follow these steps EXACTLY. Do NOT deviate.
-
-### How the Payment action block works
-
-The Payment action block is a **generic payment container**. It stores `paymentConfig` JSON in its `inputs` prop, and has dedicated top-level block props for payment state that the oracle updates via `edit_block` (through `call_editor_agent`).
-
-**Block props updated by the oracle:**
-
-| Block Prop | Type | Description |
-|------------|------|-------------|
-| `paymentStatus` | string | Current payment phase: `proposed`, `submitted`, `pending`, `processing`, `completed`, `failed` |
-| `transactionId` | string | Payment provider's transaction ID (from `execute-payout` → `payment_id`) |
-| `paymentProposal` | JSON string | Full proposal object from `propose-payout` output (for integrity and re-execution) |
-| `paymentSummary` | JSON string | Human-readable key-value summary for display in the panel (from `propose-payout` → `summary`) |
-| `paymentError` | string | Error message if any step fails. Clear it on retry. |
-
-**IMPORTANT:**
-- Use `call_editor_agent` to update these block props via `edit_block`. Do NOT use `runtimeUpdates` on action blocks in flows — it will be rejected.
-- **After every block update, read the block back** (via `call_editor_agent` → `read_block_by_id`) to verify the props were written correctly. If a field is missing or wrong, retry the update.
-
-### Flow structure (1 block minimum)
-
-| Block | Type | Purpose |
-|-------|------|---------|
-| Payment Block | Action (`payment`) | Collects payment config, displays proposal, and triggers execution |
-
-The block's `inputs` prop contains `paymentConfig` (JSON string) with whatever the user or upstream blocks provided (e.g. recipient info, amount, currency). The skill must read this config, enrich it with discovered channels/networks/rates, and build a full payout request.
-
-### Step 0: Read flow context and blocks
-
-1. Call `read_flow_context` to get flow-level metadata.
-2. Call `list_blocks` to identify the Payment action block and its UUID.
-3. Read the Payment block's `inputs` prop — parse the `paymentConfig` JSON to get the user's payment parameters.
-
-### Step 1: Discover channels and rates (Calculate Payout)
-
-Using the recipient's country from the payment config:
-
-```bash
-node scripts/yellowcard.js discover --country <COUNTRY_CODE>
-```
-
-Then get rates for the currency:
-
-```bash
-node scripts/yellowcard.js rates --currency <CURRENCY_CODE>
-```
-
-Use the discover results to select the appropriate `channelId` and `networkId`. Use the rates to calculate conversion amounts.
-
-**Enrich the block's inputs** by merging the discovered values back into the payment config via `edit_block`:
-
-```json
-{
-  "blockId": "<payment-block-uuid>",
-  "updates": {
-    "inputs": {
-      "paymentConfig": {
-        "channelId": "<discovered channel ID>",
-        "networkId": "<discovered network ID>",
-        "rate": "<current exchange rate>"
-      }
-    }
-  }
-}
-```
-
-The `edit_block` tool auto-merges objects into existing JSON string props — the user's original config fields are preserved.
-
-### Step 2: Propose payout
-
-Build the full payout request JSON from the enriched payment config and pipe it to propose-payout:
-
-```bash
-echo '<full payout request JSON>' | node scripts/yellowcard.js propose-payout
-```
-
-The script writes its output to `/workspace/output/proposal.json` automatically.
-
-On success, update the Payment block via `call_editor_agent` with `edit_block`. Set the full proposal JSON, the summary, and the status **in a single `edit_block` call**:
-
-```json
-{
-  "blockId": "<payment-block-uuid>",
-  "updates": {
-    "paymentStatus": "proposed",
-    "paymentError": "",
-    "paymentProposal": "<full JSON string of the propose-payout output>",
-    "paymentSummary": "<JSON string of the summary object>"
-  }
-}
-```
-
-**IMPORTANT:** Set all four fields in ONE `edit_block` call. The `paymentProposal` must contain the **complete** propose-payout output including `requester_did`, `proposal_id`, and `transfer_payload` — do not omit any fields.
-
-On error:
-
-```json
-{
-  "blockId": "<payment-block-uuid>",
-  "updates": {
-    "paymentStatus": "failed",
-    "paymentError": "<error message>"
-  }
-}
-```
-
-Tell the user the proposal is ready for review in the Payment block panel.
-
-### Step 3: Wait for user confirmation
-
-**Do NOT proceed until the user explicitly confirms the payout.** The user will review the proposal summary in the Payment block's side panel and click "Execute Payout", which sends a new companion prompt.
-
-### Step 4: Execute the confirmed payout
-
-When the user confirms (you receive an execute prompt), read the full proposal from the block's `paymentProposal` prop. This contains the complete output of `propose-payout` including `requester_did`, `proposal_id`, and `transfer_payload`. **Do NOT reconstruct or modify the proposal — pass it verbatim.**
-
-Read the `paymentProposal` prop from the block (via `call_editor_agent` → `read_block_by_id`), write it to a file with `sandbox_write_file`, and pipe it:
-
-```bash
-cat /workspace/proposal.json | node scripts/yellowcard.js execute-payout
-```
-
-On success, update the Payment block via `call_editor_agent` with `edit_block`:
-
-```json
-{
-  "blockId": "<payment-block-uuid>",
-  "updates": {
-    "paymentStatus": "submitted",
-    "paymentError": "",
-    "transactionId": "<payment_id from the execute-payout output>"
-  }
-}
-```
-
-On error:
-
-```json
-{
-  "blockId": "<payment-block-uuid>",
-  "updates": {
-    "paymentStatus": "failed",
-    "paymentError": "<error message>"
-  }
-}
-```
-
-### Step 5: Poll for completion
-
-After successful execution, poll the payment status:
-
-```bash
-node scripts/yellowcard.js check-payout --id <PAYMENT_ID>
-```
-
-**Polling rules:**
-- Poll every 10 seconds for the first minute, then every 20 seconds
-- Stop after 3 minutes maximum
-- Update `paymentStatus` on the block as the status progresses:
-
-| YellowCard Status | Set `paymentStatus` to |
-|-------------------|----------------------|
+| YellowCard `status` | Row state in editor |
+|---|---|
 | `CREATED`, `PROCESS` | `submitted` |
 | `PROCESSING`, `PENDING` | `processing` |
 | `COMPLETE` | `completed` |
 | `FAILED` | `failed` |
 
-**On terminal status**, update the block via `call_editor_agent` with `edit_block`:
+## Editor flow execution (REQUIRED when running inside a flow with a Payment block)
 
-```json
+The companion prompt from the payment block looks like this:
+
+```
+Make payout proposals for the rows listed below.   ← (verb-specific opener; "Execute the previously-proposed payouts..." or "Check status for the rows listed below.")
+Read the flow context and the payment block to find the worker base URL, sender info, defaults, and the rows. Follow the skill's SKILL.md for the workflow.
+Payment block ID: <uuid>
+Verb: propose | execute | check
+Row IDs (in this batch): <row1>, <row2>, <row3>
+Skill name: ixo-yellowcard
+Skill CID: <cid>
+UCAN delegation CID: <cid>
+```
+
+**Quick decision tree** — run BEFORE deliberating:
+
+1. **Is there a `UCAN delegation CID: <cid>` line?** No → reply "This payment block has no UCAN delegation yet. Please click Create on the payment block." STOP. Yes → continue.
+2. **Is there a `Payment block ID: <uuid>` line?** No → reply "I didn't get a payment block ID — re-trigger from the payment block UI." STOP.
+3. **Is there a `Verb: <verb>` line with one of `propose | execute | check`?** No → reply "I didn't get an action verb — re-trigger from the payment block UI." STOP.
+4. **Read the payment block.** Get `block.props.inputs` (worker URL, sender, defaults) AND `block.props.payments` (the rows array). Filter to the row IDs from the prompt. If any row IDs from the prompt aren't in the block, surface that mismatch to the user.
+5. **Read `block.props.inputs.workerBaseUrl`.** Empty → reply that the operator needs to set the worker URL in template config. STOP.
+6. **Proceed to the verb-specific section below.**
+
+### Reading the rows
+
+The payment block's `block.props.payments` is an array of `PaymentRow`:
+
+```jsonc
 {
-  "blockId": "<payment-block-uuid>",
-  "updates": {
-    "paymentStatus": "completed"
+  "id": "pay_<hex>",
+  "source": "claim" | "manual",
+  "claimId": "<claim id when source=claim>",
+  "evaluateBlockId": "<originating evaluate block id when source=claim>",
+  "createdAt": <ms>,
+  "fields": {
+    "accountName": "...",  "accountNumber": "...",
+    "accountType": "bank" | "momo",
+    "networkId": "...",    "country": "NG",
+    "bvn": "...",          "channelId": "...",
+    "amount": "20",        "currency": "NGN",
+    "reason": "other",     "recipientDid": "did:ixo:..."
+  },
+  "status": "filled" | "proposed" | "submitted" | "processing" | "completed" | "failed",
+  "proposalId": "...",        // set after propose
+  "transferPayload": { ... }, // set after propose
+  "sequenceId": "...",        // set after propose
+  "summary": { ... },         // set after propose
+  "paymentId": "...",         // set after execute
+  "workerStatus": "...",      // set after check
+  "lastSyncedAt": <ms>,
+  "error": "..."              // set on failure
+}
+```
+
+The block's `block.props.inputs` has the recipient-agnostic settings shared across all rows:
+
+```jsonc
+{
+  "workerBaseUrl": "https://...",
+  "sender": { /* PaymentSender fields */ },
+  "defaultReason": "other",
+  "customerType": "retail",
+  "fieldTemplate": { /* refs; already resolved into row.fields by the bridge */ },
+  "requiredFields": ["accountName","accountNumber","accountType","country","amount","currency"]  // networkId and channelId are NOT here by default — the oracle resolves them in the batch discovery step (see Verb: propose, step 4)
+}
+```
+
+### Building a propose-payout item from a row
+
+For each row in the batch, assemble the single-item payload by combining `block.props.inputs` (shared) + `row.fields` (per-row):
+
+```js
+{
+  channelId: row.fields.channelId,
+  currency: row.fields.currency,                  // destination LOCAL currency (NGN/KES/...), never USD
+  // Decide between YellowCard's `amount` (USD) and `localAmount` (local)
+  // from the row's own data — there is NO block-level toggle.
+  //
+  //   row.fields.outcomeCurrency = the currency the amount is denominated in
+  //   row.fields.currency        = destination local currency (where money lands)
+  //
+  // Decision table (case-insensitive comparison):
+  //   • outcomeCurrency empty OR "USD"          → send as `amount` (USD).
+  //                                                YC converts to currency.
+  //   • outcomeCurrency === currency            → send as `localAmount`.
+  //                                                No FX, recipient gets exactly
+  //                                                that amount.
+  //   • otherwise (different non-USD pair)      → FAIL THIS ITEM. YC cannot
+  //                                                route cross-local FX in one
+  //                                                call. Mark the row failed
+  //                                                with an explanatory error;
+  //                                                do NOT include in the batch.
+  //                                                Operator must edit
+  //                                                outcomeCurrency or currency
+  //                                                to align them.
+  ...(() => {
+    const outcome = (row.fields.outcomeCurrency || '').trim().toUpperCase();
+    const dest = (row.fields.currency || '').trim().toUpperCase();
+    if (!outcome || outcome === 'USD') {
+      return { amount: Number(row.fields.amount) };
+    }
+    if (outcome === dest) {
+      return { localAmount: Number(row.fields.amount) };
+    }
+    // Caller is expected to have filtered this row out before reaching here.
+    throw new Error(
+      `Incompatible currencies: outcome ${outcome} → destination ${dest}. ` +
+      `Set outcomeCurrency to USD (YC converts) or to the destination ` +
+      `(no FX) before proposing.`
+    );
+  })(),
+  reason: row.fields.reason || inputs.defaultReason || "other",
+  customerType: inputs.customerType || "retail",
+  recipientDid: row.fields.recipientDid || undefined,
+  sender: inputs.sender,
+  destination: {
+    accountName: row.fields.accountName,
+    accountNumber: row.fields.accountNumber,
+    accountType: row.fields.accountType,        // "bank" or "momo"
+    networkId: row.fields.networkId,
+    country: row.fields.country,
+    // accountBank optional — not commonly set per row
   }
 }
 ```
 
-Or on failure:
+### Verb-specific workflow
 
-```json
-{
-  "blockId": "<payment-block-uuid>",
-  "updates": {
-    "paymentStatus": "failed",
-    "paymentError": "<failure details from raw response>"
-  }
-}
+**Across all verbs:** maintain a parallel `rowIds: string[]` in the same order as the items you build. The worker returns `results[i].index === i`, so `results[i]` maps to `rowIds[i]`.
+
+#### Verb: `propose`
+
+1. Read the rows; verify each is in status `filled` (skip + report any that aren't).
+2. Per row, validate `inputs.requiredFields`. If any row is missing required fields, fail that row inline (don't include it in the batch) and record `error: "missing required fields: ..."` + `status: "failed"` for that row.
+3. Per row, run the currency-compatibility check (see *"Building a propose-payout item from a row"* above). If `outcomeCurrency` is non-USD AND differs from `currency`, fail that row inline with `error: "incompatible currencies: outcome <X> → destination <Y>. Set outcomeCurrency to USD or align it with the destination, then re-propose."` + `status: "failed"`. Don't include it in the batch.
+4. **Batch-deduplicate discovery (channelId + networkId).** This is the expensive lookup — collapse to one `discover` call across all unique countries in the batch, then look up each row from the cached results.
+
+   1. **Collect missing.** Build `needsDiscovery = rows that have at least one of channelId / networkId empty`. If none → skip this whole step.
+   2. **Unique countries.** Compute `uniqueCountries = [...new Set(needsDiscovery.map(r => r.country.toUpperCase()))]`.
+   3. **One batch call.** Run discovery for all of them at once:
+      ```bash
+      echo '{"countries":<uniqueCountries>}' | node scripts/yellowcard.js discover --worker-url=<workerBaseUrl>
+      ```
+      The response shape is `{ success, count, successful, failed, results: [{ country, channels, networks }, ...] }`. Index it as `byCountry[country] = { channels, networks }` for O(1) lookups in the next step.
+   4. **Per-row lookup + fill** (purely local, no more network calls):
+      - Find `channel = byCountry[row.country].channels.find(c => c.accountType === row.accountType && (!row.currency || c.currency.toUpperCase() === row.currency.toUpperCase()))`.
+        - If multiple match (rare), pick the first.
+        - If none match (e.g. accountType `bank` not supported in that country) → fail this row inline with `error: "no <accountType> channel for country <country> currency <currency>"` + `status: "failed"`. Don't include in batch.
+      - Find `network = byCountry[row.country].networks.find(n => n.channelId === channel.id)`.
+        - Multiple networks per channel is normal (one per bank/provider). Pick the first by default unless the row already has `networkId` set (operator override) — operator-set values ALWAYS win.
+      - Stamp `row.channelId = channel.id` and `row.networkId = network.id` if either was empty.
+   5. **Persist the resolved IDs back to the block** via a single `edit_block` call patching `block.props.payments` for the rows that gained a channelId/networkId. After this step the UI shows the discovered values; subsequent verbs (execute, check) don't need to re-discover. Do NOT bump `status` here — rows stay `filled` until the propose response lands.
+5. Build `items[]` from the valid rows (one item per row, per the shape above). Use the now-resolved `row.channelId` / `row.networkId`.
+6. Mint a fresh UCAN invocation and write it to `/workspace/data/ixo-yellowcard/ucan_token`.
+7. Run:
+   ```bash
+   echo '{"items":[ ... ]}' | node scripts/yellowcard.js propose-payout --worker-url=<workerBaseUrl>
+   ```
+8. For each `results[i]`:
+   - Success → patch `block.props.payments` for `rowIds[i]`:
+     ```jsonc
+     {
+       "status": "proposed",
+       "proposalId": "<results[i].proposal_id>",
+       "transferPayload": <results[i].transfer_payload>,
+       "sequenceId": "<results[i].sequenceId>",
+       "summary": <results[i].summary>,
+       "error": ""
+     }
+     ```
+   - Failure → patch:
+     ```jsonc
+     { "status": "failed", "error": "<results[i].message>" }
+     ```
+9. Reply to the user with a one-line summary: "Proposed N of M rows. M-N failed: <reasons>".
+
+#### Verb: `execute`
+
+1. Read the rows; verify each is in status `proposed` AND has `proposalId` + `transferPayload`.
+2. Build `items[]` of `{ proposal_id, requester_did, transfer_payload }` per row.
+   - `requester_did` MUST match the row's `proposalId` originator (the worker enforces this). Use the same DID that proposed.
+3. Mint a fresh invocation, write to token file.
+4. Run:
+   ```bash
+   echo '{"items":[ ... ]}' | node scripts/yellowcard.js execute-payout --worker-url=<workerBaseUrl>
+   ```
+5. For each `results[i]`:
+   - Success → patch `block.props.payments` for `rowIds[i]`:
+     ```jsonc
+     {
+       "status": "submitted",                                // literal string
+       "paymentId": "<results[i].payment_id>",
+       "workerStatus": "<results[i].status>",                // CREATED / PROCESS / …
+       "lastSyncedAt": <Date.now()>,
+       "error": ""
+     }
+     ```
+   - Failure → patch:
+     ```jsonc
+     { "status": "failed", "error": "<results[i].message>" }
+     ```
+6. Reply with a summary, then proceed to **Verb: `check`** for the rows that just transitioned to `submitted` (poll until terminal).
+
+#### Verb: `check`
+
+1. Read the rows; collect `paymentId` from each row whose status is `submitted` or `processing`. Skip rows with no `paymentId`.
+2. Build `{ "ids": [...] }`.
+3. Mint a fresh invocation, write to token file.
+4. Run:
+   ```bash
+   echo '{"ids":[ ... ]}' | node scripts/yellowcard.js check-payout --worker-url=<workerBaseUrl>
+   ```
+5. For each `results[i]`:
+   - Success → translate `results[i].status` (YC) → row state via the mapping table above. Patch the row:
+     ```jsonc
+     {
+       "status": "<mapped row state>",
+       "workerStatus": "<results[i].status>",
+       "lastSyncedAt": <Date.now()>,
+       "error": "<results[i].raw.failureReason || ''>"   // populate on FAILED
+     }
+     ```
+   - Failure (the lookup itself failed) → leave the row alone, log the issue. Don't flip an in-flight row to `failed` just because the status check couldn't reach the worker.
+
+**Polling note:** when triggered after `execute`, poll automatically every 10s for the first minute, then every 20s, capping at 3 minutes total. Mint a fresh invocation per poll (each `check-payout` call consumes its invocation). When all rows are terminal (or the cap is hit), reply with a summary.
+
+### Block update mechanics
+
+How block props get updated is host-specific. The conceptual operation is: "patch `block.props.payments[i]` for the row whose `id === rowIds[i]`, merging in the result fields above without overwriting other fields on the row." Most hosts expose this via an editor sub-agent tool (`edit_block` or similar). If your host accepts a `payments` array as the patch, you can rewrite the array; if it accepts a per-row patch keyed by id, prefer that to avoid clobbering rows added concurrently.
+
+**Always re-read the block** after a batch update to confirm the writes landed. If any row is missing the expected fields after a write, retry the patch.
+
+## Conversation mode (no flow blocks)
+
+The skill also works for one-off, ad-hoc usage from a normal chat. The oracle constructs a 1-item batch and follows the same workflow:
+
+```bash
+# discover
+echo '{"countries":["NG"]}' | node scripts/yellowcard.js discover
+
+# rates
+echo '{"currencies":["NGN"]}' | node scripts/yellowcard.js rates
+
+# propose for one recipient
+echo '{"items":[{ /* single payload */ }]}' | node scripts/yellowcard.js propose-payout
+
+# execute for the one proposal
+echo '{"items":[{ proposal_id, requester_did, transfer_payload }]}' | node scripts/yellowcard.js execute-payout
+
+# check
+echo '{"ids":["<payment_id>"]}' | node scripts/yellowcard.js check-payout
 ```
 
-If polling times out without reaching a terminal status, tell the user:
-> "The payment is still processing. You can check the status later by asking me to check payment <transactionId>."
-
-Then STOP. Do not keep polling.
-
----
-
-## Conversation Mode (no flow blocks)
-
-The oracle can also run these commands outside of a flow context. In conversation mode, the oracle returns results directly to the user as messages and asks for confirmation before executing. The workflow is the same (discover → rates → propose → confirm → execute → check) but results are communicated as chat messages instead of block prop updates.
+In conversation mode, present the proposal summary as a clear confirmation prompt before executing, and never execute without explicit user confirmation.
 
 ## Payment Status Flow
 
 ```
-CREATED -> PROCESS -> PROCESSING -> PENDING -> COMPLETE
-                                            \-> FAILED
+CREATED → PROCESS → PROCESSING → PENDING → COMPLETE
+                                         ↘ FAILED
 ```
 
-| Status | Description |
-|--------|-------------|
-| `CREATED` | Payment request received by YellowCard |
-| `PROCESS` | Being processed by YellowCard |
-| `PROCESSING` | Submitted to payment network |
-| `PENDING` | Awaiting final confirmation from network |
-| `COMPLETE` | Funds delivered to recipient |
-| `FAILED` | Payment failed (check `raw` response for details) |
+| YellowCard status | Editor row state | Meaning |
+|---|---|---|
+| `CREATED` | `submitted` | Payment received by YC |
+| `PROCESS` | `submitted` | YC accepted, beginning processing |
+| `PROCESSING` | `processing` | Submitted to payment network |
+| `PENDING` | `processing` | Awaiting final confirmation from network |
+| `COMPLETE` | `completed` | Funds delivered |
+| `FAILED` | `failed` | Check the raw response for details |
 
-Payment requests expire in 10 minutes in sandbox (5 minutes in production) if not accepted. This skill uses `forceAccept: true` so expiry does not apply.
+## KYC Thresholds + customerUID
 
-## KYC Thresholds
+YellowCard applies cumulative-spend KYC **per `customerUID`**. The worker derives `customerUID` from the row's `recipientDid` (falling back to the invoker DID when empty). So all rows targeting the same recipient share one tier 0 bucket.
 
-YellowCard applies KYC requirements based on cumulative payments per `customerUID`:
-
-| Threshold | Required Sender Fields |
-|-----------|----------------------|
+| Threshold | Required sender fields |
+|---|---|
 | Under $200 USD cumulative | `name`, `country` (reduced KYC) |
 | Over $200 USD cumulative | `name`, `country`, `address`, `dob`, `idType`, `idNumber` (full KYC) |
 
+Per YC docs, full KYC bypasses tier 0. In practice on **sandbox** YC still rejects with `PaymentValidationError: Full KYC information is required for the transaction` when KYC values look fake (e.g. `idNumber: X0000000`, `phone: +10000000000`) AND the customerUID has accumulated past $200. For test cycling, vary `recipientDid` per run — that resets the tier 0 bucket. In production, use real KYC values.
+
+Test runs accumulate against the same DID and cross $200 quickly — fill the full sender block in `block.props.inputs.sender` for test flows.
+
+## Retry semantics
+
+A row in `failed` status can be **reset** to `filled` via the editor's "Retry" button (single in the row detail, bulk on the Failed tab). The reset clears `proposalId`, `transferPayload`, `sequenceId`, `summary`, `paymentId`, `workerStatus`, `lastSyncedAt`, `error`. The row is then ready for a fresh `propose` cycle.
+
+The worker DOES allow re-executing the same `proposal_id` after a YC rejection (the proposal isn't burned), so if a failure was transient and the operator hasn't edited the row, you can in principle execute the original proposal again. But `proposal_id` is a hash of the payload — any field edit on the row (e.g. swapping recipientDid to dodge tier 0) invalidates it. Always treat retry as "propose then execute again" — that's the simpler mental model and what the UI does.
+
 ## Sandbox Testing
 
-### Test Account Numbers
-
 | Scenario | Account Number |
-|----------|---------------|
+|---|---|
 | Bank SUCCESS | `1111111111` |
 | Bank FAILURE | `0000000000` |
 | Mobile Money SUCCESS | `+{countryCode}1111111111` (e.g. `+2341111111111` for NG) |
-| Mobile Money FAILURE | `+{countryCode}0000000000` (e.g. `+2340000000000` for NG) |
+| Mobile Money FAILURE | `+{countryCode}0000000000` |
 
-### Common Country / Currency Pairs
+### Common country / currency pairs
 
-| Country | Code | Currency | Typical Methods |
-|---------|------|----------|-----------------|
+| Country | Code | Currency | Methods |
+|---|---|---|---|
 | Nigeria | NG | NGN | Bank, Mobile Money |
 | Kenya | KE | KES | M-Pesa (momo) |
 | Ghana | GH | GHS | MTN Mobile Money, Bank |
@@ -618,50 +563,45 @@ YellowCard applies KYC requirements based on cumulative payments per `customerUI
 
 ## Authentication
 
-All API calls are authenticated using HMAC-SHA256 signatures. The script handles signing automatically. The signature is computed over:
-- Timestamp (ISO 8601)
-- Request path (excluding query string)
-- HTTP method (uppercase)
-- SHA-256 hash of the request body (base64, for POST requests only)
+The skill reads a UCAN invocation Bearer token from `/workspace/data/ixo-yellowcard/ucan_token`. The token is short-lived (~60s) and single-use — the oracle mints a fresh one before every protected call.
 
-The `Authorization` header format: `YcHmacV1 {apiKey}:{signature}`
+How it works end-to-end:
+- The user signs ONE delegation in the editor's payment block (audience = chat oracle DID, capability `yellowcard/*` on `ixo:yellowcard`, expires after a configurable window — default 1 hour).
+- The companion prompt carries the delegation CID and worker base URL.
+- For each protected batch call, the oracle mints an invocation against `<workerBaseUrl>/.well-known/did.json` (auto-resolved audience) and writes it to the token file.
+- The worker validates the invocation, checks the route capability, and processes the batch under that single invocation.
 
-## Validation Rules (propose-payout)
+The user's DID must be in the worker's `UCAN_ROOT_ISSUERS` allowlist for the proof chain to validate.
 
-The following fields are validated before a proposal is created:
+All YellowCard API authentication (HMAC-SHA256 signing) happens inside the worker — no payment API secrets are exposed to the skill sandbox.
 
-- **Required top-level:** `channelId`, `currency`, `destination`
-- **Required one of:** `amount` or `localAmount` (not both)
-- **Required destination:** `accountName`, `accountNumber`, `accountType`, `networkId`, `country`
-- **Required sender:** `name`, `country`
-- **Amount constraint:** Must be a positive number
+## Input Files
 
-## Error Handling
-
-All errors are JSON: `{ "error": true, "message": "..." }`.
-
-| Error | Cause |
-|-------|-------|
-| `Missing _ORACLE_SECRET_YELLOWCARD_API_KEY` | Credential env var not set |
-| `Missing --country flag` | `discover` called without `--country` |
-| `Missing --currency flag` | `rates` called without `--currency` |
-| `Missing --id flag` | `check-payout` called without `--id` |
-| `Unauthorized: DID ... is not in the admin list.` | Non-admin DID tried an admin-only command |
-| `Missing required field: ...` | `propose-payout` input missing a required field |
-| `Amount must be a positive number` | Amount is zero, negative, or not a number |
-| `Provide either amount (USD) or localAmount (local currency), not both.` | Both amount fields provided |
-| `Proposal integrity check failed` | `transfer_payload` was modified after proposal creation |
-| `DID mismatch: proposal was created by ... but current requester is ...` | Someone other than the proposer tried to execute |
-| `Unknown command: ...` | Invalid subcommand passed to the script |
+| File | Required | Source | Description |
+|---|---|---|---|
+| `/workspace/data/ixo-yellowcard/ucan_token` | For protected commands | Oracle writes the fresh invocation here | Freshly-minted UCAN invocation (Base64 CAR) — single-use. Re-mint before every protected call. |
 
 ## Environment Variables
 
 | Variable | Source | Description |
-|----------|--------|-------------|
-| `_ORACLE_SECRET_YELLOWCARD_API_KEY` | Oracle secret | YellowCard public API key |
-| `_ORACLE_SECRET_YELLOWCARD_SECRET_KEY` | Oracle secret | HMAC signing secret key |
-| `_ORACLE_SECRET_YELLOWCARD_BASE_URL` | Oracle secret | API base URL (`https://sandbox.api.yellowcard.io` or `https://api.yellowcard.io`) |
-| `_ORACLE_SECRET_YELLOWCARD_ADMIN_DIDS` | Oracle secret | Comma-separated admin DIDs |
+|---|---|---|
 | `_SKILL_CONTEXT_USER_DID` | Skill context | Current user's DID |
 | `_SKILL_CONTEXT_SANDBOX_ID` | Skill context | Sandbox identifier |
 | `_SKILL_CONTEXT_TIMESTAMP` | Skill context | Request timestamp |
+
+## Error Handling
+
+All script errors are JSON: `{ "error": true, "message": "..." }`. Worker-side errors come back as either a top-level 4xx/5xx (batch-shape rejection) or as per-item failure entries (one bad item among a successful batch).
+
+| Error | Cause | Fix |
+|---|---|---|
+| `Missing UCAN token at /workspace/data/ixo-yellowcard/ucan_token` | Oracle didn't mint + write a fresh invocation before the call | Mint and write before retrying. Run `mkdir -p /workspace/data/ixo-yellowcard` once if the dir doesn't exist. |
+| `REPLAY` / `Invocation has already been used` | Reused an invocation across calls | Mint a fresh one. |
+| `No items provided. Pipe JSON ...` | Stdin was empty / not JSON for a batch command | Pipe `{"items":[...]}` (or `{"ids":[...]}` / `{"countries":[...]}` / `{"currencies":[...]}`). |
+| `Worker returned 400 ... Maximum N items per batch` | Batch exceeded the per-route cap (100 for payouts, 20 for channels/rates/status). | Split into multiple batches. |
+| `Worker returned 401` | UCAN token invalid / expired / wrong capability | Re-mint with the correct `can` for the route. |
+| `Worker returned 503` | Worker's did:web resolution temporarily unavailable | Retry after a short wait. |
+| Per-item: `Either amount (USD) or localAmount is required` | Item supplied neither | Fix the item; re-batch. |
+| Per-item: `Provide either amount or localAmount, not both` | Item supplied both | Fix the item; re-batch. |
+| Per-item: `Proposal integrity check failed` | `transfer_payload` was modified after proposal creation | Re-propose the row, then re-execute. |
+| Per-item: `DID mismatch` | Someone other than the proposer tried to execute | Same DID that proposed must execute. |
