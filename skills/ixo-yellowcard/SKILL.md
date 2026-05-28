@@ -174,12 +174,17 @@ Each item is the single-payout shape:
   "localAmount": "<number — local amount; mutually exclusive with amount>",
   "reason": "<string, optional>",
   "customerType": "<string, optional, default retail>",
-  "recipientDid": "<did:ixo:..., optional — falls back to invoker DID>",
+  "recipientDid": "<did:ixo:..., REQUIRED — DID of the person being paid out; worker uses as YC customerUID. Worker rejects with 400 if empty; NEVER inferred from the invoker.>",
   "sender": {
     "name":"<string>", "country":"<US/...>",
     "phone":"<optional>", "email":"<optional>",
     "address":"<optional>", "dob":"<MM/DD/YYYY optional>",
-    "idType":"<optional>", "idNumber":"<optional>"
+    "idType":"<optional — ignored when country=NG, worker forces 'NIN'>",
+    "idNumber":"<optional — when country=NG, this MUST be the NIN>",
+    "additionalIdNumber":"<REQUIRED when country=NG — Bank Verification Number (BVN)>"
+    // NOTE: never pass `additionalIdType`. The worker stamps it as
+    // "BVN" automatically when country=NG and omits the pair entirely
+    // otherwise.
   },
   "destination": {
     "accountName":"<string>", "accountNumber":"<string>",
@@ -289,6 +294,8 @@ The payment block's `block.props.payments` is an array of `PaymentRow`:
   "fields": {
     "accountName": "...",  "accountNumber": "...",
     "accountType": "bank" | "momo",
+    "bankName": "Capitec Bank", // REQUIRED — must match a YC network name for the country.
+                                 // The skill resolves this to networkId in step 4.
     "networkId": "...",    "country": "NG",
     "bvn": "...",          "channelId": "...",
     "amount": "20",        "currency": "NGN",
@@ -315,7 +322,7 @@ The block's `block.props.inputs` has the recipient-agnostic settings shared acro
   "defaultReason": "other",
   "customerType": "retail",
   "fieldTemplate": { /* refs; already resolved into row.fields by the bridge */ },
-  "requiredFields": ["accountName","accountNumber","accountType","country","amount","currency"]  // networkId and channelId are NOT here by default — the oracle resolves them in the batch discovery step (see Verb: propose, step 4)
+  "requiredFields": ["accountName","accountNumber","accountType","bankName","country","amount","currency"]  // bankName is required so the skill can resolve the correct networkId from YC's networks list — sending to the wrong bank routes funds to the wrong clearing system. networkId and channelId are intentionally NOT here; the oracle resolves them in the batch discovery step (see Verb: propose, step 4).
 }
 ```
 
@@ -365,12 +372,25 @@ For each row in the batch, assemble the single-item payload by combining `block.
   })(),
   reason: row.fields.reason || inputs.defaultReason || "other",
   customerType: inputs.customerType || "retail",
-  recipientDid: row.fields.recipientDid || undefined,
+  // recipientDid is REQUIRED — the worker rejects with 400 when empty
+  // and explicitly does NOT fall back to the invoker DID. YC uses this
+  // value as customerUID for per-recipient KYC tier tracking, so
+  // substituting the invoker would attribute the payout to the operator
+  // and corrupt the audit trail. If row.fields.recipientDid is empty,
+  // fail the row in step 4 below — don't include it in the batch.
+  recipientDid: row.fields.recipientDid,
   sender: inputs.sender,
   destination: {
     accountName: row.fields.accountName,
     accountNumber: row.fields.accountNumber,
     accountType: row.fields.accountType,        // "bank" or "momo"
+    // networkId is REQUIRED by YellowCard for every active country
+    // (the previous "ZA EFT has no networks" assumption was wrong —
+    // it came from a jq path bug in discover.sh). Step 4 of the
+    // propose verb resolves it from row.fields.bankName before this
+    // template runs, so by the time we reach here row.fields.networkId
+    // MUST be set. If it's empty here, the row should have been
+    // filtered out in step 4 — treat this as a skill bug.
     networkId: row.fields.networkId,
     country: row.fields.country,
     // accountBank optional — not commonly set per row
@@ -385,7 +405,7 @@ For each row in the batch, assemble the single-item payload by combining `block.
 #### Verb: `propose`
 
 1. Read the rows; verify each is in status `filled` (skip + report any that aren't).
-2. Per row, validate `inputs.requiredFields`. If any row is missing required fields, fail that row inline (don't include it in the batch) and record `error: "missing required fields: ..."` + `status: "failed"` for that row.
+2. Per row, validate `inputs.requiredFields`. If any row is missing required fields, fail that row inline (don't include it in the batch) and record `error: "missing required fields: ..."` + `status: "failed"` for that row. **`recipientDid` is always required regardless of what `requiredFields` lists** — the worker rejects with `400` when it's empty and explicitly does NOT fall back to invoker DID (would break per-recipient KYC tracking and the audit trail). If `row.fields.recipientDid` is empty, fail the row with `error: "recipientDid is required — the DID of the actual person being paid out. The worker never infers this from the invoker."` + `status: "failed"`.
 3. Per row, run the currency-compatibility check (see *"Building a propose-payout item from a row"* above). If `outcomeCurrency` is non-USD AND differs from `currency`, fail that row inline with `error: "incompatible currencies: outcome <X> → destination <Y>. Set outcomeCurrency to USD or align it with the destination, then re-propose."` + `status: "failed"`. Don't include it in the batch.
 4. **Batch-deduplicate discovery (channelId + networkId).** This is the expensive lookup — collapse to one `discover` call across all unique countries in the batch, then look up each row from the cached results.
 
@@ -400,9 +420,16 @@ For each row in the batch, assemble the single-item payload by combining `block.
       - Find `channel = byCountry[row.country].channels.find(c => c.accountType === row.accountType && (!row.currency || c.currency.toUpperCase() === row.currency.toUpperCase()))`.
         - If multiple match (rare), pick the first.
         - If none match (e.g. accountType `bank` not supported in that country) → fail this row inline with `error: "no <accountType> channel for country <country> currency <currency>"` + `status: "failed"`. Don't include in batch.
-      - Find `network = byCountry[row.country].networks.find(n => n.channelId === channel.id)`.
-        - Multiple networks per channel is normal (one per bank/provider). Pick the first by default unless the row already has `networkId` set (operator override) — operator-set values ALWAYS win.
-      - Stamp `row.channelId = channel.id` and `row.networkId = network.id` if either was empty.
+      - **Resolve `networkId` from `row.fields.bankName`.** This is the critical safety step — the same account number digits route to different banks depending on which `networkId` is sent, so picking the wrong network sends funds to the wrong clearing system. The matching rules below apply ONLY to the networks attached to the channel found above (so we can't accidentally match a `momo` network when the channel is `bank`):
+        - Filter the candidate networks: `candidates = byCountry[row.country].networks.filter(n => n.status === 'active' && Array.isArray(n.channelIds) ? n.channelIds.includes(channel.id) : n.channelId === channel.id)`. (YC has used both `channelId` and `channelIds[]` across versions — handle both.)
+        - **Operator override.** If `row.fields.networkId` is already set, trust it as an explicit override — leave it as-is and skip the rest of this resolution. Do NOT validate the override against bankName; the override is the operator's escape hatch.
+        - **Otherwise bankName MUST be set.** If `row.fields.bankName` is empty → fail this row inline with `error: "bankName is required to resolve networkId — pick the recipient's bank from YellowCard's network list for <country>"` + `status: "failed"`. Don't include in the batch.
+        - **Name match (primary).** Look for `network = candidates.find(n => normalize(n.name) === normalize(row.fields.bankName))` where `normalize(s) = s.trim().toLowerCase()`. If found → stamp `row.networkId = network.id`.
+        - **Name match (loose fallback).** If no exact match, try a contains-either-direction comparison: `network = candidates.find(n => normalize(n.name).includes(normalize(row.fields.bankName)) || normalize(row.fields.bankName).includes(normalize(n.name)))`. This catches "Capitec" vs "Capitec Bank" / "First National Bank" vs "FNB". If found → stamp `row.networkId = network.id`.
+        - **Code match (last fallback).** If still no match AND the bankName looks like a code (short, alphanumeric), try `network = candidates.find(n => n.code && normalize(n.code) === normalize(row.fields.bankName))`. If found → stamp `row.networkId = network.id`.
+        - **No match found.** Fail this row inline with `error: "bankName \"<bankName>\" does not match any active YC network for <country>. Candidates: <comma-list of candidates' names>"` + `status: "failed"`. Don't include in batch and don't fabricate a networkId — this is the wrong-bank routing risk we are explicitly preventing.
+        - **Candidates list empty.** If `candidates` is empty for this channel (very rare — would mean the channel has no banks behind it), fail the row with `error: "no networks available for <accountType> channel in <country>"` + `status: "failed"`.
+      - Stamp `row.channelId = channel.id` if it was empty.
    5. **Persist the resolved IDs back to the block** via a single `edit_block` call patching `block.props.payments` for the rows that gained a channelId/networkId. After this step the UI shows the discovered values; subsequent verbs (execute, check) don't need to re-discover. Do NOT bump `status` here — rows stay `filled` until the propose response lands.
 5. Build `items[]` from the valid rows (one item per row, per the shape above). Use the now-resolved `row.channelId` / `row.networkId`.
 6. Mint a fresh UCAN invocation and write it to `/workspace/data/ixo-yellowcard/ucan_token`.
@@ -525,16 +552,32 @@ CREATED → PROCESS → PROCESSING → PENDING → COMPLETE
 
 ## KYC Thresholds + customerUID
 
-YellowCard applies cumulative-spend KYC **per `customerUID`**. The worker derives `customerUID` from the row's `recipientDid` (falling back to the invoker DID when empty). So all rows targeting the same recipient share one tier 0 bucket.
+YellowCard applies cumulative-spend KYC **per `customerUID`**. The worker derives `customerUID` from the row's `recipientDid` — which is REQUIRED and never falls back to the invoker DID. (Earlier versions of the worker did fall back; that was a data-integrity bug since it billed payments against the operator's KYC bucket rather than the actual recipient's. The worker now rejects with `400` if `recipientDid` is empty.) So all rows targeting the same recipient share one tier 0 bucket, and different recipients always get their own bucket.
 
 | Threshold | Required sender fields |
 |---|---|
 | Under $200 USD cumulative | `name`, `country` (reduced KYC) |
 | Over $200 USD cumulative | `name`, `country`, `address`, `dob`, `idType`, `idNumber` (full KYC) |
+| Sender country = `NG` (any amount, retail) | All of the above PLUS `additionalIdType`, `additionalIdNumber` |
 
 Per YC docs, full KYC bypasses tier 0. In practice on **sandbox** YC still rejects with `PaymentValidationError: Full KYC information is required for the transaction` when KYC values look fake (e.g. `idNumber: X0000000`, `phone: +10000000000`) AND the customerUID has accumulated past $200. For test cycling, vary `recipientDid` per run — that resets the tier 0 bucket. In production, use real KYC values.
 
 Test runs accumulate against the same DID and cross $200 quickly — fill the full sender block in `block.props.inputs.sender` for test flows.
+
+### Nigerian senders (NG regulatory NIN + BVN)
+
+YC's `submit-payment` spec marks `sender.additionalIdType` and `sender.additionalIdNumber` as required when `customerType === 'retail'` AND `sender.country === 'NG'`. The Nigerian Central Bank requires both the National Identification Number (NIN) and the Bank Verification Number (BVN). YC's convention for NG is fixed:
+
+- `sender.idType` is always `"NIN"` and `sender.idNumber` holds the NIN value
+- `sender.additionalIdType` is always `"BVN"` and `sender.additionalIdNumber` holds the BVN value
+
+**The skill only ever supplies the two NUMBERS.** The worker stamps `idType="NIN"` and `additionalIdType="BVN"` server-side whenever `sender.country === 'NG'`, so any `idType`/`additionalIdType` value the skill passes is ignored in the NG case. This protects against accidentally sending the wrong type code (e.g. `"passport"`) which YC would reject. For non-NG senders the worker leaves `idType` as whatever was passed and omits the `additional*` fields entirely.
+
+The worker also rejects a propose with `400` if `customerType === 'retail'` and `sender.country === 'NG'` and either `idNumber` or `additionalIdNumber` is empty — fail-fast so a misconfigured NG sender block doesn't burn UCAN invocations on doomed YC calls. The editor's payment block gates the Send button on the same condition and only exposes two inputs for NG: "NIN (National Identification Number)" and "BVN (Bank Verification Number)" — the type fields are not operator-editable for NG.
+
+This rule applies only to the **sender** side of payouts. The YC payout endpoint has no recipient-KYC slot at all, so NG **recipients** do NOT need NIN/BVN passed through — confirmed by the OpenAPI spec at `submit-payment` (no KYC fields on `destination`). The recipient-side NG NIN+BVN requirement lives on the `submit-collection-request` endpoint, which the worker does not currently expose.
+
+This skill never has to set these fields itself — they live on `block.props.inputs.sender` and are configured once per block by the operator in the editor UI. Just pass `inputs.sender` through to `sender` on each propose item as already documented.
 
 ## Retry semantics
 
