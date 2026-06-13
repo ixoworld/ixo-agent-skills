@@ -36,9 +36,9 @@
       </section>
 
       <section class="actions" aria-label="Portal actions">
-        <button type="button" id="fullscreen-button">Open fullscreen</button>
         <button type="button" id="prompt-button">Ask assistant</button>
-        <button type="button" id="dirty-button">Mark unsaved</button>
+        <button type="button" id="fullscreen-button" class="secondary">Open fullscreen</button>
+        <button type="button" id="dirty-button" class="secondary">Mark unsaved</button>
       </section>
     </main>
 
@@ -50,13 +50,17 @@
       const chainNetwork = document.getElementById("chain-network");
       const dirtyButton = document.getElementById("dirty-button");
       let isDirty = false;
+      let stopAutoResize = null;
 
       window.IxoPortalBridge.onInit((payload) => {
         status.textContent = "Connected";
+        status.classList.add("is-connected");
         domainName.textContent = payload.domain.name || payload.domain.did;
         walletAddress.textContent = payload.user.walletAddress || "Unavailable";
         chainNetwork.textContent = payload.chain.network;
-        window.IxoPortalBridge.resize();
+        if (!stopAutoResize) {
+          stopAutoResize = window.IxoPortalBridge.autoResize();
+        }
       });
 
       document.getElementById("fullscreen-button").addEventListener("click", () => {

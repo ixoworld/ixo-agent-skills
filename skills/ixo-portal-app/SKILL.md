@@ -19,6 +19,7 @@ Read only the files needed for the task:
 
 - `references/portal-contract.md`: required for builds, hardening, manifest edits, bridge work, or security decisions.
 - `references/review-checklist.md`: required for audits, compatibility reviews, and pre-publish checks.
+- `DESIGN.md`: required whenever creating or changing UI. Tokens live in the frontmatter; rules in the body. `AGENTS.md` carries a condensed copy of these rules for harnesses that do not load skills.
 - `templates/`: starter files for new vanilla static apps.
 
 ## Modes
@@ -40,6 +41,7 @@ Default choices:
 - Prefer a single static directory that can be hosted by any static file server.
 - Keep app-specific logic outside `portal-bridge.js`; treat the bridge as the stable host contract wrapper.
 - Do not invent manifest fields, message types, feature flags, or privileged actions outside `references/portal-contract.md`.
+- Style UI per `DESIGN.md`: ink-led primary actions, neutral theme-aware surfaces, accent blue only for focus/selected/agent states, 8px control radius, flat at rest, compact headings. Respect the host theme mode delivered in `INIT`.
 
 Implementation flow:
 
@@ -47,9 +49,9 @@ Implementation flow:
 2. Copy and adapt the template files when creating a new app. For existing apps, preserve the current architecture unless it conflicts with the Portal contract.
 3. Preserve the Portal bridge security model: install the listener before `READY`, validate `INIT`, store `host.origin`, and use exact `targetOrigin` after initialization.
 4. Implement the app UI inside the iframe sandbox assumptions from `references/portal-contract.md`: no top-level navigation requirement, no third-party cookie dependency, and no unsandboxed browser APIs.
-4. Wire expected Portal integrations through `window.IxoPortalBridge`, not custom message shapes.
-5. Gate privileged behavior through manifest `features` and Portal-mediated `EVENT` requests.
-6. Add concise notes for replacing placeholders, hosting static files, and registering the manifest as a domain linked resource.
+5. Wire expected Portal integrations through `window.IxoPortalBridge`, not custom message shapes.
+6. Gate privileged behavior through manifest `features` and Portal-mediated `EVENT` requests.
+7. Add concise notes for replacing placeholders, hosting static files, and registering the manifest as a domain linked resource.
 
 ## Security Requirements
 
@@ -61,6 +63,7 @@ Treat these as mandatory:
 - After `INIT`, use only the exact `host.origin` as `targetOrigin`.
 - Require exact `iframe.allowedOrigins` when the iframe origin differs from the manifest origin.
 - Never use wildcard origins in production configuration.
+- Strip development origins such as `http://localhost:3000` from the bridge `ALLOWED_PORTAL_ORIGINS` allowlist when hardening or deploying for production; ship only exact production Portal origins.
 - Never store private keys or long-lived secrets in the iframe.
 - Route signing, assistant prompts, action-block updates, auth refreshes, and transaction requests through Portal-mediated `EVENT` messages.
 
@@ -70,8 +73,9 @@ When reviewing:
 
 1. Inspect the manifest, iframe entrypoint, message bridge, hosting assumptions, and app layout.
 2. Check each item in `references/review-checklist.md`.
-3. Report blockers first, then warnings, then suggested fixes. Include file paths and specific lines when reviewing a local repo.
-4. Treat these as blockers:
+3. Check UI against the `DESIGN.md` rules (One Accent Rule, Neutral Field Rule, flat-at-rest elevation, compact headings). Report design violations as warnings, citing the rule by name.
+4. Report blockers first, then warnings, then suggested fixes. Include file paths and specific lines when reviewing a local repo.
+5. Treat these as blockers:
    - Missing origin validation for host messages.
    - Wildcard iframe origins.
    - Invalid or missing `protocol` / `version`.

@@ -1,15 +1,61 @@
+/* Tokens from DESIGN.md. The Portal sends theme mode in INIT; portal-bridge.js
+   mirrors it onto <html data-portal-theme>, which overrides the OS scheme. */
 :root {
   color-scheme: light dark;
   font-family:
-    Inter,
     ui-sans-serif,
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background: #f8fafc;
-  color: #172026;
+
+  --ink: #000000;
+  --ink-soft: #333333;
+  --surface: #ffffff;
+  --surface-muted: #f1f1f1;
+  --accent: #0885ff;
+  --text: #000000;
+  --text-soft: #333333;
+  --page-bg: #f1f1f1;
+  --panel-bg: #ffffff;
+  --control-ring: #e4e8e9;
+  --tint-5: #0000000d;
+  --tint-10: #0000001a;
+  --button-bg: #000000;
+  --button-bg-hover: #2e2e2e;
+  --button-text: #ffffff;
+
+  background: var(--page-bg);
+  color: var(--text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-portal-theme="light"]) {
+    --text: #e1e1e1;
+    --text-soft: #a3a3a3;
+    --page-bg: #1f1f1f;
+    --panel-bg: #ffffff0d;
+    --control-ring: #ffffff1a;
+    --tint-5: #ffffff14;
+    --tint-10: #ffffff24;
+    --button-bg: #e1e1e1;
+    --button-bg-hover: #ffffff;
+    --button-text: #1f1f1f;
+  }
+}
+
+:root[data-portal-theme="dark"] {
+  --text: #e1e1e1;
+  --text-soft: #a3a3a3;
+  --page-bg: #1f1f1f;
+  --panel-bg: #ffffff0d;
+  --control-ring: #ffffff1a;
+  --tint-5: #ffffff14;
+  --tint-10: #ffffff24;
+  --button-bg: #e1e1e1;
+  --button-bg-hover: #ffffff;
+  --button-text: #1f1f1f;
 }
 
 * {
@@ -22,27 +68,43 @@ body {
   background: transparent;
 }
 
+/* DESIGN.md button-primary: ink fill, surface text, 8px radius, 40px height. */
 button {
-  min-height: 44px;
+  min-height: 40px;
   border: 0;
   border-radius: 8px;
-  padding: 0 16px;
-  background: #00d2ff;
-  color: #06222b;
+  padding: 0 20px;
+  background: var(--button-bg);
+  color: var(--button-text);
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
+button:hover {
+  background: var(--button-bg-hover);
+}
+
+button.secondary {
+  background: var(--tint-5);
+  color: var(--text);
+  padding: 0 16px;
+}
+
+button.secondary:hover {
+  background: var(--tint-10);
+}
+
+/* One Accent Rule: blue marks focus, selected, and agent signal states only. */
 button:focus-visible {
-  outline: 3px solid #172026;
-  outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .app-shell {
   width: min(100%, 960px);
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px;
 }
 
 .app-header {
@@ -50,59 +112,69 @@ button:focus-visible {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .eyebrow {
   margin: 0 0 6px;
-  color: #52616b;
+  color: var(--text-soft);
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 h1,
 h2 {
   margin: 0;
-  line-height: 1.2;
 }
 
+/* Dense Title Rule: title scale in product chrome, no hero type. */
 h1 {
-  font-size: clamp(1.75rem, 5vw, 3rem);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 h2 {
-  font-size: 1.125rem;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .status {
   flex: 0 0 auto;
-  border-radius: 999px;
-  padding: 6px 10px;
-  background: #e7f8fc;
-  color: #07576b;
+  border-radius: 40px;
+  padding: 6px 12px;
+  background: var(--surface-muted);
+  color: var(--ink-soft);
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
+.status.is-connected {
+  background: #0885ff1f;
+  color: var(--accent);
+}
+
+/* Flat At Rest Rule: tonal panel with an inset ring, no shadow. */
 .panel {
-  border: 1px solid #d6e0e6;
-  border-radius: 8px;
-  padding: 20px;
-  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--panel-bg);
+  box-shadow: inset 0 0 0 1px var(--control-ring);
 }
 
 .context-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin: 20px 0 0;
+  margin: 16px 0 0;
 }
 
 dt {
-  color: #52616b;
+  color: var(--text-soft);
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 dd {
@@ -113,7 +185,7 @@ dd {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
   margin-top: 20px;
 }
 
@@ -128,36 +200,10 @@ dd {
 
   .status {
     display: inline-block;
-    margin-top: 14px;
+    margin-top: 12px;
   }
 
   .context-grid {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    background: #11181d;
-    color: #eef4f7;
-  }
-
-  button:focus-visible {
-    outline-color: #eef4f7;
-  }
-
-  .eyebrow,
-  dt {
-    color: #a7b4bc;
-  }
-
-  .status {
-    background: #123744;
-    color: #c5f4ff;
-  }
-
-  .panel {
-    border-color: #2a3942;
-    background: #172026;
   }
 }
