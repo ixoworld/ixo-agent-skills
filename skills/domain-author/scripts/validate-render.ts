@@ -316,7 +316,10 @@ function validateCommonFiles(
     }
     texts.set(path, text);
 
-    if (mode !== "template") {
+    // Protocol packages legitimately carry template sources below templates/<derived-type>/;
+    // those files are validated separately with --mode template, not as rendered output.
+    const isProtocolTemplateSource = mode === "protocol" && relativePath.split(sep)[0] === "templates";
+    if (mode !== "template" && !isProtocolTemplateSource) {
       if (basename(path).endsWith(".tmpl")) {
         addFinding(findings, "error", "template-suffix-leaked", path, "Rendered output ends in .tmpl.");
       }
@@ -348,26 +351,64 @@ const CANONICAL_SECTIONS = [
   "Privacy & Source-of-Truth Boundaries", "Playbooks", "Do's and Don'ts", "Changelog",
 ];
 
+// domain.type values that define a manifest document (spec §4.4).
+const MANIFEST_DOMAIN_TYPES = new Set([
+  "dao", "organisation", "project", "pod", "asset", "investment", "portfolio", "deed", "protocol", "dataset", "device",
+]);
+
+function collectSectionHeadings(body: string): string[] {
+  const headings: string[] = [];
+  let fenceMarker: string | null = null;
+  for (const line of body.split(/\r?\n/)) {
+    const fence = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+    if (fence) {
+      if (fenceMarker === null) {
+        fenceMarker = fence[1];
+      } else if (fence[1][0] === fenceMarker[0] && fence[1].length >= fenceMarker.length) {
+        fenceMarker = null;
+      }
+      continue;
+    }
+    if (fenceMarker !== null) continue;
+    const heading = /^## (.+?)\s*$/.exec(line);
+    if (heading) headings.push(heading[1]);
+  }
+  return headings;
+}
+
 function recordsAt(value: unknown, key: string): RecordValue[] {
   if (!isRecord(value) || !Array.isArray(value[key])) return [];
   return value[key].filter(isRecord);
 }
 
-function ensureUniqueIds(entries: RecordValue[], label: string, path: string, findings: Finding[]): Set<string> {
+function ensureUniqueIds(entries: RecordValue[], label: string, path: string, findings: Finding[], idKey = "id"): Set<string> {
   const ids = new Set<string>();
   for (const entry of entries) {
-    if (typeof entry.id !== "string") continue;
-    const normalized = entry.id.normalize("NFC");
+    const raw = entry[idKey];
+    if (typeof raw !== "string") continue;
+    const normalized = raw.normalize("NFC");
     if (ids.has(normalized)) {
-      addFinding(findings, "error", "duplicate-entry-id", path, `Duplicate ${label} id ${JSON.stringify(normalized)}.`);
+      addFinding(findings, "error", "duplicate-entry-id", path, `Duplicate ${label} ${idKey} ${JSON.stringify(normalized)}.`);
     }
     ids.add(normalized);
   }
   return ids;
 }
 
+const CID_LIKE = /^b[a-z2-7]{10,}$/;
+
 function isExternalReference(reference: string): boolean {
-  return /^[A-Za-z][A-Za-z0-9+.-]*:/.test(reference) || reference.startsWith("baf");
+  return /^[A-Za-z][A-Za-z0-9+.-]*:/.test(reference) || CID_LIKE.test(reference);
+}
+
+function parseIsoDurationMs(duration: string): number | null {
+  const match = /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/.exec(duration);
+  if (!match || match.slice(1).every((group) => group === undefined)) return null;
+  const [years, months, weeks, days, hours, minutes, seconds] = match
+    .slice(1)
+    .map((group) => (group === undefined ? 0 : Number(group)));
+  const dayMs = 86_400_000;
+  return (years * 365 + months * 30 + weeks * 7 + days) * dayMs + hours * 3_600_000 + minutes * 60_000 + seconds * 1_000;
 }
 
 function validateSecretAbsence(value: unknown, path: string, findings: Finding[], pointer = "$"): void {
@@ -391,7 +432,7 @@ function validateSecretAbsence(value: unknown, path: string, findings: Finding[]
 
 function validateSections(data: RecordValue, text: string, path: string, findings: Finding[]): void {
   const body = text.slice(FRONTMATTER_BLOCK.exec(text)?.[0].length ?? 0);
-  const headings = [...body.matchAll(/^## (.+?)\s*$/gm)].map((match) => match[1]);
+  const headings = collectSectionHeadings(body);
   const seen = new Set<string>();
   let lastCanonicalIndex = -1;
   for (const heading of headings) {
@@ -459,6 +500,46 @@ function validateDomain(
   validateSecretAbsence(data, domainPath, findings);
   validateSections(data, text, domainPath, findings);
 
+  if (isRecord(data.agent_default_mode) && isRecord(data.agent_default_mode.overrides)) {
+    for (const [overrideKey, overrideValue] of Object.entries(data.agent_default_mode.overrides)) {
+      if (overrideValue !== false) {
+        addFinding(
+          findings,
+          "error",
+          "open-ended-agent-authority",
+          domainPath,
+          `agent_default_mode.overrides.${overrideKey} must be false; overrides may only lower the mode ceiling.`,
+        );
+      }
+    }
+  }
+
+  if (isRecord(data.documents) && isRecord(data.documents.anchoring)
+    && data.documents.anchoring.cid !== null && data.documents.anchoring.cid !== undefined) {
+    addFinding(
+      findings,
+      "error",
+      "anchoring-self-cid",
+      domainPath,
+      "documents.anchoring.cid must remain null in the serialized domain.md; the exact CID is supplied out-of-band by the canonical anchoring record or envelope.",
+    );
+  }
+
+  const validationBlock = data.validation;
+  if (isRecord(validationBlock) && typeof validationBlock.stale_after === "string" && typeof data.last_updated === "string") {
+    const staleAfterMs = parseIsoDurationMs(validationBlock.stale_after);
+    const lastUpdatedMs = Date.parse(`${data.last_updated}T00:00:00Z`);
+    if (staleAfterMs !== null && !Number.isNaN(lastUpdatedMs) && Date.now() - lastUpdatedMs > staleAfterMs) {
+      addFinding(
+        findings,
+        "warning",
+        "stale-domain-index",
+        domainPath,
+        `last_updated ${data.last_updated} is older than validation.stale_after ${validationBlock.stale_after}.`,
+      );
+    }
+  }
+
   if (!isRecord(data.domain)) {
     addFinding(findings, "error", "domain-shape", domainPath, "domain must be a mapping.");
     return profile;
@@ -499,8 +580,11 @@ function validateDomain(
       return;
     }
     roles.push(role);
-    if (role === "manifest" && (entry.category !== "manifest" || entry.authority !== "defining" || entry.disclosure_pass !== 3)) {
-      addFinding(findings, "error", "manifest-contract", domainPath, "Manifest must be defining, category manifest, and disclosure pass 3.");
+    if (role === "manifest" && (entry.category !== "manifest" || entry.authority !== "defining")) {
+      addFinding(findings, "error", "manifest-contract", domainPath, "Manifest must be defining with category manifest.");
+    }
+    if (role === "manifest" && entry.disclosure_pass !== 3) {
+      addFinding(findings, "warning", "document-pass-mismatch", domainPath, "Manifest should use disclosure pass 3.");
     }
     if (role === "description" && entry.disclosure_pass !== 2) {
       addFinding(findings, "warning", "document-pass-mismatch", domainPath, "Description should use disclosure pass 2.");
@@ -513,14 +597,31 @@ function validateDomain(
     }
   });
 
+  const canonicalRoles = new Set(["description", "changelog", "manifest"]);
   const duplicates = [...new Set(roles.filter((role, index) => roles.indexOf(role) !== index))].sort();
-  if (duplicates.length > 0) {
-    addFinding(findings, "error", "document-role-duplicate", domainPath, `Duplicate roles: ${JSON.stringify(duplicates)}.`);
+  for (const duplicate of duplicates) {
+    addFinding(
+      findings,
+      canonicalRoles.has(duplicate) ? "error" : "warning",
+      "duplicate-document-role",
+      domainPath,
+      `Document role ${JSON.stringify(duplicate)} appears more than once.`,
+    );
   }
-  for (const required of ["description", "changelog"]) {
-    if (!roles.includes(required)) {
-      addFinding(findings, "error", "document-role-required", domainPath, `Missing required role ${JSON.stringify(required)}.`);
-    }
+  if (!roles.includes("description")) {
+    addFinding(findings, "error", "missing-description-doc", domainPath, 'No documents entry with role "description".');
+  }
+  if (!roles.includes("changelog")) {
+    addFinding(findings, "error", "missing-changelog-doc", domainPath, 'No documents entry with role "changelog".');
+  }
+  if (typeof domainType === "string" && MANIFEST_DOMAIN_TYPES.has(domainType) && !roles.includes("manifest")) {
+    addFinding(
+      findings,
+      "warning",
+      "missing-manifest",
+      domainPath,
+      `Domain type ${JSON.stringify(domainType)} defines a manifest document, but no manifest documents entry exists.`,
+    );
   }
 
   const controllerEntries = recordsAt(data.controllers, "entries");
@@ -536,6 +637,21 @@ function validateDomain(
   const rightIds = ensureUniqueIds(rightEntries, "right", domainPath, findings);
   const resourceEntries = recordsAt(data.resources, "entries");
   const resourceIds = ensureUniqueIds(resourceEntries, "resource", domainPath, findings);
+  const serviceEntries = recordsAt(data.services, "entries");
+  const serviceIds = ensureUniqueIds(serviceEntries, "service", domainPath, findings);
+  ensureUniqueIds(recordsAt(data.accounts, "entries"), "account", domainPath, findings, "name");
+  const agentEntries = recordsAt(data.agents, "entries");
+  ensureUniqueIds(agentEntries, "agent", domainPath, findings);
+  for (const agent of agentEntries) {
+    if (typeof agent.service === "string" && agent.service !== "" && !isExternalReference(agent.service) && !serviceIds.has(agent.service)) {
+      addFinding(findings, "error", "broken-local-reference", domainPath, `Agent ${String(agent.id)} references missing service ${JSON.stringify(agent.service)}.`);
+    }
+  }
+  for (const linked of recordsAt(data.linked_entities, "entries")) {
+    if (typeof linked.relationship !== "string" || linked.relationship.trim() === "") {
+      addFinding(findings, "warning", "linked-entity-without-rel", domainPath, `Linked entity ${String(linked.id)} lacks a relationship.`);
+    }
+  }
 
   if (isRecord(data.source_of_truth)) {
     const order = new Set(
@@ -553,8 +669,18 @@ function validateDomain(
     }
   }
 
+  const podEntries = recordsAt(data.pods, "entries");
+  ensureUniqueIds(podEntries, "pod", domainPath, findings);
   const flowById = new Map<string, { flow: RecordValue; transitions: Set<string> }>();
-  for (const pod of recordsAt(data.pods, "entries")) {
+  for (const pod of podEntries) {
+    for (const role of recordsAt(pod, "roles")) {
+      if (!Array.isArray(role.rights)) continue;
+      for (const right of role.rights) {
+        if (typeof right === "string" && !rightIds.has(right)) {
+          addFinding(findings, "error", "broken-local-reference", domainPath, `Pod ${String(pod.id)} role ${String(role.id)} references missing right ${JSON.stringify(right)}.`);
+        }
+      }
+    }
     for (const flow of recordsAt(pod, "flows")) {
       if (typeof flow.id !== "string") continue;
       if (flowById.has(flow.id)) {
@@ -602,8 +728,12 @@ function validateDomain(
     }
   }
 
-  for (const collection of recordsAt(data.claims, "collections")) {
-    for (const claimType of recordsAt(collection, "claim_types")) {
+  const claimCollections = recordsAt(data.claims, "collections");
+  ensureUniqueIds(claimCollections, "claim collection", domainPath, findings);
+  for (const collection of claimCollections) {
+    const claimTypes = recordsAt(collection, "claim_types");
+    ensureUniqueIds(claimTypes, `claim type in ${String(collection.id)}`, domainPath, findings);
+    for (const claimType of claimTypes) {
       for (const field of ["evaluator_right", "determiner_right"] as const) {
         const right = claimType[field];
         if (typeof right === "string" && !rightIds.has(right)) {
@@ -622,6 +752,12 @@ function validateDomain(
         }
       }
       const allowedOutcomes = new Set(Array.isArray(claimType.allowed_outcomes) ? claimType.allowed_outcomes : []);
+      const reviewRequiredFor = isRecord(claimType.human_review_policy) && Array.isArray(claimType.human_review_policy.required_for)
+        ? claimType.human_review_policy.required_for
+        : [];
+      if (reviewRequiredFor.length === 0 && !allowedOutcomes.has("disputed") && !allowedOutcomes.has("manual_review_required")) {
+        addFinding(findings, "warning", "claim-without-review-path", domainPath, `Claim ${String(claimType.id)} lacks a human-review or dispute path.`);
+      }
       for (const action of recordsAt(claimType, "next_actions")) {
         if (!allowedOutcomes.has(action.outcome)) {
           addFinding(findings, "error", "incomplete-claim-contract", domainPath, `Claim ${String(claimType.id)} next action uses undeclared outcome ${JSON.stringify(action.outcome)}.`);
@@ -632,6 +768,36 @@ function validateDomain(
           addFinding(findings, "error", "broken-local-reference", domainPath, `Claim ${String(claimType.id)} next action transition does not resolve.`);
         }
       }
+    }
+  }
+
+  const sensitiveLevels = new Set(["restricted", "regulated"]);
+  const hasSensitiveData =
+    entries.some((entry) => typeof entry.sensitivity === "string" && sensitiveLevels.has(entry.sensitivity))
+    || resourceEntries.some((entry) => typeof entry.sensitivity === "string" && sensitiveLevels.has(entry.sensitivity))
+    || claimCollections.some((collection) => recordsAt(collection, "claim_types").some((claimType) =>
+      recordsAt(claimType, "evidence_requirements").some((requirement) =>
+        typeof requirement.sensitivity === "string" && sensitiveLevels.has(requirement.sensitivity))));
+  const notApplicable = new Set(
+    isRecord(data.documents) && Array.isArray(data.documents.not_applicable)
+      ? data.documents.not_applicable.filter((item): item is string => typeof item === "string")
+      : [],
+  );
+  const expectedOperationalDocs: Array<[string, boolean, string]> = [
+    ["operations", podEntries.some((pod) => recordsAt(pod, "flows").length > 0), "the domain has live flows"],
+    ["governance", typeof domainType === "string" && ["dao", "organisation", "project", "pod"].includes(domainType), "control is collective"],
+    ["agents", agentEntries.length > 0, "at least one agent operates"],
+    ["data-policy", hasSensitiveData, "restricted or regulated data flows through the domain"],
+  ];
+  for (const [expectedRole, expected, reason] of expectedOperationalDocs) {
+    if (expected && !roles.includes(expectedRole) && !notApplicable.has(expectedRole)) {
+      addFinding(
+        findings,
+        "warning",
+        "operational-doc-expected",
+        domainPath,
+        `Expected operational document role ${JSON.stringify(expectedRole)} because ${reason}; add it or record it in documents.not_applicable.`,
+      );
     }
   }
 
