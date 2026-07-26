@@ -13,12 +13,21 @@ REQUIRED_FILES = [
     "SKILL.md",
     "agents/openai.yaml",
     "references/portal-contract.md",
+    "references/design-system.md",
     "references/review-checklist.md",
     "templates/index.html",
     "templates/styles.css",
+    "templates/ixo-tokens.css",
+    "templates/ixo-ui.css",
     "templates/portal-bridge.js",
+    "templates/portal-theme.js",
     "templates/manifest.json",
 ]
+
+# Themed CSS properties must be driven by --ixo-* tokens so the app follows
+# the Portal scheme and whitelabel palette. Only ixo-tokens.css declares raw
+# colour values.
+RAW_COLOR_PATTERN = re.compile(r"(#[0-9a-fA-F]{3,8}\b|\brgba?\()")
 
 FORBIDDEN_NAMES = {".DS_Store", "__pycache__"}
 
@@ -60,6 +69,66 @@ def validate_manifest_template(path: Path) -> None:
     require(features.get("navigate") is True, "template should enable navigate support")
 
 
+def validate_theme_template(path: Path) -> None:
+    theme = read(path)
+    required_snippets = [
+        "window.IxoPortalTheme",
+        "applyInit",
+        "dataset.portalTheme",
+        "--ixo-",
+        "onChange",
+    ]
+    for snippet in required_snippets:
+        require(snippet in theme, f"portal-theme.js is missing required snippet: {snippet}")
+    require("VALID_KEY" in theme and "MAX_VALUE_LENGTH" in theme, "portal-theme.js must validate host token keys and value length")
+
+
+def validate_tokens_template(path: Path) -> None:
+    tokens = read(path)
+    required_snippets = [
+        "--ixo-color-text",
+        "--ixo-color-accent",
+        "--ixo-font-scale",
+        "--ixo-radius-md",
+        '[data-portal-theme="dark"]',
+        "prefers-color-scheme: dark",
+        "prefers-reduced-motion: reduce",
+    ]
+    for snippet in required_snippets:
+        require(snippet in tokens, f"ixo-tokens.css is missing required token or rule: {snippet}")
+    require(
+        ":root:not([data-portal-theme])" in tokens,
+        "ixo-tokens.css must scope the prefers-color-scheme fallback so it cannot override a host-supplied theme",
+    )
+
+
+def validate_token_only_styles(root: Path) -> None:
+    for rel in ("templates/styles.css", "templates/ixo-ui.css"):
+        content = read(root / rel)
+        stripped = re.sub(r"/\*.*?\*/", "", content, flags=re.DOTALL)
+        match = RAW_COLOR_PATTERN.search(stripped)
+        require(
+            match is None,
+            f"{rel} must use --ixo-* tokens instead of raw colour values (found {match.group(0) if match else ''})",
+        )
+        require("var(--ixo-" in stripped, f"{rel} must consume --ixo-* design tokens")
+
+
+def validate_index_template(path: Path) -> None:
+    html = read(path)
+    for snippet in ("./ixo-tokens.css", "./ixo-ui.css", "./styles.css", "./portal-theme.js", "./portal-bridge.js"):
+        require(snippet in html, f"index.html is missing required asset: {snippet}")
+    require('name="color-scheme"' in html, "index.html must declare a color-scheme meta tag")
+    require(
+        html.index("./ixo-tokens.css") < html.index("./ixo-ui.css") < html.index("./styles.css"),
+        "index.html must load ixo-tokens.css, then ixo-ui.css, then styles.css",
+    )
+    require(
+        html.index("./portal-theme.js") < html.index("./portal-bridge.js"),
+        "index.html must load portal-theme.js before portal-bridge.js",
+    )
+
+
 def validate_bridge_template(path: Path) -> None:
     bridge = read(path)
     required_snippets = [
@@ -73,6 +142,8 @@ def validate_bridge_template(path: Path) -> None:
         'ACK_TIMEOUT_MS',
         'reportAnalytics',
         'reportError',
+        'window.IxoPortalTheme',
+        'onThemeChange',
     ]
     for snippet in required_snippets:
         require(snippet in bridge, f"portal-bridge.js is missing required snippet: {snippet}")
@@ -102,12 +173,27 @@ def validate_package(root: Path) -> None:
     require("host.origin" in contract, "portal contract must cover host origin handling")
     require("signxTransaction" in contract, "portal contract must document transaction event handling")
 
+    require("references/design-system.md" in skill_md, "SKILL.md must point to the design system reference")
+
+    design = read(root / "references/design-system.md")
+    require("--ixo-" in design, "design system must document the --ixo-* token namespace")
+    require("light" in design and "dark" in design, "design system must cover light and dark schemes")
+
+    contract_theme = read(root / "references/portal-contract.md")
+    require("host.theme" in contract_theme or "theme" in contract_theme, "portal contract must document host theme delivery")
+
     checklist = read(root / "references/review-checklist.md")
     require("Missing origin validation" in checklist, "review checklist must include origin-validation blockers")
     require("Wildcard iframe origins" in checklist, "review checklist must include wildcard-origin blockers")
+    require("Design Tokens" in checklist, "review checklist must include a design token section")
+    require("Theming" in checklist, "review checklist must include a theming section")
 
     validate_manifest_template(root / "templates/manifest.json")
     validate_bridge_template(root / "templates/portal-bridge.js")
+    validate_theme_template(root / "templates/portal-theme.js")
+    validate_tokens_template(root / "templates/ixo-tokens.css")
+    validate_token_only_styles(root)
+    validate_index_template(root / "templates/index.html")
 
 
 def main() -> None:

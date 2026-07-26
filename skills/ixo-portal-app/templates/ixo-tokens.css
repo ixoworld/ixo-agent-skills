@@ -1,0 +1,131 @@
+/* IXO Portal design tokens for iframe apps.
+ *
+ * Layer 1 of 2. This file is the static baseline: it renders correctly
+ * before INIT arrives and when the app is opened standalone. At runtime
+ * portal-theme.js overwrites the `--ixo-*` properties on <html> with the
+ * host's resolved values (whitelabel accent, user font scale) and sets
+ * data-portal-theme="light|dark".
+ *
+ * Load this BEFORE ixo-ui.css and before any app stylesheet.
+ * Never hardcode a colour outside this file. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces and text — light scheme */
+  --ixo-color-body: #fafafa;
+  --ixo-color-surface: #f1f1f1;
+  --ixo-color-surface-raised: #e4e4e4;
+  --ixo-color-border: #d7d7d7;
+  --ixo-color-text: #222222;
+  --ixo-color-text-muted: #333333;
+
+  /* Accent and status — overwritten by the host whitelabel palette */
+  --ixo-color-accent: #0eb8dc;
+  --ixo-color-accent-hover: #17c6eb;
+  --ixo-color-accent-muted: #adebf8;
+  --ixo-color-accent-contrast: #ffffff;
+  --ixo-color-success: #61b43a;
+  --ixo-color-danger: #e2223b;
+  --ixo-color-warning: #ed9526;
+
+  --ixo-color-glass: rgba(255, 255, 255, 0.06);
+  --ixo-shadow-glass: 0px 4px 20px 0px rgba(0, 0, 0, 0.09);
+
+  /* Typography */
+  --ixo-font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ixo-font-scale: 1;
+  --ixo-font-size-xs: 12px;
+  --ixo-font-size-sm: 14px;
+  --ixo-font-size-md: 16px;
+  --ixo-font-size-lg: 40px;
+  --ixo-font-size-xl: 56px;
+
+  /* Scaled sizes — always size text with these, never with raw px, so the
+     Portal's font-size accessibility preference reaches the iframe. */
+  --ixo-fs-xs: calc(var(--ixo-font-size-xs) * var(--ixo-font-scale));
+  --ixo-fs-sm: calc(var(--ixo-font-size-sm) * var(--ixo-font-scale));
+  --ixo-fs-md: calc(var(--ixo-font-size-md) * var(--ixo-font-scale));
+  --ixo-fs-h4: calc(24px * var(--ixo-font-scale));
+  --ixo-fs-h3: calc(32px * var(--ixo-font-scale));
+  --ixo-fs-h2: calc(var(--ixo-font-size-lg) * var(--ixo-font-scale));
+  --ixo-fs-h1: calc(var(--ixo-font-size-xl) * var(--ixo-font-scale));
+
+  /* Spacing */
+  --ixo-spacing-xs: 10px;
+  --ixo-spacing-sm: 12px;
+  --ixo-spacing-md: 16px;
+  --ixo-spacing-lg: 20px;
+  --ixo-spacing-xl: 24px;
+
+  /* Radius */
+  --ixo-radius-sm: 4px;
+  --ixo-radius-md: 8px;
+  --ixo-radius-lg: 16px;
+  --ixo-radius-xl: 24px;
+
+  /* Control sizing */
+  --ixo-control-height-sm: 32px;
+  --ixo-control-height-md: 40px;
+  --ixo-input-height-sm: 36px;
+  --ixo-input-height-md: 46px;
+
+  /* Derived tints — the monochrome button/hover system. Derived from
+     --ixo-color-text so they follow the scheme automatically. */
+  --ixo-tint-5: color-mix(in srgb, var(--ixo-color-text) 5%, transparent);
+  --ixo-tint-10: color-mix(in srgb, var(--ixo-color-text) 10%, transparent);
+  --ixo-tint-14: color-mix(in srgb, var(--ixo-color-text) 14%, transparent);
+  --ixo-tint-45: color-mix(in srgb, var(--ixo-color-text) 45%, transparent);
+  --ixo-tint-82: color-mix(in srgb, var(--ixo-color-text) 82%, transparent);
+  --ixo-placeholder: color-mix(in srgb, var(--ixo-color-text) 40%, transparent);
+
+  --ixo-motion-fast: 120ms;
+  --ixo-motion-base: 200ms;
+  --ixo-easing: ease-out;
+}
+
+/* Dark scheme, host-driven. portal-theme.js sets this from INIT. */
+:root[data-portal-theme="dark"] {
+  color-scheme: dark;
+
+  --ixo-color-body: #050505;
+  --ixo-color-surface: #171818;
+  --ixo-color-surface-raised: #202020;
+  --ixo-color-border: #282828;
+  --ixo-color-text: #dddddd;
+  --ixo-color-text-muted: #999999;
+}
+
+:root[data-portal-theme="light"] {
+  color-scheme: light;
+}
+
+/* Standalone fallback. Scoped to :not([data-portal-theme]) so the OS
+   preference only applies while the host has not told us the scheme —
+   it must never fight a Portal-supplied theme. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-portal-theme]) {
+    color-scheme: dark;
+
+    --ixo-color-body: #050505;
+    --ixo-color-surface: #171818;
+    --ixo-color-surface-raised: #202020;
+    --ixo-color-border: #282828;
+    --ixo-color-text: #dddddd;
+    --ixo-color-text-muted: #999999;
+  }
+}
+
+/* The Portal injects a reduced-motion reset into its own document head.
+   The iframe is a separate document and inherits nothing — ship this. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

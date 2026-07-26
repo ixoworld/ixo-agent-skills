@@ -29,14 +29,17 @@
 
   function setPortalContext(payload) {
     const host = payload.host || {};
-    const theme = host.theme || {};
 
     initPayload = payload;
     if (typeof host.locale === "string" && host.locale) {
       document.documentElement.lang = host.locale;
     }
-    if (typeof theme.mode === "string" && theme.mode) {
-      document.documentElement.dataset.portalTheme = theme.mode;
+
+    // Theming lives in portal-theme.js (load it before this file). Runs on
+    // every INIT, including the re-INIT the Portal sends when the user
+    // toggles light/dark, so the app follows the host scheme live.
+    if (window.IxoPortalTheme) {
+      window.IxoPortalTheme.applyInit(payload);
     }
   }
 
@@ -127,6 +130,14 @@
       if (initPayload) handler(initPayload);
 
       return () => initHandlers.delete(handler);
+    },
+
+    getTheme() {
+      return window.IxoPortalTheme ? { mode: window.IxoPortalTheme.getMode(), tokens: window.IxoPortalTheme.getTokens() } : null;
+    },
+
+    onThemeChange(handler) {
+      return window.IxoPortalTheme ? window.IxoPortalTheme.onChange(handler) : () => {};
     },
 
     resize(size) {
