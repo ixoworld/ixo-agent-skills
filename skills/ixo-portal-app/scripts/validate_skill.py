@@ -11,6 +11,7 @@ from pathlib import Path
 
 REQUIRED_FILES = [
     "SKILL.md",
+    "AGENTS.md",
     "agents/openai.yaml",
     "references/portal-contract.md",
     "references/design-system.md",
@@ -136,10 +137,15 @@ def validate_bridge_template(path: Path) -> None:
         'const VERSION = "1.0"',
         'type: "READY"',
         'message.type === "INIT"',
+        'message.type === "NAVIGATE"',
+        'message.type === "ACTION"',
         'event.origin !== nextPortalOrigin',
         'window.parent.postMessage',
         'window.IxoPortalBridge',
         'ACK_TIMEOUT_MS',
+        'autoResize',
+        'onNavigate',
+        'onAction',
         'reportAnalytics',
         'reportError',
         'window.IxoPortalTheme',
@@ -148,6 +154,13 @@ def validate_bridge_template(path: Path) -> None:
     for snippet in required_snippets:
         require(snippet in bridge, f"portal-bridge.js is missing required snippet: {snippet}")
     require('postMessage(' in bridge and 'portalOrigin' in bridge, "bridge must post to the stored Portal origin after INIT")
+
+
+def validate_off_design_values(root: Path) -> None:
+    for rel in ("templates/styles.css", "templates/ixo-ui.css", "templates/ixo-tokens.css"):
+        content = read(root / rel)
+        for token in ("#00d2ff", "glassmorphism", "linear-gradient"):
+            require(token not in content, f"{rel} contains off-design value: {token}")
 
 
 def validate_package(root: Path) -> None:
@@ -164,6 +177,17 @@ def validate_package(root: Path) -> None:
     require(".claude/" not in skill_md, "SKILL.md must not reference Claude-local paths")
     require("references/portal-contract.md" in skill_md, "SKILL.md must point to the Portal contract reference")
     require("references/review-checklist.md" in skill_md, "SKILL.md must point to the review checklist")
+    require("AGENTS.md" in skill_md, "SKILL.md must point to AGENTS.md for harnesses that do not load skills")
+
+    agents_md = read(root / "AGENTS.md")
+    require(
+        "references/design-system.md" in agents_md,
+        "AGENTS.md must point to references/design-system.md as the design source of truth",
+    )
+    require("--ixo-" in agents_md, "AGENTS.md must carry the --ixo-* token rules")
+    require("ALLOWED_PORTAL_ORIGINS" in agents_md, "AGENTS.md must cover the production bridge origin allowlist")
+    require("SKILL.md" in agents_md, "AGENTS.md must point agents at SKILL.md for the workflow")
+    require("validate_skill.py" in agents_md, "AGENTS.md must tell agents to run the package validator")
 
     openai_yaml = read(root / "agents/openai.yaml")
     require('$ixo-portal-app' in openai_yaml, "agents/openai.yaml default_prompt must mention $ixo-portal-app")
@@ -185,6 +209,8 @@ def validate_package(root: Path) -> None:
     checklist = read(root / "references/review-checklist.md")
     require("Missing origin validation" in checklist, "review checklist must include origin-validation blockers")
     require("Wildcard iframe origins" in checklist, "review checklist must include wildcard-origin blockers")
+    require("ALLOWED_PORTAL_ORIGINS" in checklist, "review checklist must cover the production bridge allowlist")
+    require("ALLOWED_PORTAL_ORIGINS" in skill_md, "SKILL.md must require stripping development origins for production")
     require("Design Tokens" in checklist, "review checklist must include a design token section")
     require("Theming" in checklist, "review checklist must include a theming section")
 
@@ -193,6 +219,7 @@ def validate_package(root: Path) -> None:
     validate_theme_template(root / "templates/portal-theme.js")
     validate_tokens_template(root / "templates/ixo-tokens.css")
     validate_token_only_styles(root)
+    validate_off_design_values(root)
     validate_index_template(root / "templates/index.html")
 
 

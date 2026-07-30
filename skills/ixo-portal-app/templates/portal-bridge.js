@@ -3,12 +3,15 @@
 
   const PROTOCOL = "ixo.portal.iframe.v1";
   const VERSION = "1.0";
+  // http://localhost:3000 is development-only; remove it from production builds.
   const ALLOWED_PORTAL_ORIGINS = new Set(["{{PORTAL_ORIGIN}}", "http://localhost:3000"]);
   const ACK_TIMEOUT_MS = 30000;
 
   let portalOrigin = null;
   let initPayload = null;
   const initHandlers = new Set();
+  const navigateHandlers = new Set();
+  const actionHandlers = new Set();
   const pendingAcks = new Map();
 
   function isPortalEnvelope(message) {
@@ -111,6 +114,16 @@
 
     if (!portalOrigin || event.origin !== portalOrigin) return;
 
+    if (message.type === "NAVIGATE") {
+      navigateHandlers.forEach((handler) => handler(message.payload));
+      return;
+    }
+
+    if (message.type === "ACTION") {
+      actionHandlers.forEach((handler) => handler(message.payload));
+      return;
+    }
+
     if (message.type === "EVENT_ACK" && message.requestId) {
       const resolve = pendingAcks.get(message.requestId);
       if (resolve) {
@@ -132,6 +145,18 @@
       return () => initHandlers.delete(handler);
     },
 
+    onNavigate(handler) {
+      navigateHandlers.add(handler);
+
+      return () => navigateHandlers.delete(handler);
+    },
+
+    onAction(handler) {
+      actionHandlers.add(handler);
+
+      return () => actionHandlers.delete(handler);
+    },
+
     getTheme() {
       return window.IxoPortalTheme ? { mode: window.IxoPortalTheme.getMode(), tokens: window.IxoPortalTheme.getTokens() } : null;
     },
@@ -146,6 +171,29 @@
       const width = size && size.width ? Math.ceil(size.width) : undefined;
 
       return postToPortal("RESIZE", width ? { height, width } : { height });
+    },
+
+    autoResize(target) {
+      const node = target || document.body;
+      if (typeof window.ResizeObserver !== "function") {
+        window.IxoPortalBridge.resize();
+        return () => {};
+      }
+
+      let frame = null;
+      const observer = new ResizeObserver(() => {
+        if (frame) return;
+        frame = window.requestAnimationFrame(() => {
+          frame = null;
+          window.IxoPortalBridge.resize();
+        });
+      });
+      observer.observe(node);
+
+      return () => {
+        if (frame) window.cancelAnimationFrame(frame);
+        observer.disconnect();
+      };
     },
 
     navigate(payload) {

@@ -23,6 +23,7 @@ Read only the files needed for the task:
 - `references/design-system.md`: required for any UI work — building screens, styling, restyling an existing app, or reviewing visual consistency.
 - `references/review-checklist.md`: required for audits, compatibility reviews, and pre-publish checks.
 - `templates/`: starter files for new vanilla static apps.
+- `AGENTS.md`: condensed package map, working rules, and design rules for harnesses that do not load skills. `references/design-system.md` remains the design source of truth.
 
 ## Modes
 
@@ -63,6 +64,7 @@ Default choices:
 - Prefer a single static directory that can be hosted by any static file server.
 - Keep app-specific logic outside `portal-bridge.js`; treat the bridge as the stable host contract wrapper.
 - Do not invent manifest fields, message types, feature flags, or privileged actions outside `references/portal-contract.md`.
+- Style UI per `references/design-system.md`: monochrome buttons, neutral theme-aware surfaces, accent only for focus/selected/active states, `--ixo-radius-md` controls, flat at rest apart from the single glass shadow, compact headings. Respect the host theme mode delivered in `INIT`.
 
 Implementation flow:
 
@@ -111,6 +113,7 @@ Treat these as mandatory:
 - After `INIT`, use only the exact `host.origin` as `targetOrigin`.
 - Require exact `iframe.allowedOrigins` when the iframe origin differs from the manifest origin.
 - Never use wildcard origins in production configuration.
+- Strip development origins such as `http://localhost:3000` from the bridge `ALLOWED_PORTAL_ORIGINS` allowlist when hardening or deploying for production; ship only exact production Portal origins.
 - Never store private keys or long-lived secrets in the iframe.
 - Route signing, assistant prompts, action-block updates, auth refreshes, and transaction requests through Portal-mediated `EVENT` messages.
 - Treat `host.theme.tokens` as untrusted input: allowlist key names, bound value length, and reject values containing CSS control characters before assigning them.
@@ -121,8 +124,9 @@ When reviewing:
 
 1. Inspect the manifest, iframe entrypoint, message bridge, theming, hosting assumptions, and app layout.
 2. Check each item in `references/review-checklist.md`.
-3. Report blockers first, then warnings, then suggested fixes. Include file paths and specific lines when reviewing a local repo.
-4. Treat these as blockers:
+3. Check UI against the `references/design-system.md` rules (`--ixo-*` tokens only, monochrome buttons, accent reserved for focus and active state, single glass shadow, compact headings). Report design violations as warnings, citing the rule that fails.
+4. Report blockers first, then warnings, then suggested fixes. Include file paths and specific lines when reviewing a local repo.
+5. Treat these as blockers:
    - Missing origin validation for host messages.
    - Wildcard iframe origins.
    - Invalid or missing `protocol` / `version`.

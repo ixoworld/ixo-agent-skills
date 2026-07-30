@@ -55,6 +55,7 @@
       const themeReadout = document.getElementById("theme-readout");
       const dirtyButton = document.getElementById("dirty-button");
       let isDirty = false;
+      let stopAutoResize = null;
 
       window.IxoPortalBridge.onInit((payload) => {
         status.textContent = "Connected";
@@ -63,7 +64,9 @@
         domainName.title = payload.domain.did;
         walletAddress.textContent = payload.user.walletAddress || "Unavailable";
         chainNetwork.textContent = payload.chain.network;
-        window.IxoPortalBridge.resize();
+        if (!stopAutoResize) {
+          stopAutoResize = window.IxoPortalBridge.autoResize();
+        }
       });
 
       // The Portal re-sends INIT when the user toggles light/dark, so this

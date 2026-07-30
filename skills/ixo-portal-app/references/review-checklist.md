@@ -42,6 +42,7 @@ Use this checklist when auditing a static app for IXO Portal compatibility.
 ## Sandbox And Hosting
 
 - Production app is served over HTTPS.
+- Production bridge `ALLOWED_PORTAL_ORIGINS` contains only exact production Portal origins; no localhost or other development entries remain.
 - App works under `sandbox="allow-same-origin allow-scripts allow-forms allow-popups"`.
 - App does not require top-level navigation.
 - App does not rely on third-party cookies for core state.
