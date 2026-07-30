@@ -110,6 +110,32 @@ Every message includes:
 - `chain.network` and `chain.chainName`.
 - Optional `ucan.token`, `ucan.expiresAt`, and delegated capabilities.
 
+The Portal re-sends `INIT` whenever the payload changes — including when the user toggles light/dark, changes the font-size preference, or a UCAN is refreshed. Apps must treat `INIT` as idempotent and re-apply it, not latch the first one.
+
+### Theme
+
+```ts
+host.theme: {
+  mode: "light" | "dark";        // always resolved, never "auto"
+  tokens: Record<string, string>; // resolved CSS values, e.g. "#0EB8DC"
+}
+```
+
+Token values are literal CSS values, not `var(--mantine-color-*)` references: the iframe is a separate document on a separate origin and the Portal's custom properties do not exist inside it. Accent and status colours come from the active whitelabel palette, so they differ per ecosystem and must not be hardcoded by the app.
+
+Token keys map to `--ixo-<key>` custom properties. See `references/design-system.md` for the full table and `templates/portal-theme.js` for the applier.
+
+| Group      | Keys                                                                                         |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| Colour     | `color-scheme`, `color-body`, `color-surface`, `color-surface-raised`, `color-border`, `color-text`, `color-text-muted`, `color-accent`, `color-accent-hover`, `color-accent-muted`, `color-accent-contrast`, `color-success`, `color-danger`, `color-warning`, `color-glass`, `shadow-glass` |
+| Typography | `font-family`, `font-scale`, `font-size-xs`, `font-size-sm`, `font-size-md`, `font-size-lg`, `font-size-xl` |
+| Layout     | `spacing-xs`…`spacing-xl`, `radius-sm`…`radius-xl`, `control-height-sm`, `control-height-md`, `input-height-sm`, `input-height-md` |
+| Legacy     | `accent`, `text`, `surface`, `muted` — retained aliases; prefer the `color-*` keys            |
+
+`font-scale` is the user's Portal font-size preference (`0.875`–`1.25`) and must be applied as a multiplier on every text size.
+
+Unknown keys may be added over time. Apply what you recognise and ignore the rest; validate keys and values before writing them into the CSSOM.
+
 `ACTION` is reserved for host-driven app actions.
 
 `NAVIGATE` asks the iframe app to update its own route or mode:

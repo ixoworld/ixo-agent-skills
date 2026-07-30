@@ -1,89 +1,115 @@
 #!/usr/bin/env node
 'use strict';
 
-const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
 // ---------------------------------------------------------------------------
-// Credentials & Context
+// Worker URL
+// ---------------------------------------------------------------------------
+// Default base URL baked into the skill. The flow can override this by
+// setting `workerBaseUrl` on the payment block — the oracle then forwards
+// it to the skill via the `--worker-url=<url>` flag (works on every command).
+//
+// Resolution order: --worker-url flag > DEFAULT_WORKER_BASE_URL.
+
+const DEFAULT_WORKER_BASE_URL =
+  'https://yellowcard-worker-testnet.ixo-api.workers.dev';
+
+// ---------------------------------------------------------------------------
+// Auth
 // ---------------------------------------------------------------------------
 
-let _creds = null;
+// Skill-scoped path so the token can't collide with another skill's token
+// in the same sandbox. Hosts must write the freshly-minted invocation here
+// before each protected call.
+const UCAN_TOKEN_PATH = '/workspace/data/ixo-yellowcard/ucan_token';
 
-function loadCredentials() {
-  if (_creds) return _creds;
-  const apiKey = process.env._ORACLE_SECRET_YELLOWCARD_API_KEY;
-  const secretKey = process.env._ORACLE_SECRET_YELLOWCARD_SECRET_KEY;
-  const baseUrl = process.env._ORACLE_SECRET_YELLOWCARD_BASE_URL;
-  if (!apiKey) fatal('Missing _ORACLE_SECRET_YELLOWCARD_API_KEY');
-  if (!secretKey) fatal('Missing _ORACLE_SECRET_YELLOWCARD_SECRET_KEY');
-  if (!baseUrl) fatal('Missing _ORACLE_SECRET_YELLOWCARD_BASE_URL');
-  _creds = { apiKey, secretKey, baseUrl: baseUrl.replace(/\/+$/, '') };
-  return _creds;
-}
-
-function loadContext() {
-  return {
-    userDid: normalizeDid(process.env._SKILL_CONTEXT_USER_DID || ''),
-    sandboxId: process.env._SKILL_CONTEXT_SANDBOX_ID || '',
-    timestamp: process.env._SKILL_CONTEXT_TIMESTAMP || new Date().toISOString(),
-  };
-}
-
-function loadAdminDids() {
-  const raw = process.env._ORACLE_SECRET_YELLOWCARD_ADMIN_DIDS || '';
-  return raw.split(',').map(d => d.trim()).filter(Boolean);
-}
-
-function requireAdmin(ctx) {
-  const admins = loadAdminDids();
-  if (!ctx.userDid) fatal('No user DID in context — cannot authorize.');
-  if (admins.length === 0) fatal('No admin DIDs configured (YELLOWCARD_ADMIN_DIDS is empty).');
-  if (!admins.includes(ctx.userDid)) {
-    fatal(`Unauthorized: DID ${ctx.userDid} is not in the admin list.`);
+function getUcanToken() {
+  try {
+    const token = fs.readFileSync(UCAN_TOKEN_PATH, 'utf8').trim();
+    if (token) return token;
+  } catch {
+    // fall through to fatal
   }
+  fatal(
+    `Missing UCAN token at ${UCAN_TOKEN_PATH} — ` +
+      'the oracle must write the freshly-minted UCAN invocation (Base64 CAR) to this file before running this command. ' +
+      'Run `mkdir -p /workspace/data/ixo-yellowcard` once first if the directory does not exist.'
+  );
 }
 
 // ---------------------------------------------------------------------------
-// HMAC-SHA256 Signing & HTTP
+// HTTP Client
 // ---------------------------------------------------------------------------
 
-async function makeRequest(method, path, body) {
-  const { apiKey, secretKey, baseUrl } = loadCredentials();
-  const timestamp = new Date().toISOString();
+function resolveWorkerBaseUrl() {
+  const flag = parseArgs()['worker-url'];
+  const raw =
+    (typeof flag === 'string' && flag.trim()) || DEFAULT_WORKER_BASE_URL;
+  return raw.replace(/\/+$/, '');
+}
 
-  // HMAC signing: sign only the path portion (exclude query string)
-  const signPath = path.split('?')[0];
-  const hmac = crypto.createHmac('sha256', secretKey);
-  hmac.update(timestamp, 'utf8');
-  hmac.update(signPath, 'utf8');
-  hmac.update(method.toUpperCase(), 'utf8');
-  if (body) {
-    const bodyHash = crypto.createHash('sha256').update(JSON.stringify(body)).digest('base64');
-    hmac.update(bodyHash);
+async function workerRequest(method, urlPath, body) {
+  const url = `${resolveWorkerBaseUrl()}${urlPath}`;
+  const headers = { Accept: 'application/json' };
+  const isProtected = requiresAuth(urlPath);
+
+  // Add auth for protected endpoints
+  if (isProtected) {
+    const token = getUcanToken();
+    headers['Authorization'] = `Bearer ${token}`;
+    // Stderr-only diagnostic (never log token contents).
+    process.stderr.write(
+      `[yellowcard.js] ${method.toUpperCase()} ${url} — Bearer token attached (length=${token.length})\n`
+    );
+  } else {
+    process.stderr.write(`[yellowcard.js] ${method.toUpperCase()} ${url}\n`);
   }
-  const signature = hmac.digest('base64');
 
-  const url = `${baseUrl}${path}`;
-  const headers = {
-    'X-YC-Timestamp': timestamp,
-    'Authorization': `YcHmacV1 ${apiKey}:${signature}`,
-    'Accept': 'application/json',
-  };
   if (body) headers['Content-Type'] = 'application/json';
 
   const opts = { method: method.toUpperCase(), headers };
   if (body) opts.body = JSON.stringify(body);
 
-  const res = await fetch(url, opts);
+  let res;
+  try {
+    res = await fetch(url, opts);
+  } catch (err) {
+    process.stderr.write(
+      `[yellowcard.js] fetch failed for ${url}: ${err && err.message ? err.message : err}\n`
+    );
+    fatal(
+      `Could not reach worker at ${url}: ${err && err.message ? err.message : err}`
+    );
+  }
+
+  process.stderr.write(
+    `[yellowcard.js] ${url} → ${res.status} ${res.statusText}\n`
+  );
+
   let data;
   try {
     data = await res.json();
   } catch {
     data = await res.text();
   }
-  return { ok: res.ok, status: res.status, data };
+
+  if (!res.ok) {
+    process.stderr.write(
+      `[yellowcard.js] non-OK body: ${typeof data === 'string' ? data : JSON.stringify(data)}\n`
+    );
+    fatal(
+      (data && data.message) ||
+        `Worker returned ${res.status}: ${JSON.stringify(data)}`
+    );
+  }
+
+  return data;
+}
+
+function requiresAuth(urlPath) {
+  return urlPath.startsWith('/balance') || urlPath.startsWith('/payouts');
 }
 
 // ---------------------------------------------------------------------------
@@ -97,9 +123,9 @@ function fatal(message) {
 
 const OUTPUT_DIR = '/workspace/output';
 const COMMAND_OUTPUT_FILES = {
-  'discover': 'discover.json',
-  'rates': 'rates.json',
-  'balance': 'balance.json',
+  discover: 'discover.json',
+  rates: 'rates.json',
+  balance: 'balance.json',
   'propose-payout': 'proposal.json',
   'execute-payout': 'execute-result.json',
   'check-payout': 'check-result.json',
@@ -109,7 +135,6 @@ function output(data) {
   const json = JSON.stringify(data, null, 2);
   console.log(json);
 
-  // Write to output file for apply_sandbox_output_to_block
   const command = process.argv[2];
   const filename = COMMAND_OUTPUT_FILES[command];
   if (filename) {
@@ -126,12 +151,28 @@ function parseArgs() {
   const args = process.argv.slice(3);
   const parsed = {};
   for (let i = 0; i < args.length; i++) {
-    if (args[i].startsWith('--') && i + 1 < args.length && !args[i + 1].startsWith('--')) {
-      parsed[args[i].slice(2)] = args[i + 1];
-      i++;
-    } else if (args[i].startsWith('--')) {
-      parsed[args[i].slice(2)] = true;
+    const arg = args[i];
+    if (!arg.startsWith('--')) continue;
+    const stripped = arg.slice(2);
+
+    // `--key=value` form (single arg with `=`).
+    const eqIdx = stripped.indexOf('=');
+    if (eqIdx !== -1) {
+      const key = stripped.slice(0, eqIdx);
+      const value = stripped.slice(eqIdx + 1);
+      parsed[key] = value;
+      continue;
     }
+
+    // `--key value` form (two args).
+    if (i + 1 < args.length && !args[i + 1].startsWith('--')) {
+      parsed[stripped] = args[i + 1];
+      i++;
+      continue;
+    }
+
+    // Bare flag.
+    parsed[stripped] = true;
   }
   return parsed;
 }
@@ -140,10 +181,17 @@ function readStdin() {
   return new Promise((resolve, reject) => {
     let data = '';
     process.stdin.setEncoding('utf8');
-    process.stdin.on('data', chunk => { data += chunk; });
+    process.stdin.on('data', chunk => {
+      data += chunk;
+    });
     process.stdin.on('end', () => {
+      const trimmed = data.trim();
+      if (!trimmed) {
+        resolve(null); // empty stdin
+        return;
+      }
       try {
-        resolve(JSON.parse(data));
+        resolve(JSON.parse(trimmed));
       } catch (e) {
         reject(new Error(`Invalid JSON on stdin: ${e.message}`));
       }
@@ -152,34 +200,47 @@ function readStdin() {
   });
 }
 
-function stableStringify(obj) {
-  return JSON.stringify(obj, Object.keys(obj).sort());
-}
+// ---------------------------------------------------------------------------
+// Batch helpers
+// ---------------------------------------------------------------------------
+//
+// The worker is batch-only — every request body wraps an array. These
+// helpers normalize the caller's input into the expected shape so the
+// oracle (or a manual CLI user) doesn't have to know whether they're
+// passing a single item or many.
+//
+// Acceptable inputs for an `items`-style command (propose / execute):
+//   - { items: [...] }       → passed through
+//   - [...]                  → wrapped as { items: [...] }
+//   - { ... } single object  → wrapped as { items: [{...}] }
+//
+// Acceptable inputs for an `ids`-style command (status):
+//   - { ids: [...] }         → passed through
+//   - [...]                  → wrapped as { ids: [...] }
+//   - string                 → wrapped as { ids: [string] }
+//
+// Similarly for `countries` (discover) and `currencies` (rates), but those
+// also accept a comma-separated `--countries=NG,KE` / `--currencies=NGN,KES`
+// flag for ergonomic CLI use.
 
-async function hashProposal(payload) {
-  const str = stableStringify(payload);
-  const hash = crypto.createHash('sha256').update(str).digest('hex');
-  return hash;
-}
-
-function generateSequenceId() {
-  return crypto.randomUUID();
-}
-
-/**
- * Convert a Matrix user ID to a DID if needed.
- * Matrix format: @did-ixo-ixo1abc123:server.domain → did:ixo:ixo1abc123
- * Already a DID: returned as-is.
- */
-function normalizeDid(value) {
-  if (!value || typeof value !== 'string') return value;
-  const trimmed = value.trim();
-  if (trimmed.startsWith('did:')) return trimmed;
-  const match = trimmed.match(/^@did-([^:]+):(.+)$/);
-  if (match) {
-    return 'did:' + match[1].replace(/-/g, ':');
+function normaliseBatchWrapper(input, key) {
+  if (input == null) return null;
+  if (Array.isArray(input)) return { [key]: input };
+  if (typeof input === 'object') {
+    if (Array.isArray(input[key])) return { [key]: input[key] };
+    // Treat a single object as a 1-item batch.
+    return { [key]: [input] };
   }
-  return trimmed;
+  return null;
+}
+
+function parseCommaList(value) {
+  if (typeof value !== 'string') return null;
+  const parts = value
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -188,232 +249,173 @@ function normalizeDid(value) {
 
 async function cmdDiscover() {
   const args = parseArgs();
-  const country = args.country;
-  if (!country) fatal('Missing --country flag (e.g. --country NG)');
+  let countries = null;
 
-  const [channelsRes, networksRes] = await Promise.all([
-    makeRequest('GET', `/business/channels?country=${encodeURIComponent(country)}`),
-    makeRequest('GET', `/business/networks?country=${encodeURIComponent(country)}`),
-  ]);
-
-  if (!channelsRes.ok && !networksRes.ok) {
-    fatal(`Failed to discover for country ${country}: channels=${channelsRes.status}, networks=${networksRes.status}`);
+  // Highest priority: stdin (the oracle constructs the batch programmatically).
+  let stdinInput = null;
+  if (!process.stdin.isTTY) {
+    try {
+      stdinInput = await readStdin();
+    } catch (e) {
+      fatal(e.message);
+    }
+  }
+  if (stdinInput) {
+    const wrapped = normaliseBatchWrapper(stdinInput, 'countries');
+    if (wrapped) countries = wrapped.countries;
   }
 
-  const channels = channelsRes.ok ? channelsRes.data : { error: channelsRes.data };
-  const networks = networksRes.ok ? networksRes.data : { error: networksRes.data };
+  // CLI fallbacks: --countries=NG,KE or legacy --country=NG.
+  if (!countries) {
+    const flagList =
+      parseCommaList(args.countries) ||
+      (typeof args.country === 'string' ? [args.country] : null);
+    if (flagList) countries = flagList;
+  }
 
-  // Filter to withdrawal channels (payouts)
-  const withdrawChannels = Array.isArray(channels)
-    ? channels.filter(c => c.rampType === 'withdraw' && c.status === 'active')
-    : channels;
+  if (!countries || countries.length === 0) {
+    fatal(
+      'No countries provided. Pipe JSON `{"countries":["NG","KE"]}` to stdin OR pass --countries=NG,KE'
+    );
+  }
 
-  output({
-    success: true,
-    country,
-    channels: withdrawChannels,
-    networks: networksRes.ok ? networksRes.data : [],
-    message: `Found ${Array.isArray(withdrawChannels) ? withdrawChannels.length : '?'} active payout channels for ${country}`,
-  });
+  const data = await workerRequest('POST', '/channels', { countries });
+  output(data);
 }
 
 async function cmdRates() {
   const args = parseArgs();
-  const currency = args.currency;
-  if (!currency) fatal('Missing --currency flag (e.g. --currency NGN)');
+  let currencies = null;
 
-  const res = await makeRequest('GET', `/business/rates?currency=${encodeURIComponent(currency)}`);
-  if (!res.ok) fatal(`Failed to get rates for ${currency}: ${JSON.stringify(res.data)}`);
+  let stdinInput = null;
+  if (!process.stdin.isTTY) {
+    try {
+      stdinInput = await readStdin();
+    } catch (e) {
+      fatal(e.message);
+    }
+  }
+  if (stdinInput) {
+    const wrapped = normaliseBatchWrapper(stdinInput, 'currencies');
+    if (wrapped) currencies = wrapped.currencies;
+  }
 
-  output({
-    success: true,
-    currency,
-    rates: res.data,
-  });
+  if (!currencies) {
+    const flagList =
+      parseCommaList(args.currencies) ||
+      (typeof args.currency === 'string' ? [args.currency] : null);
+    if (flagList) currencies = flagList;
+  }
+
+  if (!currencies || currencies.length === 0) {
+    fatal(
+      'No currencies provided. Pipe JSON `{"currencies":["NGN","KES"]}` to stdin OR pass --currencies=NGN,KES'
+    );
+  }
+
+  const data = await workerRequest('POST', '/rates', { currencies });
+  output(data);
 }
 
 async function cmdBalance() {
-  const ctx = loadContext();
-  requireAdmin(ctx);
-
-  const res = await makeRequest('GET', '/business/account');
-  if (!res.ok) fatal(`Failed to get account balance: ${JSON.stringify(res.data)}`);
-
-  output({
-    success: true,
-    requester_did: ctx.userDid,
-    accounts: res.data.accounts || res.data,
-  });
+  // Balance is not yet batched — it's a single org-level fetch that doesn't
+  // benefit from batching. Kept as a plain GET.
+  const data = await workerRequest('GET', '/balance');
+  output(data);
 }
 
 async function cmdProposePayout() {
-  const ctx = loadContext();
-  requireAdmin(ctx);
-
-  let input;
+  let stdinInput;
   try {
-    input = await readStdin();
+    stdinInput = await readStdin();
   } catch (e) {
     fatal(e.message);
   }
-
-  // Validate required fields
-  const required = ['channelId', 'currency', 'destination'];
-  for (const field of required) {
-    if (!input[field]) fatal(`Missing required field: ${field}`);
+  const wrapped = normaliseBatchWrapper(stdinInput, 'items');
+  if (!wrapped || !Array.isArray(wrapped.items) || wrapped.items.length === 0) {
+    fatal(
+      'No items provided. Pipe JSON `{"items":[{...},{...}]}` (or a bare array, or a single object) to stdin.'
+    );
   }
-  if (!input.amount && !input.localAmount) fatal('Missing amount or localAmount (provide one)');
-  if (input.amount && input.localAmount) fatal('Provide either amount (USD) or localAmount (local currency), not both.');
-  if (!input.destination.accountNumber) fatal('Missing destination.accountNumber');
-  if (!input.destination.accountName) fatal('Missing destination.accountName (recipient name on account)');
-  if (!input.destination.accountType) fatal('Missing destination.accountType (bank or momo)');
-  if (!input.destination.networkId) fatal('Missing destination.networkId (from discover command)');
-  if (!input.destination.country) fatal('Missing destination.country');
-
-  if (!input.sender) fatal('Missing sender object (name, country, phone, email)');
-  if (!input.sender.name) fatal('Missing sender.name');
-  if (!input.sender.country) fatal('Missing sender.country');
-
-  const useLocalAmount = !!input.localAmount;
-  const amountValue = parseFloat(input.localAmount || input.amount);
-  if (isNaN(amountValue) || amountValue <= 0) fatal('Amount must be a positive number');
-
-  // Build the YellowCard payment payload
-  // Required top-level: channelId, sequenceId, reason, sender, destination, customerUID, customerType, forceAccept
-  // Required destination: accountNumber, accountName, accountType, networkId
-  // Use either amount (USD) or localAmount (local currency), not both
-  const sequenceId = generateSequenceId();
-  const transferPayload = {
-    channelId: input.channelId,
-    sequenceId,
-    ...(useLocalAmount ? { localAmount: amountValue } : { amount: amountValue }),
-    currency: input.currency,
-    country: input.destination.country,
-    reason: input.reason || 'other',
-    customerType: input.customerType || 'retail',
-    customerUID: normalizeDid(input.recipientDid) || ctx.userDid || '',
-    forceAccept: true,
-    sender: {
-      name: input.sender.name,
-      country: input.sender.country,
-      phone: input.sender.phone || '',
-      email: input.sender.email || '',
-      address: input.sender.address || '',
-      dob: input.sender.dob || '',
-      idType: input.sender.idType || '',
-      idNumber: input.sender.idNumber || '',
-    },
-    destination: {
-      accountName: input.destination.accountName,
-      accountNumber: input.destination.accountNumber,
-      accountType: input.destination.accountType,
-      networkId: input.destination.networkId,
-    },
-  };
-
-  // Include optional destination fields
-  if (input.destination.country) transferPayload.destination.country = input.destination.country;
-  if (input.destination.accountBank) transferPayload.destination.accountBank = input.destination.accountBank;
-
-  const proposalHash = await hashProposal(transferPayload);
-
-  output({
-    success: true,
-    proposal_id: proposalHash,
-    requester_did: ctx.userDid,
-    sequenceId,
-    transfer_payload: transferPayload,
-    summary: {
-      recipient_name: input.destination.accountName,
-      recipient_account: input.destination.accountNumber,
-      recipient_country: input.destination.country,
-      account_type: input.destination.accountType,
-      amount_type: useLocalAmount ? 'localAmount' : 'amount (USD)',
-      amount: amountValue,
-      currency: input.currency,
-      reason: transferPayload.reason,
-      recipient_did: transferPayload.customerUID,
-    },
-    message: 'Payout proposal created. Review the summary above and confirm to execute.',
-    created_at: ctx.timestamp,
-  });
+  const data = await workerRequest('POST', '/payouts/propose', wrapped);
+  output(data);
 }
 
 async function cmdExecutePayout() {
-  const ctx = loadContext();
-  requireAdmin(ctx);
-
-  let proposal;
+  let stdinInput;
   try {
-    proposal = await readStdin();
+    stdinInput = await readStdin();
   } catch (e) {
     fatal(e.message);
   }
 
-  if (!proposal.proposal_id) fatal('Missing proposal_id — pass the full proposal JSON from propose-payout.');
-  if (!proposal.transfer_payload) fatal('Missing transfer_payload — pass the full proposal JSON from propose-payout.');
-  if (!proposal.requester_did) fatal('Missing requester_did in proposal.');
+  // Each item must carry the trio `{ proposal_id, requester_did, transfer_payload }`.
+  // Allow callers to pipe the full propose-response items array directly — we
+  // strip to the trio for the executor.
+  const normaliseItem = item => {
+    if (!item || typeof item !== 'object') return null;
+    const { proposal_id, requester_did, transfer_payload } = item;
+    if (!proposal_id || !requester_did || !transfer_payload) return null;
+    return { proposal_id, requester_did, transfer_payload };
+  };
 
-  // Verify identity
-  if (proposal.requester_did !== ctx.userDid) {
-    fatal(`DID mismatch: proposal was created by ${proposal.requester_did} but current requester is ${ctx.userDid}. Only the original proposer can execute.`);
+  let items;
+  if (Array.isArray(stdinInput)) {
+    items = stdinInput.map(normaliseItem).filter(Boolean);
+  } else if (stdinInput && Array.isArray(stdinInput.items)) {
+    items = stdinInput.items.map(normaliseItem).filter(Boolean);
+  } else if (stdinInput && typeof stdinInput === 'object') {
+    const single = normaliseItem(stdinInput);
+    items = single ? [single] : [];
+  } else {
+    items = [];
   }
 
-  // Verify proposal integrity
-  const expectedHash = await hashProposal(proposal.transfer_payload);
-  if (expectedHash !== proposal.proposal_id) {
-    fatal('Proposal integrity check failed — the transfer payload has been modified since proposal creation.');
+  if (items.length === 0) {
+    fatal(
+      'No executable items found on stdin. Each item needs { proposal_id, requester_did, transfer_payload }.'
+    );
   }
 
-  // Submit to YellowCard
-  const res = await makeRequest('POST', '/business/payments', proposal.transfer_payload);
-
-  if (!res.ok) {
-    output({
-      success: false,
-      error: true,
-      message: 'YellowCard rejected the payment request.',
-      status_code: res.status,
-      details: res.data,
-      proposal_id: proposal.proposal_id,
-    });
-    process.exit(1);
-  }
-
-  output({
-    success: true,
-    proposal_id: proposal.proposal_id,
-    payment_id: res.data.id || null,
-    sequenceId: proposal.transfer_payload.sequenceId,
-    status: res.data.status || 'submitted',
-    requester_did: ctx.userDid,
-    recipient_did: proposal.transfer_payload.customerUID,
-    raw: res.data,
-    message: 'Payout submitted to YellowCard. Use check-payout to track status.',
-    executed_at: new Date().toISOString(),
-  });
+  const data = await workerRequest('POST', '/payouts/execute', { items });
+  output(data);
 }
 
 async function cmdCheckPayout() {
   const args = parseArgs();
-  const id = args.id;
-  if (!id) fatal('Missing --id flag (payment ID from execute-payout)');
+  let ids = null;
 
-  const res = await makeRequest('GET', `/business/payments/${encodeURIComponent(id)}`);
-  if (!res.ok) fatal(`Failed to check payment ${id}: ${JSON.stringify(res.data)}`);
+  let stdinInput = null;
+  if (!process.stdin.isTTY) {
+    try {
+      stdinInput = await readStdin();
+    } catch (e) {
+      fatal(e.message);
+    }
+  }
+  if (stdinInput) {
+    if (Array.isArray(stdinInput)) {
+      ids = stdinInput.filter(s => typeof s === 'string' && s.length > 0);
+    } else if (stdinInput && Array.isArray(stdinInput.ids)) {
+      ids = stdinInput.ids.filter(s => typeof s === 'string' && s.length > 0);
+    }
+  }
 
-  const payment = res.data;
-  output({
-    success: true,
-    payment_id: id,
-    status: payment.status || 'unknown',
-    amount: payment.amount,
-    currency: payment.currency,
-    localAmount: payment.localAmount,
-    rate: payment.rate,
-    recipient_did: payment.customerUID || null,
-    raw: payment,
-  });
+  if (!ids) {
+    const flagList =
+      parseCommaList(args.ids) ||
+      (typeof args.id === 'string' ? [args.id] : null);
+    if (flagList) ids = flagList;
+  }
+
+  if (!ids || ids.length === 0) {
+    fatal(
+      'No payment ids provided. Pipe JSON `{"ids":["..."]}` (or a bare array) to stdin OR pass --ids=id1,id2 (or --id=<single>).'
+    );
+  }
+
+  const data = await workerRequest('POST', '/payouts/status', { ids });
+  output(data);
 }
 
 // ---------------------------------------------------------------------------
@@ -426,19 +428,28 @@ async function main() {
   if (!command) {
     fatal(
       'Usage: node scripts/yellowcard.js <command> [options]\n' +
-      'Commands: discover, rates, balance, propose-payout, execute-payout, check-payout'
+        'Commands: discover, rates, balance, propose-payout, execute-payout, check-payout\n' +
+        'All commands (except balance) are batch — pipe an items/ids/countries/currencies array via stdin, or use CLI fallbacks.'
     );
   }
 
   switch (command) {
-    case 'discover':       return cmdDiscover();
-    case 'rates':          return cmdRates();
-    case 'balance':        return cmdBalance();
-    case 'propose-payout': return cmdProposePayout();
-    case 'execute-payout': return cmdExecutePayout();
-    case 'check-payout':   return cmdCheckPayout();
+    case 'discover':
+      return cmdDiscover();
+    case 'rates':
+      return cmdRates();
+    case 'balance':
+      return cmdBalance();
+    case 'propose-payout':
+      return cmdProposePayout();
+    case 'execute-payout':
+      return cmdExecutePayout();
+    case 'check-payout':
+      return cmdCheckPayout();
     default:
-      fatal(`Unknown command: ${command}. Valid commands: discover, rates, balance, propose-payout, execute-payout, check-payout`);
+      fatal(
+        `Unknown command: ${command}. Valid commands: discover, rates, balance, propose-payout, execute-payout, check-payout`
+      );
   }
 }
 

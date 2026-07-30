@@ -1,0 +1,61 @@
+{
+  "jobs": [
+    {
+      "jobId": "daily-udid-runtime-scan",
+      "cadence": "daily",
+      "inputScope": {
+        "window": "P1D",
+        "flowInstances": "all-active-and-recently-completed",
+        "dataLanes": "all",
+        "evidence": ["udid", "auditTrail", "agentOutbox", "agentLeases", "validationResults"]
+      },
+      "evaluationGoal": "Find recent failed, slow, stuck, blocked, overdue, or validation-mismatch patterns.",
+      "requiredEvidence": ["cohortWindow", "flowId", "instanceCount", "udidCount", "runtimeEvents"],
+      "outputTemplate": "udid-evaluation-report.json",
+      "handoffTarget": "$flow-improvement-agent"
+    },
+    {
+      "jobId": "weekly-flow-design-synthesis",
+      "cadence": "weekly",
+      "inputScope": {
+        "window": "P7D",
+        "flowInstances": "completed-and-archived",
+        "dataLanes": "all",
+        "evidence": ["udid", "blockedOverduePatterns", "actorCapabilityPatterns", "validationResults"]
+      },
+      "evaluationGoal": "Identify recurring design defects, actor assignment failures, UCAN friction, and weak template assumptions.",
+      "requiredEvidence": ["udidCount", "failurePatterns", "blockedOverduePatterns", "actorCapabilityPatterns"],
+      "outputTemplate": "flow-design-patch-proposal.json",
+      "handoffTarget": "governance-then-$manage-flow"
+    },
+    {
+      "jobId": "post-cycle-ralph-loop-review",
+      "cadence": "after-flow-cycle-archive",
+      "inputScope": {
+        "window": "cycle",
+        "flowInstances": "one-archived-cycle-cohort",
+        "dataLanes": "cycle-data-lanes",
+        "evidence": ["udid", "agent.memory", "agent.validation", "agent.escalation"]
+      },
+      "evaluationGoal": "Summarize completed cycle outcomes and propose next-cycle improvements where evidence supports them.",
+      "requiredEvidence": ["finalStateSummary", "udidResult", "memoryRecords", "validationEvents"],
+      "outputTemplate": "udid-evaluation-report.json",
+      "handoffTarget": "$flow-improvement-agent"
+    },
+    {
+      "jobId": "regression-watch-after-approved-patch",
+      "cadence": "after-approved-patch",
+      "inputScope": {
+        "window": "P7D",
+        "flowInstances": "post-patch-instances",
+        "dataLanes": "affected-data-lanes",
+        "evidence": ["baselineReport", "postPatchUdids", "runtimeEvents"]
+      },
+      "evaluationGoal": "Compare post-patch UDID and runtime outcomes against the baseline to confirm improvement or detect regression.",
+      "requiredEvidence": ["baselineMetric", "postPatchMetric", "cohortSize", "affectedSurface"],
+      "outputTemplate": "udid-evaluation-report.json",
+      "handoffTarget": "$flow-improvement-agent"
+    }
+  ]
+}
+

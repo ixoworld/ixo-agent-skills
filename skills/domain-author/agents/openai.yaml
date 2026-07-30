@@ -1,0 +1,4 @@
+interface:
+  display_name: "Domain Author"
+  short_description: "Safely author and validate IXO domain packages"
+  default_prompt: "Use $domain-author to create and validate a draft IXO domain package from pinned specification and template sources."

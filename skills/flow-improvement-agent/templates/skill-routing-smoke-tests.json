@@ -1,0 +1,53 @@
+{
+  "name": "flow-improvement-skill-routing-smoke-tests",
+  "cases": [
+    {
+      "prompt": "Evaluate all UDIDs for this flow over the last week",
+      "expectedSkill": "flow-improvement-agent",
+      "reason": "Aggregate UDID evaluation across a cohort is fleet-level learning."
+    },
+    {
+      "prompt": "Why is this node blocked right now?",
+      "expectedSkill": "flow-agent",
+      "reason": "Single-instance live node diagnosis is runtime operation."
+    },
+    {
+      "prompt": "Apply this approved missing-input patch",
+      "expectedSkill": "manage-flow",
+      "reason": "Applying an approved template change is BaseUcanFlow authoring."
+    },
+    {
+      "prompt": "Create a new flow template",
+      "expectedSkill": "manage-flow",
+      "reason": "Creating templates belongs to flow authoring."
+    },
+    {
+      "prompt": "Propose runtime engine improvements from validation mismatch patterns",
+      "expectedSkill": "flow-improvement-agent",
+      "reason": "Fleet-level recurring validation mismatch analysis produces proposal-only runtime improvements."
+    }
+  ],
+  "negativeChecks": [
+    {
+      "skill": "flow-improvement-agent",
+      "mustNot": "call setup_flow"
+    },
+    {
+      "skill": "flow-improvement-agent",
+      "mustNot": "execute AgentCommand records"
+    },
+    {
+      "skill": "flow-improvement-agent",
+      "mustNot": "directly patch runtime code"
+    },
+    {
+      "skill": "flow-improvement-agent",
+      "mustNot": "infer improvements without UDID or runtime evidence"
+    },
+    {
+      "skill": "flow-improvement-agent",
+      "mustNot": "collapse single-instance incidents into fleet-wide design conclusions without cohort evidence"
+    }
+  ]
+}
+

@@ -5,28 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <title>{{APP_NAME}}</title>
+    <link rel="stylesheet" href="./ixo-tokens.css" />
+    <link rel="stylesheet" href="./ixo-ui.css" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="app-shell">
+    <main class="ixo-app app-shell">
       <header class="app-header">
-        <div>
-          <p class="eyebrow">IXO Portal App</p>
-          <h1>{{APP_NAME}}</h1>
+        <div class="ixo-stack app-title">
+          <p class="ixo-eyebrow">{{APP_NAME}}</p>
+          <h2>Domain context</h2>
         </div>
-        <span class="status" id="portal-status">Waiting for Portal</span>
+        <span class="ixo-badge" id="portal-status">Waiting for Portal</span>
       </header>
 
-      <section class="panel">
-        <h2>Domain context</h2>
-        <dl class="context-grid" id="domain-context">
+      <section class="ixo-panel">
+        <dl class="ixo-dl">
           <div>
             <dt>Domain</dt>
-            <dd id="domain-name">Unavailable</dd>
+            <dd class="ixo-truncate" id="domain-name">Unavailable</dd>
           </div>
           <div>
             <dt>Wallet</dt>
-            <dd id="wallet-address">Unavailable</dd>
+            <dd class="ixo-truncate ixo-numeric" id="wallet-address">Unavailable</dd>
           </div>
           <div>
             <dt>Network</dt>
@@ -35,32 +36,44 @@
         </dl>
       </section>
 
-      <section class="actions" aria-label="Portal actions">
-        <button type="button" id="prompt-button">Ask assistant</button>
-        <button type="button" id="fullscreen-button" class="secondary">Open fullscreen</button>
-        <button type="button" id="dirty-button" class="secondary">Mark unsaved</button>
+      <section class="ixo-row app-actions" aria-label="Portal actions">
+        <button type="button" class="ixo-btn ixo-btn--primary" id="fullscreen-button">Open fullscreen</button>
+        <button type="button" class="ixo-btn" id="prompt-button">Ask assistant</button>
+        <button type="button" class="ixo-btn ixo-btn--ghost" id="dirty-button">Mark unsaved</button>
       </section>
+
+      <p class="ixo-muted" id="theme-readout">Theme: system</p>
     </main>
 
+    <script src="./portal-theme.js"></script>
     <script src="./portal-bridge.js"></script>
     <script>
       const status = document.getElementById("portal-status");
       const domainName = document.getElementById("domain-name");
       const walletAddress = document.getElementById("wallet-address");
       const chainNetwork = document.getElementById("chain-network");
+      const themeReadout = document.getElementById("theme-readout");
       const dirtyButton = document.getElementById("dirty-button");
       let isDirty = false;
       let stopAutoResize = null;
 
       window.IxoPortalBridge.onInit((payload) => {
         status.textContent = "Connected";
-        status.classList.add("is-connected");
+        status.className = "ixo-badge ixo-badge--success";
         domainName.textContent = payload.domain.name || payload.domain.did;
+        domainName.title = payload.domain.did;
         walletAddress.textContent = payload.user.walletAddress || "Unavailable";
         chainNetwork.textContent = payload.chain.network;
         if (!stopAutoResize) {
           stopAutoResize = window.IxoPortalBridge.autoResize();
         }
+      });
+
+      // The Portal re-sends INIT when the user toggles light/dark, so this
+      // fires on every scheme change. CSS follows the tokens on its own —
+      // subscribe only for values CSS cannot reach (canvas, charts, SVG).
+      window.IxoPortalBridge.onThemeChange(({ mode }) => {
+        themeReadout.textContent = `Theme: ${mode}`;
       });
 
       document.getElementById("fullscreen-button").addEventListener("click", () => {

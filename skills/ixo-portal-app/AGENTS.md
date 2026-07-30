@@ -1,16 +1,16 @@
 # AGENTS.md — IXO Portal App Skill
 
-Instructions for any coding agent working in this package or using it to build, harden, or review static apps embedded by the IXO Portal domain iframe framework (`/domain/[entityDid]/app/[appId]`).
+Instructions for any coding agent working in this package or using it to build, style, harden, or review static apps embedded by the IXO Portal domain iframe framework (`/domain/[entityDid]/app/[appId]`).
 
 ## Package map
 
 | File | Purpose |
 | --- | --- |
-| `SKILL.md` | Workflow, modes (build / hardening / review), and output expectations. Read first. |
-| `DESIGN.md` | Design system source of truth: tokens (frontmatter) plus rules. Read before producing or changing any UI. |
+| `SKILL.md` | Workflow, modes (build / hardening / design / review), and output expectations. Read first. |
+| `references/design-system.md` | Design source of truth: the `--ixo-*` token table, component specs, light/dark rules, layout modes. Read before producing or changing any UI. |
 | `references/portal-contract.md` | The Portal iframe contract: discovery, manifest, lifecycle, message schemas, security. The only source of valid message types and manifest fields. |
 | `references/review-checklist.md` | Audit checklist for compatibility reviews and pre-publish checks. |
-| `templates/` | Starter files for new vanilla static apps (`manifest.json`, `index.html`, `styles.css`, `portal-bridge.js`). |
+| `templates/` | Starter files for new vanilla static apps (`manifest.json`, `index.html`, `ixo-tokens.css`, `ixo-ui.css`, `styles.css`, `portal-theme.js`, `portal-bridge.js`). |
 | `scripts/validate_skill.py` | Package self-check. Run `python3 scripts/validate_skill.py .` after editing any skill file. |
 | `agents/openai.yaml` | OpenAI-specific interface metadata. |
 
@@ -18,68 +18,60 @@ Instructions for any coding agent working in this package or using it to build, 
 
 - The Portal contract in `references/portal-contract.md` is authoritative. Never invent message types, manifest fields, feature flags, or privileged actions that it does not define.
 - Build vanilla HTML, CSS, and JavaScript. No frameworks, bundlers, or package dependencies unless the user explicitly asks.
-- Keep app logic out of `templates/portal-bridge.js`; the bridge is the stable host-contract wrapper.
+- Keep app logic out of `templates/portal-bridge.js` and `templates/portal-theme.js`; they are the stable host-contract wrappers.
+- Template load order is fixed: `ixo-tokens.css` → `ixo-ui.css` → `styles.css`, then `portal-theme.js` → `portal-bridge.js`.
 - Security is non-negotiable: validate `event.origin` on every message, validate `protocol`/`version`/`type`, use exact `targetOrigin` after `INIT`, never use wildcard origins in production, never store private keys or long-lived secrets in the iframe.
+- Treat `host.theme.tokens` as untrusted input: allowlist key names, bound value length, and reject CSS control characters before writing them into the CSSOM.
 - Before production deployment, strip development origins such as `http://localhost:3000` from the bridge `ALLOWED_PORTAL_ORIGINS` allowlist; ship only exact production Portal origins.
 - After editing files in this package, run `python3 scripts/validate_skill.py .` and fix every error before finishing.
 
 ## Design instructions
 
-These rules are distilled from `DESIGN.md`. Apply them to every UI you build, harden, or review for the Portal. Full token values live in the `DESIGN.md` frontmatter; when anything here conflicts with `DESIGN.md`, `DESIGN.md` wins.
+These rules are distilled from `references/design-system.md`. Apply them to every UI you build, style, harden, or review for the Portal. Full token values and component specs live in that reference; when anything here conflicts with it, the reference wins.
 
-**Creative north star: "The Safe Collaboration Desk."** A restrained product workspace where people, forms, editors, maps, and AI agents share context without the interface becoming theatrical. Workspace-native, not a detached concept page. AI collaboration is expressed through legible state, authorship, intent, and next actions — never mascots or novelty visuals.
+**Creative north star:** the Portal is quiet, dense, and instrument-like — a monochrome surface with a single accent doing all the signalling. An embedded app is a plugin surface inside a product, not a standalone site. Craft shows up as restraint and precision, not decoration.
 
-### Color
+### Tokens
 
-Quiet neutral field, ink-led actions, blue reserved for signal.
+Two layers, in order: `templates/ixo-tokens.css` declares every `--ixo-*` property for both schemes, then the Portal's `INIT` payload overrides them through `templates/portal-theme.js` with the live whitelabel palette and the user's font-scale.
 
-| Token | Value | Use |
-| --- | --- | --- |
-| Ink | `#000000` | Primary actions, decisive controls. Use sparingly. |
-| Ink Soft | `#333333` | Softer black for secondary text. |
-| Surface | `#ffffff` | Primary light surface, light navigation, popups. |
-| Surface Muted | `#f1f1f1` | Default muted field, active tabs. |
-| Portal Blue | `#0885ff` | Focus, selected, progress, agent-adjacent states only. |
-| Agent Signal Blue | `#16abff` | Secondary agent/focus glow. A signal, never a theme. |
-| Code Charcoal / Code Ink | `#161616` / `#e1e1e1` | Code blocks, dark in both schemes. |
-| AppShell Graphite | `#1f1f1f` | Dark navigation surfaces. |
-| Ink Tints | `#0000000d` (5%) / `#0000001a` (10%) | Secondary/ghost button fills and hovers. |
-
-- **The One Accent Rule.** Blue belongs to focus, selected, progress, or agent signal states. Forbidden as decorative wash, hero gradient, or generic crypto accent.
-- **The Neutral Field Rule.** Most work surfaces are neutral and theme-aware. When in doubt use neutral/text tokens instead of hardcoding new grays.
-- **The Code Island Rule.** Code blocks stay dark-on-dark (`#161616` / `#e1e1e1`) across schemes; editor text colors never leak into them.
+- **Token-only rule.** Every colour, radius, spacing, and font size in app CSS is a `var(--ixo-*)` reference. Raw hex, `rgb()`, or hardcoded px for themed properties is a review blocker — it cannot follow the scheme or the ecosystem palette. Only `ixo-tokens.css` declares raw values.
+- Never read the Portal's `--mantine-color-*` variables. The iframe is a separate document on a separate origin; they do not exist in it.
+- Accent and status colours are whitelabel and arrive at runtime. Never hardcode the default turquoise.
+- Size text with the `--ixo-fs-*` variables so the Portal's `font-scale` accessibility preference applies inside the iframe.
 
 ### Typography
 
-Inherited product sans stack; mono stack from `DESIGN.md` for code. Scale: Display 700 40/1.15 (editor titles only) · Headline 700 30/1.2 · Title 700 24/1.25 · Small Title 700 20/1.3 · Label 600 18/1.35 · Body 400 16/1.5 (prose ~65–75ch outside dense surfaces).
-
-- **The Inherited Type Rule.** No display fonts or branded type pairings in app surfaces. Spend effort on hierarchy, spacing, and state instead.
-- **The Dense Title Rule.** Headings in editors, panels, forms, and sidebars stay compact. No hero-scale type in product chrome.
-
-### Elevation
-
-Flat by default; structure comes from tonal layering, inset borders, and state color.
-
-- **Inset Control Ring** `inset 0 0 0 1px <neutral>` — default control separation. **Accent Focus Ring** `inset 0 0 0 1px #0885ff` — focus state. **Popover Lift** `0 4px 12px rgba(0,0,0,0.08)` — dropdown/popover separation only.
-- **The Flat At Rest Rule.** Surfaces are flat at rest; depth appears through tonal contrast and state rings before shadow.
-- **The Popover Exception Rule.** Shadow only when a floating layer needs separation from the canvas. Cards, panels, and buttons at rest never get one.
+Inherited Inter-led product stack; weights 300 / 400 / 500 / 700 only. Body copy is 400 — use colour or size for emphasis, never a weight bump. Headings match the Portal's scale (h1 56 / h2 40 / h3 32 / h4 24), line-height 1.2 headings and 1.5 body. Button labels are 500 with `0.01em` tracking. No new font families and no branded type pairings.
 
 ### Components
 
-- **Radii:** controls (buttons, inputs, dropdowns, code blocks) 8px; surfaces 12px; selected editor nodes 16px; pills 40px (pill controls only). Never 32px+ on cards or inputs.
-- **Buttons:** primary is ink-filled with surface text, 40px min height, 0 20px padding; hover lightens toward an 82% text mix. Secondary/ghost uses 5% ink tint (10% on hover), same radius and height. Focus uses the same visible ring language as inputs.
-- **Inputs:** filled neutral background, 8px radius, 16px text, 36px min height, inset neutral ring; focus switches the ring to accent — no glow, thick outlines, or layout-shifting borders. Errors: red-5 plus 10% red tint. Disabled: opacity 0.5, `not-allowed` cursor.
-- **Cards/containers:** not the default layout answer. Transparent or neutral backgrounds; true white reserved for light navigation and popups; 16px primary internal padding; inset rings or neutral borders, never decorative outlines.
-- **Dropdowns:** neutral surface, 8px radius, 8px item padding; selected items use accent fill with white text; hover/focus uses a neutral step, no extra border.
-- **Selection chips:** selected uses a 12% accent tint; checked uses accent fill; unselected hover stays neutral.
-- **Scrollbars:** thin (6px), overlay, transparent until hover or focus-within, non-layout-shifting.
+- **Buttons are monochrome.** Primary fills with `color-text` on `color-body`; secondary is the workhorse at 5% text tint (10% on hover); ghost is transparent. Accent is never a button fill. Default height 32px (`sm`), 40px for form CTAs (`md`), radius `md`. Disabled keeps opacity 1 and tints instead. Icon-only buttons are square and carry `aria-label`.
+- **Inputs** are filled: `color-surface`, 1px `color-border`, radius `md`, 36px or 46px tall, weight 400, accent border on focus, label above the field.
+- **Surfaces:** panels are `color-surface` with a hairline border, radius `md`, `spacing-lg` padding. The glass panel (radius `xl`, `backdrop-filter`, `shadow-glass`) is the one elevation in the system — reserve it for hero or floating surfaces. Prefer in-page panels over modals inside an iframe.
+- **Status and data:** pill badges tinted at ~12% of the status colour; tables use horizontal hairlines only, no vertical rules; charts sequence accent → success → warning → danger → muted and never encode meaning by colour alone.
+- Use the `ixo-*` classes from `templates/ixo-ui.css` rather than re-deriving component styles.
+
+### Light and dark
+
+Both schemes are first-class and the Portal defaults to dark. The scheme toggle reaches the app as a **re-sent `INIT`** — apply tokens on every `INIT`, never latch the first payload. Drive CSS from `data-portal-theme` on `<html>`, and keep `@media (prefers-color-scheme: dark)` scoped to `:root:not([data-portal-theme])` so standalone and embedded behaviour never fight. Values CSS cannot reach — canvas, charts, inline SVG — must re-read tokens in an `onThemeChange` handler. Never hardcode `#fff` or `#000`. Keep `<body>` transparent so the Portal canvas shows through. Verify both schemes before calling the work done.
+
+### Motion and accessibility
+
+Transitions 120–200ms `ease-out` on `opacity`, `transform`, and colour only. Always ship the `prefers-reduced-motion` block from `ixo-tokens.css`; the Portal's global reset does not cross into the iframe. Focus is never removed — `:focus-visible` keeps a 2px accent outline at 2px offset. Contrast ≥ 4.5:1 for body text and ≥ 3:1 for large text and borders, in both schemes. Targets ≥ 24px, 44px for primary phone actions.
+
+### Layout
+
+Design `domains-panel` first — it is the tightest frame and the common default — then verify `domains` and `fullscreen`. Grids collapse to one column below 720px and use `minmax(0, 1fr)` so long DIDs cannot push a row past the frame. Keep fixed-position UI out of the top-right corner where the Portal renders its fullscreen control. Send `RESIZE` after content height changes (`autoResize()` handles this) rather than relying on internal scrolling.
 
 ### Do / Don't
 
-Do: theme-aware neutral surfaces; rare ink-led primary actions; normalize third-party UI (BlockNote, SurveyJS) into the portal vocabulary before adding new visual language; make collaboration state, authorship, intent, and next actions legible without crowding.
+Do: theme-aware neutral surfaces; one accent carrying meaning; the neutral ramp for hierarchy; the spacing scale for rhythm; tabular figures for numeric columns; genuine care for empty, loading, and error states.
 
-Don't: generic SaaS, crypto dashboards, token-price tooling, speculative Web3 landing pages, or over-decorated AI workflow apps; ornamental gradients, empty card grids, finance-dashboard cliches; broad blue washes, purple gradients, neon accents, or glassmorphism; a 1px border paired with a large soft shadow; hero-scale type or marketing-page composition inside authenticated portal workflows; AI agents treated as novelty instead of practical collaborators.
+Don't: introduce a second brand (new fonts, gradient headers, drop-shadow stacks, pill-everything); use accent as a large background or button fill; duplicate Portal navigation with app chrome; animate on load beyond a subtle fade; reach for a UI framework.
+
+The test: screenshot the app next to a Portal page in both schemes. If a reviewer can tell where the Portal ends and the app begins by anything other than content, it is not done.
 
 ### Reviewing for design
 
-In review mode, check UI against these rules in addition to `references/review-checklist.md`. Report design violations as warnings (the contract checklist defines blockers), citing the rule by name (e.g. "violates the One Accent Rule").
+In review mode, check UI against these rules in addition to `references/review-checklist.md`. Hardcoded theme colours and theme applied only on the first `INIT` are blockers; the remaining design gaps are warnings. Cite the rule that fails.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Error Resolver"
+  short_description: "Explain IXO/Cosmos error output"
+  default_prompt: "Use $error-resolver to explain this IXO transaction error and give safe next steps."

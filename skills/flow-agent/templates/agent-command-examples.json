@@ -1,0 +1,159 @@
+{
+  "commands": [
+    {
+      "type": "diagnose_blocker",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "collect-evidence",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/observe",
+      "idempotencyKey": "flow:ralph:example:collect-evidence:diagnose:missing-input",
+      "reason": "The node is blocked because required evidence input is missing.",
+      "payload": {
+        "blockerCause": "missing_input",
+        "observations": ["No evidence reference is present in the node runtime inputs."],
+        "nextStep": "notify assigned actor to provide evidence"
+      }
+    },
+    {
+      "type": "assign_actor",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "review-claim",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/node/assign",
+      "idempotencyKey": "flow:ralph:example:review-claim:assign:evaluator-1",
+      "reason": "The review node has no assignee and evaluator-1 has the required UCAN.",
+      "payload": {
+        "assigneeDid": "did:ixo:entity:evaluator-1",
+        "requiredCapability": "flow/node/execute",
+        "selectionReason": "Actor has active delegation for this node.",
+        "notify": true
+      }
+    },
+    {
+      "type": "notify_actor",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "review-claim",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/notify",
+      "idempotencyKey": "flow:ralph:example:review-claim:notify:overdue-window-1",
+      "reason": "The assigned review action is overdue.",
+      "payload": {
+        "recipients": ["did:ixo:entity:evaluator-1"],
+        "messagePurpose": "overdue_node",
+        "dedupeKey": "review-claim:overdue-window-1",
+        "escalationWindow": "PT24H"
+      }
+    },
+    {
+      "type": "execute_action",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "submit-webhook",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/node/execute",
+      "idempotencyKey": "flow:ralph:example:submit-webhook:execute:v1",
+      "reason": "Inputs are valid and the Flow Agent has authority to execute this action.",
+      "payload": {
+        "actionType": "webhook/trigger",
+        "validatedInputs": {
+          "endpointRef": "webhook:partner-status",
+          "bodyRef": "runtime:claim-summary"
+        },
+        "upstreamReferences": ["review-claim"],
+        "executionIdempotencyKey": "webhook:partner-status:claim-123"
+      }
+    },
+    {
+      "type": "validate_external_state",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "submit-webhook",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/mutation/execute",
+      "idempotencyKey": "flow:ralph:example:submit-webhook:validate:receipt-123",
+      "reason": "The webhook execution returned a receipt and must be validated before commit.",
+      "payload": {
+        "validator": {
+          "source": "webhook-receipt-api",
+          "expectedState": {
+            "receiptId": "receipt-123",
+            "status": "accepted"
+          },
+          "timeout": "PT5M",
+          "onMismatch": "record validation_mismatch and notify operator"
+        }
+      }
+    },
+    {
+      "type": "submit_claim",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "submit-claim",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/claim/submit",
+      "idempotencyKey": "flow:ralph:example:submit-claim:claim-123",
+      "reason": "All node actions are done and the claim can be submitted.",
+      "payload": {
+        "claimCollection": "did:ixo:entity:claims",
+        "claimant": "did:ixo:entity:operator",
+        "evidenceRefs": ["ipfs://evidence"],
+        "claimIdempotencyKey": "claim-123"
+      }
+    },
+    {
+      "type": "watch_udid",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "submit-claim",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/observe",
+      "idempotencyKey": "flow:ralph:example:submit-claim:watch-udid:claim-123",
+      "reason": "The submitted claim needs a UDID/evaluation result before archiving.",
+      "payload": {
+        "claimRef": "claim-123",
+        "watchStrategy": "subscription",
+        "timeout": "PT30M",
+        "notifyOnTimeout": ["did:ixo:entity:operator"]
+      }
+    },
+    {
+      "type": "archive_flow",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "archive-loop",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/archive",
+      "idempotencyKey": "flow:ralph:example:archive:cycle-1",
+      "reason": "The flow is complete, UDID is present, and memory has been recorded.",
+      "payload": {
+        "archiveReason": "completed",
+        "finalStateSummary": "All nodes done, claim accepted, UDID observed.",
+        "memoryRefs": ["auditTrail:agent.memory:cycle-1"],
+        "repeatCycle": false
+      }
+    },
+    {
+      "type": "propose_config_change",
+      "flowId": "flow:ralph:example",
+      "flowUri": "matrix:room/!example:ixo.world",
+      "nodeId": "collect-evidence",
+      "actorDid": "did:ixo:agent:flow-agent",
+      "capability": "flow/config/propose",
+      "idempotencyKey": "flow:ralph:example:collect-evidence:proposal:input-schema",
+      "reason": "The node repeatedly blocks because required input schema is stale.",
+      "payload": {
+        "proposal": {
+          "problem": "Input schema does not match submitted evidence format.",
+          "proposedChange": "Add an evidence URI input to the collect-evidence node.",
+          "affectedNodes": ["collect-evidence"],
+          "risk": "Low; aligns runtime input with observed evidence payload.",
+          "requiredApprover": "did:ixo:entity:flow-governance"
+        }
+      }
+    }
+  ]
+}
+

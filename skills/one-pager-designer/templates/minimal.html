@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>One-pager - replace with real title</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm;
+    }
+
+    :root {
+      --ink: #111111;
+      --muted: #5a5a5a;
+      --accent: #2d4a6b;
+      --bg: #ffffff;
+      --rule: #e6e6e6;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: var(--ink);
+      background: var(--bg);
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header { margin-bottom: 24px; }
+
+    h1 {
+      font-size: 28pt;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    h2 {
+      font-size: 14pt;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 24px 0 8px;
+    }
+
+    h3 {
+      font-size: 10pt;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      margin: 14px 0 4px;
+    }
+
+    p { margin: 0 0 10px; }
+
+    .lede {
+      font-size: 13pt;
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+
+    .eyebrow {
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    .cols-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .cols-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .callout {
+      border-left: 3px solid var(--accent);
+      padding: 8px 14px;
+      margin: 20px 0;
+      color: var(--ink);
+    }
+
+    footer {
+      margin-top: 28px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule);
+      color: var(--muted);
+      font-size: 10pt;
+    }
+
+    footer strong { color: var(--ink); }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .cols-2, .cols-3 { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Replace with section label or org name</p>
+      <h1>Replace with a real headline as a sentence</h1>
+      <p class="lede">Replace with the one-sentence "why this matters" subhead.</p>
+    </header>
+
+    <section class="cols-3">
+      <div>
+        <h3>First point</h3>
+        <p>One or two plain-English sentences. Use a number if you can.</p>
+      </div>
+      <div>
+        <h3>Second point</h3>
+        <p>One or two plain-English sentences.</p>
+      </div>
+      <div>
+        <h3>Third point</h3>
+        <p>One or two plain-English sentences.</p>
+      </div>
+    </section>
+
+    <section class="callout">
+      <p><strong>Key fact or quote.</strong> Use this block for the one thing the reader should remember.</p>
+    </section>
+
+    <footer>
+      <p><strong>Next step:</strong> Replace with the specific ask - book a call, read the full deck, reply by [date].</p>
+    </footer>
+  </main>
+</body>
+</html>
