@@ -44,6 +44,33 @@ const CONSTITUTIONAL_ARCHETYPES = new Set([
   "Verified",
   "Settled",
 ]);
+const CONSTITUTION_TYPES = new Set([
+  "OperationalConstitution",
+  "PersonalConstitution",
+  "AssetConstitution",
+  "FinancialSubjectConstitution",
+  "WorkConstitution",
+  "ServiceConstitution",
+  "OracleConstitution",
+  "InformationSubjectConstitution",
+  "PlaceConstitution",
+  "BiologicalSubjectConstitution",
+  "NetworkConstitution",
+  "StateConstitution",
+  "InternationalOrganizationConstitution",
+  "OrganizationalConstitution",
+  "CorporateConstitution",
+  "TrustConstitution",
+  "CooperativeConstitution",
+  "PartnershipConstitution",
+  "FoundationConstitution",
+  "PublicBodyConstitution",
+  "ProjectConstitution",
+  "ProtocolConstitution",
+  "DAOConstitution",
+  "AgenticConstitution",
+  "SchemeConstitution",
+]);
 
 type Mode = "derived" | "protocol" | "standalone" | "template";
 type ConformanceProfile = "authoring_draft" | "persisted_draft" | "anchored" | "runtime";
@@ -578,6 +605,19 @@ function validateConstitution(
       "constitution-required",
       path,
       "constitution.subject must exactly equal domain.id.",
+    );
+  }
+  const constitutionType =
+    typeof constitution.type === "string"
+      ? constitutionTerm(constitution.type)
+      : undefined;
+  if (constitutionType === undefined || !CONSTITUTION_TYPES.has(constitutionType)) {
+    addFinding(
+      findings,
+      "error",
+      "constitution-required",
+      path,
+      `constitution.type ${JSON.stringify(constitution.type)} is not a canonical IXO constitutional type.`,
     );
   }
 
