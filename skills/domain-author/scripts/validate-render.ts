@@ -984,11 +984,14 @@ function validateConstitution(
     }
     chain.forEach((documentId) => visitedSupersession.add(documentId));
   }
+  const canonicalAncestors = new Map<string, Set<string>>();
   for (const [documentId, instrument] of instrumentByDocument) {
     if (instrument.canonical !== true) continue;
     const traversed = new Set([documentId]);
+    const ancestors = new Set<string>();
     let predecessor = supersedesByDocument.get(documentId);
     while (predecessor !== undefined && !traversed.has(predecessor)) {
+      ancestors.add(predecessor);
       if (instrumentByDocument.get(predecessor)?.canonical === true) {
         addFinding(
           findings,
@@ -1000,6 +1003,33 @@ function validateConstitution(
       }
       traversed.add(predecessor);
       predecessor = supersedesByDocument.get(predecessor);
+    }
+    canonicalAncestors.set(documentId, ancestors);
+  }
+  const canonicalDocumentIds = [...canonicalAncestors.keys()];
+  for (let leftIndex = 0; leftIndex < canonicalDocumentIds.length; leftIndex += 1) {
+    const left = canonicalDocumentIds[leftIndex];
+    const leftAncestors = canonicalAncestors.get(left) ?? new Set<string>();
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < canonicalDocumentIds.length;
+      rightIndex += 1
+    ) {
+      const right = canonicalDocumentIds[rightIndex];
+      const rightAncestors = canonicalAncestors.get(right) ?? new Set<string>();
+      if (leftAncestors.has(right) || rightAncestors.has(left)) continue;
+      const commonAncestor = [...leftAncestors].find((ancestor) =>
+        rightAncestors.has(ancestor),
+      );
+      if (commonAncestor !== undefined) {
+        addFinding(
+          findings,
+          "error",
+          "constitution-conflicts-canonical",
+          path,
+          `Canonical constitutional instruments ${left} and ${right} are competing successors of common predecessor ${commonAncestor}.`,
+        );
+      }
     }
   }
 

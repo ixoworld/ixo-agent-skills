@@ -845,6 +845,45 @@ test("canonical conflicts are detected through the full supersession chain", asy
   );
 });
 
+test("canonical conflicts reject competing successors of one instrument", async () => {
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      /(id: "domain-charter".*?supersedes:) null/,
+      '$1 "description"',
+    )
+    .replace(
+      /(id: "changelog".*?supersedes:) null/,
+      '$1 "description"',
+    )
+    .replace(
+      'functions: [ "constitutive", "governing" ]',
+      'functions: [ "constitutive", "governing", "amending" ]',
+    )
+    .replace(
+      /(    - \{ document_ref: "domain-charter".+\})/,
+      '$1\n    - { document_ref: "changelog", type: "con:AmendmentInstrument", functions: [ "amending" ], canonical: true, effective_from: null, effective_until: null }\n    - { document_ref: "description", type: "con:ConstitutionDocument", functions: [ "constitutive" ], canonical: false, effective_from: null, effective_until: null }',
+    );
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "constitution-conflicts-canonical" &&
+        finding.message.includes("domain-charter") &&
+        finding.message.includes("changelog") &&
+        finding.message.includes("description") &&
+        finding.message.includes("competing successors"),
+    ),
+  );
+});
+
 test("superseded constitutions may not retain canonical instruments", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('status: "draft"\n  reason: null\n  subject:', 'status: "superseded"\n  reason: null\n  subject:');
