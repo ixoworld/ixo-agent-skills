@@ -181,6 +181,44 @@ test("a de-novo operational constitutional instrument does not claim legal effec
   assert.ok(!report.findings.some((finding) => finding.code === "constitutional-authority-unverified"));
 });
 
+test("external constitutional norms require immutable content identity", async () => {
+  const mutable = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      'norms: [ "resource:constitutional-principles-v1" ]',
+      'norms: [ "https://example.com/current-policy" ]',
+    );
+  const mutableReport = await validatePackage(
+    { "domain.md": mutable },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(mutableReport.ok, false);
+  assert.ok(
+    mutableReport.findings.some(
+      (finding) =>
+        finding.code === "constitution-required" &&
+        finding.message.includes("immutable external reference"),
+    ),
+  );
+
+  const immutable = mutable.replace(
+    "https://example.com/current-policy",
+    "ipfs://bafkreigh2akiscaildcxy6wo5t3aij7f6bexqxyfkuprjzsd5r5kps3dhe",
+  );
+  const immutableReport = await validatePackage(
+    { "domain.md": immutable },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(immutableReport.ok, true, JSON.stringify(immutableReport.findings, null, 2));
+});
+
 test("verified legal effect requires jurisdiction and authority evidence", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace(

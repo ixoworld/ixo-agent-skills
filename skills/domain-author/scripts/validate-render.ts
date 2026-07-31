@@ -704,13 +704,16 @@ function validateConstitution(
     );
   }
   for (const norm of stringArray(constitution.norms)) {
-    if (!resolvesReference(norm, indexes.resources)) {
+    const localResourceReference =
+      indexes.resources.has(norm) ||
+      (norm.startsWith("resource:") && norm.length > "resource:".length);
+    if (!localResourceReference && !immutableExternalReference(norm)) {
       addFinding(
         findings,
         "error",
         "constitution-required",
         path,
-        `Constitutional norm ${JSON.stringify(norm)} does not resolve.`,
+        `Constitutional norm ${JSON.stringify(norm)} must resolve to a declared local resource or an immutable external reference.`,
       );
     }
   }
