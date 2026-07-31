@@ -33,9 +33,11 @@ as controlled run inputs, not as remembered knowledge.
   [references/domain-md.schema.json](references/domain-md.schema.json) fully before authoring or changing a
   `domain.md`. The schema is the machine-readable structural contract; the specification contains the
   normative semantic rules. A schema pass alone is not conformance.
-- Verify [references/source-lock.json](references/source-lock.json) before every run. It records the exact
-  merged source commits and SHA-256 digests for the bundled rc.3 specification, schema, context, and
-  constitutional vocabulary artifacts.
+- Verify the bundled specification and schema against
+  [references/source-lock.json](references/source-lock.json) before every run. The same lock records the
+  merged namespace commit and upstream context and vocabulary digests for provenance only. Those JSON-LD
+  artifacts are not bundled; retrieve their exact immutable upstream bytes when a task requires them, and
+  do not claim offline verification of them.
 - Read [references/constitutional-authoring.md](references/constitutional-authoring.md) whenever creating,
   migrating, or reviewing a constitution, subject profile, instrument, executable mechanism, or
   Constitutional-AI policy.

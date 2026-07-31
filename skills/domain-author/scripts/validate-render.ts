@@ -396,6 +396,18 @@ function ensureUniqueIds(entries: RecordValue[], label: string, path: string, fi
 }
 
 const CID_LIKE = /^b[a-z2-7]{10,}$/;
+const BASE32_LOWER_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
+const SUPPORTED_CID_CODECS = new Set([
+  0x55, // raw
+  0x70, // dag-pb
+  0x71, // dag-cbor
+  0x0129, // dag-json
+]);
+const SUPPORTED_MULTIHASH_LENGTHS = new Map([
+  [0x12, 32], // sha2-256
+  [0x13, 64], // sha2-512
+  [0x1e, 32], // blake3
+]);
 
 function isExternalReference(reference: string): boolean {
   return /^[A-Za-z][A-Za-z0-9+.-]*:/.test(reference) || CID_LIKE.test(reference);
@@ -426,12 +438,77 @@ interface ConstitutionIndexes {
   wallets: Set<string>;
 }
 
+function decodeBase32Lower(value: string): Uint8Array | undefined {
+  if (!/^b[a-z2-7]+$/.test(value)) return undefined;
+  const encoded = value.slice(1);
+  const bytes: number[] = [];
+  let buffer = 0;
+  let bits = 0;
+
+  for (const character of encoded) {
+    const digit = BASE32_LOWER_ALPHABET.indexOf(character);
+    if (digit < 0) return undefined;
+    buffer = (buffer << 5) | digit;
+    bits += 5;
+    while (bits >= 8) {
+      bits -= 8;
+      bytes.push((buffer >>> bits) & 0xff);
+    }
+    buffer &= bits === 0 ? 0 : (1 << bits) - 1;
+  }
+
+  if (buffer !== 0 || encoded.length !== Math.ceil((bytes.length * 8) / 5)) {
+    return undefined;
+  }
+  return Uint8Array.from(bytes);
+}
+
+function readUnsignedVarint(
+  bytes: Uint8Array,
+  offset: number,
+): { value: number; next: number } | undefined {
+  let value = 0;
+  let shift = 0;
+  for (let index = offset; index < bytes.length && shift <= 49; index += 1) {
+    const byte = bytes[index];
+    const chunk = byte & 0x7f;
+    value += chunk * (2 ** shift);
+    if (!Number.isSafeInteger(value)) return undefined;
+    if ((byte & 0x80) === 0) {
+      if (index > offset && chunk === 0) return undefined;
+      return { value, next: index + 1 };
+    }
+    shift += 7;
+  }
+  return undefined;
+}
+
+function validCidV1(value: string): boolean {
+  const bytes = decodeBase32Lower(value);
+  if (!bytes) return false;
+
+  const version = readUnsignedVarint(bytes, 0);
+  if (!version || version.value !== 1) return false;
+  const codec = readUnsignedVarint(bytes, version.next);
+  if (!codec || !SUPPORTED_CID_CODECS.has(codec.value)) return false;
+  const multihashCode = readUnsignedVarint(bytes, codec.next);
+  if (!multihashCode) return false;
+  const digestLength = readUnsignedVarint(bytes, multihashCode.next);
+  const expectedLength = SUPPORTED_MULTIHASH_LENGTHS.get(multihashCode.value);
+  if (!digestLength || expectedLength === undefined || digestLength.value !== expectedLength) {
+    return false;
+  }
+  return digestLength.next + digestLength.value === bytes.length;
+}
+
 function immutableExternalReference(reference: string): boolean {
+  const ipfsMatch = /^ipfs:\/\/([^/?#]+)(?:[/?#]|$)/.exec(reference);
+  const urnCidMatch = /^urn:cid:(.+)$/.exec(reference);
   return (
-    CID_LIKE.test(reference) ||
-    /^ipfs:\/\/b[a-z2-7]{10,}(?:\/|$)/.test(reference) ||
+    validCidV1(reference) ||
+    (ipfsMatch !== null && validCidV1(ipfsMatch[1])) ||
     /^ar:\/\/[A-Za-z0-9_-]{43}(?:\/|$)/.test(reference) ||
-    /^urn:cid:b[a-z2-7]{10,}$/.test(reference) ||
+    (urnCidMatch !== null && validCidV1(urnCidMatch[1])) ||
     /^urn:sha256:[A-Fa-f0-9]{64}$/.test(reference) ||
     /^urn:sha384:[A-Fa-f0-9]{96}$/.test(reference) ||
     /^urn:sha512:[A-Fa-f0-9]{128}$/.test(reference) ||
@@ -451,7 +528,7 @@ function hasLocalContentIdentity(reference: string, indexes: ConstitutionIndexes
   const resource = indexes.resourcesById.get(reference);
   return (
     resource !== undefined &&
-    ((typeof resource.cid === "string" && CID_LIKE.test(resource.cid)) ||
+    ((typeof resource.cid === "string" && validCidV1(resource.cid)) ||
       (typeof resource.hash === "string" && validContentHash(resource.hash)))
   );
 }
@@ -704,17 +781,6 @@ function validateConstitution(
       continue;
     }
     supersedesByDocument.set(entry.id, entry.supersedes);
-    const current = instrumentByDocument.get(entry.id);
-    const previous = instrumentByDocument.get(entry.supersedes);
-    if (current?.canonical === true && previous?.canonical === true) {
-      addFinding(
-        findings,
-        "error",
-        "constitution-conflicts-canonical",
-        path,
-        `Constitutional instruments ${entry.id} and ${entry.supersedes} cannot both be canonical.`,
-      );
-    }
   }
   const visitedSupersession = new Set<string>();
   const reportedSupersessionCycles = new Set<string>();
@@ -745,6 +811,24 @@ function validateConstitution(
       current = supersedesByDocument.get(current);
     }
     chain.forEach((documentId) => visitedSupersession.add(documentId));
+  }
+  for (const [documentId, instrument] of instrumentByDocument) {
+    if (instrument.canonical !== true) continue;
+    const traversed = new Set([documentId]);
+    let predecessor = supersedesByDocument.get(documentId);
+    while (predecessor !== undefined && !traversed.has(predecessor)) {
+      if (instrumentByDocument.get(predecessor)?.canonical === true) {
+        addFinding(
+          findings,
+          "error",
+          "constitution-conflicts-canonical",
+          path,
+          `Canonical constitutional instrument ${documentId} supersedes canonical predecessor ${predecessor} through its amendment chain.`,
+        );
+      }
+      traversed.add(predecessor);
+      predecessor = supersedesByDocument.get(predecessor);
+    }
   }
 
   if (

@@ -90,14 +90,22 @@ test("bundled rc.3 artifacts match the exact merged source lock", async () => {
   const sourceLock = JSON.parse(await readFile(SOURCE_LOCK_PATH, "utf8")) as {
     domain_md: {
       commit: string;
-      specification: { version: string; sha256: string };
-      schema: { id: string; sha256: string };
+      specification: { version: string; sha256: string; bundled: boolean };
+      schema: { id: string; sha256: string; bundled: boolean };
     };
-    constitution_vocabulary: { commit: string };
+    constitution_vocabulary: {
+      commit: string;
+      bundled: boolean;
+      verification: string;
+    };
   };
   const digest = (value: string): string => createHash("sha256").update(value).digest("hex");
   assert.equal(sourceLock.domain_md.commit, "bc365f9fb282fb3438389e44c7e450b8168984a4");
   assert.equal(sourceLock.constitution_vocabulary.commit, "a85b26612e097f2004ca7ec5fdc67129d12f1038");
+  assert.equal(sourceLock.domain_md.specification.bundled, true);
+  assert.equal(sourceLock.domain_md.schema.bundled, true);
+  assert.equal(sourceLock.constitution_vocabulary.bundled, false);
+  assert.equal(sourceLock.constitution_vocabulary.verification, "upstream_provenance_only");
   assert.equal(sourceLock.domain_md.specification.version, "1.0.0-rc.3");
   assert.equal(sourceLock.domain_md.schema.id, "urn:ixo:domain-md:schema:1.0.0-rc.3");
   assert.equal(digest(await readFile(SPEC_PATH, "utf8")), sourceLock.domain_md.specification.sha256);
@@ -297,7 +305,7 @@ test("executable constitutional implementations require immutable content identi
     .replace('mode: "machine_assisted"', 'mode: "machine_executable"')
     .replace(
       'implementations: [ "resource:project-constitutional-policy-v1" ]',
-      'implementations: [ "ipfs://bafybeigdyrzt" ]',
+      'implementations: [ "ipfs://bafkreigh2akiscaildcxy6wo5t3aij7f6bexqxyfkuprjzsd5r5kps3dhe" ]',
     );
   const immutableReport = await validatePackage(
     { "domain.md": immutable },
@@ -308,6 +316,27 @@ test("executable constitutional implementations require immutable content identi
     },
   );
   assert.equal(immutableReport.ok, true, JSON.stringify(immutableReport.findings, null, 2));
+
+  const malformedCid = immutable.replace(
+    "bafkreigh2akiscaildcxy6wo5t3aij7f6bexqxyfkuprjzsd5r5kps3dhe",
+    "bafybeigdyrzt",
+  );
+  const malformedCidReport = await validatePackage(
+    { "domain.md": malformedCid },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(malformedCidReport.ok, false);
+  assert.ok(
+    malformedCidReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-execution-incomplete" &&
+        finding.message.includes("immutable content identity"),
+    ),
+  );
 });
 
 test("agentic twins require complete Constitutional-AI binding", async () => {
@@ -489,6 +518,40 @@ test("constitutional supersession chains reject cycles", async () => {
       (finding) =>
         finding.code === "constitution-conflicts-canonical" &&
         finding.message.includes("description -> changelog -> description"),
+    ),
+  );
+});
+
+test("canonical conflicts are detected through the full supersession chain", async () => {
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      /(id: "changelog".*?supersedes:) null/,
+      '$1 "description"',
+    )
+    .replace(
+      /(id: "domain-charter".*?supersedes:) null/,
+      '$1 "changelog"',
+    )
+    .replace(
+      /(    - \{ document_ref: "domain-charter".+\})/,
+      '$1\n    - { document_ref: "changelog", type: "con:AmendmentInstrument", functions: [ "amending" ], canonical: false, effective_from: null, effective_until: null }\n    - { document_ref: "description", type: "con:GoverningInstrument", functions: [ "governing" ], canonical: true, effective_from: null, effective_until: null }',
+    );
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "constitution-conflicts-canonical" &&
+        finding.message.includes("domain-charter") &&
+        finding.message.includes("description") &&
+        finding.message.includes("amendment chain"),
     ),
   );
 });

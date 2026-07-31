@@ -7,12 +7,14 @@
       "version": "1.0.0-rc.3",
       "source_path": "docs/spec.md",
       "bundled_path": "references/domain-md-spec.md",
+      "bundled": true,
       "sha256": "d2de7f5deb79652b5aa3a2073d99da3e310be6ce0b338f5d1e68b7d0333e294c"
     },
     "schema": {
       "id": "urn:ixo:domain-md:schema:1.0.0-rc.3",
       "source_path": "spec/domain-md.schema.json",
       "bundled_path": "references/domain-md.schema.json",
+      "bundled": true,
       "sha256": "103fadfeb3f1c7a634609ff8e33e6eaf5692ead16fe1ca5198a2d2cbfd782119"
     }
   },
@@ -21,6 +23,8 @@
     "pull_request": "https://github.com/ixofoundation/ns/pull/11",
     "commit": "a85b26612e097f2004ca7ec5fdc67129d12f1038",
     "review_head_recorded_by_domain_spec": "697e443a69aa1adf23c240c6fc6bd56434d1a9eb",
+    "bundled": false,
+    "verification": "upstream_provenance_only",
     "artifacts": [
       {
         "path": "context/v1/index.jsonld",
