@@ -134,6 +134,8 @@ test("the merged governed constitutional fixture passes derived validation", asy
 test("Oracle Capsule bindings require a CIDv1 raw sha2-256 manifest identity", async () => {
   const validCid =
     "bafkreigh2akiscaildcxy6wo5t3aij7f6bexqxyfkuprjzsd5r5kps3dhe";
+  const validDigest =
+    "c7d01489080858c57c7aceecf60427e5f049785f05551f14e643ec7aa7cb6339";
   const source = (await fixture(GOVERNED_FIXTURE_PATH)).replace(
     'document_revision: "0.1.0"\n',
     `document_revision: "0.1.0"
@@ -142,7 +144,7 @@ x-oracle-capsule:
   manifest:
     uri: "ipfs://${validCid}"
     cid: "${validCid}"
-    sha256: "${"a".repeat(64)}"
+    sha256: "${validDigest}"
     media_type: "application/vnd.ixo.oracle-capsule+json"
     schema: "urn:ixo:domain-md:x-oracle-capsule:manifest:0.1.0"
     version: "0.1.0"
@@ -177,6 +179,48 @@ x-oracle-capsule:
       (finding) =>
         finding.code === "capsule-cid" &&
         finding.message.includes("CIDv1 raw sha2-256"),
+      ),
+  );
+
+  const digestMismatchReport = await validatePackage(
+    {
+      "domain.md": source.replace(
+        `sha256: "${validDigest}"`,
+        `sha256: "${"a".repeat(64)}"`,
+      ),
+    },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(digestMismatchReport.ok, false);
+  assert.ok(
+    digestMismatchReport.findings.some(
+      (finding) => finding.code === "capsule-integrity",
+    ),
+  );
+
+  const otherCid =
+    "bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  const uriMismatchReport = await validatePackage(
+    {
+      "domain.md": source.replace(
+        `uri: "ipfs://${validCid}"`,
+        `uri: "ipfs://${otherCid}"`,
+      ),
+    },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(uriMismatchReport.ok, false);
+  assert.ok(
+    uriMismatchReport.findings.some(
+      (finding) => finding.code === "capsule-integrity",
     ),
   );
 });

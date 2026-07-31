@@ -588,6 +588,7 @@ interface ParsedCidV1 {
   codec: number;
   multihashCode: number;
   digestLength: number;
+  digestHex: string;
 }
 
 function parseCidV1(value: string): ParsedCidV1 | undefined {
@@ -611,6 +612,7 @@ function parseCidV1(value: string): ParsedCidV1 | undefined {
     codec: codec.value,
     multihashCode: multihashCode.value,
     digestLength: digestLength.value,
+    digestHex: Buffer.from(bytes.subarray(digestLength.next)).toString("hex"),
   };
 }
 
@@ -1453,6 +1455,31 @@ function validateDomain(
       domainPath,
       "x-oracle-capsule.manifest.cid must be a canonical CIDv1 raw sha2-256 content address.",
     );
+  }
+  if (
+    capsuleManifest &&
+    typeof capsuleManifest.cid === "string" &&
+    validRawSha256CidV1(capsuleManifest.cid)
+  ) {
+    const parsedCapsuleCid = parseCidV1(capsuleManifest.cid);
+    const ipfsUriMatch =
+      typeof capsuleManifest.uri === "string"
+        ? /^ipfs:\/\/([^/?#]+)(?:[/?#]|$)/i.exec(capsuleManifest.uri)
+        : null;
+    const digestDisagrees =
+      typeof capsuleManifest.sha256 === "string" &&
+      capsuleManifest.sha256 !== parsedCapsuleCid?.digestHex;
+    const uriDisagrees =
+      ipfsUriMatch !== null && ipfsUriMatch[1] !== capsuleManifest.cid;
+    if (digestDisagrees || uriDisagrees) {
+      addFinding(
+        findings,
+        "error",
+        "capsule-integrity",
+        domainPath,
+        "x-oracle-capsule manifest CID, SHA-256 digest, and IPFS URI identity must agree.",
+      );
+    }
   }
   validateSecretAbsence(data, domainPath, findings);
   validateSections(data, text, domainPath, findings);
