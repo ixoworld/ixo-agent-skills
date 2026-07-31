@@ -291,6 +291,30 @@ test("constitutional instruments must resolve to documents", async () => {
   assert.ok(report.findings.some((finding) => finding.code === "constitutional-instrument-unresolved"));
 });
 
+test("constitutional documents may not have duplicate instrument mappings", async () => {
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      /(    - \{ document_ref: "domain-charter".+\})/,
+      '$1\n    - { document_ref: "domain-charter", type: "con:GovernancePolicy", functions: [ "governing" ], canonical: false, effective_from: null, effective_until: null }',
+    );
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "constitutional-instrument-unresolved" &&
+        finding.message.includes("more than one instrument entry"),
+    ),
+  );
+});
+
 test("constitutional supersession chains reject missing predecessor documents", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace(
@@ -360,6 +384,37 @@ test("document ids are unique independently of their roles", async () => {
   );
   assert.equal(report.ok, false);
   assert.ok(report.findings.some((finding) => finding.code === "duplicate-entry-id"));
+});
+
+test("standalone mode rejects protocol type and protocol-template lineage", async () => {
+  const derived = await validatePackage(
+    { "domain.md": await fixture(GOVERNED_FIXTURE_PATH) },
+    { mode: "standalone", expectedProfile: "authoring_draft" },
+  );
+  assert.equal(derived.ok, false);
+  assert.ok(
+    derived.findings.some(
+      (finding) =>
+        finding.code === "standalone-lineage" &&
+        finding.message.includes("domain.class"),
+    ),
+  );
+
+  const protocol = await validatePackage(
+    {
+      "domain.md": (await fixture(PASSIVE_FIXTURE_PATH))
+        .replace('type: "dataset"', 'type: "protocol"'),
+    },
+    { mode: "standalone", expectedProfile: "authoring_draft" },
+  );
+  assert.equal(protocol.ok, false);
+  assert.ok(
+    protocol.findings.some(
+      (finding) =>
+        finding.code === "standalone-lineage" &&
+        finding.message.includes("domain.type"),
+    ),
+  );
 });
 
 test("static validation is deterministic for the same package bytes", async () => {

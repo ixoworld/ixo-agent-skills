@@ -622,6 +622,16 @@ function validateConstitution(
       );
       continue;
     }
+    if (instrumentByDocument.has(instrument.document_ref)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-instrument-unresolved",
+        path,
+        `Constitutional document ${instrument.document_ref} is mapped by more than one instrument entry.`,
+      );
+      continue;
+    }
     instrumentByDocument.set(instrument.document_ref, instrument);
     if (
       typeof instrument.effective_from === "string" &&
@@ -1053,8 +1063,17 @@ function validateDomain(
     } else if (expectedClass !== undefined && domain.class !== expectedClass) {
       addFinding(findings, "error", "derived-class-mismatch", domainPath, `Expected domain.class ${JSON.stringify(expectedClass)}.`);
     }
-  } else if (mode === "protocol" && domainType !== "protocol") {
-    addFinding(findings, "error", "protocol-type", domainPath, "Protocol output requires domain.type: protocol.");
+  } else if (mode === "protocol") {
+    if (domainType !== "protocol") {
+      addFinding(findings, "error", "protocol-type", domainPath, "Protocol output requires domain.type: protocol.");
+    }
+  } else if (mode === "standalone") {
+    if (domainType === "protocol") {
+      addFinding(findings, "error", "standalone-lineage", domainPath, "Standalone output cannot use domain.type: protocol.");
+    }
+    if (domain.class !== null && domain.class !== undefined) {
+      addFinding(findings, "error", "standalone-lineage", domainPath, "Standalone output cannot declare protocol-template lineage in domain.class.");
+    }
   }
 
   const entries = extractDocumentEntries(data.documents);
