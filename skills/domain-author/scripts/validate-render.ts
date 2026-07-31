@@ -651,6 +651,16 @@ function validateConstitution(
   }
   for (const entry of indexes.documentEntries) {
     if (typeof entry.id !== "string" || typeof entry.supersedes !== "string") continue;
+    if (!indexes.documents.has(entry.supersedes)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-instrument-unresolved",
+        path,
+        `Document ${entry.id} supersedes missing document ${entry.supersedes}.`,
+      );
+      continue;
+    }
     const current = instrumentByDocument.get(entry.id);
     const previous = instrumentByDocument.get(entry.supersedes);
     if (current?.canonical === true && previous?.canonical === true) {
@@ -833,14 +843,23 @@ function validateConstitution(
         "Constitutional AI must identify the agents, twins, and agent controllers to which it applies.",
       );
     }
-    for (const agent of [...indexes.agentControllers, ...agenticTwins]) {
+    for (const agent of new Set([
+      ...indexes.agents,
+      ...indexes.agentControllers,
+      ...agenticTwins,
+    ])) {
       if (!appliesToAgents.includes(agent)) {
+        const label = indexes.agentControllers.has(agent)
+          ? "Agent controller"
+          : agenticTwins.includes(agent)
+            ? "Agentic twin"
+            : "Agent";
         addFinding(
           findings,
           "error",
           "constitutional-ai-incomplete",
           path,
-          `${indexes.agentControllers.has(agent) ? "Agent controller" : "Agentic twin"} ${agent} must be bound to the Constitutional-AI policy.`,
+          `${label} ${agent} must be bound to the Constitutional-AI policy.`,
         );
       }
     }

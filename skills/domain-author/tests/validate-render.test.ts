@@ -222,6 +222,30 @@ test("agentic twins require complete Constitutional-AI binding", async () => {
   assert.ok(report.findings.some((finding) => finding.code === "constitutional-ai-incomplete"));
 });
 
+test("every declared agent requires Constitutional-AI binding", async () => {
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      "agents:\n  entries:\n",
+      'agents:\n  entries:\n    - { id: "did:ixo:agent:unbound-reviewer" }\n',
+    );
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "constitutional-ai-incomplete" &&
+        finding.message.includes("did:ixo:agent:unbound-reviewer"),
+    ),
+  );
+});
+
 test("subject profiles resolve nested claims and local wallets", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('claims: [ "claim-collection:field-services" ]', 'claims: [ "service_delivery" ]')
@@ -265,6 +289,31 @@ test("constitutional instruments must resolve to documents", async () => {
   );
   assert.equal(report.ok, false);
   assert.ok(report.findings.some((finding) => finding.code === "constitutional-instrument-unresolved"));
+});
+
+test("constitutional supersession chains reject missing predecessor documents", async () => {
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      /(id: "domain-charter".*?supersedes:) null/,
+      '$1 "missing-predecessor"',
+    );
+  assert.match(source, /id: "domain-charter".*?supersedes: "missing-predecessor"/);
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "constitutional-instrument-unresolved" &&
+        finding.message.includes("missing-predecessor"),
+    ),
+  );
 });
 
 test("superseded constitutions may not retain canonical instruments", async () => {
