@@ -501,6 +501,84 @@ test("agentic twins require a local agent or linked-entity declaration", async (
   );
 });
 
+test("disabled Constitutional AI still validates populated references", async () => {
+  const inactive = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      /agents:\n  entries:\n[\s\S]*?\nclaims:/,
+      "agents:\n  entries: []\nclaims:",
+    )
+    .replace(
+      'agentic_twins: [ "did:ixo:agent:evidence-review-oracle" ]',
+      "agentic_twins: []",
+    )
+    .replace('mode: "critique_and_revise"', 'mode: "none"')
+    .replace(
+      'applies_to_agents: [ "did:ixo:agent:evidence-review-oracle" ]',
+      "applies_to_agents: []",
+    )
+    .replace(
+      'principles: [ "resource:constitutional-principles-v1" ]',
+      "principles: []",
+    )
+    .replace(
+      'critique_procedure: "resource:constitutional-critique-v1"',
+      "critique_procedure: null",
+    )
+    .replace(
+      'revision_procedure: "resource:constitutional-revision-v1"',
+      "revision_procedure: null",
+    )
+    .replace(
+      'model_profile: "resource:constitutional-model-profile-v1"',
+      "model_profile: null",
+    )
+    .replace(
+      'audit_record: "resource:constitutional-audit-schema-v1"',
+      "audit_record: null",
+    );
+  const inactiveReport = await validatePackage(
+    { "domain.md": inactive },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(inactiveReport.ok, true, JSON.stringify(inactiveReport.findings, null, 2));
+
+  const unresolved = inactive
+    .replace("applies_to_agents: []", 'applies_to_agents: [ "ghost-agent" ]')
+    .replace("principles: []", 'principles: [ "missing-policy" ]')
+    .replace("audit_record: null", 'audit_record: "missing-schema"');
+  const unresolvedReport = await validatePackage(
+    { "domain.md": unresolved },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(unresolvedReport.ok, false);
+  assert.ok(
+    unresolvedReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-ai-incomplete" &&
+        finding.message.includes("ghost-agent") &&
+        finding.message.includes("not a declared agent"),
+    ),
+  );
+  for (const reference of ["missing-policy", "missing-schema"]) {
+    assert.ok(
+      unresolvedReport.findings.some(
+        (finding) =>
+          finding.code === "constitutional-ai-incomplete" &&
+          finding.message.includes(reference) &&
+          finding.message.includes("does not resolve"),
+      ),
+    );
+  }
+});
+
 test("subject profiles resolve nested claims and local wallets", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('claims: [ "claim-collection:field-services" ]', 'claims: [ "service_delivery" ]')

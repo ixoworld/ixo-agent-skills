@@ -1210,6 +1210,14 @@ function validateConstitution(
   }
 
   const aiMode = typeof constitutionalAI?.mode === "string" ? constitutionalAI.mode : undefined;
+  const principles = stringArray(constitutionalAI?.principles);
+  const appliesToAgents = stringArray(constitutionalAI?.applies_to_agents);
+  const constitutionalAgents = new Set([
+    ...indexes.agents,
+    ...indexes.agentControllers,
+    ...agenticTwins,
+  ]);
+  const auditRecord = constitutionalAI?.audit_record;
   if (agentic && (!aiMode || aiMode === "none")) {
     addFinding(
       findings,
@@ -1220,14 +1228,6 @@ function validateConstitution(
     );
   }
   if (aiMode && aiMode !== "none") {
-    const principles = stringArray(constitutionalAI?.principles);
-    const appliesToAgents = stringArray(constitutionalAI?.applies_to_agents);
-    const constitutionalAgents = new Set([
-      ...indexes.agents,
-      ...indexes.agentControllers,
-      ...agenticTwins,
-    ]);
-    const auditRecord = constitutionalAI?.audit_record;
     const critiqueRequired = aiMode === "critique_and_revise" || aiMode === "hybrid";
     const decisionRequired = aiMode === "policy_evaluate" || aiMode === "hybrid";
     if (
@@ -1276,37 +1276,37 @@ function validateConstitution(
         );
       }
     }
-    for (const agent of appliesToAgents) {
-      if (!constitutionalAgents.has(agent)) {
-        addFinding(
-          findings,
-          "error",
-          "constitutional-ai-incomplete",
-          path,
-          `Constitutional-AI subject ${agent} is not a declared agent, agent controller, or twin.`,
-        );
-      }
+  }
+  for (const agent of appliesToAgents) {
+    if (!constitutionalAgents.has(agent)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-ai-incomplete",
+        path,
+        `Constitutional-AI subject ${agent} is not a declared agent, agent controller, or twin.`,
+      );
     }
-    for (const reference of [
-      ...principles,
-      constitutionalAI?.critique_procedure,
-      constitutionalAI?.revision_procedure,
-      constitutionalAI?.decision_procedure,
-      constitutionalAI?.model_profile,
-      auditRecord,
-    ]) {
-      if (
-        typeof reference === "string" &&
-        !resolvesReference(reference, indexes.resources)
-      ) {
-        addFinding(
-          findings,
-          "error",
-          "constitutional-ai-incomplete",
-          path,
-          `Constitutional-AI resource ${JSON.stringify(reference)} does not resolve.`,
-        );
-      }
+  }
+  for (const reference of [
+    ...principles,
+    constitutionalAI?.critique_procedure,
+    constitutionalAI?.revision_procedure,
+    constitutionalAI?.decision_procedure,
+    constitutionalAI?.model_profile,
+    auditRecord,
+  ]) {
+    if (
+      typeof reference === "string" &&
+      !resolvesReference(reference, indexes.resources)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-ai-incomplete",
+        path,
+        `Constitutional-AI resource ${JSON.stringify(reference)} does not resolve.`,
+      );
     }
   }
 }
