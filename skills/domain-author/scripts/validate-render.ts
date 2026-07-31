@@ -1464,13 +1464,14 @@ function validateDomain(
     const parsedCapsuleCid = parseCidV1(capsuleManifest.cid);
     const ipfsUriMatch =
       typeof capsuleManifest.uri === "string"
-        ? /^ipfs:\/\/([^/?#]+)(?:[/?#]|$)/i.exec(capsuleManifest.uri)
+        ? /^ipfs:\/\/([^/?#]+)(.*)$/i.exec(capsuleManifest.uri)
         : null;
     const digestDisagrees =
       typeof capsuleManifest.sha256 === "string" &&
       capsuleManifest.sha256 !== parsedCapsuleCid?.digestHex;
     const uriDisagrees =
-      ipfsUriMatch !== null && ipfsUriMatch[1] !== capsuleManifest.cid;
+      ipfsUriMatch !== null &&
+      (ipfsUriMatch[1] !== capsuleManifest.cid || ipfsUriMatch[2] !== "");
     if (digestDisagrees || uriDisagrees) {
       addFinding(
         findings,

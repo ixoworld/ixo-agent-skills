@@ -223,6 +223,26 @@ x-oracle-capsule:
       (finding) => finding.code === "capsule-integrity",
     ),
   );
+
+  const pathSuffixReport = await validatePackage(
+    {
+      "domain.md": source.replace(
+        `uri: "ipfs://${validCid}"`,
+        `uri: "ipfs://${validCid}/other.json"`,
+      ),
+    },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(pathSuffixReport.ok, false);
+  assert.ok(
+    pathSuffixReport.findings.some(
+      (finding) => finding.code === "capsule-integrity",
+    ),
+  );
 });
 
 test("a passive domain may declare its constitution not applicable", async () => {
