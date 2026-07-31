@@ -417,12 +417,31 @@ interface ConstitutionIndexes {
   controllers: Set<string>;
   rights: Set<string>;
   resources: Set<string>;
+  resourcesById: Map<string, RecordValue>;
   services: Set<string>;
   agents: Set<string>;
   agentControllers: Set<string>;
   linkedEntities: Set<string>;
   claims: Set<string>;
   wallets: Set<string>;
+}
+
+function immutableExternalReference(reference: string): boolean {
+  return (
+    CID_LIKE.test(reference) ||
+    /^ipfs:\/\/b[a-z2-7]{10,}(?:\/|$)/.test(reference) ||
+    /^ar:\/\/[A-Za-z0-9_-]{43}(?:\/|$)/.test(reference) ||
+    /^urn:(?:cid|sha256|sha384|sha512|blake3):[A-Za-z0-9._-]+$/.test(reference)
+  );
+}
+
+function hasLocalContentIdentity(reference: string, indexes: ConstitutionIndexes): boolean {
+  const resource = indexes.resourcesById.get(reference);
+  return (
+    resource !== undefined &&
+    ((typeof resource.cid === "string" && CID_LIKE.test(resource.cid)) ||
+      (typeof resource.hash === "string" && resource.hash.trim().length > 0))
+  );
 }
 
 function validateConstitution(
@@ -659,6 +678,7 @@ function validateConstitution(
       "A superseded constitution cannot retain a canonical instrument.",
     );
   }
+  const supersedesByDocument = new Map<string, string>();
   for (const entry of indexes.documentEntries) {
     if (typeof entry.id !== "string" || typeof entry.supersedes !== "string") continue;
     if (!indexes.documents.has(entry.supersedes)) {
@@ -671,6 +691,7 @@ function validateConstitution(
       );
       continue;
     }
+    supersedesByDocument.set(entry.id, entry.supersedes);
     const current = instrumentByDocument.get(entry.id);
     const previous = instrumentByDocument.get(entry.supersedes);
     if (current?.canonical === true && previous?.canonical === true) {
@@ -682,6 +703,29 @@ function validateConstitution(
         `Constitutional instruments ${entry.id} and ${entry.supersedes} cannot both be canonical.`,
       );
     }
+  }
+  const visitedSupersession = new Set<string>();
+  const visitingSupersession = new Set<string>();
+  const reportSupersessionCycle = (documentId: string): void => {
+    if (visitingSupersession.has(documentId)) {
+      addFinding(
+        findings,
+        "error",
+        "constitution-conflicts-canonical",
+        path,
+        `Document supersession chain contains a cycle at ${documentId}.`,
+      );
+      return;
+    }
+    if (visitedSupersession.has(documentId)) return;
+    visitingSupersession.add(documentId);
+    const predecessor = supersedesByDocument.get(documentId);
+    if (predecessor !== undefined) reportSupersessionCycle(predecessor);
+    visitingSupersession.delete(documentId);
+    visitedSupersession.add(documentId);
+  };
+  for (const documentId of supersedesByDocument.keys()) {
+    reportSupersessionCycle(documentId);
   }
 
   if (
@@ -792,6 +836,22 @@ function validateConstitution(
         path,
         `Constitutional execution resource ${JSON.stringify(reference)} does not resolve.`,
       );
+    }
+  }
+  if (executable) {
+    for (const reference of implementations) {
+      const immutable =
+        hasLocalContentIdentity(reference, indexes) ||
+        immutableExternalReference(reference);
+      if (!immutable) {
+        addFinding(
+          findings,
+          "error",
+          "constitutional-execution-incomplete",
+          path,
+          `Executable constitutional implementation ${JSON.stringify(reference)} lacks immutable content identity.`,
+        );
+      }
     }
   }
   for (const reference of enforcementPoints) {
@@ -1154,6 +1214,11 @@ function validateDomain(
   const rightIds = ensureUniqueIds(rightEntries, "right", domainPath, findings);
   const resourceEntries = recordsAt(data.resources, "entries");
   const resourceIds = ensureUniqueIds(resourceEntries, "resource", domainPath, findings);
+  const resourcesById = new Map(
+    resourceEntries
+      .filter((entry): entry is RecordValue & { id: string } => typeof entry.id === "string")
+      .map((entry) => [entry.id, entry]),
+  );
   const serviceEntries = recordsAt(data.services, "entries");
   const serviceIds = ensureUniqueIds(serviceEntries, "service", domainPath, findings);
   const accountEntries = recordsAt(data.accounts, "entries");
@@ -1204,6 +1269,7 @@ function validateDomain(
       controllers: controllerIds,
       rights: rightIds,
       resources: resourceIds,
+      resourcesById,
       services: serviceIds,
       agents: agentIds,
       agentControllers: agentControllerIds,

@@ -207,6 +207,70 @@ test("machine-executable governance requires tests and enforcement", async () =>
   assert.ok(report.findings.some((finding) => finding.code === "constitutional-execution-incomplete"));
 });
 
+test("executable constitutional implementations require immutable content identity", async () => {
+  const remoteMutable = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace('mode: "machine_assisted"', 'mode: "machine_executable"')
+    .replace(
+      'implementations: [ "resource:project-constitutional-policy-v1" ]',
+      'implementations: [ "https://example.com/current.js" ]',
+    );
+  const remoteReport = await validatePackage(
+    { "domain.md": remoteMutable },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(remoteReport.ok, false);
+  assert.ok(
+    remoteReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-execution-incomplete" &&
+        finding.message.includes("immutable content identity"),
+    ),
+  );
+
+  const localMutable = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace('mode: "machine_assisted"', 'mode: "machine_executable"')
+    .replace(
+      'implementations: [ "resource:project-constitutional-policy-v1" ]',
+      'implementations: [ "rubric-service-delivery-v1" ]',
+    );
+  const localReport = await validatePackage(
+    { "domain.md": localMutable },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(localReport.ok, false);
+  assert.ok(
+    localReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-execution-incomplete" &&
+        finding.message.includes("immutable content identity"),
+    ),
+  );
+
+  const immutable = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace('mode: "machine_assisted"', 'mode: "machine_executable"')
+    .replace(
+      'implementations: [ "resource:project-constitutional-policy-v1" ]',
+      'implementations: [ "ipfs://bafybeigdyrzt" ]',
+    );
+  const immutableReport = await validatePackage(
+    { "domain.md": immutable },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(immutableReport.ok, true, JSON.stringify(immutableReport.findings, null, 2));
+});
+
 test("agentic twins require complete Constitutional-AI binding", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('applies_to_agents: [ "did:ixo:agent:evidence-review-oracle" ]', "applies_to_agents: []");
@@ -336,6 +400,30 @@ test("constitutional supersession chains reject missing predecessor documents", 
       (finding) =>
         finding.code === "constitutional-instrument-unresolved" &&
         finding.message.includes("missing-predecessor"),
+    ),
+  );
+});
+
+test("constitutional supersession chains reject cycles", async () => {
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      /(id: "domain-charter".*?supersedes:) null/,
+      '$1 "domain-charter"',
+    );
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "constitution-conflicts-canonical" &&
+        finding.message.includes("cycle"),
     ),
   );
 });
