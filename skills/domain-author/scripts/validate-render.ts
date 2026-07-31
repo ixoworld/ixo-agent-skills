@@ -1350,14 +1350,16 @@ function validateDomain(
   }
   const claimCollections = recordsAt(data.claims, "collections");
   const linkedClaims = recordsAt(data.claims, "linked_claims");
-  const claimIds = new Set(
-    [
-      ...claimCollections,
-      ...claimCollections.flatMap((collection) => recordsAt(collection, "claim_types")),
-      ...linkedClaims,
-    ]
-      .map((entry) => entry.id)
-      .filter((id): id is string => typeof id === "string"),
+  const claimReferenceEntries = [
+    ...claimCollections,
+    ...claimCollections.flatMap((collection) => recordsAt(collection, "claim_types")),
+    ...linkedClaims,
+  ];
+  const claimIds = ensureUniqueIds(
+    claimReferenceEntries,
+    "claim reference",
+    domainPath,
+    findings,
   );
   const agentControllerIds = new Set(
     controllerEntries

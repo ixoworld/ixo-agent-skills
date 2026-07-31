@@ -431,6 +431,28 @@ test("subject profiles resolve nested claims and local wallets", async () => {
   assert.equal(report.ok, true, JSON.stringify(report.findings, null, 2));
 });
 
+test("claim collection, nested type, and linked claim identifiers share one unique namespace", async () => {
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replaceAll('"claim-collection:field-services"', '"service_delivery"');
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "duplicate-entry-id" &&
+        finding.message.includes("claim reference") &&
+        finding.message.includes("service_delivery"),
+    ),
+  );
+});
+
 test("subject-profile facets reject unresolved local references", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('claims: [ "claim-collection:field-services" ]', 'claims: [ "missing_claim_type" ]');
