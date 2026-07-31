@@ -472,6 +472,35 @@ test("every declared agent requires Constitutional-AI binding", async () => {
   );
 });
 
+test("agentic twins require a local agent or linked-entity declaration", async () => {
+  const undeclaredTwin = "did:ixo:agent:undeclared-twin";
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      'agentic_twins: [ "did:ixo:agent:evidence-review-oracle" ]',
+      `agentic_twins: [ "${undeclaredTwin}" ]`,
+    )
+    .replace(
+      'applies_to_agents: [ "did:ixo:agent:evidence-review-oracle" ]',
+      `applies_to_agents: [ "did:ixo:agent:evidence-review-oracle", "${undeclaredTwin}" ]`,
+    );
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "constitutional-subject-profile-unresolved" &&
+        finding.message.includes(undeclaredTwin),
+    ),
+  );
+});
+
 test("subject profiles resolve nested claims and local wallets", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('claims: [ "claim-collection:field-services" ]', 'claims: [ "service_delivery" ]')
@@ -644,6 +673,43 @@ test("constitutional instruments must resolve to documents", async () => {
   );
   assert.equal(report.ok, false);
   assert.ok(report.findings.some((finding) => finding.code === "constitutional-instrument-unresolved"));
+});
+
+test("constitutional instrument types are restricted to the canonical IXO vocabulary", async () => {
+  const unsupported = (await fixture(GOVERNED_FIXTURE_PATH)).replace(
+    'type: "con:ProjectCharter", functions:',
+    'type: "custom:MadeUpInstrument", functions:',
+  );
+  const unsupportedReport = await validatePackage(
+    { "domain.md": unsupported },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(unsupportedReport.ok, false);
+  assert.ok(
+    unsupportedReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-instrument-unresolved" &&
+        finding.message.includes("canonical IXO constitutional-instrument class"),
+    ),
+  );
+
+  const expanded = unsupported.replace(
+    "custom:MadeUpInstrument",
+    "https://w3id.org/ixo/vocab/v1/constitution#ProjectCharter",
+  );
+  const expandedReport = await validatePackage(
+    { "domain.md": expanded },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(expandedReport.ok, true, JSON.stringify(expandedReport.findings, null, 2));
 });
 
 test("constitutional documents may not have duplicate instrument mappings", async () => {

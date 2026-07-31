@@ -104,6 +104,18 @@ Pathogen Ecosystem Crop Livestock DiseaseOutbreak SupplyChain EnergyGrid Transpo
 SocialNetwork HealthcareNetwork AgenticTwin Wallet Memory WorldModel DecisionEngine CapabilityToken
 ConstitutionalGovernor`.split(/\s+/),
 );
+// Exact ConstitutionalInstrument class hierarchy from the same merged namespace commit.
+const CONSTITUTIONAL_INSTRUMENT_TYPES = new Set(
+  `ConstitutionalInstrument ConstitutiveInstrument GoverningInstrument AmendmentInstrument
+ExecutableConstitutionalInstrument ConstitutionDocument BasicLaw ConstituentTreaty OrganizationCharter
+OrganizationConstitutionDocument ArticlesOfAssociation CorporateCharter Bylaws OperatingAgreement TrustDeed
+DeclarationOfTrust TestamentaryInstrument CooperativeStatutes CooperativeArticles DeedOfFormation
+PartnershipAgreement PartnershipDeed FoundationCharter FoundationDeed FoundationStatutes EnablingStatute
+ProjectCharter CollectiveCharter MarketplaceCharter ProtocolSpecification GovernancePolicy DAOCharter
+ExecutableGovernancePolicy AgenticConstitutionDocument SchemeRules OperationalConstitutionDocument AssetCharter
+TermsInstrument ServiceCharter ServiceAgreementInstrument OracleCharter EvaluationPolicy LifecyclePolicy
+StewardshipCharter EvidencePolicy NetworkCharter`.split(/\s+/),
+);
 
 type Mode = "derived" | "protocol" | "standalone" | "template";
 type ConformanceProfile = "authoring_draft" | "persisted_draft" | "anchored" | "runtime";
@@ -501,7 +513,15 @@ function constitutionTerm(reference: string): string | undefined {
 
 function resolvesReference(reference: string, ...sets: Set<string>[]): boolean {
   const normalized = reference.normalize("NFC");
-  return isExternalReference(normalized) || sets.some((set) => set.has(normalized));
+  return (
+    isExternalReference(normalized) ||
+    resolvesLocalReference(normalized, ...sets)
+  );
+}
+
+function resolvesLocalReference(reference: string, ...sets: Set<string>[]): boolean {
+  const normalized = reference.normalize("NFC");
+  return sets.some((set) => set.has(normalized));
 }
 
 interface ConstitutionIndexes {
@@ -749,7 +769,11 @@ function validateConstitution(
   ];
   for (const [field, referenceSets] of profileReferenceSets) {
     for (const reference of stringArray(subjectProfile?.[field])) {
-      if (!resolvesReference(reference, ...referenceSets)) {
+      const resolved =
+        field === "agentic_twins"
+          ? resolvesLocalReference(reference, ...referenceSets)
+          : resolvesReference(reference, ...referenceSets);
+      if (!resolved) {
         addFinding(
           findings,
           "error",
@@ -843,6 +867,22 @@ function validateConstitution(
 
   const instrumentByDocument = new Map<string, RecordValue>();
   for (const instrument of instruments) {
+    const instrumentType =
+      typeof instrument.type === "string"
+        ? constitutionTerm(instrument.type)
+        : undefined;
+    if (
+      instrumentType === undefined ||
+      !CONSTITUTIONAL_INSTRUMENT_TYPES.has(instrumentType)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-instrument-unresolved",
+        path,
+        `Constitutional instrument type ${JSON.stringify(instrument.type)} is not a canonical IXO constitutional-instrument class.`,
+      );
+    }
     const documentRef =
       typeof instrument.document_ref === "string"
         ? instrument.document_ref.normalize("NFC")
