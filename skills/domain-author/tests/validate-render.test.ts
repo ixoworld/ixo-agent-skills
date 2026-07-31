@@ -166,6 +166,23 @@ test("existing constitutional instruments resolve by unique document id", async 
   assert.ok(!report.findings.some((finding) => finding.code === "constitutional-instrument-unresolved"));
 });
 
+test("canonically equivalent Unicode constitutional references resolve consistently", async () => {
+  const decomposedDocumentId = "cafe\u0301-charter";
+  const source = (await fixture(GOVERNED_FIXTURE_PATH)).replaceAll(
+    '"domain-charter"',
+    `"${decomposedDocumentId}"`,
+  );
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, true, JSON.stringify(report.findings, null, 2));
+});
+
 test("a de-novo operational constitutional instrument does not claim legal effect", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('type: "con:ProjectCharter", functions:', 'type: "con:OperationalConstitutionDocument", functions:');
@@ -370,6 +387,45 @@ test("executable constitutional implementations require immutable content identi
   assert.equal(malformedCidReport.ok, false);
   assert.ok(
     malformedCidReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-execution-incomplete" &&
+        finding.message.includes("immutable content identity"),
+    ),
+  );
+});
+
+test("Arweave identities require canonical 32-byte base64url transaction ids", async () => {
+  const executable = (await fixture(GOVERNED_FIXTURE_PATH)).replace(
+    'mode: "machine_assisted"',
+    'mode: "machine_executable"',
+  );
+  const canonicalId = "A".repeat(43);
+  const canonical = executable.replace(
+    'implementations: [ "resource:project-constitutional-policy-v1" ]',
+    `implementations: [ "ar://${canonicalId}" ]`,
+  );
+  const canonicalReport = await validatePackage(
+    { "domain.md": canonical },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(canonicalReport.ok, true, JSON.stringify(canonicalReport.findings, null, 2));
+
+  const nonCanonical = canonical.replace(canonicalId, `${"A".repeat(42)}B`);
+  const nonCanonicalReport = await validatePackage(
+    { "domain.md": nonCanonical },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(nonCanonicalReport.ok, false);
+  assert.ok(
+    nonCanonicalReport.findings.some(
       (finding) =>
         finding.code === "constitutional-execution-incomplete" &&
         finding.message.includes("immutable content identity"),

@@ -9,6 +9,7 @@
 
 import Ajv2020, { type ErrorObject, type ValidateFunction } from "ajv/dist/2020";
 import addFormats from "ajv-formats";
+import { Buffer } from "node:buffer";
 import {
   lstatSync,
   readFileSync,
@@ -452,7 +453,9 @@ function isExternalReference(reference: string): boolean {
 
 function stringArray(value: unknown): string[] {
   return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string")
+    ? value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.normalize("NFC"))
     : [];
 }
 
@@ -465,7 +468,8 @@ function constitutionTerm(reference: string): string | undefined {
 }
 
 function resolvesReference(reference: string, ...sets: Set<string>[]): boolean {
-  return isExternalReference(reference) || sets.some((set) => set.has(reference));
+  const normalized = reference.normalize("NFC");
+  return isExternalReference(normalized) || sets.some((set) => set.has(normalized));
 }
 
 interface ConstitutionIndexes {
@@ -546,13 +550,24 @@ function validCidV1(value: string): boolean {
   return digestLength.next + digestLength.value === bytes.length;
 }
 
+function validArweaveTransactionId(value: string): boolean {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(value)) return false;
+  try {
+    const bytes = Buffer.from(value, "base64url");
+    return bytes.length === 32 && bytes.toString("base64url") === value;
+  } catch {
+    return false;
+  }
+}
+
 function immutableExternalReference(reference: string): boolean {
   const ipfsMatch = /^ipfs:\/\/([^/?#]+)(?:[/?#]|$)/.exec(reference);
+  const arweaveMatch = /^ar:\/\/([^/?#]+)(?:[/?#]|$)/.exec(reference);
   const urnCidMatch = /^urn:cid:(.+)$/.exec(reference);
   return (
     validCidV1(reference) ||
     (ipfsMatch !== null && validCidV1(ipfsMatch[1])) ||
-    /^ar:\/\/[A-Za-z0-9_-]{43}(?:\/|$)/.test(reference) ||
+    (arweaveMatch !== null && validArweaveTransactionId(arweaveMatch[1])) ||
     (urnCidMatch !== null && validCidV1(urnCidMatch[1])) ||
     /^urn:sha256:[A-Fa-f0-9]{64}$/.test(reference) ||
     /^urn:sha384:[A-Fa-f0-9]{96}$/.test(reference) ||
@@ -570,7 +585,7 @@ function validContentHash(hash: string): boolean {
 }
 
 function hasLocalContentIdentity(reference: string, indexes: ConstitutionIndexes): boolean {
-  const resource = indexes.resourcesById.get(reference);
+  const resource = indexes.resourcesById.get(reference.normalize("NFC"));
   return (
     resource !== undefined &&
     ((typeof resource.cid === "string" && validCidV1(resource.cid)) ||
@@ -597,8 +612,13 @@ function validateConstitution(
   }
 
   const domain = isRecord(data.domain) ? data.domain : undefined;
-  const subject = typeof domain?.id === "string" ? domain.id : undefined;
-  if (subject !== undefined && constitution.subject !== subject) {
+  const subject =
+    typeof domain?.id === "string" ? domain.id.normalize("NFC") : undefined;
+  const declaredSubject =
+    typeof constitution.subject === "string"
+      ? constitution.subject.normalize("NFC")
+      : constitution.subject;
+  if (subject !== undefined && declaredSubject !== subject) {
     addFinding(
       findings,
       "error",
@@ -790,9 +810,13 @@ function validateConstitution(
 
   const instrumentByDocument = new Map<string, RecordValue>();
   for (const instrument of instruments) {
+    const documentRef =
+      typeof instrument.document_ref === "string"
+        ? instrument.document_ref.normalize("NFC")
+        : undefined;
     if (
-      typeof instrument.document_ref !== "string" ||
-      !indexes.documents.has(instrument.document_ref)
+      documentRef === undefined ||
+      !indexes.documents.has(documentRef)
     ) {
       addFinding(
         findings,
@@ -803,7 +827,7 @@ function validateConstitution(
       );
       continue;
     }
-    if (instrumentByDocument.has(instrument.document_ref)) {
+    if (instrumentByDocument.has(documentRef)) {
       addFinding(
         findings,
         "error",
@@ -813,7 +837,7 @@ function validateConstitution(
       );
       continue;
     }
-    instrumentByDocument.set(instrument.document_ref, instrument);
+    instrumentByDocument.set(documentRef, instrument);
     if (
       typeof instrument.effective_from === "string" &&
       typeof instrument.effective_until === "string" &&
@@ -843,7 +867,9 @@ function validateConstitution(
   const supersedesByDocument = new Map<string, string>();
   for (const entry of indexes.documentEntries) {
     if (typeof entry.id !== "string" || typeof entry.supersedes !== "string") continue;
-    if (!indexes.documents.has(entry.supersedes)) {
+    const documentId = entry.id.normalize("NFC");
+    const supersededDocumentId = entry.supersedes.normalize("NFC");
+    if (!indexes.documents.has(supersededDocumentId)) {
       addFinding(
         findings,
         "error",
@@ -853,7 +879,7 @@ function validateConstitution(
       );
       continue;
     }
-    supersedesByDocument.set(entry.id, entry.supersedes);
+    supersedesByDocument.set(documentId, supersededDocumentId);
   }
   const visitedSupersession = new Set<string>();
   const reportedSupersessionCycles = new Set<string>();
@@ -1393,7 +1419,7 @@ function validateDomain(
   const resourcesById = new Map(
     resourceEntries
       .filter((entry): entry is RecordValue & { id: string } => typeof entry.id === "string")
-      .map((entry) => [entry.id, entry]),
+      .map((entry) => [entry.id.normalize("NFC"), entry]),
   );
   const serviceEntries = recordsAt(data.services, "entries");
   const serviceIds = ensureUniqueIds(serviceEntries, "service", domainPath, findings);
@@ -1401,7 +1427,9 @@ function validateDomain(
   ensureUniqueIds(accountEntries, "account", domainPath, findings, "name");
   const walletIds = new Set(
     accountEntries.flatMap((entry) =>
-      [entry.name, entry.address].filter((value): value is string => typeof value === "string"),
+      [entry.name, entry.address]
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.normalize("NFC")),
     ),
   );
   const agentEntries = recordsAt(data.agents, "entries");
@@ -1435,7 +1463,8 @@ function validateDomain(
     controllerEntries
       .filter((entry) => entry.type === "agent")
       .map((entry) => entry.id)
-      .filter((id): id is string => typeof id === "string"),
+      .filter((id): id is string => typeof id === "string")
+      .map((id) => id.normalize("NFC")),
   );
 
   validateConstitution(
