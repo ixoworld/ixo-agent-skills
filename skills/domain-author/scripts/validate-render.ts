@@ -72,6 +72,38 @@ const CONSTITUTION_TYPES = new Set([
   "AgenticConstitution",
   "SchemeConstitution",
 ]);
+// Exact ConstitutionalSubject class catalogue from ixofoundation/ns
+// a85b26612e097f2004ca7ec5fdc67129d12f1038:vocab/v1/constitution/subjects.jsonld.
+const CONSTITUTIONAL_SUBJECT_TYPES = new Set(
+  `Thing Entity Event Process Relationship InformationObject NormativeObject Capability ConstitutionalSubject
+Person Organization Asset Commodity FinancialInstrument PropertyRight Agreement
+Deed Project Work Protocol Service Oracle Claim Credential Evidence Decision Outcome Place BiologicalEntity
+Network NaturalPerson ArtificialPerson DigitalPerson CollectivePerson Company Partnership Cooperative
+Association Foundation Trust DAO Government InternationalOrganization PhysicalAsset DigitalAsset
+FinancialAsset NaturalAsset InfrastructureAsset KnowledgeAsset IntangibleAsset DeliveryVehicle GPU SolarFarm
+Hospital Forest Building ArtisanalGold PatentAsset Battery MachineTool FishingVessel DataCentre EnergyCommodity
+AgriculturalCommodity MineralCommodity DigitalComputeCommodity GoldCommodity CoffeeCommodity CarbonCommodity
+ElectricityCommodity GPUHours BandwidthCommodity FreshWaterCommodity Investment Bond Equity SAFE ConvertibleNote
+Loan Mortgage InsurancePolicy Option Future CarbonCredit BiodiversityCredit Stablecoin CBDC SecurityToken Title
+Lease LicenseRight PermitRight Concession MiningRight FishingRight SpectrumRight EmissionAllowance PatentRight
+TrademarkRight CopyrightRight Contract ServiceAgreement EmploymentContract PurchaseAgreement OptionAgreement
+EscrowAgreement SupplyAgreement LicenseAgreement CollectiveBargainingAgreement PropertyDeed MiningDeed
+ConservationDeed GiftDeed SettlementDeed MortgageDeed GrantDeed Programme Mission Campaign Initiative
+ConstructionProject ResearchProject HumanitarianProject Task Job Assignment Workflow Flow DeedWork Milestone
+Deliverable BlockchainProtocol CommunicationProtocol GovernanceProtocol EvaluationProtocol SettlementProtocol
+MedicalProtocol ClinicalGuideline SecurityProtocol ProfessionalService OracleService EvaluationService
+VerificationService PaymentService HostingService HumanOracle AIOracle SensorOracle InstitutionalOracle
+CompositeOracle MarketOracle ScientificOracle FactClaim MeasurementClaim OwnershipClaim IdentityClaim
+EmploymentClaim ComplianceClaim ImpactClaim ScientificClaim MedicalClaim ScientificHypothesis LicenseCredential
+Certification PermitCredential Degree Passport Visa ProfessionalRegistration VerifiableCredential Observation
+DocumentEvidence Photograph Telemetry SensorReading WitnessStatement EvaluationReport LaboratoryResult Approval
+Rejection Allocation Judgement Classification Diagnosis SettlementDecision Award EmploymentOutcome
+EmissionReduction DiseaseElimination InfrastructureBuilt PaymentCompleted TrainingCompleted CarbonRemoved
+Jurisdiction ProtectedArea Farm Mine Factory Warehouse City Watershed MarineReserve Patient Population Species
+Pathogen Ecosystem Crop Livestock DiseaseOutbreak SupplyChain EnergyGrid TransportNetwork ValidatorNetwork
+SocialNetwork HealthcareNetwork AgenticTwin Wallet Memory WorldModel DecisionEngine CapabilityToken
+ConstitutionalGovernor`.split(/\s+/),
+);
 
 type Mode = "derived" | "protocol" | "standalone" | "template";
 type ConformanceProfile = "authoring_draft" | "persisted_draft" | "anchored" | "runtime";
@@ -667,13 +699,14 @@ function validateConstitution(
     );
   }
   for (const reference of subjectTypes) {
-    if (!isExternalReference(reference)) {
+    const term = constitutionTerm(reference);
+    if (term === undefined || !CONSTITUTIONAL_SUBJECT_TYPES.has(term)) {
       addFinding(
         findings,
         "error",
         "constitutional-subject-profile-unresolved",
         path,
-        `Constitutional taxonomy reference ${JSON.stringify(reference)} must be an IRI.`,
+        `Constitutional subject type ${JSON.stringify(reference)} is not a canonical IXO subject-taxonomy class.`,
       );
     }
   }

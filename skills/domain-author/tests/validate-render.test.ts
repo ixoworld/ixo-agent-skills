@@ -559,6 +559,43 @@ test("subject-profile archetypes are restricted to the canonical governance mixi
   assert.equal(expandedReport.ok, true, JSON.stringify(expandedReport.findings, null, 2));
 });
 
+test("subject types are restricted to the canonical IXO subject taxonomy", async () => {
+  const unsupported = (await fixture(GOVERNED_FIXTURE_PATH)).replace(
+    'subject_types: [ "con:Project", "con:Work" ]',
+    'subject_types: [ "custom:UnrecognizedSubject" ]',
+  );
+  const unsupportedReport = await validatePackage(
+    { "domain.md": unsupported },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(unsupportedReport.ok, false);
+  assert.ok(
+    unsupportedReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-subject-profile-unresolved" &&
+        finding.message.includes("canonical IXO subject-taxonomy class"),
+    ),
+  );
+
+  const expanded = unsupported.replace(
+    "custom:UnrecognizedSubject",
+    "https://w3id.org/ixo/vocab/v1/constitution#Project",
+  );
+  const expandedReport = await validatePackage(
+    { "domain.md": expanded },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(expandedReport.ok, true, JSON.stringify(expandedReport.findings, null, 2));
+});
+
 test("constitution types are restricted to the canonical IXO catalogue", async () => {
   const unsupported = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('type: "con:ProjectConstitution"', 'type: "custom:Policy"');
