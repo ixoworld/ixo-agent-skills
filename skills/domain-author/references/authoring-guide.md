@@ -12,7 +12,7 @@ skip known values, and show defaults as assumptions rather than facts.
 | Group | Collect | Control |
 | --- | --- | --- |
 | Identity | name, purpose, boundary, lifecycle state, target type | Confirm the type before selecting templates. |
-| Constitutional subject | subject type IRIs, governance archetypes, identity, purpose, interests, values | Classify independently of legal form; require every subject-profile field. |
+| Constitutional subject | subject type IRIs, legal form when any, governance archetypes, identity, purpose, interests, values | Keep jurisdictional legal form separate from semantic subject classification; require every subject-profile field. |
 | Instruments and effect | existing instruments, aliases, functions, jurisdiction, adoption, effective period, supersession, legal-effect evidence | A title, signature, CID, or deployment does not prove legal effect. |
 | Norms and governance | constitutive/prescriptive/procedural norms, authority sources, decisions, amendment, interpretation, disputes, suspension, dissolution | Resolve every local reference and preserve canonical authority. |
 | Execution and Constitutional AI | execution mode, implementations, tests, enforcement points, failure policy, human gates, AI principles/procedures/model/audit | A model or executable instrument constrains proposals; it never self-authorizes action. |

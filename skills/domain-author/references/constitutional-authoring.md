@@ -32,6 +32,10 @@ Record:
    `con:Regulated`, `con:Verified`, or `con:Settled`.
 4. Every uniform subject-profile facet, using an empty array only when the facet is genuinely absent.
 
+Record legal form and jurisdiction when they exist, but keep them as jurisdictional context rather than
+using them as the root subject classification. A forest, claim, protocol, or disease outbreak may have no
+legal form and may still be a constitutional subject.
+
 Keep classifications orthogonal. `domain.type` selects a coarse serialization and manifest profile;
 `subject_types` provide semantic identity; archetypes provide reusable governance patterns; the
 constitutional `type` classifies the normative system. A deed, claim, wallet, oracle, or agent is not
