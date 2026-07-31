@@ -705,27 +705,34 @@ function validateConstitution(
     }
   }
   const visitedSupersession = new Set<string>();
-  const visitingSupersession = new Set<string>();
-  const reportSupersessionCycle = (documentId: string): void => {
-    if (visitingSupersession.has(documentId)) {
-      addFinding(
-        findings,
-        "error",
-        "constitution-conflicts-canonical",
-        path,
-        `Document supersession chain contains a cycle at ${documentId}.`,
-      );
-      return;
+  const reportedSupersessionCycles = new Set<string>();
+  for (const start of supersedesByDocument.keys()) {
+    if (visitedSupersession.has(start)) continue;
+    const positions = new Map<string, number>();
+    const chain: string[] = [];
+    let current: string | undefined = start;
+    while (current !== undefined && !visitedSupersession.has(current)) {
+      const cycleStart = positions.get(current);
+      if (cycleStart !== undefined) {
+        const cycle = chain.slice(cycleStart);
+        const cycleKey = [...cycle].sort().join("\u0000");
+        if (!reportedSupersessionCycles.has(cycleKey)) {
+          reportedSupersessionCycles.add(cycleKey);
+          addFinding(
+            findings,
+            "error",
+            "constitution-conflicts-canonical",
+            path,
+            `Document supersession chain contains a cycle: ${[...cycle, current].join(" -> ")}.`,
+          );
+        }
+        break;
+      }
+      positions.set(current, chain.length);
+      chain.push(current);
+      current = supersedesByDocument.get(current);
     }
-    if (visitedSupersession.has(documentId)) return;
-    visitingSupersession.add(documentId);
-    const predecessor = supersedesByDocument.get(documentId);
-    if (predecessor !== undefined) reportSupersessionCycle(predecessor);
-    visitingSupersession.delete(documentId);
-    visitedSupersession.add(documentId);
-  };
-  for (const documentId of supersedesByDocument.keys()) {
-    reportSupersessionCycle(documentId);
+    chain.forEach((documentId) => visitedSupersession.add(documentId));
   }
 
   if (

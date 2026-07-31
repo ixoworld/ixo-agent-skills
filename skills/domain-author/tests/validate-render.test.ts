@@ -405,25 +405,51 @@ test("constitutional supersession chains reject missing predecessor documents", 
 });
 
 test("constitutional supersession chains reject cycles", async () => {
-  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+  const selfCycle = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace(
       /(id: "domain-charter".*?supersedes:) null/,
       '$1 "domain-charter"',
     );
-  const report = await validatePackage(
-    { "domain.md": source },
+  const selfReport = await validatePackage(
+    { "domain.md": selfCycle },
     {
       mode: "derived",
       expectedProfile: "authoring_draft",
       expectedClass: EXPECTED_CLASS,
     },
   );
-  assert.equal(report.ok, false);
+  assert.equal(selfReport.ok, false);
   assert.ok(
-    report.findings.some(
+    selfReport.findings.some(
       (finding) =>
         finding.code === "constitution-conflicts-canonical" &&
         finding.message.includes("cycle"),
+    ),
+  );
+
+  const twoDocumentCycle = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      /(id: "description".*?supersedes:) null/,
+      '$1 "changelog"',
+    )
+    .replace(
+      /(id: "changelog".*?supersedes:) null/,
+      '$1 "description"',
+    );
+  const twoDocumentReport = await validatePackage(
+    { "domain.md": twoDocumentCycle },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(twoDocumentReport.ok, false);
+  assert.ok(
+    twoDocumentReport.findings.some(
+      (finding) =>
+        finding.code === "constitution-conflicts-canonical" &&
+        finding.message.includes("description -> changelog -> description"),
     ),
   );
 });
