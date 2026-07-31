@@ -468,6 +468,41 @@ test("subject-profile facets reject unresolved local references", async () => {
   assert.ok(report.findings.some((finding) => finding.code === "constitutional-subject-profile-unresolved"));
 });
 
+test("subject-profile archetypes are restricted to the canonical governance mixins", async () => {
+  const unsupported = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace('"con:Managed"', '"custom:Administrator"');
+  const unsupportedReport = await validatePackage(
+    { "domain.md": unsupported },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(unsupportedReport.ok, false);
+  assert.ok(
+    unsupportedReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-subject-profile-unresolved" &&
+        finding.message.includes("seven canonical governance mixins"),
+    ),
+  );
+
+  const expanded = unsupported.replace(
+    "custom:Administrator",
+    "https://w3id.org/ixo/vocab/v1/constitution#Managed",
+  );
+  const expandedReport = await validatePackage(
+    { "domain.md": expanded },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(expandedReport.ok, true, JSON.stringify(expandedReport.findings, null, 2));
+});
+
 test("constitutional instruments must resolve to documents", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('document_ref: "domain-charter"', 'document_ref: "missing-charter"');

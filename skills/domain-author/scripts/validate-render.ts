@@ -34,6 +34,16 @@ const MAX_YAML_DEPTH = 64;
 const MAX_YAML_NODES = 10_000;
 const VALIDATOR_VERSION = "1.0.0-rc.3";
 const DOMAIN_SCHEMA_PATH = resolve(__dirname, "../references/domain-md.schema.json");
+const CONSTITUTION_NAMESPACE = "https://w3id.org/ixo/vocab/v1/constitution#";
+const CONSTITUTIONAL_ARCHETYPES = new Set([
+  "Stewarded",
+  "Owned",
+  "Managed",
+  "Governed",
+  "Regulated",
+  "Verified",
+  "Settled",
+]);
 
 type Mode = "derived" | "protocol" | "standalone" | "template";
 type ConformanceProfile = "authoring_draft" | "persisted_draft" | "anchored" | "runtime";
@@ -419,6 +429,14 @@ function stringArray(value: unknown): string[] {
     : [];
 }
 
+function constitutionTerm(reference: string): string | undefined {
+  if (reference.startsWith("con:")) return reference.slice("con:".length);
+  if (reference.startsWith(CONSTITUTION_NAMESPACE)) {
+    return reference.slice(CONSTITUTION_NAMESPACE.length);
+  }
+  return undefined;
+}
+
 function resolvesReference(reference: string, ...sets: Set<string>[]): boolean {
   return isExternalReference(reference) || sets.some((set) => set.has(reference));
 }
@@ -588,7 +606,7 @@ function validateConstitution(
       "constitution.subject_profile.identity must include constitution.subject.",
     );
   }
-  for (const reference of [...subjectTypes, ...archetypes]) {
+  for (const reference of subjectTypes) {
     if (!isExternalReference(reference)) {
       addFinding(
         findings,
@@ -596,6 +614,18 @@ function validateConstitution(
         "constitutional-subject-profile-unresolved",
         path,
         `Constitutional taxonomy reference ${JSON.stringify(reference)} must be an IRI.`,
+      );
+    }
+  }
+  for (const archetype of archetypes) {
+    const term = constitutionTerm(archetype);
+    if (term === undefined || !CONSTITUTIONAL_ARCHETYPES.has(term)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-subject-profile-unresolved",
+        path,
+        `Constitutional archetype ${JSON.stringify(archetype)} is not one of the seven canonical governance mixins.`,
       );
     }
   }
