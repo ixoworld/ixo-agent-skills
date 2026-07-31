@@ -867,6 +867,10 @@ test("amending instruments require an amendment procedure and authority", async 
       /(id: "domain-charter".*?supersedes:) null/,
       '$1 "description"',
     )
+    .replace(
+      /(    - \{ document_ref: "domain-charter".+\})/,
+      '$1\n    - { document_ref: "description", type: "con:ConstitutionDocument", functions: [ "constitutive" ], canonical: false, effective_from: null, effective_until: null }',
+    )
     .replace('amendment_procedure: "resource:project-amendment-procedure-v1"', "amendment_procedure: null");
   const report = await validatePackage(
     { "domain.md": source },
@@ -880,7 +884,7 @@ test("amending instruments require an amendment procedure and authority", async 
   assert.ok(report.findings.some((finding) => finding.code === "constitutional-amendment-unapproved"));
 });
 
-test("amending instruments require a resolvable predecessor document", async () => {
+test("amending instruments require a mapped constitutional predecessor", async () => {
   const missingLineage = (await fixture(GOVERNED_FIXTURE_PATH)).replace(
     'functions: [ "constitutive", "governing" ]',
     'functions: [ "constitutive", "governing", "amending" ]',
@@ -898,23 +902,72 @@ test("amending instruments require a resolvable predecessor document", async () 
     missingLineageReport.findings.some(
       (finding) =>
         finding.code === "constitutional-amendment-unapproved" &&
-        finding.message.includes("supersede a resolvable predecessor"),
+        finding.message.includes("supersede a resolvable constitutional instrument"),
     ),
   );
 
-  const linkedLineage = missingLineage.replace(
+  const documentOnlyLineage = missingLineage.replace(
     /(id: "domain-charter".*?supersedes:) null/,
     '$1 "description"',
   );
-  const linkedLineageReport = await validatePackage(
-    { "domain.md": linkedLineage },
+  const documentOnlyLineageReport = await validatePackage(
+    { "domain.md": documentOnlyLineage },
     {
       mode: "derived",
       expectedProfile: "authoring_draft",
       expectedClass: EXPECTED_CLASS,
     },
   );
-  assert.equal(linkedLineageReport.ok, true, JSON.stringify(linkedLineageReport.findings, null, 2));
+  assert.equal(documentOnlyLineageReport.ok, false);
+  assert.ok(
+    documentOnlyLineageReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-amendment-unapproved" &&
+        finding.message.includes("supersede a resolvable constitutional instrument"),
+    ),
+  );
+
+  const mappedLineage = documentOnlyLineage.replace(
+    /(    - \{ document_ref: "domain-charter".+\})/,
+    '$1\n    - { document_ref: "description", type: "con:ConstitutionDocument", functions: [ "constitutive" ], canonical: false, effective_from: null, effective_until: null }',
+  );
+  const mappedLineageReport = await validatePackage(
+    { "domain.md": mappedLineage },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(mappedLineageReport.ok, true, JSON.stringify(mappedLineageReport.findings, null, 2));
+});
+
+test("constitutional supersession edges require the amending function", async () => {
+  const source = (await fixture(GOVERNED_FIXTURE_PATH))
+    .replace(
+      /(id: "domain-charter".*?supersedes:) null/,
+      '$1 "description"',
+    )
+    .replace(
+      /(    - \{ document_ref: "domain-charter".+\})/,
+      '$1\n    - { document_ref: "description", type: "con:ConstitutionDocument", functions: [ "constitutive" ], canonical: false, effective_from: null, effective_until: null }',
+    );
+  const report = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(report.ok, false);
+  assert.ok(
+    report.findings.some(
+      (finding) =>
+        finding.code === "constitutional-amendment-unapproved" &&
+        finding.message.includes("must declare the amending function"),
+    ),
+  );
 });
 
 test("document ids are unique independently of their roles", async () => {

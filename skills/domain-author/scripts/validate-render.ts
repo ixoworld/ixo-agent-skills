@@ -1061,10 +1061,21 @@ function validateConstitution(
     }
   }
 
-  const amendingInstruments = [...instrumentByDocument].filter(([, instrument]) =>
-    stringArray(instrument.functions).includes("amending"),
+  const amendingInstruments = new Map(
+    [...instrumentByDocument].filter(([, instrument]) =>
+      stringArray(instrument.functions).includes("amending"),
+    ),
   );
-  const amends = amendingInstruments.length > 0;
+  const supersedingInstruments = new Map(
+    [...instrumentByDocument].filter(([documentId]) =>
+      supersedesByDocument.has(documentId),
+    ),
+  );
+  const amendmentControlledInstruments = new Map([
+    ...amendingInstruments,
+    ...supersedingInstruments,
+  ]);
+  const amends = amendmentControlledInstruments.size > 0;
   if (
     amends &&
     (typeof governance?.amendment_procedure !== "string" ||
@@ -1078,14 +1089,29 @@ function validateConstitution(
       "An amending instrument requires an amendment procedure and authority source.",
     );
   }
-  for (const [documentId] of amendingInstruments) {
-    if (!supersedesByDocument.has(documentId)) {
+  for (const [documentId, instrument] of supersedingInstruments) {
+    if (!stringArray(instrument.functions).includes("amending")) {
       addFinding(
         findings,
         "error",
         "constitutional-amendment-unapproved",
         path,
-        `Amending instrument ${documentId} requires its document to supersede a resolvable predecessor.`,
+        `Constitutional instrument ${documentId} has a supersession edge and must declare the amending function.`,
+      );
+    }
+  }
+  for (const [documentId] of amendmentControlledInstruments) {
+    const predecessor = supersedesByDocument.get(documentId);
+    if (
+      predecessor === undefined ||
+      !instrumentByDocument.has(predecessor)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-amendment-unapproved",
+        path,
+        `Amending instrument ${documentId} requires its document to supersede a resolvable constitutional instrument.`,
       );
     }
   }
