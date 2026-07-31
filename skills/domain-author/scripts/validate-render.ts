@@ -1061,9 +1061,10 @@ function validateConstitution(
     }
   }
 
-  const amends = instruments.some((instrument) =>
+  const amendingInstruments = [...instrumentByDocument].filter(([, instrument]) =>
     stringArray(instrument.functions).includes("amending"),
   );
+  const amends = amendingInstruments.length > 0;
   if (
     amends &&
     (typeof governance?.amendment_procedure !== "string" ||
@@ -1076,6 +1077,17 @@ function validateConstitution(
       path,
       "An amending instrument requires an amendment procedure and authority source.",
     );
+  }
+  for (const [documentId] of amendingInstruments) {
+    if (!supersedesByDocument.has(documentId)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-amendment-unapproved",
+        path,
+        `Amending instrument ${documentId} requires its document to supersede a resolvable predecessor.`,
+      );
+    }
   }
 
   const executable =

@@ -863,6 +863,10 @@ test("superseded constitutions may not retain canonical instruments", async () =
 test("amending instruments require an amendment procedure and authority", async () => {
   const source = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('functions: [ "constitutive", "governing" ]', 'functions: [ "constitutive", "governing", "amending" ]')
+    .replace(
+      /(id: "domain-charter".*?supersedes:) null/,
+      '$1 "description"',
+    )
     .replace('amendment_procedure: "resource:project-amendment-procedure-v1"', "amendment_procedure: null");
   const report = await validatePackage(
     { "domain.md": source },
@@ -874,6 +878,43 @@ test("amending instruments require an amendment procedure and authority", async 
   );
   assert.equal(report.ok, false);
   assert.ok(report.findings.some((finding) => finding.code === "constitutional-amendment-unapproved"));
+});
+
+test("amending instruments require a resolvable predecessor document", async () => {
+  const missingLineage = (await fixture(GOVERNED_FIXTURE_PATH)).replace(
+    'functions: [ "constitutive", "governing" ]',
+    'functions: [ "constitutive", "governing", "amending" ]',
+  );
+  const missingLineageReport = await validatePackage(
+    { "domain.md": missingLineage },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(missingLineageReport.ok, false);
+  assert.ok(
+    missingLineageReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-amendment-unapproved" &&
+        finding.message.includes("supersede a resolvable predecessor"),
+    ),
+  );
+
+  const linkedLineage = missingLineage.replace(
+    /(id: "domain-charter".*?supersedes:) null/,
+    '$1 "description"',
+  );
+  const linkedLineageReport = await validatePackage(
+    { "domain.md": linkedLineage },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(linkedLineageReport.ok, true, JSON.stringify(linkedLineageReport.findings, null, 2));
 });
 
 test("document ids are unique independently of their roles", async () => {
