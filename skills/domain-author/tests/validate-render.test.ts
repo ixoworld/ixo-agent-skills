@@ -254,6 +254,45 @@ test("executable constitutional implementations require immutable content identi
     ),
   );
 
+  const malformedLocalHash = localMutable.replace(
+    "hash: null",
+    'hash: "unverifiable"',
+  );
+  const malformedLocalReport = await validatePackage(
+    { "domain.md": malformedLocalHash },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(malformedLocalReport.ok, false);
+  assert.ok(
+    malformedLocalReport.findings.some(
+      (finding) =>
+        finding.code === "constitutional-execution-incomplete" &&
+        finding.message.includes("immutable content identity"),
+    ),
+  );
+
+  const immutableLocalHash = localMutable.replace(
+    "hash: null",
+    `hash: "sha256:${"a".repeat(64)}"`,
+  );
+  const immutableLocalReport = await validatePackage(
+    { "domain.md": immutableLocalHash },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(
+    immutableLocalReport.ok,
+    true,
+    JSON.stringify(immutableLocalReport.findings, null, 2),
+  );
+
   const immutable = (await fixture(GOVERNED_FIXTURE_PATH))
     .replace('mode: "machine_assisted"', 'mode: "machine_executable"')
     .replace(

@@ -431,7 +431,19 @@ function immutableExternalReference(reference: string): boolean {
     CID_LIKE.test(reference) ||
     /^ipfs:\/\/b[a-z2-7]{10,}(?:\/|$)/.test(reference) ||
     /^ar:\/\/[A-Za-z0-9_-]{43}(?:\/|$)/.test(reference) ||
-    /^urn:(?:cid|sha256|sha384|sha512|blake3):[A-Za-z0-9._-]+$/.test(reference)
+    /^urn:cid:b[a-z2-7]{10,}$/.test(reference) ||
+    /^urn:sha256:[A-Fa-f0-9]{64}$/.test(reference) ||
+    /^urn:sha384:[A-Fa-f0-9]{96}$/.test(reference) ||
+    /^urn:sha512:[A-Fa-f0-9]{128}$/.test(reference) ||
+    /^urn:blake3:[A-Fa-f0-9]{64}$/.test(reference)
+  );
+}
+
+function validContentHash(hash: string): boolean {
+  return (
+    /^(?:sha256|blake3):[A-Fa-f0-9]{64}$/.test(hash) ||
+    /^sha384:[A-Fa-f0-9]{96}$/.test(hash) ||
+    /^sha512:[A-Fa-f0-9]{128}$/.test(hash)
   );
 }
 
@@ -440,7 +452,7 @@ function hasLocalContentIdentity(reference: string, indexes: ConstitutionIndexes
   return (
     resource !== undefined &&
     ((typeof resource.cid === "string" && CID_LIKE.test(resource.cid)) ||
-      (typeof resource.hash === "string" && resource.hash.trim().length > 0))
+      (typeof resource.hash === "string" && validContentHash(resource.hash)))
   );
 }
 
