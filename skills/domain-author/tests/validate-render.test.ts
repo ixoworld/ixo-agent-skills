@@ -131,6 +131,56 @@ test("the merged governed constitutional fixture passes derived validation", asy
   assert.equal(report.validator_version, "1.0.0-rc.3");
 });
 
+test("Oracle Capsule bindings require a CIDv1 raw sha2-256 manifest identity", async () => {
+  const validCid =
+    "bafkreigh2akiscaildcxy6wo5t3aij7f6bexqxyfkuprjzsd5r5kps3dhe";
+  const source = (await fixture(GOVERNED_FIXTURE_PATH)).replace(
+    'document_revision: "0.1.0"\n',
+    `document_revision: "0.1.0"
+x-oracle-capsule:
+  contract: "ixo.earth/oracle-capsule/v0alpha1"
+  manifest:
+    uri: "ipfs://${validCid}"
+    cid: "${validCid}"
+    sha256: "${"a".repeat(64)}"
+    media_type: "application/vnd.ixo.oracle-capsule+json"
+    schema: "urn:ixo:domain-md:x-oracle-capsule:manifest:0.1.0"
+    version: "0.1.0"
+`,
+  );
+  const validReport = await validatePackage(
+    { "domain.md": source },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(validReport.ok, true, JSON.stringify(validReport.findings, null, 2));
+
+  const truncatedReport = await validatePackage(
+    {
+      "domain.md": source.replace(
+        `cid: "${validCid}"`,
+        'cid: "bafybeigdyrzt"',
+      ),
+    },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(truncatedReport.ok, false);
+  assert.ok(
+    truncatedReport.findings.some(
+      (finding) =>
+        finding.code === "capsule-cid" &&
+        finding.message.includes("CIDv1 raw sha2-256"),
+    ),
+  );
+});
+
 test("a passive domain may declare its constitution not applicable", async () => {
   const report = await validatePackage(
     { "domain.md": await fixture(PASSIVE_FIXTURE_PATH) },

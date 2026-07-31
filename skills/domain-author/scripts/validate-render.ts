@@ -584,22 +584,50 @@ function readUnsignedVarint(
   return undefined;
 }
 
-function validCidV1(value: string): boolean {
+interface ParsedCidV1 {
+  codec: number;
+  multihashCode: number;
+  digestLength: number;
+}
+
+function parseCidV1(value: string): ParsedCidV1 | undefined {
   const bytes = decodeBase32Lower(value);
-  if (!bytes) return false;
+  if (!bytes) return undefined;
 
   const version = readUnsignedVarint(bytes, 0);
-  if (!version || version.value !== 1) return false;
+  if (!version || version.value !== 1) return undefined;
   const codec = readUnsignedVarint(bytes, version.next);
-  if (!codec || !SUPPORTED_CID_CODECS.has(codec.value)) return false;
+  if (!codec) return undefined;
   const multihashCode = readUnsignedVarint(bytes, codec.next);
-  if (!multihashCode) return false;
+  if (!multihashCode) return undefined;
   const digestLength = readUnsignedVarint(bytes, multihashCode.next);
-  const expectedLength = SUPPORTED_MULTIHASH_LENGTHS.get(multihashCode.value);
-  if (!digestLength || expectedLength === undefined || digestLength.value !== expectedLength) {
-    return false;
+  if (
+    !digestLength ||
+    digestLength.next + digestLength.value !== bytes.length
+  ) {
+    return undefined;
   }
-  return digestLength.next + digestLength.value === bytes.length;
+  return {
+    codec: codec.value,
+    multihashCode: multihashCode.value,
+    digestLength: digestLength.value,
+  };
+}
+
+function validCidV1(value: string): boolean {
+  const parsed = parseCidV1(value);
+  if (!parsed || !SUPPORTED_CID_CODECS.has(parsed.codec)) return false;
+  const expectedLength = SUPPORTED_MULTIHASH_LENGTHS.get(parsed.multihashCode);
+  return expectedLength !== undefined && parsed.digestLength === expectedLength;
+}
+
+function validRawSha256CidV1(value: string): boolean {
+  const parsed = parseCidV1(value);
+  return (
+    parsed?.codec === 0x55 &&
+    parsed.multihashCode === 0x12 &&
+    parsed.digestLength === 32
+  );
 }
 
 function validArweaveTransactionId(value: string): boolean {
@@ -1406,6 +1434,25 @@ function validateDomain(
     if (!KNOWN_TOP_LEVEL_KEYS.has(key) && !key.startsWith("x-")) {
       addFinding(findings, "warning", "unknown-top-level-key", domainPath, `Unknown top-level key ${JSON.stringify(key)}.`);
     }
+  }
+  const oracleCapsule = isRecord(data["x-oracle-capsule"])
+    ? data["x-oracle-capsule"]
+    : undefined;
+  const capsuleManifest =
+    oracleCapsule && isRecord(oracleCapsule.manifest)
+      ? oracleCapsule.manifest
+      : undefined;
+  if (
+    typeof capsuleManifest?.cid === "string" &&
+    !validRawSha256CidV1(capsuleManifest.cid)
+  ) {
+    addFinding(
+      findings,
+      "error",
+      "capsule-cid",
+      domainPath,
+      "x-oracle-capsule.manifest.cid must be a canonical CIDv1 raw sha2-256 content address.",
+    );
   }
   validateSecretAbsence(data, domainPath, findings);
   validateSections(data, text, domainPath, findings);
