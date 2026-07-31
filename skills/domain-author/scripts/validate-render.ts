@@ -613,18 +613,18 @@ function validArweaveTransactionId(value: string): boolean {
 }
 
 function immutableExternalReference(reference: string): boolean {
-  const ipfsMatch = /^ipfs:\/\/([^/?#]+)(?:[/?#]|$)/.exec(reference);
-  const arweaveMatch = /^ar:\/\/([^/?#]+)(?:[/?#]|$)/.exec(reference);
-  const urnCidMatch = /^urn:cid:(.+)$/.exec(reference);
+  const ipfsMatch = /^ipfs:\/\/([^/?#]+)(?:[/?#]|$)/i.exec(reference);
+  const arweaveMatch = /^ar:\/\/([^/?#]+)(?:[/?#]|$)/i.exec(reference);
+  const urnCidMatch = /^urn:cid:(.+)$/i.exec(reference);
   return (
     validCidV1(reference) ||
     (ipfsMatch !== null && validCidV1(ipfsMatch[1])) ||
     (arweaveMatch !== null && validArweaveTransactionId(arweaveMatch[1])) ||
     (urnCidMatch !== null && validCidV1(urnCidMatch[1])) ||
-    /^urn:sha256:[A-Fa-f0-9]{64}$/.test(reference) ||
-    /^urn:sha384:[A-Fa-f0-9]{96}$/.test(reference) ||
-    /^urn:sha512:[A-Fa-f0-9]{128}$/.test(reference) ||
-    /^urn:blake3:[A-Fa-f0-9]{64}$/.test(reference)
+    /^urn:sha256:[A-Fa-f0-9]{64}$/i.test(reference) ||
+    /^urn:sha384:[A-Fa-f0-9]{96}$/i.test(reference) ||
+    /^urn:sha512:[A-Fa-f0-9]{128}$/i.test(reference) ||
+    /^urn:blake3:[A-Fa-f0-9]{64}$/i.test(reference)
   );
 }
 

@@ -372,6 +372,20 @@ test("executable constitutional implementations require immutable content identi
   );
   assert.equal(immutableReport.ok, true, JSON.stringify(immutableReport.findings, null, 2));
 
+  const uppercaseSchemeReport = await validatePackage(
+    { "domain.md": immutable.replace("ipfs://", "IPFS://") },
+    {
+      mode: "derived",
+      expectedProfile: "authoring_draft",
+      expectedClass: EXPECTED_CLASS,
+    },
+  );
+  assert.equal(
+    uppercaseSchemeReport.ok,
+    true,
+    JSON.stringify(uppercaseSchemeReport.findings, null, 2),
+  );
+
   const malformedCid = immutable.replace(
     "bafkreigh2akiscaildcxy6wo5t3aij7f6bexqxyfkuprjzsd5r5kps3dhe",
     "bafybeigdyrzt",
