@@ -9,6 +9,7 @@
 
 import Ajv2020, { type ErrorObject, type ValidateFunction } from "ajv/dist/2020";
 import addFormats from "ajv-formats";
+import { Buffer } from "node:buffer";
 import {
   lstatSync,
   readFileSync,
@@ -32,10 +33,91 @@ const MAX_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_DOMAIN_BYTES = 1024 * 1024;
 const MAX_YAML_DEPTH = 64;
 const MAX_YAML_NODES = 10_000;
-const VALIDATOR_VERSION = "1.0.0-rc.1";
+const VALIDATOR_VERSION = "1.0.0-rc.3";
 const DOMAIN_SCHEMA_PATH = resolve(__dirname, "../references/domain-md.schema.json");
+const CONSTITUTION_NAMESPACE = "https://w3id.org/ixo/vocab/v1/constitution#";
+const CONSTITUTIONAL_ARCHETYPES = new Set([
+  "Stewarded",
+  "Owned",
+  "Managed",
+  "Governed",
+  "Regulated",
+  "Verified",
+  "Settled",
+]);
+const CONSTITUTION_TYPES = new Set([
+  "OperationalConstitution",
+  "PersonalConstitution",
+  "AssetConstitution",
+  "FinancialSubjectConstitution",
+  "WorkConstitution",
+  "ServiceConstitution",
+  "OracleConstitution",
+  "InformationSubjectConstitution",
+  "PlaceConstitution",
+  "BiologicalSubjectConstitution",
+  "NetworkConstitution",
+  "StateConstitution",
+  "InternationalOrganizationConstitution",
+  "OrganizationalConstitution",
+  "CorporateConstitution",
+  "TrustConstitution",
+  "CooperativeConstitution",
+  "PartnershipConstitution",
+  "FoundationConstitution",
+  "PublicBodyConstitution",
+  "ProjectConstitution",
+  "ProtocolConstitution",
+  "DAOConstitution",
+  "AgenticConstitution",
+  "SchemeConstitution",
+]);
+// Exact ConstitutionalSubject class catalogue from ixofoundation/ns
+// a85b26612e097f2004ca7ec5fdc67129d12f1038:vocab/v1/constitution/subjects.jsonld.
+const CONSTITUTIONAL_SUBJECT_TYPES = new Set(
+  `Thing Entity Event Process Relationship InformationObject NormativeObject Capability ConstitutionalSubject
+Person Organization Asset Commodity FinancialInstrument PropertyRight Agreement
+Deed Project Work Protocol Service Oracle Claim Credential Evidence Decision Outcome Place BiologicalEntity
+Network NaturalPerson ArtificialPerson DigitalPerson CollectivePerson Company Partnership Cooperative
+Association Foundation Trust DAO Government InternationalOrganization PhysicalAsset DigitalAsset
+FinancialAsset NaturalAsset InfrastructureAsset KnowledgeAsset IntangibleAsset DeliveryVehicle GPU SolarFarm
+Hospital Forest Building ArtisanalGold PatentAsset Battery MachineTool FishingVessel DataCentre EnergyCommodity
+AgriculturalCommodity MineralCommodity DigitalComputeCommodity GoldCommodity CoffeeCommodity CarbonCommodity
+ElectricityCommodity GPUHours BandwidthCommodity FreshWaterCommodity Investment Bond Equity SAFE ConvertibleNote
+Loan Mortgage InsurancePolicy Option Future CarbonCredit BiodiversityCredit Stablecoin CBDC SecurityToken Title
+Lease LicenseRight PermitRight Concession MiningRight FishingRight SpectrumRight EmissionAllowance PatentRight
+TrademarkRight CopyrightRight Contract ServiceAgreement EmploymentContract PurchaseAgreement OptionAgreement
+EscrowAgreement SupplyAgreement LicenseAgreement CollectiveBargainingAgreement PropertyDeed MiningDeed
+ConservationDeed GiftDeed SettlementDeed MortgageDeed GrantDeed Programme Mission Campaign Initiative
+ConstructionProject ResearchProject HumanitarianProject Task Job Assignment Workflow Flow DeedWork Milestone
+Deliverable BlockchainProtocol CommunicationProtocol GovernanceProtocol EvaluationProtocol SettlementProtocol
+MedicalProtocol ClinicalGuideline SecurityProtocol ProfessionalService OracleService EvaluationService
+VerificationService PaymentService HostingService HumanOracle AIOracle SensorOracle InstitutionalOracle
+CompositeOracle MarketOracle ScientificOracle FactClaim MeasurementClaim OwnershipClaim IdentityClaim
+EmploymentClaim ComplianceClaim ImpactClaim ScientificClaim MedicalClaim ScientificHypothesis LicenseCredential
+Certification PermitCredential Degree Passport Visa ProfessionalRegistration VerifiableCredential Observation
+DocumentEvidence Photograph Telemetry SensorReading WitnessStatement EvaluationReport LaboratoryResult Approval
+Rejection Allocation Judgement Classification Diagnosis SettlementDecision Award EmploymentOutcome
+EmissionReduction DiseaseElimination InfrastructureBuilt PaymentCompleted TrainingCompleted CarbonRemoved
+Jurisdiction ProtectedArea Farm Mine Factory Warehouse City Watershed MarineReserve Patient Population Species
+Pathogen Ecosystem Crop Livestock DiseaseOutbreak SupplyChain EnergyGrid TransportNetwork ValidatorNetwork
+SocialNetwork HealthcareNetwork AgenticTwin Wallet Memory WorldModel DecisionEngine CapabilityToken
+ConstitutionalGovernor`.split(/\s+/),
+);
+// Exact ConstitutionalInstrument class hierarchy from the same merged namespace commit.
+const CONSTITUTIONAL_INSTRUMENT_TYPES = new Set(
+  `ConstitutionalInstrument ConstitutiveInstrument GoverningInstrument AmendmentInstrument
+ExecutableConstitutionalInstrument ConstitutionDocument BasicLaw ConstituentTreaty OrganizationCharter
+OrganizationConstitutionDocument ArticlesOfAssociation CorporateCharter Bylaws OperatingAgreement TrustDeed
+DeclarationOfTrust TestamentaryInstrument CooperativeStatutes CooperativeArticles DeedOfFormation
+PartnershipAgreement PartnershipDeed FoundationCharter FoundationDeed FoundationStatutes EnablingStatute
+ProjectCharter CollectiveCharter MarketplaceCharter ProtocolSpecification GovernancePolicy DAOCharter
+ExecutableGovernancePolicy AgenticConstitutionDocument SchemeRules OperationalConstitutionDocument AssetCharter
+TermsInstrument ServiceCharter ServiceAgreementInstrument OracleCharter EvaluationPolicy LifecyclePolicy
+StewardshipCharter EvidencePolicy NetworkCharter`.split(/\s+/),
+);
 
-type Mode = "derived" | "protocol" | "template";
+type Mode = "derived" | "protocol" | "standalone" | "template";
 type ConformanceProfile = "authoring_draft" | "persisted_draft" | "anchored" | "runtime";
 type Severity = "error" | "warning";
 
@@ -339,14 +421,14 @@ function validateCommonFiles(
 
 const KNOWN_TOP_LEVEL_KEYS = new Set([
   "version", "kind", "conformance", "document_revision", "name", "description", "last_updated",
-  "maintainers", "domain", "source_of_truth", "documents", "agent_default_mode", "controllers",
+  "maintainers", "domain", "source_of_truth", "documents", "constitution", "agent_default_mode", "controllers",
   "services", "resources", "rights", "claims", "linked_entities", "accounts", "pods", "agents",
   "privacy", "graph_policy", "validation", "critical_do_not", "governance", "protocols", "asset",
   "deed", "protocol", "investment",
 ]);
 
 const CANONICAL_SECTIONS = [
-  "Overview", "Operating Model", "Authority & Control", "Services", "Resources", "Rights & Capabilities",
+  "Overview", "Operating Model", "Authority & Control", "Constitutional Governance", "Services", "Resources", "Rights & Capabilities",
   "Claims, Evidence & Evaluation", "Linked Entities", "Accounts & Value", "POD, Flows & Agents",
   "Privacy & Source-of-Truth Boundaries", "Playbooks", "Do's and Don'ts", "Changelog",
 ];
@@ -396,9 +478,867 @@ function ensureUniqueIds(entries: RecordValue[], label: string, path: string, fi
 }
 
 const CID_LIKE = /^b[a-z2-7]{10,}$/;
+const BASE32_LOWER_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
+const SUPPORTED_CID_CODECS = new Set([
+  0x55, // raw
+  0x70, // dag-pb
+  0x71, // dag-cbor
+  0x0129, // dag-json
+]);
+const SUPPORTED_MULTIHASH_LENGTHS = new Map([
+  [0x12, 32], // sha2-256
+  [0x13, 64], // sha2-512
+  [0x1e, 32], // blake3
+]);
 
 function isExternalReference(reference: string): boolean {
   return /^[A-Za-z][A-Za-z0-9+.-]*:/.test(reference) || CID_LIKE.test(reference);
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.normalize("NFC"))
+    : [];
+}
+
+function constitutionTerm(reference: string): string | undefined {
+  if (reference.startsWith("con:")) return reference.slice("con:".length);
+  if (reference.startsWith(CONSTITUTION_NAMESPACE)) {
+    return reference.slice(CONSTITUTION_NAMESPACE.length);
+  }
+  return undefined;
+}
+
+function resolvesReference(reference: string, ...sets: Set<string>[]): boolean {
+  const normalized = reference.normalize("NFC");
+  return (
+    isExternalReference(normalized) ||
+    resolvesLocalReference(normalized, ...sets)
+  );
+}
+
+function resolvesLocalReference(reference: string, ...sets: Set<string>[]): boolean {
+  const normalized = reference.normalize("NFC");
+  return sets.some((set) => set.has(normalized));
+}
+
+interface ConstitutionIndexes {
+  documentEntries: RecordValue[];
+  documents: Set<string>;
+  controllers: Set<string>;
+  rights: Set<string>;
+  resources: Set<string>;
+  resourcesById: Map<string, RecordValue>;
+  services: Set<string>;
+  agents: Set<string>;
+  agentControllers: Set<string>;
+  linkedEntities: Set<string>;
+  claims: Set<string>;
+  wallets: Set<string>;
+}
+
+function decodeBase32Lower(value: string): Uint8Array | undefined {
+  if (!/^b[a-z2-7]+$/.test(value)) return undefined;
+  const encoded = value.slice(1);
+  const bytes: number[] = [];
+  let buffer = 0;
+  let bits = 0;
+
+  for (const character of encoded) {
+    const digit = BASE32_LOWER_ALPHABET.indexOf(character);
+    if (digit < 0) return undefined;
+    buffer = (buffer << 5) | digit;
+    bits += 5;
+    while (bits >= 8) {
+      bits -= 8;
+      bytes.push((buffer >>> bits) & 0xff);
+    }
+    buffer &= bits === 0 ? 0 : (1 << bits) - 1;
+  }
+
+  if (buffer !== 0 || encoded.length !== Math.ceil((bytes.length * 8) / 5)) {
+    return undefined;
+  }
+  return Uint8Array.from(bytes);
+}
+
+function readUnsignedVarint(
+  bytes: Uint8Array,
+  offset: number,
+): { value: number; next: number } | undefined {
+  let value = 0;
+  let shift = 0;
+  for (let index = offset; index < bytes.length && shift <= 49; index += 1) {
+    const byte = bytes[index];
+    const chunk = byte & 0x7f;
+    value += chunk * (2 ** shift);
+    if (!Number.isSafeInteger(value)) return undefined;
+    if ((byte & 0x80) === 0) {
+      if (index > offset && chunk === 0) return undefined;
+      return { value, next: index + 1 };
+    }
+    shift += 7;
+  }
+  return undefined;
+}
+
+interface ParsedCidV1 {
+  codec: number;
+  multihashCode: number;
+  digestLength: number;
+  digestHex: string;
+}
+
+function parseCidV1(value: string): ParsedCidV1 | undefined {
+  const bytes = decodeBase32Lower(value);
+  if (!bytes) return undefined;
+
+  const version = readUnsignedVarint(bytes, 0);
+  if (!version || version.value !== 1) return undefined;
+  const codec = readUnsignedVarint(bytes, version.next);
+  if (!codec) return undefined;
+  const multihashCode = readUnsignedVarint(bytes, codec.next);
+  if (!multihashCode) return undefined;
+  const digestLength = readUnsignedVarint(bytes, multihashCode.next);
+  if (
+    !digestLength ||
+    digestLength.next + digestLength.value !== bytes.length
+  ) {
+    return undefined;
+  }
+  return {
+    codec: codec.value,
+    multihashCode: multihashCode.value,
+    digestLength: digestLength.value,
+    digestHex: Buffer.from(bytes.subarray(digestLength.next)).toString("hex"),
+  };
+}
+
+function validCidV1(value: string): boolean {
+  const parsed = parseCidV1(value);
+  if (!parsed || !SUPPORTED_CID_CODECS.has(parsed.codec)) return false;
+  const expectedLength = SUPPORTED_MULTIHASH_LENGTHS.get(parsed.multihashCode);
+  return expectedLength !== undefined && parsed.digestLength === expectedLength;
+}
+
+function validRawSha256CidV1(value: string): boolean {
+  const parsed = parseCidV1(value);
+  return (
+    parsed?.codec === 0x55 &&
+    parsed.multihashCode === 0x12 &&
+    parsed.digestLength === 32
+  );
+}
+
+function validArweaveTransactionId(value: string): boolean {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(value)) return false;
+  try {
+    const bytes = Buffer.from(value, "base64url");
+    return bytes.length === 32 && bytes.toString("base64url") === value;
+  } catch {
+    return false;
+  }
+}
+
+function immutableExternalReference(reference: string): boolean {
+  const ipfsMatch = /^ipfs:\/\/([^/?#]+)(?:[/?#]|$)/i.exec(reference);
+  const arweaveMatch = /^ar:\/\/([^/?#]+)(?:[/?#]|$)/i.exec(reference);
+  const urnCidMatch = /^urn:cid:(.+)$/i.exec(reference);
+  return (
+    validCidV1(reference) ||
+    (ipfsMatch !== null && validCidV1(ipfsMatch[1])) ||
+    (arweaveMatch !== null && validArweaveTransactionId(arweaveMatch[1])) ||
+    (urnCidMatch !== null && validCidV1(urnCidMatch[1])) ||
+    /^urn:sha256:[A-Fa-f0-9]{64}$/i.test(reference) ||
+    /^urn:sha384:[A-Fa-f0-9]{96}$/i.test(reference) ||
+    /^urn:sha512:[A-Fa-f0-9]{128}$/i.test(reference) ||
+    /^urn:blake3:[A-Fa-f0-9]{64}$/i.test(reference)
+  );
+}
+
+function validContentHash(hash: string): boolean {
+  return (
+    /^(?:sha256|blake3):[A-Fa-f0-9]{64}$/.test(hash) ||
+    /^sha384:[A-Fa-f0-9]{96}$/.test(hash) ||
+    /^sha512:[A-Fa-f0-9]{128}$/.test(hash)
+  );
+}
+
+function hasLocalContentIdentity(reference: string, indexes: ConstitutionIndexes): boolean {
+  const resource = indexes.resourcesById.get(reference.normalize("NFC"));
+  return (
+    resource !== undefined &&
+    ((typeof resource.cid === "string" && validCidV1(resource.cid)) ||
+      (typeof resource.hash === "string" && validContentHash(resource.hash)))
+  );
+}
+
+function validateConstitution(
+  data: RecordValue,
+  path: string,
+  indexes: ConstitutionIndexes,
+  findings: Finding[],
+): void {
+  const constitution = isRecord(data.constitution) ? data.constitution : undefined;
+  if (!constitution) {
+    addFinding(
+      findings,
+      "error",
+      "constitution-required",
+      path,
+      "Every domain.md 1.0.0-rc.3 document must declare constitutional status.",
+    );
+    return;
+  }
+
+  const domain = isRecord(data.domain) ? data.domain : undefined;
+  const subject =
+    typeof domain?.id === "string" ? domain.id.normalize("NFC") : undefined;
+  const declaredSubject =
+    typeof constitution.subject === "string"
+      ? constitution.subject.normalize("NFC")
+      : constitution.subject;
+  if (subject !== undefined && declaredSubject !== subject) {
+    addFinding(
+      findings,
+      "error",
+      "constitution-required",
+      path,
+      "constitution.subject must exactly equal domain.id.",
+    );
+  }
+  const constitutionType =
+    typeof constitution.type === "string"
+      ? constitutionTerm(constitution.type)
+      : undefined;
+  if (constitutionType === undefined || !CONSTITUTION_TYPES.has(constitutionType)) {
+    addFinding(
+      findings,
+      "error",
+      "constitution-required",
+      path,
+      `constitution.type ${JSON.stringify(constitution.type)} is not a canonical IXO constitutional type.`,
+    );
+  }
+
+  const subjectProfile = isRecord(constitution.subject_profile)
+    ? constitution.subject_profile
+    : undefined;
+  const subjectTypes = stringArray(subjectProfile?.subject_types);
+  const archetypes = stringArray(subjectProfile?.archetypes);
+  const identity = stringArray(subjectProfile?.identity);
+  const agenticTwins = stringArray(subjectProfile?.agentic_twins);
+  if (!subjectProfile || subjectTypes.length === 0 || identity.length === 0) {
+    addFinding(
+      findings,
+      "error",
+      "constitutional-subject-profile-unresolved",
+      path,
+      "Every domain must classify its constitutional subject and identify its canonical identity.",
+    );
+  }
+  if (subject !== undefined && !identity.includes(subject)) {
+    addFinding(
+      findings,
+      "error",
+      "constitutional-subject-profile-unresolved",
+      path,
+      "constitution.subject_profile.identity must include constitution.subject.",
+    );
+  }
+  for (const reference of subjectTypes) {
+    const term = constitutionTerm(reference);
+    if (term === undefined || !CONSTITUTIONAL_SUBJECT_TYPES.has(term)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-subject-profile-unresolved",
+        path,
+        `Constitutional subject type ${JSON.stringify(reference)} is not a canonical IXO subject-taxonomy class.`,
+      );
+    }
+  }
+  for (const archetype of archetypes) {
+    const term = constitutionTerm(archetype);
+    if (term === undefined || !CONSTITUTIONAL_ARCHETYPES.has(term)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-subject-profile-unresolved",
+        path,
+        `Constitutional archetype ${JSON.stringify(archetype)} is not one of the seven canonical governance mixins.`,
+      );
+    }
+  }
+
+  const profileReferenceSets: Array<[string, Set<string>[]]> = [
+    ["identity", [indexes.controllers, indexes.linkedEntities, indexes.resources]],
+    ["purposes", [indexes.documents, indexes.resources]],
+    ["interests", [indexes.documents, indexes.resources]],
+    ["values", [indexes.documents, indexes.resources]],
+    ["rights", [indexes.rights]],
+    ["obligations", [indexes.documents, indexes.resources, indexes.rights]],
+    ["capabilities", [indexes.rights, indexes.resources, indexes.services]],
+    ["claims", [indexes.claims, indexes.resources]],
+    ["wallets", [indexes.wallets, indexes.resources]],
+    ["authorities", [indexes.controllers, indexes.linkedEntities]],
+    ["memory", [indexes.resources]],
+    ["evidence_policies", [indexes.documents, indexes.resources]],
+    ["evaluation_policies", [indexes.documents, indexes.resources]],
+    ["decision_policies", [indexes.documents, indexes.resources]],
+    ["settlement_policies", [indexes.documents, indexes.resources]],
+    ["governance", [indexes.documents, indexes.resources]],
+    ["custodians", [indexes.controllers, indexes.linkedEntities]],
+    ["stewards", [indexes.controllers, indexes.linkedEntities]],
+    ["owners", [indexes.controllers, indexes.linkedEntities]],
+    ["beneficiaries", [indexes.controllers, indexes.linkedEntities]],
+    ["oracles", [indexes.agents, indexes.services, indexes.linkedEntities]],
+    ["agentic_twins", [indexes.agents, indexes.linkedEntities]],
+  ];
+  for (const [field, referenceSets] of profileReferenceSets) {
+    for (const reference of stringArray(subjectProfile?.[field])) {
+      const resolved =
+        field === "agentic_twins"
+          ? resolvesLocalReference(reference, ...referenceSets)
+          : resolvesReference(reference, ...referenceSets);
+      if (!resolved) {
+        addFinding(
+          findings,
+          "error",
+          "constitutional-subject-profile-unresolved",
+          path,
+          `Constitutional subject ${field} reference ${JSON.stringify(reference)} does not resolve.`,
+        );
+      }
+    }
+  }
+
+  const controllerSummary =
+    isRecord(data.controllers) && isRecord(data.controllers.summary)
+      ? data.controllers.summary
+      : undefined;
+  const agentMode =
+    isRecord(data.agent_default_mode) && typeof data.agent_default_mode.mode === "string"
+      ? data.agent_default_mode.mode
+      : undefined;
+  const governedTypes = new Set(["dao", "organisation", "project", "protocol", "marketplace", "pod"]);
+  const agentic =
+    indexes.agents.size > 0 ||
+    indexes.agentControllers.size > 0 ||
+    agenticTwins.length > 0 ||
+    controllerSummary?.agent_controllers_allowed === true ||
+    agentMode === "bounded_evaluate" ||
+    agentMode === "bounded_execute";
+  const completePackageRequired =
+    (typeof domain?.type === "string" && governedTypes.has(domain.type)) || agentic;
+
+  if (constitution.status === "not_applicable") {
+    const packageFields = [
+      "legal_effect",
+      "norms",
+      "instruments",
+      "governance",
+      "execution",
+      "constitutional_ai",
+    ].some((field) => field in constitution);
+    if (completePackageRequired || packageFields) {
+      addFinding(
+        findings,
+        "error",
+        "constitution-not-applicable-invalid",
+        path,
+        "Only passive domains without agents, agent controllers, bounded agency, or executable governance may declare constitution.status as not_applicable.",
+      );
+    }
+    return;
+  }
+
+  const legalEffect = isRecord(constitution.legal_effect) ? constitution.legal_effect : undefined;
+  const governance = isRecord(constitution.governance) ? constitution.governance : undefined;
+  const execution = isRecord(constitution.execution) ? constitution.execution : undefined;
+  const constitutionalAI = isRecord(constitution.constitutional_ai)
+    ? constitution.constitutional_ai
+    : undefined;
+  const instruments = Array.isArray(constitution.instruments)
+    ? constitution.instruments.filter(isRecord)
+    : [];
+  if (
+    !legalEffect ||
+    !governance ||
+    !execution ||
+    !constitutionalAI ||
+    instruments.length === 0 ||
+    stringArray(constitution.norms).length === 0
+  ) {
+    addFinding(
+      findings,
+      "error",
+      "constitution-required",
+      path,
+      "A constitutional package requires legal effect, norms, instruments, governance, execution, and Constitutional-AI declarations.",
+    );
+  }
+  for (const norm of stringArray(constitution.norms)) {
+    const localResourceReference =
+      indexes.resources.has(norm) ||
+      (norm.startsWith("resource:") && norm.length > "resource:".length);
+    if (!localResourceReference && !immutableExternalReference(norm)) {
+      addFinding(
+        findings,
+        "error",
+        "constitution-required",
+        path,
+        `Constitutional norm ${JSON.stringify(norm)} must resolve to a declared local resource or an immutable external reference.`,
+      );
+    }
+  }
+
+  const instrumentByDocument = new Map<string, RecordValue>();
+  for (const instrument of instruments) {
+    const instrumentType =
+      typeof instrument.type === "string"
+        ? constitutionTerm(instrument.type)
+        : undefined;
+    if (
+      instrumentType === undefined ||
+      !CONSTITUTIONAL_INSTRUMENT_TYPES.has(instrumentType)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-instrument-unresolved",
+        path,
+        `Constitutional instrument type ${JSON.stringify(instrument.type)} is not a canonical IXO constitutional-instrument class.`,
+      );
+    }
+    const documentRef =
+      typeof instrument.document_ref === "string"
+        ? instrument.document_ref.normalize("NFC")
+        : undefined;
+    if (
+      documentRef === undefined ||
+      !indexes.documents.has(documentRef)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-instrument-unresolved",
+        path,
+        `Constitutional instrument ${JSON.stringify(instrument.document_ref)} does not resolve to documents.entries[].id.`,
+      );
+      continue;
+    }
+    if (instrumentByDocument.has(documentRef)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-instrument-unresolved",
+        path,
+        `Constitutional document ${instrument.document_ref} is mapped by more than one instrument entry.`,
+      );
+      continue;
+    }
+    instrumentByDocument.set(documentRef, instrument);
+    if (
+      typeof instrument.effective_from === "string" &&
+      typeof instrument.effective_until === "string" &&
+      Date.parse(instrument.effective_from) > Date.parse(instrument.effective_until)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitution-conflicts-canonical",
+        path,
+        `Instrument ${instrument.document_ref} ends before it becomes effective.`,
+      );
+    }
+  }
+  if (
+    constitution.status === "superseded" &&
+    instruments.some((instrument) => instrument.canonical === true)
+  ) {
+    addFinding(
+      findings,
+      "error",
+      "constitution-conflicts-canonical",
+      path,
+      "A superseded constitution cannot retain a canonical instrument.",
+    );
+  }
+  const supersedesByDocument = new Map<string, string>();
+  for (const entry of indexes.documentEntries) {
+    if (typeof entry.id !== "string" || typeof entry.supersedes !== "string") continue;
+    const documentId = entry.id.normalize("NFC");
+    const supersededDocumentId = entry.supersedes.normalize("NFC");
+    if (!indexes.documents.has(supersededDocumentId)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-instrument-unresolved",
+        path,
+        `Document ${entry.id} supersedes missing document ${entry.supersedes}.`,
+      );
+      continue;
+    }
+    supersedesByDocument.set(documentId, supersededDocumentId);
+  }
+  const visitedSupersession = new Set<string>();
+  const reportedSupersessionCycles = new Set<string>();
+  for (const start of supersedesByDocument.keys()) {
+    if (visitedSupersession.has(start)) continue;
+    const positions = new Map<string, number>();
+    const chain: string[] = [];
+    let current: string | undefined = start;
+    while (current !== undefined && !visitedSupersession.has(current)) {
+      const cycleStart = positions.get(current);
+      if (cycleStart !== undefined) {
+        const cycle = chain.slice(cycleStart);
+        const cycleKey = [...cycle].sort().join("\u0000");
+        if (!reportedSupersessionCycles.has(cycleKey)) {
+          reportedSupersessionCycles.add(cycleKey);
+          addFinding(
+            findings,
+            "error",
+            "constitution-conflicts-canonical",
+            path,
+            `Document supersession chain contains a cycle: ${[...cycle, current].join(" -> ")}.`,
+          );
+        }
+        break;
+      }
+      positions.set(current, chain.length);
+      chain.push(current);
+      current = supersedesByDocument.get(current);
+    }
+    chain.forEach((documentId) => visitedSupersession.add(documentId));
+  }
+  const canonicalAncestors = new Map<string, Set<string>>();
+  for (const [documentId, instrument] of instrumentByDocument) {
+    if (instrument.canonical !== true) continue;
+    const traversed = new Set([documentId]);
+    const ancestors = new Set<string>();
+    let predecessor = supersedesByDocument.get(documentId);
+    while (predecessor !== undefined && !traversed.has(predecessor)) {
+      ancestors.add(predecessor);
+      if (instrumentByDocument.get(predecessor)?.canonical === true) {
+        addFinding(
+          findings,
+          "error",
+          "constitution-conflicts-canonical",
+          path,
+          `Canonical constitutional instrument ${documentId} supersedes canonical predecessor ${predecessor} through its amendment chain.`,
+        );
+      }
+      traversed.add(predecessor);
+      predecessor = supersedesByDocument.get(predecessor);
+    }
+    canonicalAncestors.set(documentId, ancestors);
+  }
+  const canonicalDocumentIds = [...canonicalAncestors.keys()];
+  for (let leftIndex = 0; leftIndex < canonicalDocumentIds.length; leftIndex += 1) {
+    const left = canonicalDocumentIds[leftIndex];
+    const leftAncestors = canonicalAncestors.get(left) ?? new Set<string>();
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < canonicalDocumentIds.length;
+      rightIndex += 1
+    ) {
+      const right = canonicalDocumentIds[rightIndex];
+      const rightAncestors = canonicalAncestors.get(right) ?? new Set<string>();
+      if (leftAncestors.has(right) || rightAncestors.has(left)) continue;
+      const commonAncestor = [...leftAncestors].find((ancestor) =>
+        rightAncestors.has(ancestor),
+      );
+      if (commonAncestor !== undefined) {
+        addFinding(
+          findings,
+          "error",
+          "constitution-conflicts-canonical",
+          path,
+          `Canonical constitutional instruments ${left} and ${right} are competing successors of common predecessor ${commonAncestor}.`,
+        );
+      }
+    }
+  }
+
+  if (
+    legalEffect?.status === "verified" &&
+    (typeof legalEffect.jurisdiction !== "string" ||
+      stringArray(legalEffect.authority_evidence).length === 0)
+  ) {
+    addFinding(
+      findings,
+      "error",
+      "constitutional-authority-unverified",
+      path,
+      "Verified legal effect requires jurisdiction and authority evidence.",
+    );
+  }
+  for (const reference of stringArray(legalEffect?.authority_evidence)) {
+    if (!resolvesReference(reference, indexes.resources)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-authority-unverified",
+        path,
+        `Legal authority evidence ${JSON.stringify(reference)} does not resolve.`,
+      );
+    }
+  }
+  for (const reference of stringArray(governance?.authority_sources)) {
+    if (!resolvesReference(reference, indexes.documents, indexes.resources)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-authority-unverified",
+        path,
+        `Constitutional authority source ${JSON.stringify(reference)} does not resolve.`,
+      );
+    }
+  }
+  for (const field of [
+    "decision_procedure",
+    "amendment_procedure",
+    "interpretation_procedure",
+    "dispute_resolution_procedure",
+    "suspension_procedure",
+    "dissolution_procedure",
+  ]) {
+    const reference = governance?.[field];
+    if (
+      typeof reference === "string" &&
+      !resolvesReference(reference, indexes.documents, indexes.resources)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-authority-unverified",
+        path,
+        `Constitutional ${field} ${JSON.stringify(reference)} does not resolve.`,
+      );
+    }
+  }
+
+  const amendingInstruments = new Map(
+    [...instrumentByDocument].filter(([, instrument]) =>
+      stringArray(instrument.functions).includes("amending"),
+    ),
+  );
+  const supersedingInstruments = new Map(
+    [...instrumentByDocument].filter(([documentId]) =>
+      supersedesByDocument.has(documentId),
+    ),
+  );
+  const amendmentControlledInstruments = new Map([
+    ...amendingInstruments,
+    ...supersedingInstruments,
+  ]);
+  const amends = amendmentControlledInstruments.size > 0;
+  if (
+    amends &&
+    (typeof governance?.amendment_procedure !== "string" ||
+      stringArray(governance?.authority_sources).length === 0)
+  ) {
+    addFinding(
+      findings,
+      "error",
+      "constitutional-amendment-unapproved",
+      path,
+      "An amending instrument requires an amendment procedure and authority source.",
+    );
+  }
+  for (const [documentId, instrument] of supersedingInstruments) {
+    if (!stringArray(instrument.functions).includes("amending")) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-amendment-unapproved",
+        path,
+        `Constitutional instrument ${documentId} has a supersession edge and must declare the amending function.`,
+      );
+    }
+  }
+  for (const [documentId] of amendmentControlledInstruments) {
+    const predecessor = supersedesByDocument.get(documentId);
+    if (
+      predecessor === undefined ||
+      !instrumentByDocument.has(predecessor)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-amendment-unapproved",
+        path,
+        `Amending instrument ${documentId} requires its document to supersede a resolvable constitutional instrument.`,
+      );
+    }
+  }
+
+  const executable =
+    execution?.mode === "machine_executable" ||
+    execution?.mode === "hybrid" ||
+    instruments.some((instrument) => stringArray(instrument.functions).includes("executable"));
+  const implementations = stringArray(execution?.implementations);
+  const conformanceTests = stringArray(execution?.conformance_tests);
+  const enforcementPoints = stringArray(execution?.enforcement_points);
+  const reviewGates = stringArray(execution?.human_review_required_for);
+  if (
+    executable &&
+    (implementations.length === 0 ||
+      conformanceTests.length === 0 ||
+      enforcementPoints.length === 0 ||
+      reviewGates.length === 0 ||
+      !["deny", "pause_and_escalate"].includes(String(execution?.failure_policy)))
+  ) {
+    addFinding(
+      findings,
+      "error",
+      "constitutional-execution-incomplete",
+      path,
+      "Executable governance requires implementations, tests, enforcement points, human-review gates, and a fail-closed policy.",
+    );
+  }
+  for (const reference of [...implementations, ...conformanceTests]) {
+    if (!resolvesReference(reference, indexes.resources)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-execution-incomplete",
+        path,
+        `Constitutional execution resource ${JSON.stringify(reference)} does not resolve.`,
+      );
+    }
+  }
+  if (executable) {
+    for (const reference of implementations) {
+      const immutable =
+        hasLocalContentIdentity(reference, indexes) ||
+        immutableExternalReference(reference);
+      if (!immutable) {
+        addFinding(
+          findings,
+          "error",
+          "constitutional-execution-incomplete",
+          path,
+          `Executable constitutional implementation ${JSON.stringify(reference)} lacks immutable content identity.`,
+        );
+      }
+    }
+  }
+  for (const reference of enforcementPoints) {
+    if (!resolvesReference(reference, indexes.services)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-execution-incomplete",
+        path,
+        `Constitutional enforcement point ${JSON.stringify(reference)} does not resolve.`,
+      );
+    }
+  }
+
+  const aiMode = typeof constitutionalAI?.mode === "string" ? constitutionalAI.mode : undefined;
+  const principles = stringArray(constitutionalAI?.principles);
+  const appliesToAgents = stringArray(constitutionalAI?.applies_to_agents);
+  const constitutionalAgents = new Set([
+    ...indexes.agents,
+    ...indexes.agentControllers,
+    ...agenticTwins,
+  ]);
+  const auditRecord = constitutionalAI?.audit_record;
+  if (agentic && (!aiMode || aiMode === "none")) {
+    addFinding(
+      findings,
+      "error",
+      "constitutional-ai-incomplete",
+      path,
+      "Agentic domains require an active Constitutional-AI mode.",
+    );
+  }
+  if (aiMode && aiMode !== "none") {
+    const critiqueRequired = aiMode === "critique_and_revise" || aiMode === "hybrid";
+    const decisionRequired = aiMode === "policy_evaluate" || aiMode === "hybrid";
+    if (
+      principles.length === 0 ||
+      typeof auditRecord !== "string" ||
+      constitutionalAI?.conflict_policy !== "canonical_authority_prevails" ||
+      (critiqueRequired &&
+        (typeof constitutionalAI.critique_procedure !== "string" ||
+          typeof constitutionalAI.revision_procedure !== "string")) ||
+      (decisionRequired && typeof constitutionalAI.decision_procedure !== "string")
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-ai-incomplete",
+        path,
+        "Active Constitutional AI requires principles, mode-specific procedures, canonical-authority conflict policy, and an audit-record definition.",
+      );
+    }
+    if (constitutionalAgents.size > 0 && appliesToAgents.length === 0) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-ai-incomplete",
+        path,
+        "Constitutional AI must identify the agents, twins, and agent controllers to which it applies.",
+      );
+    }
+    for (const agent of new Set([
+      ...indexes.agents,
+      ...indexes.agentControllers,
+      ...agenticTwins,
+    ])) {
+      if (!appliesToAgents.includes(agent)) {
+        const label = indexes.agentControllers.has(agent)
+          ? "Agent controller"
+          : agenticTwins.includes(agent)
+            ? "Agentic twin"
+            : "Agent";
+        addFinding(
+          findings,
+          "error",
+          "constitutional-ai-incomplete",
+          path,
+          `${label} ${agent} must be bound to the Constitutional-AI policy.`,
+        );
+      }
+    }
+  }
+  for (const agent of appliesToAgents) {
+    if (!constitutionalAgents.has(agent)) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-ai-incomplete",
+        path,
+        `Constitutional-AI subject ${agent} is not a declared agent, agent controller, or twin.`,
+      );
+    }
+  }
+  for (const reference of [
+    ...principles,
+    constitutionalAI?.critique_procedure,
+    constitutionalAI?.revision_procedure,
+    constitutionalAI?.decision_procedure,
+    constitutionalAI?.model_profile,
+    auditRecord,
+  ]) {
+    if (
+      typeof reference === "string" &&
+      !resolvesReference(reference, indexes.resources)
+    ) {
+      addFinding(
+        findings,
+        "error",
+        "constitutional-ai-incomplete",
+        path,
+        `Constitutional-AI resource ${JSON.stringify(reference)} does not resolve.`,
+      );
+    }
+  }
 }
 
 function parseIsoDurationMs(duration: string): number | null {
@@ -497,6 +1437,51 @@ function validateDomain(
       addFinding(findings, "warning", "unknown-top-level-key", domainPath, `Unknown top-level key ${JSON.stringify(key)}.`);
     }
   }
+  const oracleCapsule = isRecord(data["x-oracle-capsule"])
+    ? data["x-oracle-capsule"]
+    : undefined;
+  const capsuleManifest =
+    oracleCapsule && isRecord(oracleCapsule.manifest)
+      ? oracleCapsule.manifest
+      : undefined;
+  if (
+    typeof capsuleManifest?.cid === "string" &&
+    !validRawSha256CidV1(capsuleManifest.cid)
+  ) {
+    addFinding(
+      findings,
+      "error",
+      "capsule-cid",
+      domainPath,
+      "x-oracle-capsule.manifest.cid must be a canonical CIDv1 raw sha2-256 content address.",
+    );
+  }
+  if (
+    capsuleManifest &&
+    typeof capsuleManifest.cid === "string" &&
+    validRawSha256CidV1(capsuleManifest.cid)
+  ) {
+    const parsedCapsuleCid = parseCidV1(capsuleManifest.cid);
+    const ipfsUriMatch =
+      typeof capsuleManifest.uri === "string"
+        ? /^ipfs:\/\/([^/?#]+)(.*)$/i.exec(capsuleManifest.uri)
+        : null;
+    const digestDisagrees =
+      typeof capsuleManifest.sha256 === "string" &&
+      capsuleManifest.sha256 !== parsedCapsuleCid?.digestHex;
+    const uriDisagrees =
+      ipfsUriMatch !== null &&
+      (ipfsUriMatch[1] !== capsuleManifest.cid || ipfsUriMatch[2] !== "");
+    if (digestDisagrees || uriDisagrees) {
+      addFinding(
+        findings,
+        "error",
+        "capsule-integrity",
+        domainPath,
+        "x-oracle-capsule manifest CID, SHA-256 digest, and IPFS URI identity must agree.",
+      );
+    }
+  }
   validateSecretAbsence(data, domainPath, findings);
   validateSections(data, text, domainPath, findings);
 
@@ -556,8 +1541,17 @@ function validateDomain(
     } else if (expectedClass !== undefined && domain.class !== expectedClass) {
       addFinding(findings, "error", "derived-class-mismatch", domainPath, `Expected domain.class ${JSON.stringify(expectedClass)}.`);
     }
-  } else if (mode === "protocol" && domainType !== "protocol") {
-    addFinding(findings, "error", "protocol-type", domainPath, "Protocol output requires domain.type: protocol.");
+  } else if (mode === "protocol") {
+    if (domainType !== "protocol") {
+      addFinding(findings, "error", "protocol-type", domainPath, "Protocol output requires domain.type: protocol.");
+    }
+  } else if (mode === "standalone") {
+    if (domainType === "protocol") {
+      addFinding(findings, "error", "standalone-lineage", domainPath, "Standalone output cannot use domain.type: protocol.");
+    }
+    if (domain.class !== null && domain.class !== undefined) {
+      addFinding(findings, "error", "standalone-lineage", domainPath, "Standalone output cannot declare protocol-template lineage in domain.class.");
+    }
   }
 
   const entries = extractDocumentEntries(data.documents);
@@ -571,6 +1565,7 @@ function validateDomain(
     );
     return profile;
   }
+  const documentIds = ensureUniqueIds(entries, "document", domainPath, findings);
 
   const roles: string[] = [];
   entries.forEach((entry, index) => {
@@ -637,21 +1632,76 @@ function validateDomain(
   const rightIds = ensureUniqueIds(rightEntries, "right", domainPath, findings);
   const resourceEntries = recordsAt(data.resources, "entries");
   const resourceIds = ensureUniqueIds(resourceEntries, "resource", domainPath, findings);
+  const resourcesById = new Map(
+    resourceEntries
+      .filter((entry): entry is RecordValue & { id: string } => typeof entry.id === "string")
+      .map((entry) => [entry.id.normalize("NFC"), entry]),
+  );
   const serviceEntries = recordsAt(data.services, "entries");
   const serviceIds = ensureUniqueIds(serviceEntries, "service", domainPath, findings);
-  ensureUniqueIds(recordsAt(data.accounts, "entries"), "account", domainPath, findings, "name");
+  const accountEntries = recordsAt(data.accounts, "entries");
+  ensureUniqueIds(accountEntries, "account", domainPath, findings, "name");
+  const walletIds = new Set(
+    accountEntries.flatMap((entry) =>
+      [entry.name, entry.address]
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.normalize("NFC")),
+    ),
+  );
   const agentEntries = recordsAt(data.agents, "entries");
-  ensureUniqueIds(agentEntries, "agent", domainPath, findings);
+  const agentIds = ensureUniqueIds(agentEntries, "agent", domainPath, findings);
   for (const agent of agentEntries) {
     if (typeof agent.service === "string" && agent.service !== "" && !isExternalReference(agent.service) && !serviceIds.has(agent.service)) {
       addFinding(findings, "error", "broken-local-reference", domainPath, `Agent ${String(agent.id)} references missing service ${JSON.stringify(agent.service)}.`);
     }
   }
-  for (const linked of recordsAt(data.linked_entities, "entries")) {
+  const linkedEntries = recordsAt(data.linked_entities, "entries");
+  const linkedEntityIds = ensureUniqueIds(linkedEntries, "linked entity", domainPath, findings);
+  for (const linked of linkedEntries) {
     if (typeof linked.relationship !== "string" || linked.relationship.trim() === "") {
       addFinding(findings, "warning", "linked-entity-without-rel", domainPath, `Linked entity ${String(linked.id)} lacks a relationship.`);
     }
   }
+  const claimCollections = recordsAt(data.claims, "collections");
+  const linkedClaims = recordsAt(data.claims, "linked_claims");
+  const claimReferenceEntries = [
+    ...claimCollections,
+    ...claimCollections.flatMap((collection) => recordsAt(collection, "claim_types")),
+    ...linkedClaims,
+  ];
+  const claimIds = ensureUniqueIds(
+    claimReferenceEntries,
+    "claim reference",
+    domainPath,
+    findings,
+  );
+  const agentControllerIds = new Set(
+    controllerEntries
+      .filter((entry) => entry.type === "agent")
+      .map((entry) => entry.id)
+      .filter((id): id is string => typeof id === "string")
+      .map((id) => id.normalize("NFC")),
+  );
+
+  validateConstitution(
+    data,
+    domainPath,
+    {
+      documentEntries: entries,
+      documents: documentIds,
+      controllers: controllerIds,
+      rights: rightIds,
+      resources: resourceIds,
+      resourcesById,
+      services: serviceIds,
+      agents: agentIds,
+      agentControllers: agentControllerIds,
+      linkedEntities: linkedEntityIds,
+      claims: claimIds,
+      wallets: walletIds,
+    },
+    findings,
+  );
 
   if (isRecord(data.source_of_truth)) {
     const order = new Set(
@@ -728,7 +1778,6 @@ function validateDomain(
     }
   }
 
-  const claimCollections = recordsAt(data.claims, "collections");
   ensureUniqueIds(claimCollections, "claim collection", domainPath, findings);
   for (const collection of claimCollections) {
     const claimTypes = recordsAt(collection, "claim_types");
@@ -856,7 +1905,7 @@ function usage(message?: string): never {
     console.error(`ERROR invocation: ${message}`);
   }
   console.error(
-    "Usage: npx tsx scripts/validate-render.ts <root> --mode derived|protocol|template " +
+    "Usage: npx tsx scripts/validate-render.ts <root> --mode derived|protocol|standalone|template " +
       "[--expected-profile authoring_draft|persisted_draft|anchored|runtime] [--expected-class DID] " +
       "[--expected-protocol DID] [--expected-type TYPE] [--json]",
   );
@@ -874,8 +1923,8 @@ function parseArgs(argv: string[]): ParsedArgs {
       args.json = true;
     } else if (value === "--mode") {
       const mode = argv[++index];
-      if (mode !== "derived" && mode !== "protocol" && mode !== "template") {
-        usage("--mode requires derived, protocol, or template.");
+      if (mode !== "derived" && mode !== "protocol" && mode !== "standalone" && mode !== "template") {
+        usage("--mode requires derived, protocol, standalone, or template.");
       }
       args.mode = mode;
     } else if (value === "--expected-profile") {

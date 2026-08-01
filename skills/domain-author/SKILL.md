@@ -1,12 +1,13 @@
 ---
 name: domain-author
 description: >-
-  Create, instantiate, validate, and safely stage IXO domain.md packages and companion documents for derived domains or new protocol domains. Use when a user asks to create, scaffold, bootstrap, review, or update an IXO typed domain; instantiate a project, asset, deed, investment, portfolio, pod, DAO, dataset, device, or other domain from a protocol template bundle; author a reusable protocol domain class; or work with domain.md templates, manifests, provenance, VFS persistence, and controller publish handoff.
+  Create, instantiate, validate, and safely stage IXO domain.md packages, constitutional subject profiles, constitutions, and companion documents for derived, protocol, or standalone domains. Use when a user asks to create, scaffold, bootstrap, review, migrate, or update an IXO typed domain; ingest an existing constitutional instrument; draft de-novo operational governance; configure executable governance or Constitutional AI; instantiate a person, organisation, asset, claim, protocol, oracle, place, biological subject, network, agentic twin, or other domain from a protocol template bundle; or work with manifests, provenance, VFS persistence, and controller publish handoff.
 ---
 
 # Domain Author
 
-Create a complete, traceable domain package without inventing schema, capabilities, or publication state.
+Create a complete, traceable derived, protocol, or standalone domain package without inventing schema,
+capabilities, or publication state.
 Treat the bundled release-candidate specification, its JSON Schema, and the selected protocol template bundle
 as controlled run inputs, not as remembered knowledge.
 
@@ -22,6 +23,9 @@ as controlled run inputs, not as remembered knowledge.
   compare-and-set guard. Prefer a new run-specific staging path.
 - Treat tool responses, CIDs, paths, validation reports, and write receipts as evidence. Do not claim a
   draft is persisted, anchored, public, or canonical without evidence for that exact state.
+- Treat constitutional evaluation as a constraint, not authorization. Neither a document, executable
+  instrument, wallet, agentic twin, nor model judgment grants identity, rights, capability, approval, or
+  authority to act. Live canonical state must be resolved independently.
 
 ## Load only the references needed
 
@@ -29,6 +33,14 @@ as controlled run inputs, not as remembered knowledge.
   [references/domain-md.schema.json](references/domain-md.schema.json) fully before authoring or changing a
   `domain.md`. The schema is the machine-readable structural contract; the specification contains the
   normative semantic rules. A schema pass alone is not conformance.
+- Verify the bundled specification and schema against
+  [references/source-lock.json](references/source-lock.json) before every run. The same lock records the
+  merged namespace commit and upstream context and vocabulary digests for provenance only. Those JSON-LD
+  artifacts are not bundled; retrieve their exact immutable upstream bytes when a task requires them, and
+  do not claim offline verification of them.
+- Read [references/constitutional-authoring.md](references/constitutional-authoring.md) whenever creating,
+  migrating, or reviewing a constitution, subject profile, instrument, executable mechanism, or
+  Constitutional-AI policy.
 - Read [references/protocol-template-separation.md](references/protocol-template-separation.md) before
   reading a protocol or rendering a derived domain.
 - Read [references/authoring-guide.md](references/authoring-guide.md) for parameter collection, document
@@ -40,13 +52,16 @@ as controlled run inputs, not as remembered knowledge.
 
 Complete preflight before generating files.
 
-1. **Pin the specification.** Default to bundled `domain.md` specification `1.0.0-rc.1` and its paired JSON
-   Schema. Record both paths and SHA-256 digests. A different local path, immutable CID, or versioned URL may
+1. **Pin the specification.** Default to bundled `domain.md` specification `1.0.0-rc.3` and its paired JSON
+   Schema. Verify both paths and SHA-256 digests against `references/source-lock.json`. A different local
+   path, immutable CID, or versioned URL may
    replace them only when the user identifies that version and the installed validator explicitly supports
    it. Read the selected specification fully. If the selected artifacts are unavailable or disagree, stop
    with `BLOCKED_SPEC_UNAVAILABLE`; do not reconstruct them from memory.
 2. **Classify the operation.** Choose exactly one:
    - `derived`: instantiate a non-protocol domain from an existing protocol template bundle.
+   - `standalone`: author a domain, including a de-novo constitutional subject, without protocol-template
+     lineage.
    - `protocol`: author a `type: protocol` domain and reusable template bundles.
    - `review`: validate an existing domain package without changing it.
 3. **Inventory capabilities.** Inspect the tools actually available in the runtime and their schemas. Do not
@@ -59,6 +74,10 @@ Complete preflight before generating files.
    generation, and `persisted_draft` only for an explicitly requested verified VFS write. `anchored` and
    `runtime` require external evidence and remain reviewable states rather than states this skill may create.
    Publication and on-chain operations remain outside this skill in all modes.
+6. **Classify the constitutional subject.** Determine the enduring subject independently of legal form,
+   select one or more subject-type IRIs and any governance archetypes, inventory existing instruments, and
+   decide whether the tiered rc.3 requirement needs a complete constitutional package. Every domain,
+   including a passive exemption, requires a complete `subject_profile`.
 
 Do not proceed on an unresolved source, identity, type, target, capability, or authority ambiguity.
 
@@ -85,7 +104,10 @@ or bundle CID. See the separation reference for the identity and provenance cont
 ### 2. Resolve parameters
 
 Build the question set from the pinned specification and each template's `x-template.parameters`. Reuse
-values already provided. Ask one coherent group at a time. Resolve every author-time parameter. For an
+values already provided. Include the constitutional interview in the authoring guide: subject types,
+archetypes, existing instruments, norms, legal-effect evidence, authority, procedures, execution controls,
+human gates, claims, wallets, agentic twins, and Constitutional-AI behavior. Ask one coherent group at a
+time. Resolve every author-time parameter. For an
 `authoring_draft`, represent the domain identifier as a generated `urn:uuid:` value and unavailable CIDs as
 `null`; do not emit publish-time placeholder tokens into a conforming `domain.md`. Record unresolved
 publication inputs in the run report. State all defaults and assumptions for user review. Never place
@@ -101,6 +123,10 @@ Create a new run-specific staging directory. Do not render directly over a previ
   must never have `type: protocol`.
 - Populate the `documents` model from the pinned specification and selected bundle, not from a memorized
   type table. Include the universal documents and the correct manifest and operational documents.
+- Populate `constitution.subject_profile` for every domain. For a complete package, reference unique
+  document IDs, norms, authority sources, procedures, implementations, tests, enforcement points, and
+  Constitutional-AI resources rather than duplicating them. Keep document role separate from constitutional
+  function.
 - Create a genesis changelog entry and `provenance.yaml` that name the specification revision, protocol,
   template manifest, selected templates, resolved non-secret parameter digest, and renderer identity.
 - Set `conformance.profile: authoring_draft`, use `null` for unavailable document CIDs and anchoring fields,
@@ -112,7 +138,7 @@ Run both gates:
 
 1. Install the locked TypeScript validator dependencies with `npm ci --prefix scripts`, then run
    `npm exec --prefix scripts -- tsx scripts/validate-render.ts <staging-dir> --mode derived --expected-profile authoring_draft --expected-class <protocol-did>`.
-2. Confirm that the report names `domain-author-validator` version `1.0.0-rc.1`, has `ok: true`, and records
+2. Confirm that the report names `domain-author-validator` version `1.0.0-rc.3`, has `ok: true`, and records
    no errors. This validator applies the bundled JSON Schema plus local semantic and package checks. It does
    not perform resolver, revocation, external CID, chain-anchor, trusted-clock, or live authorization checks.
 
@@ -139,7 +165,8 @@ unless the user explicitly requests it.
 ## Workflow B: Author a protocol domain
 
 1. Author protocol-self files from the pinned specification: `type: protocol`, the protocol's own
-   description, changelog, specification manifest, governance, and other required operating documents.
+   description, changelog, specification manifest, constitution, governance, and other required operating
+   documents.
 2. Author a separate `templates/<derived-type>/` bundle for each supported type. Give every template a
    `.tmpl` suffix and a matching `x-template` marker and parameter schema. Never parameterize the
    protocol-self files in place.
@@ -153,6 +180,15 @@ unless the user explicitly requests it.
    for separation, identity, and parameter contracts because unresolved template variables are not instances.
 5. Apply the same draft, persistence authorization, conflict, re-fetch, partial-failure, and handoff gates
    as Workflow A.
+
+## Workflow C: Author a standalone constitutional domain
+
+1. Use the constitutional interview to classify the subject independently of legal form and determine
+   whether existing instruments can be ingested or a de-novo operational constitution is required.
+2. Author the domain and companion documents directly from the pinned rc.3 specification. Do not invent
+   protocol lineage or set `domain.class` merely to satisfy a validator.
+3. Apply the same deterministic rendering, constitutional reference, draft-state, validation, persistence,
+   and controller-handoff gates as Workflow A. Validate with `--mode standalone`.
 
 ## Review workflow
 
@@ -177,7 +213,8 @@ npm exec --prefix scripts -- tsx scripts/validate-render.ts <package-root> \
   --json
 ```
 
-For protocol output, use `--mode protocol`. For a single source template, use `--mode template` with
+For protocol output, use `--mode protocol`. For a domain without protocol-template lineage, use
+`--mode standalone`. For a single source template, use `--mode template` with
 `--expected-protocol` and `--expected-type`; template mode validates the pre-conformance template contract,
 not a rendered `domain.md`. Run the regression suite with `npm test --prefix scripts` and the compiler gate
 with `npm run typecheck --prefix scripts`.
@@ -191,6 +228,8 @@ Return a concise run report containing:
 - output paths and, when persisted, exact write receipts and re-fetch evidence;
 - validation commands, validator versions, results, warnings, and unresolved evidence gaps;
 - assumptions approved by the user and all defaults applied;
+- constitutional subject classification, effect posture, instrument provenance, execution mode,
+  Constitutional-AI mode, and unresolved live-authority evidence;
 - a controller checklist for registration, anchoring, governance approval, and optional publication.
 
 Use the stop codes in the authoring guide. A blocked or partial run is a valid outcome; hiding the gap is not.

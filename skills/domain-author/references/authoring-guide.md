@@ -12,13 +12,17 @@ skip known values, and show defaults as assumptions rather than facts.
 | Group | Collect | Control |
 | --- | --- | --- |
 | Identity | name, purpose, boundary, lifecycle state, target type | Confirm the type before selecting templates. |
+| Constitutional subject | subject type IRIs, legal form when any, governance archetypes, identity, purpose, interests, values | Keep jurisdictional legal form separate from semantic subject classification; require every subject-profile field. |
+| Instruments and effect | existing instruments, aliases, functions, jurisdiction, adoption, effective period, supersession, legal-effect evidence | A title, signature, CID, or deployment does not prove legal effect. |
+| Norms and governance | constitutive/prescriptive/procedural norms, authority sources, decisions, amendment, interpretation, disputes, suspension, dissolution | Resolve every local reference and preserve canonical authority. |
+| Execution and Constitutional AI | execution mode, implementations, tests, enforcement points, failure policy, human gates, AI principles/procedures/model/audit | A model or executable instrument constrains proposals; it never self-authorizes action. |
 | Authority | controller DIDs, governance, quorum, timelock, agent-controller policy | Reject private keys and signing secrets. |
 | Network and truth | chain/environment, resolvers, canonical registries, evidence stores | Mark authoritative vs convenience endpoints. |
 | Services and resources | endpoints, authentication boundary, schemas, rubrics, datasets, sensitivity | Store references, not credentials or raw evidence. |
 | Rights | actor, resource, action, constraints, expiry, escalation | Default deny; grant least authority. |
-| Claims and flows | claim types, schemas, evidence, rubric, outcomes, review/dispute states | Require a human-review path for consequential outcomes. |
-| Accounts | address/reference, purpose, spending/authz policy, settlement triggers | Never collect seed phrases or signing keys. |
-| Agents | role, operator, capability ceiling, permitted/forbidden outputs, escalation | Default to propose-only unless the spec requires less. |
+| Claims and flows | claim types, schemas, evidence, rubric, outcomes, review/dispute states, subject-profile claim bindings | A declared claim is not proof; require a human-review path for consequential outcomes. |
+| Accounts | address/reference, purpose, spending/authz policy, settlement triggers, subject-profile wallet bindings | A wallet reference is not control or spending authority; never collect seed phrases or signing keys. |
+| Agents and twins | role, operator, capability ceiling, permitted/forbidden outputs, escalation, recursive twin identity and constitution | Keep parent and twin distinct; bind twins and agent controllers to Constitutional AI. |
 | Privacy | classification, access policy, retention, public surfaces, not-applicable surfaces | Default private; do not infer public consent. |
 | Documents | universal, manifest, and operational roles required by the pinned spec | Require one authoritative role mapping. |
 
@@ -57,6 +61,10 @@ Treat these as errors:
 - a sensitive payload marked public, an authority grant without constraints, or a signing secret;
 - a profile/identity mismatch, duplicate identifier, unresolved reference, unreachable flow state, missing
   right gate, or claim contract that lacks its required evidence, scoring, review, or next-action semantics;
+- a missing constitutional declaration or subject profile; a governed or agentic `not_applicable` claim;
+  a subject-facet or instrument that does not resolve; unverified legal authority; conflicting canonical or
+  superseded instruments; an unapproved amendment; incomplete executable governance; or incomplete
+  Constitutional-AI procedures and agent binding;
 - a persisted document with a missing/fabricated CID, or persisted bytes that fail re-fetch verification;
 - a schema or semantic validator failure, or provenance that does not match actual sources and outputs.
 
@@ -92,7 +100,9 @@ Keep these outside the skill's execution boundary:
 3. Anchor the exact persisted `domain.md` CID using the deployment's verified linked-resource procedure.
 4. Bind companion document identities when required by the canonical spec or chain contract.
 5. Approve security-sensitive blocks through the applicable governance policy and record the proof.
-6. Validate canonical state after anchoring and resolve conflicts according to the pinned spec.
-7. Publish selected nonsensitive files only with explicit controller consent.
+6. Verify constitutional adoption/effectiveness, current instruments, live controllers, rights,
+   capabilities, approvals, revocation, and enforcement-point authority.
+7. Validate canonical state after anchoring and resolve conflicts according to the pinned spec.
+8. Publish selected nonsensitive files only with explicit controller consent.
 
 Until anchoring evidence exists, call the artifact a local or VFS draft, never a published domain.
