@@ -1,0 +1,4 @@
+interface:
+  display_name: "Compose Topic"
+  short_description: "Turn intent into safe, durable Qi Topics"
+  default_prompt: "Use $compose-topic to route my intent, compose a protocol-aligned Topic and canvas, and produce a validated side-effect-free host handoff."
