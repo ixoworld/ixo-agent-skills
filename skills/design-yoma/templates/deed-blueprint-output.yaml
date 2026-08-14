@@ -1,0 +1,283 @@
+# Deed Blueprint — the compiled deliverable of a complete design-yoma run.
+#
+# Grouped by the five phases the provider experienced. Beneath each, the internal
+# controls the runtime enforced. See references/internal-controls.md.
+#
+# THIS IS A STAGED DRAFT. Nothing here is registered, signed, published or live
+# until the publication sequence completes. Five phase commitments are NOT
+# publication — see references/publication-sequence.md.
+#
+# Validate with:  npx tsx scripts/validate-blueprint.ts <path>
+
+deed_blueprint:
+  meta:
+    schema_version: "0.2.0"
+    status: draft # draft | committed | reviewed | compiled | published
+    designed_at:
+    designed_by:
+    source_skill: design-yoma
+    blueprint_hash: # what commitments and review rounds bind to
+
+  # ══ Phase 1 · Discovery ══════════════════════════════════════════════════
+  # C1 provider_onboarding · C2 pod_constitution · C3 deed_intent
+  # C4 safeguarding_screen · C5 impact_model
+  discovery:
+    provider:
+      name:
+      did:
+      country:
+      yoma_membership: # confirmed | pending | absent
+      accountable_human: # a PERSON, not a role inbox
+      support_channel:
+    authority:
+      owner_address:
+      admin_account_address: # the granter for every authorization
+      controllers: []
+      generic_auth_holders: []
+    pod:
+      purpose: # one sentence a young person would understand
+      roles: []
+      treasury: {} # where reward funds sit; who releases them
+      claim_collections: [] # one per Deed family; never multiplex
+      agents: [] # { name, role, authority: propose_only }
+      linked_oracle: # required if any flow has an agent step
+    intent:
+      statement:
+      decision: # proceed | proceed_with_conditions | revise | block
+      score:
+      refusals_triggered: [] # not scoring inputs — these are refusals
+      youth_value:
+    safeguarding:
+      tier: # low | medium | high
+      triggers_fired: [] # never record a tier without its triggers
+      assessed_by:
+      assessed_at:
+      signoff:
+        required:
+        by: # a NAMED person; self-attestation never substitutes
+        role:
+        at:
+      retier_history: []
+    impact:
+      statement:
+      baseline:
+      target:
+      metrics: [] # { name, source, observable, attributable, collectable }
+      acceptance_criteria: []
+      failure_condition: # what would count as failure
+
+  # ══ Phase 2 · Design ═════════════════════════════════════════════════════
+  # C6 task_design · C7 accessibility_inclusion · C8 youth_instructions
+  # C9 evidence_capture · C10 bid_and_eligibility · C11 claim_and_rubric
+  # C12 rights_and_consent · C13 deed_flow
+  design:
+    task:
+      steps: [] # { order, actor, action, output }
+      effort: { active_hours: , elapsed_days: }
+      prerequisites: [] # visible BEFORE starting, never after
+      skills_earned: []
+      exception_paths: []
+    access:
+      device_floor: # feature_phone | entry_android | mid_android
+      shared_device_supported: # the case most often missed
+      bandwidth_floor:
+      offline_capable:
+      offline_required:
+      resumable:
+      languages: []
+      data_cost:
+        per_completion_mb:
+        money_per_completion:
+        share_of_reward:
+        resolution: # reduced_payload | reimbursed | reward_raised | none
+      accommodations: []
+      equity_review: []
+    instructions:
+      per_step: []
+      worked_examples: [] # one per evidence item
+      rejection_reasons_disclosed: # must be true BEFORE work begins
+      support_path:
+      localised:
+    evidence:
+      registry: [] # { item, type, capture, sensitivity, retention,
+        #   claim_field, consumed_by }
+      minimality_checked: # every item consumed by a rule or metric
+    bid:
+      form:
+        resource: "#bco"
+        protocol_did: # anchored on the PROTOCOL, not the Deed
+        affected_collections: [] # blast radius of a form change
+        fields: [] # { name, type, necessary_for, answerable, localised }
+      role: service_agent
+      eligibility: [] # { criterion, check, excludes_by_proxy }
+      capacity:
+        max_approved:
+        overflow_behaviour: # waitlist | close_bidding | reject_with_reason
+        communicated:
+      rubric: { used: , rationale: , resource: }
+      evaluator: { name: , in_controller_set: } # must be in the controller set
+      rejection: { reason_given: , reapply_policy: , question_path: }
+    claim:
+      form:
+        resource: "#vct"
+        protocol_did:
+        proof:
+        fields: [] # { name, kind, evidence_item, consumed_by }
+        localised:
+      rubric:
+        opened_from_published: # false on a live collection is a BLOCKER
+        published_rubric_id:
+        gates: [] # { code, reason, onFail, class, disclosed_in_instructions }
+        scoring: { method: , approveAt: , reviewFloor: , criteria: [] }
+        review: {}
+        settlement: {}
+        unique: {}
+        frequency: {}
+        ai_checks: [] # must route to review, never auto-reject
+        manual_nodes_count: # consumes C17 human capacity
+        all_paths_resolve: # must be true
+        catalog_snapshot:
+    rights:
+      grants: [] # { role, authorization, term, quota, expiry, revocation_path }
+      room_permissions: [] # claim collection Matrix room membership
+      consent:
+        capacity_model: age_tiered # OPEN ITEM — default pending provider decision
+        provider_decision_recorded:
+        guardian_required:
+        guardian_verification_method:
+        assent_captured: # assent is not consent, and consent is not assent
+        withdrawal_path:
+      retention: { period: , deletion_date: , owner: }
+      portability:
+    flow:
+      plan: # staged by manage-flow
+      steps: [] # { id, can, aud, condition }
+      bid_edge_verified: # claim/submit gated on approve — must be true
+      unterminated_branches: [] # must be empty
+      confirmations_preserved:
+      template_on_protocol: # flows import from the protocol at instantiation
+    cross_checks:
+      rules_disclosed_in_instructions:
+      evidence_all_consumed:
+
+  # ══ Phase 3 · Validation ═════════════════════════════════════════════════
+  # C14 fraud_resistance · C15 ai_assistance · C16 reward_and_settlement
+  # C17 verification_authority · C18 governance_risk
+  validation:
+    fraud:
+      threats: [] # { threat, credible, control, sited_in,
+        #   honest_youth_cost, residual, accepted_risk_owner }
+    agents:
+      register: [] # { name, role, authority, permitted_context }
+      all_propose_only: # true unless explicitly escalated with an owner
+      escalations: [] # { agent, scope, reason, owner, risk_register_ref }
+      token_budget: { cap: , owner: , on_exhaustion: }
+      override_path:
+    reward:
+      per_completion: [] # { rail: zlto | cash, amount, currency }
+      implied_hourly_rate: # say it out loud; it is the number to defend
+      net_of_data_cost:
+      settlement_trigger:
+      time_to_settlement:
+      capacity:
+      runway_completions:
+      funding_position: # fully_funded | partially_funded | unfunded
+      on_exhaustion: # close_deed | waitlist | continue_unfunded
+      disclosed_to_youth: # listing is not gated on escrow — disclosure IS required
+    verification:
+      value_threshold: { amount: , currency: , rationale: } # money, not proportion
+      determination: [] # { condition, determiner }
+      evaluators: [] # each must hold EvaluateClaimAuthorization
+      human_capacity_checked: # against expected claim volume
+      dispute_path:
+      max_time_to_determination:
+      safeguarding_override: true
+    governance:
+      risk_register: [] # { risk, severity, owner, mitigation, residual, accepted_by }
+      approval_gates: []
+      escalation_path:
+      youth_visible_risks: []
+
+  # ══ Phase 4 · Testing ════════════════════════════════════════════════════
+  # C19 pilot_run · C20 integrated_blueprint_check
+  testing:
+    pilot:
+      completed:
+      path_proven: [] # bid, bid_evaluate, claim, claim_evaluate, settle
+      rejection_proven: # REQUIRED — most harm happens on the rejection path
+      authorization_verified: # observed on chain, not inferred
+      data: # synthetic | real_with_consent
+      participants_paid: # real work is always paid, pilot or not
+      observer: # required at high tier
+      timings: { to_determination: , to_settlement: }
+      defects: [] # { defect, severity, owner }
+    integrated_check:
+      rules_disclosed:
+      paths_resolve:
+      evidence_all_consumed:
+      eligibility_has_fields:
+      capacity_within_runway:
+      manual_nodes_within_capacity:
+      listing_matches_rubric:
+      reasons_localised:
+      data_cost_resolved:
+      branches_terminate:
+      rubric_preflight: # pass | fail | not_run — stage 1 only, read-only
+      failures: []
+
+  # ══ Phase 5 · Deployment ═════════════════════════════════════════════════
+  # C21 rubric_publication · C22 domain_documentation
+  # C23 vfs_packaging_and_listing · C24 launch_readiness · C25 operate_improve
+  deployment:
+    rubric_publication:
+      action: qi/eval.engine
+      preflight_passed: # from C20
+      opened_from_published:
+      protocol_did:
+      affected_collections: []
+      affected_owners_told:
+      expected_rubric_id: # so the receipt can be verified
+      controller: # executionOwner: human, cardinality: once
+      settings: {}
+    domain_documentation:
+      package: # staged | validated  (by domain-author)
+      validated_by: domain-author
+      card_content: {}
+    listing:
+      opportunity_document: # staged | absent
+      vfs_url: # a PLAIN public VFS URL
+      related_document_entry: # typed yoma:Opportunity
+      rejection_reasons_present: # mandatory listing content
+      rejection_reasons_localised:
+      funding_position_present: # mandatory listing content
+      yoma_mirror: not_this_workstream
+    readiness:
+      score:
+      decision: # launch_approved | approved_with_conditions |
+        #   internal_demo_only | block
+      blockers_present: [] # any entry forces block, whatever the score
+      conditions: [] # { condition, owner, due_point, evidence_required }
+      controller_checklist:
+    operate:
+      review_cadence:
+      incident_responder:
+      watch: {} # signal → { threshold, owner }
+      backlog: []
+
+  # ══ Journey record ═══════════════════════════════════════════════════════
+  commitments: [] # one per phase — see templates/phase-commitment.yaml
+  accepted_for_later: [] # travels forward; surfaces again at C24
+  review:
+    status: # not_started | in_round | changes_required | passed
+    rounds: [] # immutable — see templates/review-round.yaml
+    passed_at_blueprint_hash: # must match meta.blueprint_hash or the pass is stale
+  publication:
+    stage: # designing | blockers_open | in_review | compiled |
+      #   authorised | published
+    steps:
+      phase_commitments: { complete: , evidence: [] }
+      blockers_resolved: { complete: , open: [] }
+      review_passed: { complete: , round: , reviewed_hash: }
+      compiled: { complete: , artifacts: [] }
+      authorised: { complete: , entity_did: , tx_hash: , rubric_id: , vfs_url: }
+      receipt_verified: { complete: , read_backs: [] }

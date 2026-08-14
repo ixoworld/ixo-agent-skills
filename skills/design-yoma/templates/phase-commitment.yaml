@@ -1,0 +1,66 @@
+# Phase commitment — one atomic decision at the end of a phase.
+#
+# Replaces per-document approval. The provider reviews the phase as a coherent
+# piece of work and records ONE decision: yes, continue.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# A COMMITMENT MAY ONLY BE TAKEN WHEN ALL FOUR HOLD:
+#   1. Every control in the phase has a RECORDED document (not drafted)
+#   2. No blocker is open in this phase
+#   3. The phase has been played back and the provider has actually seen it
+#   4. No control in this phase is marked needs_recheck
+#
+# Never take a commitment to keep momentum. If any condition fails, say which
+# and what would resolve it.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# IMMUTABLE. Re-deciding produces a NEW commitment that supersedes this one,
+# with a reason. Never edit a commitment in place.
+
+phase_commitment:
+  phase: # discovery | design | validation | testing | deployment
+  deed:
+  pod:
+
+  committed_by: # a NAMED PERSON, never a role inbox
+  committed_at:
+
+  # Every control in the phase, bound to the exact hash committed to.
+  # This is what makes invalidation work: a later change to any of these is
+  # detectable rather than silent.
+  documents:
+    - control: # e.g. C11
+      name: # e.g. claim_and_rubric
+      version: 1
+      hash: # sha256 of the canonical document body
+
+  # Must be true. A commitment taken without playback is not a decision,
+  # it is a rubber stamp.
+  playback_shown:
+
+  checklist:
+    # MUST be empty. Blockers cannot be committed past.
+    blockers: []
+
+    # Travel forward with the commitment and surface again at C24 readiness.
+    # Each needs an owner — an item with no owner is not deferred, it is dropped.
+    accepted_for_later:
+      - item:
+        owner:
+        raised_at_control:
+
+  # Set only when this commitment replaces an earlier one.
+  supersedes: # hash of the superseded commitment, or null
+  reason_for_recommitment: # REQUIRED when superseding
+
+  hash: # sha256 of this commitment record
+# ─────────────────────────────────────────────────────────────────────────────
+# WHAT A COMMITMENT DOES NOT DO:
+#   - It does not publish anything.
+#   - It does not approve a side effect. Confirmations are still required,
+#     separately, per action.
+#   - It does not substitute for safeguarding sign-off — a distinct act by a
+#     distinct person.
+#   - It does not substitute for the independent blueprint review.
+#   - It does not make accepted-for-later items disappear.
+# ─────────────────────────────────────────────────────────────────────────────

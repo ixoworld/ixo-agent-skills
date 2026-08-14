@@ -1,0 +1,189 @@
+{
+  "_comment": [
+    "Skeleton plan for the canonical Deed flow — the SHAPE to hand to manage-flow.",
+    "",
+    "DO NOT hand-write a real flow from this. Route authoring to manage-flow (control C13).",
+    "This file exists so the handoff asks for the right thing and can be checked afterwards.",
+    "",
+    "THE NON-NEGOTIABLE EDGE:",
+    "  claim/submit MUST be unreachable without an approved bid/evaluate.",
+    "  Bid approval is what grants SubmitClaimAuthorization. A flow that lets a youth",
+    "  claim without it sends them to do work whose proof will be rejected on chain —",
+    "  after they have already done it.",
+    "",
+    "PLAN-TIME vs RUNTIME:",
+    "  Use \"\" for strings and {} for objects that are configured later in the editor.",
+    "  NEVER put a runtime-only field in nb. NEVER write concrete DIDs, addresses,",
+    "  blueprint DIDs, contract addresses, or token configs at plan time — those are",
+    "  runtime picker inputs.",
+    "",
+    "CONFIRMATIONS: every side-effecting step keeps its confirmation requirement.",
+    "Never strip one to reduce friction.",
+    "",
+    "BRANCHES: every branch must terminate with something the youth is TOLD.",
+    "A branch that silently ends is a young person left waiting."
+  ],
+
+  "capabilities": [
+    {
+      "id": "setup-evaluation",
+      "can": "eval/engine",
+      "title": "Set up claim rules",
+      "_actionType": "qi/eval.engine",
+      "_executionOwner": "human",
+      "_cardinality": "once",
+      "_stages": [
+        "1 preflight  READ-ONLY    revalidate → re-check against live form → engine pre-check",
+        "2 register   IRREVERSIBLE mint delegation, deposit UCAN, register collection, grant authz",
+        "3 publish    REPLACES     canonicalise → upload → anchor #rub → pin"
+      ],
+      "_rule": "A rules error must fail at stage 1, before any irreversible work. Never after.",
+      "nb": {
+        "collectionId": "",
+        "deedDid": "",
+        "notifyEmail": ""
+      },
+      "aud": ["<<<a human controller>>>"]
+    },
+
+    {
+      "id": "submit-bid",
+      "can": "bid/submit",
+      "title": "Apply for this opportunity",
+      "_actionType": "qi/bid.submit",
+      "_youthFacing": true,
+      "_form": "#bco on the PROTOCOL entity",
+      "nb": {
+        "collectionId": "",
+        "role": "service_agent"
+      },
+      "_runtime_do_not_put_in_nb": ["surveyAnswers", "deedDid"],
+      "_requiresConfirmation": true
+    },
+
+    {
+      "id": "evaluate-bid",
+      "can": "bid/evaluate",
+      "title": "Review the application",
+      "_actionType": "qi/bid.evaluate",
+      "_grants": "/ixo.claims.v1beta1.SubmitClaimAuthorization — 3 years, quota 30",
+      "_aud_must_be": "in the controller set (owner, entity.controller[], or GenericAuthorization holder)",
+      "nb": {
+        "decision": "",
+        "reason": ""
+      },
+      "_runtime_do_not_put_in_nb": [
+        "bidId",
+        "collectionId",
+        "deedDid",
+        "role",
+        "applicantDid",
+        "applicantAddress",
+        "adminAddress"
+      ],
+      "aud": ["<<<bid evaluator — verify they are in the controller set>>>"],
+      "_requiresConfirmation": true
+    },
+
+    {
+      "id": "submit-claim",
+      "can": "claim/submit",
+      "title": "Submit your proof",
+      "_actionType": "qi/claim.submit",
+      "_youthFacing": true,
+      "_form": "#vct on the PROTOCOL entity",
+      "_CRITICAL": "This condition is the authorization edge. Verify it explicitly at control C13.",
+      "condition": {
+        "sourceId": "evaluate-bid",
+        "field": "decision",
+        "operator": "eq",
+        "value": "approve"
+      },
+      "nb": {
+        "collectionId": ""
+      },
+      "_runtime_do_not_put_in_nb": ["deedDid", "adminAddress", "surveyAnswers", "pin"],
+      "_requiresConfirmation": true
+    },
+
+    {
+      "id": "evaluate-claim",
+      "can": "claim/evaluate",
+      "title": "Check the proof",
+      "_actionType": "qi/claim.evaluate",
+      "_determiner": "per control C17 tier — low risk AND low value may settle automatically; medium or high escalates to a human; any safeguarding flag forces a human, always",
+      "_emits": {
+        "approved": ["claimId", "collectionId", "deedDid", "evaluatedByDid", "evaluatedAt", "verificationProof"],
+        "rejected": ["claimId", "collectionId", "deedDid", "evaluatedByDid", "evaluatedAt"]
+      },
+      "nb": {
+        "decision": ""
+      },
+      "_runtime_do_not_put_in_nb": [
+        "claimId",
+        "collectionId",
+        "deedDid",
+        "adminAddress",
+        "verificationProof",
+        "amount",
+        "granteeAddress"
+      ],
+      "aud": ["<<<evaluator holding EvaluateClaimAuthorization>>>"],
+      "_requiresConfirmation": true
+    },
+
+    {
+      "id": "pay-participant",
+      "can": "payment/execute",
+      "title": "Pay the reward",
+      "_actionType": "qi/payment.execute",
+      "condition": {
+        "sourceId": "evaluate-claim",
+        "field": "decision",
+        "operator": "eq",
+        "value": "approve"
+      },
+      "nb": {
+        "paymentConfig": {}
+      },
+      "_aud_must_be": "whoever may release treasury funds, per control C2",
+      "_requiresConfirmation": true
+    },
+
+    {
+      "id": "store-credential",
+      "can": "credential/store",
+      "title": "Add to their digital CV",
+      "_actionType": "qi/credential.store",
+      "condition": {
+        "sourceId": "evaluate-claim",
+        "field": "decision",
+        "operator": "eq",
+        "value": "approve"
+      },
+      "nb": {
+        "credentialKey": "<<<e.g. tree-planting-verified>>>"
+      },
+      "_requiresConfirmation": true
+    }
+  ],
+
+  "_branches_that_must_terminate": {
+    "bid_rejected": "reason returned to the applicant + whether they may reapply + who to ask",
+    "bid_waitlisted": "told they are waitlisted + what happens next + by when",
+    "claim_rejected": "reason code in their language + the dispute path",
+    "claim_in_review": "told it is in review + by when a decision comes",
+    "budget_exhausted": "the control C16 on_exhaustion behaviour actually executes, and youth are told"
+  },
+
+  "_verify_at_control_c13": [
+    "claim/submit is gated on evaluate-bid decision == approve",
+    "every branch above terminates with something the youth is told",
+    "no runtime-only field appears in any nb",
+    "no concrete DIDs, addresses, or token configs at plan time",
+    "every side-effecting step keeps its confirmation requirement",
+    "every aud holds the authority its step needs",
+    "event triggers only on eligible action types — confirm the set with manage-flow",
+    "the flow exists as a Template on the PROTOCOL so it imports at domain instantiation"
+  ]
+}

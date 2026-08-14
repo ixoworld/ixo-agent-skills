@@ -1,0 +1,568 @@
+# Worked example — a complete Deed blueprint that should validate clean.
+#
+# Tree planting with a community environmental group. Deliberately a HIGH tier
+# case: in-person, on land the provider does not control, participants who may
+# be under 18. It exercises the safeguarding, accessibility and determination
+# paths that a simple digital Deed would skip.
+#
+# Expected:  0 blockers, 0 errors.
+
+deed_blueprint:
+  meta:
+    schema_version: "0.2.0"
+    status: reviewed
+    designed_at: "2026-08-14"
+    designed_by: design-yoma
+    source_skill: design-yoma
+    blueprint_hash: sha256-blueprint-r2
+
+  discovery:
+    provider:
+      name: Riverside Environmental Trust
+      did: did:ixo:entity:example-provider
+      country: ZA
+      yoma_membership: confirmed
+      accountable_human: Nomsa Dlamini, Programme Director
+      support_channel: WhatsApp support line, answered weekdays 08:00-16:00
+    authority:
+      owner_address: ixo1exampleowneraddress
+      admin_account_address: ixo1exampleadminaddress
+      controllers:
+        - did:ixo:entity:example-provider
+      generic_auth_holders:
+        - ixo1examplefieldcoordinator
+    pod:
+      purpose: Restore indigenous canopy along the river, paying young people to do it.
+      roles:
+        - Programme Director holds PO
+        - Field Coordinator evaluates applications
+        - Safeguarding Officer determines claims
+      treasury:
+        account: riverside-deed-treasury
+        released_by: Nomsa Dlamini
+      claim_collections:
+        - riverside-tree-planting
+      agents:
+        - name: Evidence pre-check
+          role: assistant
+          authority: propose_only
+      linked_oracle: did:ixo:entity:example-oracle
+    intent:
+      statement: >-
+        We offer young people in Riverside the opportunity to plant and register an
+        indigenous tree in exchange for ZLTO and a cash stipend, proven by a photo
+        and a tag number, judged against published planting rules, achieving
+        measurable canopy restoration along the river corridor.
+      decision: proceed
+      score: 88
+      refusals_triggered: []
+      youth_value: >-
+        Cash stipend, ZLTO, a verified planting credential on their digital CV, and
+        a practical skill they can name to an employer.
+    safeguarding:
+      tier: high
+      triggers_fired:
+        - trigger: participants may be under 18
+          evidence: bid form permits an under-18 age band
+          tier_implied: high
+        - trigger: in-person work on land the provider does not control
+          evidence: planting happens on municipal riverbank
+          tier_implied: high
+      assessed_by: Nomsa Dlamini
+      assessed_at: "2026-08-10"
+      signoff:
+        required: true
+        by: Thandi Mokoena
+        role: Safeguarding Officer
+        at: "2026-08-11"
+      retier_history: []
+    impact:
+      statement: Restore indigenous canopy along a 4 km stretch of the river corridor.
+      baseline: 120 surviving indigenous trees as of July 2026
+      target: 400 surviving indigenous trees by July 2027
+      metrics:
+        - name: trees planted and verified
+          source: approved claims
+          observable: true
+          attributable: true
+          collectable: true
+        - name: survival at six months
+          source: follow-up claim on the same tag number
+          observable: true
+          attributable: true
+          collectable: true
+      acceptance_criteria:
+        - 280 or more verified plantings at 70 percent six-month survival
+      failure_condition: Survival below 40 percent at six months
+
+  design:
+    task:
+      steps:
+        - order: 1
+          actor: youth
+          action: Collect a seedling and a numbered tag from the depot
+          output: tagged seedling
+        - order: 2
+          actor: youth
+          action: Plant it at the assigned point on the corridor map
+          output: planted tree
+        - order: 3
+          actor: youth
+          action: Photograph the planted tree with the tag visible
+          output: photo evidence
+        - order: 4
+          actor: youth
+          action: Submit the claim with the tag number
+          output: claim
+      effort:
+        active_hours: 2
+        elapsed_days: 1
+      prerequisites:
+        - Attend the 30-minute depot briefing, which is paid
+      skills_earned:
+        - Indigenous tree planting
+        - Field evidence capture
+      exception_paths:
+        - Assigned point unsuitable — return for reassignment, still paid
+        - Seedling damaged in transit — exchange at depot, no penalty
+    access:
+      device_floor: entry_android
+      shared_device_supported: true
+      bandwidth_floor: 3G
+      offline_capable: true
+      offline_required: true
+      resumable: true
+      languages:
+        - en
+        - zu
+        - xh
+      data_cost:
+        per_completion_mb: 3
+        money_per_completion: 1.5
+        share_of_reward: 0.03
+        resolution: reduced_payload
+      accommodations:
+        - Depot staff can capture and submit evidence for participants who need help
+      equity_review:
+        - dimension: gender
+          finding: Dusk slots raised safety concerns for young women
+          action: Slots restricted to daylight hours for everyone
+    instructions:
+      per_step:
+        - Collect one seedling and one numbered tag from the depot
+        - Plant at the point shown on your map, in the hole already marked
+        - Take one photo standing about three steps back, tag readable
+        - Enter the tag number and submit
+      worked_examples:
+        - A good photo — whole tree visible, tag readable, site in frame
+        - A photo that will be rejected — too close, tag unreadable
+      rejection_reasons_disclosed: true
+      support_path: Ask any depot supervisor, or message the support line
+      localised: true
+    evidence:
+      registry:
+        - item: photo of planted tree
+          type: file
+          capture: in-app camera, queued offline
+          sensitivity: low
+          retention: 24 months
+          claim_field: tree_photo
+          consumed_by: DEED-01-EVIDENCE-MISSING, DEED-C1-QUALITY
+        - item: tree tag number
+          type: text
+          capture: typed from the physical tag
+          sensitivity: low
+          retention: 24 months
+          claim_field: tag_number
+          consumed_by: unique, DEED-02-TAG-INVALID
+      minimality_checked: true
+    bid:
+      form:
+        resource: "#bco"
+        protocol_did: did:ixo:entity:example-protocol
+        affected_collections:
+          - riverside-tree-planting
+        fields:
+          - name: preferred_name
+            type: text
+            necessary_for: communication
+            answerable: true
+            localised: true
+          - name: age_band
+            type: dropdown
+            necessary_for: consent capacity and safeguarding tier
+            answerable: true
+            localised: true
+          - name: guardian_contact
+            type: text
+            necessary_for: guardian consent where under 18
+            answerable: true
+            localised: true
+          - name: availability
+            type: checkbox
+            necessary_for: eligibility availability
+            answerable: true
+            localised: true
+      role: service_agent
+      eligibility:
+        - criterion: Able to reach the Riverside depot
+          check: district field, self-declared
+          excludes_by_proxy: false
+        - criterion: Available in a daylight planting slot
+          check: availability field
+          excludes_by_proxy: false
+      capacity:
+        max_approved: 60
+        overflow_behaviour: waitlist
+        communicated: true
+      rubric:
+        used: false
+        rationale: Selection is by availability and depot capacity, not by merit
+        resource: null
+      evaluator:
+        name: Field Coordinator
+        in_controller_set: true
+      rejection:
+        reason_given: true
+        reapply_policy: May reapply for any future planting round
+        question_path: Support line
+    claim:
+      form:
+        resource: "#vct"
+        protocol_did: did:ixo:entity:example-protocol
+        proof: sha256-example-vct-hash
+        fields:
+          - name: tree_photo
+            kind: file
+            evidence_item: photo of planted tree
+            consumed_by: DEED-01-EVIDENCE-MISSING
+          - name: tag_number
+            kind: text
+            evidence_item: tree tag number
+            consumed_by: unique
+        localised: true
+      rubric:
+        opened_from_published: n/a
+        published_rubric_id: null
+        gates:
+          - code: DEED-01-EVIDENCE-MISSING
+            reason: No photo was submitted. Add a photo of the planted tree with the tag visible.
+            onFail: reject
+            class: insufficient_evidence
+            disclosed_in_instructions: true
+          - code: DEED-02-TAG-INVALID
+            reason: That tag number is not one we issued. Check the number on your tag.
+            onFail: review
+            class: requires_human_review
+            disclosed_in_instructions: true
+        scoring:
+          method: weighted_average
+          approveAt: 8000
+          reviewFloor: 6500
+          criteria:
+            - code: DEED-C1-QUALITY
+              reason: Whole tree visible and tag readable
+              weight: 3
+        review: {}
+        settlement: {}
+        unique: {}
+        frequency: {}
+        ai_checks: []
+        manual_nodes_count: 0
+        all_paths_resolve: true
+        catalog_snapshot: sha256-example-vct-hash
+    rights:
+      grants:
+        - role: service_agent
+          authorization: /ixo.claims.v1beta1.SubmitClaimAuthorization
+          term: 3 years
+          quota: 30
+          expiry: platform default
+          revocation_path: Field Coordinator requests revocation via admin account
+      room_permissions:
+        - Claim collection room readable by Field Coordinator and Safeguarding Officer only
+      consent:
+        capacity_model: age_tiered
+        provider_decision_recorded: true
+        guardian_required: true
+        guardian_verification_method: Guardian countersigns at the depot briefing
+        assent_captured: true
+        withdrawal_path: Ask any depot supervisor; in-flight claims still determined and paid
+      retention:
+        period: 24 months
+        deletion_date: "2028-08-14"
+        owner: Nomsa Dlamini
+      portability: Participant keeps the planting credential on their YoID
+    flow:
+      plan: staged
+      steps:
+        - id: setup-evaluation
+          can: eval/engine
+          aud: Nomsa Dlamini
+          condition: null
+        - id: submit-bid
+          can: bid/submit
+          aud: youth
+          condition: null
+        - id: evaluate-bid
+          can: bid/evaluate
+          aud: Field Coordinator
+          condition: null
+        - id: submit-claim
+          can: claim/submit
+          aud: youth
+          condition: evaluate-bid.decision eq approve
+        - id: evaluate-claim
+          can: claim/evaluate
+          aud: Safeguarding Officer
+          condition: null
+        - id: pay-participant
+          can: payment/execute
+          aud: Nomsa Dlamini
+          condition: evaluate-claim.decision eq approve
+      bid_edge_verified: true
+      unterminated_branches: []
+      confirmations_preserved: true
+      template_on_protocol: true
+    cross_checks:
+      rules_disclosed_in_instructions: true
+      evidence_all_consumed: true
+
+  validation:
+    fraud:
+      threats:
+        - threat: duplicate claims on one tree
+          credible: true
+          control: unique rule on tag_number, one claim per tag
+          sited_in: rubric_unique
+          honest_youth_cost: none
+          residual: none material
+          accepted_risk_owner: Nomsa Dlamini
+        - threat: fabricated planting photos
+          credible: true
+          control: physical numbered tag plus 10 percent field spot-check
+          sited_in: evidence_requirement + operate_review
+          honest_youth_cost: about 1 in 10 face a short verification delay
+          residual: low-volume fabrication may pass
+          accepted_risk_owner: Nomsa Dlamini
+        - threat: collusion between coordinator and applicant
+          credible: true
+          control: bid approval and claim determination held by different people
+          sited_in: role_separation
+          honest_youth_cost: none
+          residual: none material
+          accepted_risk_owner: Thandi Mokoena
+    agents:
+      register:
+        - name: Evidence pre-check
+          role: assistant
+          authority: propose_only
+          permitted_context: claim collection riverside-tree-planting only
+      all_propose_only: true
+      escalations: []
+      token_budget:
+        cap: 50000
+        owner: Nomsa Dlamini
+        on_exhaustion: pre-check disabled, all claims route to human review
+      override_path: Any evaluator may override a pre-check proposal; override is recorded
+    reward:
+      per_completion:
+        - rail: cash
+          amount: 50
+          currency: ZAR
+        - rail: zlto
+          amount: 100
+          currency: ZLTO
+      implied_hourly_rate: 25 ZAR per hour over 2 active hours
+      net_of_data_cost: 48.5 ZAR after 1.5 ZAR data cost
+      settlement_trigger: claim approved
+      time_to_settlement: within 5 working days of approval
+      capacity: 60
+      runway_completions: 60
+      funding_position: fully_funded
+      on_exhaustion: waitlist
+      disclosed_to_youth: true
+    verification:
+      value_threshold:
+        amount: 0
+        currency: ZAR
+        rationale: High tier — every claim is determined by a human regardless of value
+      determination:
+        - condition: all claims
+          determiner: Safeguarding Officer or delegated evaluator
+      evaluators:
+        - Thandi Mokoena
+        - Field Coordinator
+      human_capacity_checked: true
+      dispute_path: Message the support line; Programme Director reviews within 5 working days
+      max_time_to_determination: 5 working days
+      safeguarding_override: true
+    governance:
+      risk_register:
+        - risk: Participant injured on the riverbank
+          severity: high
+          owner: Thandi Mokoena
+          mitigation: Daylight slots only, buddy pairing, depot check-in and check-out
+          residual: Residual injury risk accepted
+          accepted_by: Thandi Mokoena
+        - risk: Guardian consent not obtained for a minor
+          severity: high
+          owner: Nomsa Dlamini
+          mitigation: Countersignature at depot briefing before any seedling is issued
+          residual: none material
+          accepted_by: Thandi Mokoena
+      approval_gates:
+        - Safeguarding sign-off before listing
+        - Programme Director approval before publishing the rules
+      escalation_path: Depot supervisor to Safeguarding Officer within 1 hour for any incident
+      youth_visible_risks:
+        - Riverbank terrain is uneven; wear closed shoes
+
+  testing:
+    pilot:
+      completed: true
+      path_proven:
+        - bid
+        - bid_evaluate
+        - claim
+        - claim_evaluate
+        - settle
+      rejection_proven: true
+      authorization_verified: true
+      data: real_with_consent
+      participants_paid: true
+      observer: Thandi Mokoena
+      timings:
+        to_determination: 2 working days
+        to_settlement: 3 working days
+      defects:
+        - defect: Tag numbers hard to read in low light
+          severity: medium
+          owner: Field Coordinator
+    integrated_check:
+      rules_disclosed: true
+      paths_resolve: true
+      evidence_all_consumed: true
+      eligibility_has_fields: true
+      capacity_within_runway: true
+      manual_nodes_within_capacity: true
+      listing_matches_rubric: true
+      reasons_localised: true
+      data_cost_resolved: true
+      branches_terminate: true
+      rubric_preflight: pass
+      failures: []
+
+  deployment:
+    rubric_publication:
+      action: qi/eval.engine
+      preflight_passed: true
+      opened_from_published: n/a
+      protocol_did: did:ixo:entity:example-protocol
+      affected_collections:
+        - riverside-tree-planting
+      affected_owners_told: true
+      expected_rubric_id: sha256-rubric-v1
+      controller: Nomsa Dlamini
+      settings:
+        allow_ai_checks: false
+        allow_image_checks: true
+        allow_chain_evaluation: true
+    domain_documentation:
+      package: validated
+      validated_by: domain-author
+      card_content:
+        name: Plant a tree along the Riverside corridor
+    listing:
+      opportunity_document: staged
+      vfs_url: https://testnet.vfs.ixo.earth/public/id/example-uuid
+      related_document_entry: staged
+      rejection_reasons_present: true
+      rejection_reasons_localised: true
+      funding_position_present: true
+      yoma_mirror: not_this_workstream
+    readiness:
+      score: 94
+      decision: launch_approved
+      blockers_present: []
+      conditions: []
+      controller_checklist: staged
+    operate:
+      review_cadence: weekly for the first month, then monthly
+      incident_responder: Thandi Mokoena
+      watch:
+        rejection_rate:
+          threshold: 15 percent
+          owner: Field Coordinator
+        time_to_determination:
+          threshold: 5 working days
+          owner: Nomsa Dlamini
+      backlog:
+        - Reflective tags to address the low-light defect
+
+  commitments:
+    - phase: discovery
+      committed_by: Nomsa Dlamini
+      committed_at: "2026-08-11"
+      playback_shown: true
+      checklist:
+        blockers: []
+      hash: sha256-commit-discovery
+    - phase: design
+      committed_by: Nomsa Dlamini
+      committed_at: "2026-08-12"
+      playback_shown: true
+      checklist:
+        blockers: []
+      hash: sha256-commit-design
+    - phase: validation
+      committed_by: Nomsa Dlamini
+      committed_at: "2026-08-13"
+      playback_shown: true
+      checklist:
+        blockers: []
+      hash: sha256-commit-validation
+    - phase: testing
+      committed_by: Nomsa Dlamini
+      committed_at: "2026-08-14"
+      playback_shown: true
+      checklist:
+        blockers: []
+      hash: sha256-commit-testing
+    - phase: deployment
+      committed_by: Nomsa Dlamini
+      committed_at: "2026-08-14"
+      playback_shown: true
+      checklist:
+        blockers: []
+      hash: sha256-commit-deployment
+
+  accepted_for_later:
+    - item: Reflective tags so numbers read in low light
+      owner: Field Coordinator
+      raised_at_control: C19
+
+  review:
+    status: passed
+    rounds:
+      - round: 1
+        blueprint_hash: sha256-blueprint-r1
+        reviewer: Sipho Ndlovu
+        independent_of_author: true
+        outcome: changes_required
+      - round: 2
+        blueprint_hash: sha256-blueprint-r2
+        reviewer: Sipho Ndlovu
+        independent_of_author: true
+        outcome: passed
+    passed_at_blueprint_hash: sha256-blueprint-r2
+
+  publication:
+    stage: compiled
+    steps:
+      phase_commitments: { complete: true }
+      blockers_resolved: { complete: true, open: [] }
+      review_passed: { complete: true, round: 2, reviewed_hash: sha256-blueprint-r2 }
+      compiled: { complete: true }
+      authorised: { complete: false }
+      receipt_verified: { complete: false }

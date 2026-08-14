@@ -1,0 +1,119 @@
+# Bid rubric — OPTIONAL rules for scoring applications.
+#
+# Same structure as a claim rubric, bound to #bco instead of #vct.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# USE ONE WHEN:
+#   - applications materially exceed capacity and consistency matters
+#   - selection criteria are objective enough to encode
+#   - the provider needs to show selection was fair
+#
+# DO NOT USE ONE WHEN:
+#   selection genuinely rests on human judgement about a young person's
+#   circumstances. An unfair rubric applied consistently is WORSE than honest
+#   human selection, because it launders the unfairness behind a score.
+#
+# If in doubt, do not use one. Most Deeds do not need it.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# REMEMBER WHAT APPROVAL DOES: it grants
+# /ixo.claims.v1beta1.SubmitClaimAuthorization on the collection. This rubric
+# decides who gets authority to claim — not who gets an acknowledgement.
+
+"@context":
+  ixo: https://w3id.org/ixo/ns/protocol/
+  "@id": "@type"
+  type: "@type"
+  "@protected": true
+
+type: ixo:entity#rubric
+
+rubric:
+  "@type": Rubric
+  title: <<<How applications are assessed>>>
+  description: >-
+    <<<Plain language. Applicants should be able to read this and understand
+    why they were or were not selected.>>>
+
+  # Bound to the BID form, not the claim form.
+  claimSchema:
+    "@type": ClaimSchemaBinding
+    protocol: did:ixo:<<<protocol DID>>>
+    resource: "#bco"
+    proof: <<<content hash of the bid form>>>
+
+  derived: []
+  sources: []
+  aiChecks: [] # Strongly discouraged here. An AI judging whether a young
+    # person deserves an opportunity is a decision that needs a
+    # human owner. If used at all: propose only, never reject.
+
+  # ── GATES — hard eligibility only ────────────────────────────────────────
+  # Use gates ONLY for genuine eligibility, never for ranking.
+  # Every gate here must correspond to a stated criterion in bid.eligibility,
+  # and must not exclude by proxy (control C10 critical fail).
+  gates:
+    - "@type": Gate
+      code: BID-01-OUTSIDE-AREA
+      reason: >-
+        <<<e.g. "This opportunity is only open in <district> at the moment.">>>
+      when: {}
+      onFail: reject
+      class: out_of_authority
+      _excludes_by_proxy: false # must be false, or justified on safeguarding grounds
+
+    - "@type": Gate
+      code: BID-02-NO-GUARDIAN-CONTACT
+      reason: >-
+        <<<e.g. "Because you are under 18, we need a parent or guardian's
+        contact before you can take part.">>>
+      when: {}
+      onFail: review # never a flat reject — it is a fixable gap
+      class: requires_human_review
+      _note: Delete this gate entirely if the Deed is 18+ only.
+
+  # ── SCORING — ranking, where capacity is the constraint ──────────────────
+  # Score on TASK SUITABILITY, never on prior access.
+  # Anything that rewards a CV, a qualification, an employer reference, or
+  # written fluency is ranking by privilege. Check each criterion against that.
+  scoring:
+    method: weighted_average
+    approveAt: 6000 # deliberately lower than a claim rubric — this ranks,
+      # it does not judge completed work
+    reviewFloor: 4000
+    criteria:
+      - code: BID-C1-AVAILABILITY
+        reason: Can take part within the opportunity window
+        weight: 3
+        score:
+          kind: boolean
+
+      - code: BID-C2-REACHABILITY
+        reason: >-
+          Has a device and connection that can complete the task —
+          so nobody is approved into an opportunity they cannot reach
+        weight: 3
+        score:
+          kind: levels
+
+      # A note on capability: score "willing to learn" as eligible unless the
+      # task genuinely requires prior experience. Deeds that only accept the
+      # already-experienced are not opportunities.
+
+  review:
+    # requiredFor: []       # route anything the rubric cannot fairly settle
+    # reviewerRight:        # must be within the controller set
+
+  settlement:
+    # Not applicable — bid approval grants authorization, it does not pay.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BEFORE USING THIS RUBRIC (control C10):
+#   [ ] Every gate corresponds to a stated eligibility criterion
+#   [ ] No criterion ranks by prior access, documentation, or writing ability
+#   [ ] Every rejection reason is actionable and states whether they may reapply
+#   [ ] Reasons exist in every language in access.languages
+#   [ ] Applicants beyond capacity have a stated outcome — waitlist, closed,
+#       or rejected with reason. Silence is a control C10 critical fail.
+#   [ ] The evaluator is in the controller set
+# ─────────────────────────────────────────────────────────────────────────────
