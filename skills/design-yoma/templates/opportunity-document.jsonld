@@ -1,0 +1,126 @@
+{
+  "_comment": [
+    "Youth-facing opportunity document for a Deed. Emitted to VFS at a PLAIN PUBLIC URL,",
+    "then referenced from the domain card's credentialSubject.relatedDocument[] entry:",
+    "",
+    "  {",
+    "    \"type\": [\"schema:DigitalDocument\", \"ixo:OpportunityDocument\", \"yoma:Opportunity\"],",
+    "    \"id\": \"https://<VFS host>/public/id/<document uuid>\",",
+    "    \"description\": \"Additional opportunity information for mirroring on yoma.world\",",
+    "    \"mediaType\": \"application/vc+ld+json\"",
+    "  }",
+    "",
+    "The id is a plain VFS URL — not a DID reference, not a CID URI.",
+    "Mirroring to yoma.world is a SEPARATE work stream. Producing this document does not",
+    "make the opportunity live on yoma.world.",
+    "",
+    "Every field below must agree with what the gates decided. A listing that promises more",
+    "than the rubric will accept is how young people get hurt. Rejection reasons and funding",
+    "position are NOT optional listing content."
+  ],
+
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    {
+      "schema": "https://schema.org/",
+      "ixo": "https://w3id.org/ixo/ns/protocol/",
+      "yoma": "https://w3id.org/yoma/vocab/v1/",
+      "@protected": true
+    }
+  ],
+  "type": ["VerifiableCredential", "ixo:OpportunityDocument", "yoma:Opportunity"],
+  "issuer": { "id": "did:ixo:<<<Provider DID>>>" },
+  "validFrom": "<<<ISO8601>>>",
+  "validUntil": "<<<ISO8601 — the Deed window closes>>>",
+
+  "credentialSubject": {
+    "id": "did:ixo:<<<Deed entity DID>>>",
+    "type": ["yoma:Opportunity"],
+
+    "name": "<<<What a young person would call this>>>",
+    "summary": "<<<One sentence. Plain language. What you do and what you get.>>>",
+    "inLanguage": ["<<<BCP-47 codes — must match access.languages>>>"],
+
+    "_source_gate_6": "task_design",
+    "whatYouDo": {
+      "steps": ["<<<Ordered, plain-language, one action each>>>"],
+      "activeHours": "<<<number>>>",
+      "elapsedDays": "<<<number>>>",
+      "prerequisites": ["<<<Visible BEFORE starting, never after>>>"],
+      "skillsEarned": ["<<<Nameable for a digital CV>>>"]
+    },
+
+    "_source_gate_7": "accessibility_inclusion",
+    "whatYouNeed": {
+      "deviceFloor": "<<<feature_phone | entry_android | mid_android>>>",
+      "connectivity": "<<<bandwidth floor; state if offline capture is supported>>>",
+      "offlineCapable": "<<<boolean>>>",
+      "estimatedDataCost": {
+        "megabytes": "<<<number>>>",
+        "money": "<<<amount>>>",
+        "currency": "<<<code>>>",
+        "note": "<<<If reimbursed, say so here>>>"
+      },
+      "accommodations": ["<<<Or an explicit note that none is possible, and why>>>"]
+    },
+
+    "_source_gate_10": "bid_and_eligibility",
+    "howToApply": {
+      "whoCanApply": ["<<<Stated as criteria a youth can self-check>>>"],
+      "howYouApply": "<<<Submit the application form on the opportunity page>>>",
+      "placesAvailable": "<<<number>>>",
+      "ifOversubscribed": "<<<waitlist | closes | rejected with reason — say which>>>",
+      "youWillHearBy": "<<<time bound — applicants must not be left in silence>>>"
+    },
+
+    "_source_gate_9": "evidence_capture",
+    "whatYouSubmit": [
+      {
+        "item": "<<<e.g. Photo of the planted tree>>>",
+        "howToCapture": "<<<Plain instruction>>>",
+        "whatGoodLooksLike": "<<<The worked example from control C8>>>"
+      }
+    ],
+
+    "_source_gate_11": "claim_and_rubric",
+    "_required": "Rejection reasons are mandatory listing content, in every language above.",
+    "whatGetsRejected": [
+      {
+        "code": "<<<matches the rubric gate code>>>",
+        "reason": "<<<What a youth reads — actionable, not 'failed validation'>>>",
+        "canYouFixIt": "<<<boolean — and how, if so>>>"
+      }
+    ],
+
+    "_source_gate_18": "reward_and_settlement",
+    "_required": "Funding position is mandatory. A youth is entitled to know whether the money is there.",
+    "whatYouGet": {
+      "reward": [{ "rail": "<<<zlto | cash>>>", "amount": "<<<number>>>", "currency": "<<<code>>>" }],
+      "paidWhen": "<<<the settlement trigger, in plain language>>>",
+      "typicallyPaidWithin": "<<<time bound>>>",
+      "credential": "<<<what lands on their digital CV>>>",
+      "fundingPosition": "<<<fully_funded | partially_funded | unfunded>>>",
+      "placesCurrentlyFunded": "<<<number — the runway>>>",
+      "ifFundingRunsOut": "<<<close_deed | waitlist | continue_unfunded — say which>>>"
+    },
+
+    "_source_gate_16": "verification_authority",
+    "ifSomethingGoesWrong": {
+      "whoDecides": "<<<person or role>>>",
+      "decisionWithin": "<<<time limit>>>",
+      "howToDispute": "<<<the dispute path — required>>>",
+      "contact": "<<<reachable in the languages above>>>"
+    },
+
+    "provider": {
+      "id": "did:ixo:<<<Provider DID>>>",
+      "name": "<<<Provider name>>>",
+      "type": "yoma:OpportunityProvider"
+    },
+
+    "location": {
+      "type": "schema:Place",
+      "areaServed": "<<<granularity the task needs, and no finer>>>"
+    }
+  }
+}

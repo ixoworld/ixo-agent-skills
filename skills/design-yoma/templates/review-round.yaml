@@ -1,0 +1,81 @@
+# Blueprint review round — one immutable record of an independent review.
+#
+# Runs AFTER all five phase commitments. Not before: reviewing an unfinished
+# blueprint reviews the wrong thing.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# THIS IS NOT PER-DOCUMENT VALIDATION.
+#
+# Specialist references check individual documents during authoring — that a
+# rubric path resolves, that a bid field is necessary. That is not the review.
+#
+# The review asks ONE question, across everything:
+#
+#   Is the Deed a young person would actually encounter the same Deed
+#   these documents describe?
+#
+# Twenty-five individually valid documents can still add up to something
+# incoherent. None of those failures is a defect IN a document, which is why
+# no per-document check finds them.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# ROUNDS ARE IMMUTABLE. A new round reviews the CHANGED blueprint and records
+# its own hash. Earlier rounds are never edited.
+#
+# A re-commitment after a passing round INVALIDATES it. A reviewed blueprint
+# that then changed has not been reviewed.
+
+review_round:
+  round: 1
+  blueprint_hash: # the EXACT blueprint reviewed — a pass binds to this hash
+
+  reviewer:
+  independent_of_author: # must be true; if the provider is too small for this,
+    # say so rather than quietly relaxing it
+  reviewed_at:
+
+  findings:
+    - id: R1-01
+
+      # Which of the six questions this came from:
+      #   coherence       do the documents agree with each other?
+      #   youth_path      walk it as a participant — apply, work, submit, get
+      #                   judged, get paid, and separately get rejected
+      #   proportionality reward vs effort; fraud control cost vs benefit
+      #   capacity        can the named humans actually do this at volume?
+      #   failure         budget runs out, dispute, incident, genuine-but-rejected
+      #   deferred_items  do the accepted-for-later items add up to not-ready?
+      question:
+
+      severity: # required_change | recommendation
+      finding: # what is wrong
+
+      # REQUIRED on every finding. A finding that cannot name who it hurts is a
+      # preference, not a review finding — record it as a recommendation or drop it.
+      consequence_for_youth:
+
+      controls_implicated: [] # e.g. [C11, C17]
+
+  outcome: # changes_required | passed
+  hash: # sha256 of this round record
+# ─────────────────────────────────────────────────────────────────────────────
+# RESOLVING FINDINGS
+#
+#   required_change  → amend the implicated controls, propagate re-checks,
+#                      re-commit affected phases, open a NEW round.
+#   recommendation   → resolve, or accept-for-later with a named owner.
+#                      Never silently dropped.
+#
+# The review passes when a round returns `passed` with no open required_change.
+#
+# WHAT THE REVIEW CANNOT DO:
+#   - waive a publication blocker (the list is closed; the reviewer is not an
+#     authority over it)
+#   - grant safeguarding sign-off
+#   - authorise publication — that is a separate, external act
+#   - approve a blueprint it has not seen at its current hash
+#
+# PLAYING IT BACK: group findings by the young person's path, not by control id.
+# A provider can act on "someone who's rejected has no way to ask why" far more
+# readily than on "C17 dispute_path insufficient".
+# ─────────────────────────────────────────────────────────────────────────────

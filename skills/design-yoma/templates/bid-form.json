@@ -1,0 +1,163 @@
+{
+  "_comment": [
+    "SurveyJS bid form for a Deed — anchored as {id}#bco (type: bidContributor) on the",
+    "PROTOCOL entity, not on the Deed. Changing it affects every collection pointing at",
+    "that protocol; establish the blast radius first.",
+    "",
+    "TWO TESTS every field must pass (control C10):",
+    "  1. NECESSARY  — it feeds an eligibility rule or a safeguarding control.",
+    "                  'Useful for reporting' is not a rule. Cut it.",
+    "  2. ANSWERABLE — a youth in the target group can answer truthfully, now,",
+    "                  without documents they do not have.",
+    "",
+    "Approving a bid grants /ixo.claims.v1beta1.SubmitClaimAuthorization on the collection.",
+    "This form is the input to an authorization decision, not a registration.",
+    "",
+    "FIELDS THAT USUALLY FAIL: formal residential address, bank details, national ID,",
+    "CV or qualifications, employer reference, free-text motivation essay. Each excludes",
+    "by resource access rather than by suitability.",
+    "",
+    "Delete every field below that no rule consumes. Translate into access.languages —",
+    "translated, not translatable."
+  ],
+
+  "title": "<<<Apply for: opportunity name>>>",
+  "description": "<<<One sentence: what you are applying to do.>>>",
+  "showProgressBar": "top",
+  "showQuestionNumbers": "off",
+  "completeText": "Send application",
+  "completedHtml": "<p>Application sent. <<<You will hear by DATE — must match the listing.>>></p>",
+
+  "pages": [
+    {
+      "name": "about_you",
+      "title": "About you",
+      "elements": [
+        {
+          "type": "text",
+          "name": "preferred_name",
+          "title": "What should we call you?",
+          "isRequired": true,
+          "_necessary_for": "communication",
+          "_note": "Preferred name, not legal name. Legal name is rarely needed to apply."
+        },
+        {
+          "type": "dropdown",
+          "name": "age_band",
+          "title": "How old are you?",
+          "isRequired": true,
+          "choices": ["Under 18", "18-24", "25-35", "Over 35"],
+          "_necessary_for": "consent capacity (control C12) and safeguarding tier (control C4)",
+          "_note": "Keep as a band unless a rule genuinely needs an exact date of birth."
+        },
+        {
+          "type": "text",
+          "name": "guardian_contact",
+          "title": "A parent or guardian's contact",
+          "isRequired": true,
+          "visibleIf": "{age_band} = 'Under 18'",
+          "_necessary_for": "guardian consent where the tier requires it",
+          "_note": "DELETE THIS FIELD if the Deed is 18+ only. Never collect it speculatively."
+        }
+      ]
+    },
+    {
+      "name": "can_you_reach_it",
+      "title": "Can you take part?",
+      "_note": "These exist so nobody is approved into an opportunity they cannot reach.",
+      "elements": [
+        {
+          "type": "dropdown",
+          "name": "district",
+          "title": "Which area are you in?",
+          "isRequired": true,
+          "choices": ["<<<Only the granularity the task needs>>>"],
+          "_necessary_for": "eligibility: location",
+          "_note": "Never ask for a formal street address — it excludes informal settlements."
+        },
+        {
+          "type": "dropdown",
+          "name": "device",
+          "title": "What will you use to take part?",
+          "isRequired": true,
+          "choices": [
+            "A basic phone (calls and texts only)",
+            "A smartphone I own",
+            "A smartphone I borrow or share",
+            "A computer or tablet"
+          ],
+          "_necessary_for": "eligibility: device floor (control C7)",
+          "_note": "'Borrow or share' matters — a shared device cannot hold a long session."
+        },
+        {
+          "type": "checkbox",
+          "name": "languages",
+          "title": "Which languages do you read comfortably?",
+          "isRequired": true,
+          "choices": ["<<<Must match access.languages>>>"],
+          "_necessary_for": "instruction and rejection-reason delivery"
+        },
+        {
+          "type": "checkbox",
+          "name": "availability",
+          "title": "When could you do this?",
+          "isRequired": true,
+          "choices": ["<<<Windows within the Deed period>>>"],
+          "_necessary_for": "eligibility: availability"
+        }
+      ]
+    },
+    {
+      "name": "the_task",
+      "title": "About the task",
+      "elements": [
+        {
+          "type": "radiogroup",
+          "name": "task_capability",
+          "title": "<<<Stated as a TASK, never as a credential>>>",
+          "description": "<<<e.g. 'Have you planted a tree before?' — not 'Do you hold a horticulture certificate?'>>>",
+          "isRequired": true,
+          "choices": ["Yes, several times", "Once or twice", "No, but I want to learn"],
+          "_necessary_for": "eligibility: capability",
+          "_note": "'No, but I want to learn' should usually still be eligible. If it is not, say why."
+        },
+        {
+          "type": "comment",
+          "name": "accessibility_needs",
+          "title": "Is there anything we should arrange so you can take part?",
+          "isRequired": false,
+          "_necessary_for": "accommodations (control C7)",
+          "_note": "Optional and open. Never used to exclude — only to arrange."
+        }
+      ]
+    },
+    {
+      "name": "consent",
+      "title": "Your agreement",
+      "elements": [
+        {
+          "type": "checkbox",
+          "name": "consent",
+          "title": "Before you send this",
+          "isRequired": true,
+          "choices": [
+            {
+              "value": "data",
+              "text": "<<<Name exactly what is collected, who sees it, and when it is deleted.>>>"
+            },
+            {
+              "value": "understood",
+              "text": "<<<I have read what I need to submit and what gets a claim rejected.>>>"
+            }
+          ],
+          "_note": [
+            "Consent must not be bundled. A youth must be able to take part without agreeing",
+            "to unrelated processing (control C12 critical fail).",
+            "Under-18 applicants: this is ASSENT. Guardian consent is captured separately and",
+            "verified — assent does not replace it, and it does not replace assent."
+          ]
+        }
+      ]
+    }
+  ]
+}

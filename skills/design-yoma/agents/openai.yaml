@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Yoma"
+  short_description: "Guide an opportunity provider through designing a Deed for youth"
+  default_prompt: "Use $design-yoma to design a Yoma Deed for young people to perform, through Discovery, Design, Validation, Testing and Deployment."

@@ -1,0 +1,144 @@
+# Claim rubric — the rules that judge a young person's claim.
+#
+# Published as {id}#rub (type: rubric) on the PROTOCOL entity via qi/eval.engine.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# TWO HAZARDS. Read before editing.
+#
+# 1. PUBLICATION REPLACES #rub OUTRIGHT. There is no merge. On a live collection,
+#    ALWAYS open from the currently published rubric first. A blank draft silently
+#    wipes live rules.  → BLOCKED_RUBRIC_NOT_OPENED_FROM_PUBLISHED
+#
+# 2. THE FIELD CATALOG IS THE ONLY SOURCE OF FIELDS. Every path must resolve
+#    against the live #vct. If the claim form changed after authoring, publication
+#    fails.  → BLOCKED_RUBRIC_DRIFT   Catch it at control C11; it is free there.
+#
+# The rubric id IS the SHA-256 of the canonical bytes. No @id, no fixtures —
+# anything that changes the bytes for a non-rule reason changes the id.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# THE RULE A YOUNG PERSON CARES ABOUT:
+#   They should be able to predict their own outcome before they submit.
+#   Every gate and criterion here must have been disclosed in the control C8 instructions.
+
+"@context":
+  ixo: https://w3id.org/ixo/ns/protocol/
+  "@id": "@type"
+  type: "@type"
+  "@protected": true
+
+type: ixo:entity#rubric
+
+rubric:
+  "@type": Rubric
+  title: <<<What these rules are for>>>
+  description: <<<Plain language. A youth may read this.>>>
+
+  # REQUIRED — binds the rubric to the claim form it was authored against.
+  claimSchema:
+    "@type": ClaimSchemaBinding
+    protocol: did:ixo:<<<protocol DID>>>
+    resource: "#vct"
+    proof: <<<content hash of the claim form>>>
+
+  # Named pure computations, referenced elsewhere as ~name. Optional.
+  derived: []
+  # - name: photo_count
+  #   expr: <<<expression over #vct fields>>>
+
+  # External checks, read as ext.<name>.*  Optional.
+  sources: []
+
+  # AI checks, read as ai.<name>.*  Optional.
+  # GATE 17: an AI check may PROPOSE, never determine.
+  # Route every AI-driven failure to onFail: review — never auto-reject.
+  # False positives fall on honest youth who cannot prove a negative.
+  aiChecks: []
+
+  # Duplicate-claim detection. Also a control C14 fraud control.
+  unique:
+    # fields: []            # which fields make two claims the same claim
+    # scope: collection
+
+  # Submission-rate limit. Set from OBSERVED HONEST PACE — too tight punishes
+  # a fast genuine worker.
+  frequency:
+    # maxPerParticipant:
+    # window:
+
+  # ── GATES ────────────────────────────────────────────────────────────────
+  # Run FIRST, in document order. THE FIRST FAILURE IS TERMINAL.
+  # Order so the cheapest and most common failure is caught first — a youth
+  # should not wait on an AI check to be told they left a photo out.
+  #
+  # class, chosen honestly:
+  #   refuted                 the evidence shows the work was NOT done
+  #   invalid_evidence        the evidence is unusable
+  #   insufficient_evidence   it might have been done; the proof is missing
+  #   out_of_authority        outside what this collection may judge
+  #   requires_human_review   a person must look
+  #
+  # 'refuted' and 'insufficient_evidence' land very differently on a young
+  # person, and only one of them suggests they should try again.
+  #
+  # Prefer onFail: review over reject wherever a human could reasonably resolve it.
+  gates:
+    - "@type": Gate
+      code: DEED-01-EVIDENCE-MISSING # ^[A-Z0-9]+-[0-9]+-[A-Z0-9-]+$
+      reason: >-
+        <<<What the youth reads. Actionable. Not "failed validation".
+        e.g. "No photo was submitted. Add a photo of the finished work.">>>
+      when: {} # the failing condition, over #vct field paths
+      onFail: reject
+      class: insufficient_evidence
+      _disclosed_in_instructions: true # MUST be true — see control C11 critical fails
+
+    - "@type": Gate
+      code: DEED-02-OUTSIDE-WINDOW
+      reason: >-
+        <<<e.g. "The date you entered is before the task started.">>>
+      when: {}
+      onFail: review # a date slip is usually a mistake, not a lie
+      class: requires_human_review
+      _disclosed_in_instructions: true
+
+  # ── SCORING ──────────────────────────────────────────────────────────────
+  # Thresholds are BASIS POINTS: 8000 = 80%.
+  # Set reviewFloor so borderline claims reach a human rather than being
+  # rejected by a margin the youth cannot see.
+  scoring:
+    method: weighted_average # weighted_average | all_pass | minimum | quorum
+    approveAt: 8000
+    partialFloor:
+    reviewFloor: 6500
+    criteria:
+      - code: DEED-C1-QUALITY
+        reason: <<<What good work looks like — must match the control C8 worked example>>>
+        weight: 3 # 1..5
+        min:
+        score:
+          kind: bands # boolean | bands | linear | levels | map | deductions | manual
+          # Each 'manual' node forces human involvement and consumes the
+          # evaluator capacity control C17 must actually have. Count them.
+
+  # Human review policy.
+  review:
+    # requiredFor: []
+    # reviewerRight:
+    # approvalProof:
+
+  # What an outcome pays. Must agree with control C16.
+  settlement:
+    # onApprove:
+    # onPartial:
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BEFORE STAGING PUBLICATION (control C21):
+#   [ ] Every field path resolves against the CURRENT #vct catalog
+#   [ ] Every gate and criterion was disclosed in the control C8 instructions
+#   [ ] Every rejection carries a reason a youth can act on, in their language
+#   [ ] This draft descends from the published #rub (on a live collection)
+#   [ ] manual_nodes_count <= control C17 human capacity
+#   [ ] Collections sharing this protocol identified — publication affects them all
+#   [ ] No AI check auto-rejects
+# ─────────────────────────────────────────────────────────────────────────────
