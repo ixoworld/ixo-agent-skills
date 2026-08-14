@@ -101,7 +101,7 @@ Initial scaffold.
 
 ### Unresolved
 
-- Consent capacity policy at gate 13 ships as a configurable default (age-tiered: under-18 requires
+- Consent capacity policy at control C12 `rights_and_consent` ships as a configurable default (age-tiered: under-18 requires
   verified guardian consent, 18+ self-consents) pending an explicit provider-side decision.
 
 [0.1.0]: https://github.com/ixoworld/ixo-agent-skills/tree/main/skills/design-yoma

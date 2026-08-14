@@ -176,7 +176,7 @@
     "budget_exhausted": "the control C16 on_exhaustion behaviour actually executes, and youth are told"
   },
 
-  "_verify_at_gate_14": [
+  "_verify_at_control_c13": [
     "claim/submit is gated on evaluate-bid decision == approve",
     "every branch above terminates with something the youth is told",
     "no runtime-only field appears in any nb",
