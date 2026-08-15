@@ -19,8 +19,10 @@ const EXPECTED_FILES = [
   "agents/openai.yaml",
   "schemas/topic-composition.schema.json",
   "schemas/topic-contract-draft.schema.json",
+  "schemas/topic-refine-change-set.schema.json",
   "references/canvas-recipes.md",
   "references/protocol-adapter.md",
+  "references/refine-existing-topic.md",
   "references/topic-contract-profile.md",
   "references/security-review.md",
   "references/source-lock.json",
@@ -31,8 +33,10 @@ const EXPECTED_FILES = [
   "scripts/package.json",
   "scripts/package-lock.json",
   "scripts/validate-composition.mjs",
+  "scripts/validate-refine-change-set.mjs",
   "scripts/audit-skill.mjs",
   "tests/validate-composition.test.mjs",
+  "tests/refine-change-set.test.mjs",
   "tests/audit-skill.test.mjs",
 ];
 const EXPECTED_SOURCE_COMMIT = "71a6b7fe77a0d75a73a5412179080f2364ea48ce";
@@ -223,12 +227,12 @@ async function auditEvals(findings) {
   if (cases.length < 18) findings.push(finding("EVAL_COVERAGE", "evals/evals.json", "must include at least 18 behavioral cases"));
   const ids = cases.map((item) => item.id);
   if (new Set(ids).size !== ids.length) findings.push(finding("EVAL_DUPLICATE", "evals/evals.json", "case IDs must be unique"));
-  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "adopt-existing-thread", "custom-kind", "partial-draft", "impact-only-risk", "virtual-thread"];
+  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "adopt-existing-thread", "custom-kind", "partial-draft", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question"];
   for (const id of required) if (!ids.includes(id)) findings.push(finding("EVAL_REQUIRED", "evals/evals.json", `missing security or protocol case: ${id}`));
 }
 
 async function auditScripts(findings) {
-  for (const name of ["validate-composition.mjs", "audit-skill.mjs"]) {
+  for (const name of ["validate-composition.mjs", "validate-refine-change-set.mjs", "audit-skill.mjs"]) {
     const path = join(SKILL_ROOT, "scripts", name);
     const content = await readFile(path, "utf8");
     if (!content.startsWith("#!/usr/bin/env node")) findings.push(finding("SCRIPT_SHEBANG", `scripts/${name}`, "must start with a Node shebang"));
