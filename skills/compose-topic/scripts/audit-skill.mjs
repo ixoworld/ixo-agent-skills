@@ -19,8 +19,10 @@ const EXPECTED_FILES = [
   "agents/openai.yaml",
   "schemas/topic-composition.schema.json",
   "schemas/topic-contract-draft.schema.json",
+  "schemas/topic-refine-change-set.schema.json",
   "references/canvas-recipes.md",
   "references/protocol-adapter.md",
+  "references/refine-existing-topic.md",
   "references/topic-contract-profile.md",
   "references/security-review.md",
   "references/source-lock.json",
@@ -31,11 +33,13 @@ const EXPECTED_FILES = [
   "scripts/package.json",
   "scripts/package-lock.json",
   "scripts/validate-composition.mjs",
+  "scripts/validate-refine-change-set.mjs",
   "scripts/audit-skill.mjs",
   "tests/validate-composition.test.mjs",
+  "tests/refine-change-set.test.mjs",
   "tests/audit-skill.test.mjs",
 ];
-const EXPECTED_SOURCE_COMMIT = "eb20cf0de9b3321ed842dc5e8b749cc290359222";
+const EXPECTED_SOURCE_COMMIT = "71a6b7fe77a0d75a73a5412179080f2364ea48ce";
 const ACTUAL_SECRET_PATTERNS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
   /\bsk-[A-Za-z0-9_-]{32,}\b/u,
@@ -184,11 +188,13 @@ async function auditSourceLock(findings) {
   const lockPath = join(SKILL_ROOT, "references/source-lock.json");
   const lock = JSON.parse(await readFile(lockPath, "utf8"));
   if (lock.skill !== "compose-topic") findings.push(finding("LOCK_SKILL", "references/source-lock.json", "skill must equal compose-topic"));
-  if (lock.topicProtocol?.version !== "0.4.0") findings.push(finding("LOCK_PROTOCOL", "references/source-lock.json", "Topic Protocol must be pinned to 0.4.0"));
-  if (lock.topicProtocol?.topicContractProposal?.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_COMMIT", "references/source-lock.json", `source commit must equal ${EXPECTED_SOURCE_COMMIT}`));
-  if (lock.topicProtocol?.topicContractProposal?.status !== "proposed-non-normative") findings.push(finding("LOCK_STATUS", "references/source-lock.json", "contract profile must remain proposed-non-normative"));
+  if (lock.version !== 2) findings.push(finding("LOCK_VERSION", "references/source-lock.json", "source lock must use version 2"));
+  if (lock.topicProtocol?.version !== "0.5.0") findings.push(finding("LOCK_PROTOCOL", "references/source-lock.json", "Topic Protocol must be pinned to 0.5.0"));
+  if (lock.topicProtocol?.normativeBaseCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_BASE_COMMIT", "references/source-lock.json", `normative commit must equal ${EXPECTED_SOURCE_COMMIT}`));
+  if (lock.topicProtocol?.contractProfile?.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_COMMIT", "references/source-lock.json", `source commit must equal ${EXPECTED_SOURCE_COMMIT}`));
+  if (lock.topicProtocol?.contractProfile?.status !== "normative") findings.push(finding("LOCK_STATUS", "references/source-lock.json", "contract profile must be normative"));
   const sources = lock.topicProtocol?.sourceFiles ?? [];
-  if (sources.length < 8) findings.push(finding("LOCK_SOURCE_COUNT", "references/source-lock.json", "must pin the proposal documentation, schemas, and TypeScript model"));
+  if (sources.length < 9) findings.push(finding("LOCK_SOURCE_COUNT", "references/source-lock.json", "must pin protocol, schemas, TypeScript model, and adopted-anchor ADR"));
   const sourcePaths = sources.map((item) => item.path);
   if (new Set(sourcePaths).size !== sourcePaths.length) findings.push(finding("LOCK_DUPLICATE_SOURCE", "references/source-lock.json", "source paths must be unique"));
   for (const item of sources) {
@@ -215,18 +221,18 @@ async function auditExamples(findings) {
 
 async function auditEvals(findings) {
   const evals = JSON.parse(await readFile(join(SKILL_ROOT, "evals/evals.json"), "utf8"));
-  if (evals.version !== "1.1.0") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 1.1.0"));
+  if (evals.version !== "1.2.0") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 1.2.0"));
   if (evals.skill !== "compose-topic") findings.push(finding("EVAL_SKILL", "evals/evals.json", "must equal compose-topic"));
   const cases = evals.cases ?? [];
   if (cases.length < 18) findings.push(finding("EVAL_COVERAGE", "evals/evals.json", "must include at least 18 behavioral cases"));
   const ids = cases.map((item) => item.id);
   if (new Set(ids).size !== ids.length) findings.push(finding("EVAL_DUPLICATE", "evals/evals.json", "case IDs must be unique"));
-  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision"];
+  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "adopt-existing-thread", "custom-kind", "partial-draft", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question"];
   for (const id of required) if (!ids.includes(id)) findings.push(finding("EVAL_REQUIRED", "evals/evals.json", `missing security or protocol case: ${id}`));
 }
 
 async function auditScripts(findings) {
-  for (const name of ["validate-composition.mjs", "audit-skill.mjs"]) {
+  for (const name of ["validate-composition.mjs", "validate-refine-change-set.mjs", "audit-skill.mjs"]) {
     const path = join(SKILL_ROOT, "scripts", name);
     const content = await readFile(path, "utf8");
     if (!content.startsWith("#!/usr/bin/env node")) findings.push(finding("SCRIPT_SHEBANG", `scripts/${name}`, "must start with a Node shebang"));
@@ -264,7 +270,7 @@ export async function main(options = {}) {
   findings.sort((left, right) => left.path.localeCompare(right.path) || left.code.localeCompare(right.code));
   return {
     auditor: "compose-topic-skill-audit",
-    version: "1.1.0",
+    version: "1.2.0",
     root: options.root ?? SKILL_ROOT,
     ok: findings.length === 0,
     findingCount: findings.length,

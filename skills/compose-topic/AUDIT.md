@@ -1,10 +1,10 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `1.1.0`  
-Topic Protocol baseline: `0.4.0`  
-Topic Contract profile: `qi.topic-contract-state/v1`  
-Profile status: proposed, non-normative  
-Pinned proposal commit: `eb20cf0de9b3321ed842dc5e8b749cc290359222`
+Audit target: `compose-topic` `1.2.0`
+Topic Protocol baseline: `0.5.0`
+Topic Contract profile: `qi.topic-contract-state/v2`
+Profile status: normative
+Pinned protocol commit: `71a6b7fe77a0d75a73a5412179080f2364ea48ce`
 
 ## Review scope
 
@@ -12,7 +12,7 @@ The audit covers:
 
 - Agent Skills package structure and frontmatter;
 - Topic Protocol identity, root, thread, record, projection, authority, confidentiality, and attachment boundaries;
-- alignment with the proposed Topic Contract body and Matrix state-event profile;
+- alignment with the v2 Topic Contract body and Matrix state-event profile;
 - provenance and acceptance semantics;
 - stable participant, role, and agent identity;
 - safe disclosure and Matrix event-size posture;
@@ -20,7 +20,7 @@ The audit covers:
 - decision and outcome authority;
 - BlockNote/Yjs canvas boundaries;
 - prompt-injection resistance, secret hygiene, and data minimisation;
-- CLI scripts, exported `main()` functions, tests, examples, and behavioral eval coverage.
+- CLI scripts, exported `main()` functions, tests, examples, staged-refinement change sets, and behavioral eval coverage.
 
 ## Material findings and resolutions
 
@@ -46,7 +46,7 @@ Resolution: all skill output and examples use Topic Protocol slash syntax such a
 
 Finding: a generated Topic Contract could be mistaken for authoritative Topic state.
 
-Resolution: the profile is pinned and labelled proposed/non-normative. Every composition declares authoritative history as `topic-root+operations+records+projection` and the state event as `materialized-head-only`. Refine mode emits a successor proposal against an exact base revision.
+Resolution: the normative profile is pinned to an exact Topic Protocol 0.5.0 commit. Every composition declares authoritative history as `topic-root+operations+records+projection` and the state event as `materialized-head-only`. Refine mode emits a successor proposal against an exact base revision.
 
 ### Sensitive inline state
 
@@ -71,12 +71,12 @@ Resolution: the skill treats messages, documents, retrieved content, and attachm
 The package includes:
 
 - three protocol-aligned valid examples;
-- semantic validation with negative tests for provenance, disclosure, abilities, agents, decisions, outcomes, revision, external actions, secrets, canvas limits, and weights;
+- semantic validation with negative tests for provenance, disclosure, abilities, agents, decisions, outcomes, revision, staged refinement, external actions, secrets, canvas limits, and weights;
 - package audit for structure, source locks, schema references, links, JSON, eval coverage, script standards, file limits, and secret patterns;
-- twenty behavioral eval cases covering routing, confidentiality, agents, actions, prompt injection, and protocol lifecycle.
+- behavioral eval cases covering routing, confidentiality, agents, actions, prompt injection, protocol lifecycle, and multi-turn existing-Topic refinement.
 
 ## Residual limits
 
-The skill cannot prove deployed Matrix, E2EE, federation, VFS, UCAN, agent, or state-event behavior. Those require host runtime conformance evidence. The Topic Contract profile remains non-normative until the Topic Protocol project ratifies its lifecycle and authority semantics.
+The skill cannot prove deployed Matrix, E2EE, federation, VFS, UCAN, agent, Temporal, or state-event behavior. Those require host runtime conformance evidence. Protocol 0.5.0 defines the lifecycle semantics, but deployment remains feature- and capability-gated.
 
 Production use therefore requires the host to validate again at the trust boundary, verify current revision and capabilities, reproduce projection, resolve stable identities and bindings, and retain recovery receipts.
