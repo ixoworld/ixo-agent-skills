@@ -20,7 +20,7 @@ The audit covers:
 - decision and outcome authority;
 - BlockNote/Yjs canvas boundaries;
 - prompt-injection resistance, secret hygiene, and data minimisation;
-- CLI scripts, exported `main()` functions, tests, examples, and behavioral eval coverage.
+- CLI scripts, exported `main()` functions, tests, examples, staged-refinement change sets, and behavioral eval coverage.
 
 ## Material findings and resolutions
 
@@ -71,9 +71,9 @@ Resolution: the skill treats messages, documents, retrieved content, and attachm
 The package includes:
 
 - three protocol-aligned valid examples;
-- semantic validation with negative tests for provenance, disclosure, abilities, agents, decisions, outcomes, revision, external actions, secrets, canvas limits, and weights;
+- semantic validation with negative tests for provenance, disclosure, abilities, agents, decisions, outcomes, revision, staged refinement, external actions, secrets, canvas limits, and weights;
 - package audit for structure, source locks, schema references, links, JSON, eval coverage, script standards, file limits, and secret patterns;
-- twenty behavioral eval cases covering routing, confidentiality, agents, actions, prompt injection, and protocol lifecycle.
+- behavioral eval cases covering routing, confidentiality, agents, actions, prompt injection, protocol lifecycle, and multi-turn existing-Topic refinement.
 
 ## Residual limits
 

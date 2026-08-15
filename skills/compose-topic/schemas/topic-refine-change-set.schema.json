@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skills.ixo.earth/schemas/compose-topic/topic-refine-change-set.schema.json",
+  "title": "Compose Topic existing-Topic refinement change set",
+  "type": "object",
+  "required": [
+    "version",
+    "status",
+    "changeSetId",
+    "editSessionId",
+    "topicId",
+    "expectedRevision",
+    "changes"
+  ],
+  "properties": {
+    "version": { "const": "1.0" },
+    "status": { "const": "ready-to-stage" },
+    "changeSetId": { "$ref": "#/$defs/uuidv7" },
+    "editSessionId": { "$ref": "#/$defs/uuidv7" },
+    "topicId": {
+      "type": "string",
+      "pattern": "^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "expectedRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "expectedBodyHash": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "changes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["op", "path", "value"],
+            "properties": {
+              "op": { "const": "set-text" },
+              "path": {
+                "enum": [
+                  "/title",
+                  "/intent/text",
+                  "/outcome/statement/text",
+                  "/completion/definition"
+                ]
+              },
+              "value": { "type": "string", "maxLength": 4000 }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["op", "path", "value"],
+            "properties": {
+              "op": { "const": "set-date" },
+              "path": { "const": "/outcome/target/value" },
+              "value": { "type": "string", "format": "date" }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["op", "questionId", "answer", "status"],
+            "properties": {
+              "op": { "const": "answer-question" },
+              "questionId": { "$ref": "#/$defs/uuidv7" },
+              "answer": { "type": "string", "minLength": 1, "maxLength": 4000 },
+              "status": { "const": "answered" }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "uuidv7": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    }
+  }
+}

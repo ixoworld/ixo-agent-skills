@@ -29,11 +29,11 @@ Before composing or reviewing a Topic:
 4. Treat `qi.topic-contract-state/v2` as the normative contract profile pinned to its exact source commit.
 5. Do not silently upgrade either source from memory or an unpinned mutable branch.
 
-Load [references/canvas-recipes.md](references/canvas-recipes.md) when choosing or rendering a canvas recipe. Load [references/protocol-adapter.md](references/protocol-adapter.md) only for `commit` or `refine` mode. Load [references/security-review.md](references/security-review.md) when the intent is sensitive, consequential, agentic, or action-bearing.
+Load [references/canvas-recipes.md](references/canvas-recipes.md) when choosing or rendering a canvas recipe. Load [references/protocol-adapter.md](references/protocol-adapter.md) only for `commit` or `refine` mode. Load [references/refine-existing-topic.md](references/refine-existing-topic.md) when the host supplies a Topic/edit-session identity or the person asks to apply changes proposed earlier. Load [references/security-review.md](references/security-review.md) when the intent is sensitive, consequential, agentic, or action-bearing.
 
 ## Output contract
 
-Return a `TopicComposition` conforming to [schemas/topic-composition.schema.json](schemas/topic-composition.schema.json).
+Return a `TopicComposition` conforming to [schemas/topic-composition.schema.json](schemas/topic-composition.schema.json). For field-level refinement from a private existing-Topic editor, return a `TopicRefineChangeSet` conforming to [schemas/topic-refine-change-set.schema.json](schemas/topic-refine-change-set.schema.json).
 
 The output has three intentionally separate layers:
 
@@ -47,7 +47,7 @@ Never emit an `ixo.topic.contract` state event as though it were authoritative h
 
 - `preview`: compose without side effects. Use this by default.
 - `commit`: compose a policy-gated, idempotent host plan. The skill itself performs no side effect.
-- `refine`: recompose or propose changes against an existing Topic Capsule and exact state revision.
+- `refine`: recompose or propose changes against an existing Topic Capsule and exact state revision. Existing editor sessions follow the staged refinement loop.
 
 Missing room, actor, Topic ID, anchor, revision, or canvas document data disables materialization or commit. It does not justify inventing values or forcing a setup questionnaire when a useful preview is possible.
 
@@ -74,7 +74,7 @@ Apply every rule below:
 
 ## Input model
 
-Only `intent.text` is required for preview. The host may additionally supply a validated Topic form snapshot and its missing-field paths, source event and surface, actor identity and locale, room and audience, data classification and E2EE posture, current Topic ID/Capsule/revision, candidate Topics, attachments, typed context links, resolved stable agents, and host limits.
+Only `intent.text` is required for preview. The host may additionally supply a validated Topic form snapshot and its missing-field paths, source event and surface, actor identity and locale, room and audience, data classification and E2EE posture, current Topic ID/Capsule/revision, private edit-session reference, candidate Topics, attachments, typed context links, resolved stable agents, and host limits.
 
 Treat missing host fields as unresolved. Do not invent them, and do not block a useful preview merely because commit context is incomplete.
 
