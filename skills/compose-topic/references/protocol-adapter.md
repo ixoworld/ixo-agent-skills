@@ -15,6 +15,7 @@ type CommitContext = {
   now(): string;
   createTopic(input: {
     root: TopicRoot;
+    anchor: TopicAnchor;
     firstRecord: ProposedRecord;
     idempotencyKey: string;
   }): Promise<{
@@ -44,6 +45,15 @@ type CommitContext = {
     idempotencyKey: string;
   }): Promise<{ eventId: string }>;
   projectTopic(input: { topicId: string }): Promise<TopicProjection>;
+  proposeContract(input: {
+    topicId: string;
+    previousRevision: string;
+    nextRevision: string;
+    bodyRef: ContractBodyReference;
+    bodyHash: string;
+    changedPaths: readonly string[];
+    idempotencyKey: string;
+  }): Promise<{ operationId: string }>;
   publishContractHead(input: {
     topicId: string;
     eventType: "ixo.topic.contract";
@@ -82,7 +92,7 @@ Use this order:
 1. persist a pending composition entry;
 2. generate the stable Topic ID through the canonical runtime;
 3. construct the complete root from `rootDraft` plus host-resolved identity and timestamps;
-4. create or recover the relation-free root and wait for the server event ID;
+4. create or recover a native relation-free root, or retain the supplied root for an adopted anchor, and wait for the server event ID when needed;
 5. write the exact accepted user-intent record as the first native thread child;
 6. initialize the BlockNote/Yjs canvas idempotently;
 7. append remaining proposed records;
@@ -111,7 +121,7 @@ function materializeContractBody(
     throw new Error("Contract draft is blocked");
   }
   return {
-    version: 1,
+    version: 2,
     revision: input.revision,
     status: draft.envelope.status,
     authoredBy: input.authoredBy,
@@ -136,17 +146,13 @@ Only after root, canvas, and projection are available, construct:
 
 ```ts
 const content: TopicContractStateContent = {
-  version: 1,
-  protocol: {
-    name: "ixo.topic",
-    version: "0.4.0",
-    profile: "qi.topic-contract-state/v1",
-    schema: TOPIC_CONTRACT_SCHEMA,
-  },
+  version: 2,
+  profile: "qi.topic-contract-state/v2",
+  schema: TOPIC_CONTRACT_SCHEMA,
   topicId,
   anchor,
   manifest: originalRootManifest,
-  contract: safeContractPayload,
+  contracts: safeContractHeads,
   projection: safeProjectionPayload,
   policy,
   bindings: {
@@ -198,7 +204,7 @@ For `continue` or `refine`:
 6. rebase or surface conflict when revision changed;
 7. publish a new materialized head only after authoritative writes and projection complete.
 
-Current Topic Protocol `0.4.0` has no authoritative contract mutation operation. Do not invent `update-contract`, `accept-contract`, or `supersede-contract` execution until the protocol ratifies it.
+Topic Protocol `0.5.0` records refinement through `update-contract` with previous and next revisions, the validated body reference and hash, and changed semantic paths. Never use a projected state-event replacement as the write operation. Acceptance and supersession remain separate capability-gated operations.
 
 ## Recovery
 

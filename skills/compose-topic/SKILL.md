@@ -3,14 +3,14 @@ name: compose-topic
 description: >-
   Compose, route, validate, and safely stage a durable Qi Topic from a user's intent. Use when work should persist as a Topic for a decision, investigation, proposal, project, evaluation, incident, discussion, or repeatable flow; when intent should continue, branch, split, or move to a separate confidential room; or when a host needs a protocol-aligned Topic root draft, Topic Contract proposal, BlockNote canvas plan, initial records, and idempotent commit handoff. Do not use for disposable one-turn requests unless the user explicitly asks to create a Topic.
 license: Apache-2.0
-compatibility: Agent Skills runtimes with JSON structured output; commit and refine modes require a host adapter for Topic Protocol 0.4.0, Matrix, and the Qi BlockNote/Yjs canvas.
+compatibility: Agent Skills runtimes with JSON structured output; commit and refine modes require a host adapter for Topic Protocol 0.5.0, Matrix, and the Qi BlockNote/Yjs canvas.
 metadata:
   author: IXO
-  version: "1.1.0"
+  version: "1.2.0"
   category: collaboration
-  topic-protocol: "0.4.0"
-  topic-contract-profile: qi.topic-contract-state/v1
-  profile-status: proposed-non-normative
+  topic-protocol: "0.5.0"
+  topic-contract-profile: qi.topic-contract-state/v2
+  profile-status: normative
 ---
 
 # Compose Topic
@@ -25,8 +25,8 @@ Before composing or reviewing a Topic:
 
 1. Read [references/source-lock.json](references/source-lock.json).
 2. Read [references/topic-contract-profile.md](references/topic-contract-profile.md).
-3. Treat Topic Protocol `0.4.0` as the normative protocol baseline pinned in the source lock.
-4. Treat `qi.topic-contract-state/v1` as a proposed, non-normative extension pinned to its exact source commit.
+3. Treat Topic Protocol `0.5.0` as the normative protocol baseline pinned in the source lock.
+4. Treat `qi.topic-contract-state/v2` as the normative contract profile pinned to its exact source commit.
 5. Do not silently upgrade either source from memory or an unpinned mutable branch.
 
 Load [references/canvas-recipes.md](references/canvas-recipes.md) when choosing or rendering a canvas recipe. Load [references/protocol-adapter.md](references/protocol-adapter.md) only for `commit` or `refine` mode. Load [references/security-review.md](references/security-review.md) when the intent is sensitive, consequential, agentic, or action-bearing.
@@ -38,7 +38,7 @@ Return a `TopicComposition` conforming to [schemas/topic-composition.schema.json
 The output has three intentionally separate layers:
 
 - composition: routing, root draft, canvas, first turn, records, and proposed host calls;
-- contract draft: a proposal that maps to the semantic body of `qi.topic-contract-state/v1`;
+- contract draft: a proposal that maps to the semantic body of `qi.topic-contract-state/v2`;
 - protocol state: created only by the host after identity, anchor, projection, authority, and canvas bindings are resolved.
 
 Never emit an `ixo.topic.contract` state event as though it were authoritative history. It is only a materialized contract head or pointer. The relation-free Topic root, native thread children, append-only operations and records, and deterministic projection remain authoritative.
@@ -74,16 +74,18 @@ Apply every rule below:
 
 ## Input model
 
-Only `intent.text` is required for preview. The host may additionally supply source event and surface, actor identity and locale, room and audience, data classification and E2EE posture, current Topic ID/Capsule/revision, candidate Topics, attachments, typed context links, resolved stable agents, and host limits.
+Only `intent.text` is required for preview. The host may additionally supply a validated Topic form snapshot and its missing-field paths, source event and surface, actor identity and locale, room and audience, data classification and E2EE posture, current Topic ID/Capsule/revision, candidate Topics, attachments, typed context links, resolved stable agents, and host limits.
 
 Treat missing host fields as unresolved. Do not invent them, and do not block a useful preview merely because commit context is incomplete.
+
+When invoked by a private personal-agent panel, use `preview` for a new empty composition and `refine` for an incomplete or existing draft. Returned field values are provenance-marked `suggested` data only. Do not save, accept, invite the agent to the Matrix room, or include the private companion session identifier in shared output.
 
 ## Workflow
 
 ### Phase 1: Pin and preflight
 
 1. Verify the source lock and bundled schema digests with `node scripts/audit-skill.mjs --json` when the runtime permits script execution.
-2. Set the output version to `1.1.0` and the contract profile to `qi.topic-contract-state/v1`.
+2. Set the output version to `1.2.0` and the contract profile to `qi.topic-contract-state/v2`.
 3. Inventory host capabilities. Do not assume a tool named in this skill exists or has a remembered signature.
 4. Determine whether a useful preview is possible. Prefer preview over blocking on absent host fields.
 5. Scan supplied content for secrets and excessive sensitive data. Keep only the minimum needed to compose.
@@ -149,16 +151,19 @@ Use one Topic kind and one recipe:
 
 | Job | Topic kind | Contract recipe |
 | --- | --- | --- |
-| choose, approve, prioritise | `decision` | `decision` |
+| choose, approve, prioritise | `evaluation` | `evaluation` |
 | investigate, understand, diagnose | `question` | `research` |
 | design, draft, recommend, pitch | `proposal` | `proposal` |
 | plan, launch, coordinate, implement | `task` | `project` |
-| assess, verify, compare | `decision` when judgment follows; otherwise `question` | `evaluation` |
+| assess, verify, compare | `evaluation` | `evaluation` |
+| organise deed or claim evidence | `claims` | `claims` |
 | contain or resolve an urgent failure | `incident` | `incident` |
-| standardise or productise repeated work | `flow` | `flow` |
+| schedule bounded agent work | `agent_task` | `flow` |
 | deliberate before a decision or plan exists | `discussion` | `discussion` |
 
 Use `solo`, `team`, or `client` working mode from supplied context. If uncertain, use a solo-compatible minimum and let collaboration emerge.
+
+Custom kinds are labels over exactly one standard base kind. Emit `kindRef.source: custom`, the user-facing label, and a standard `baseKind`; never create custom schemas, permissions, automation, or rendering behavior. `Thread` is virtual host presentation only and is never emitted as a persisted kind.
 
 ### Phase 6: Compose protocol identity correctly
 
@@ -166,8 +171,10 @@ For `create` or `branch`:
 
 - set `topic.operation` to `create`;
 - create `rootDraft` with `version`, title, kind, status, context, and Overview;
-- omit Topic ID, creator, creation timestamp, room ID, and root event ID until the host resolves them;
+- omit Topic ID, creator, and creation timestamp; include room and root IDs only when the host supplies an adopted thread root;
 - use `active` only when the user has initiated sufficiently understood work; otherwise use `draft`.
+- use an adopted anchor when the host supplies an existing Matrix thread root; retain that root and set its manifest source to `state-event`.
+- use a native anchor only when the host is creating a new relation-free root that carries the manifest.
 
 For `continue` or `refine`:
 
@@ -180,19 +187,22 @@ A Topic title must be specific and action-oriented. Do not prefix it with “Hel
 
 ### Phase 7: Compose the Topic Contract proposal
 
-Build `contractDraft.semantic` using the proposed profile shape:
+Build `contractDraft.semantic` using the v2 profile shape:
 
-- `workingMode` and `recipe`;
+- `kindRef`, `workingMode`, and its derived recipe;
 - exact intent statement with provenance;
 - one outcome and 2–5 observable success criteria;
 - included and excluded scope;
 - explicit constraints;
-- labelled assumptions, questions, and risks;
+- labelled assumptions and questions;
+- Impact-only risks for Incident Topics; do not emit likelihood or fabricate an Impact assessment;
 - optional decision or plan model;
 - resolved participants, roles, and agents only;
 - completion definition and outcome-record requirement.
 
 Keep unresolved human and agent roles under `collaborationSuggestions`, not in contract state.
+
+Draft contracts may be partial. Never copy the title into intent, outcome, or completion; never assign a hidden owner; and never default materiality, confidence, Impact, working mode, or authority. Recipe-specific completeness is evaluated only when the host proposes acceptance.
 
 Apply these semantic controls:
 
@@ -286,7 +296,9 @@ The plan is declarative and side-effect free.
 - Declare each proposed host call, its side effect, required ability, and confirmation class.
 - Mark `commitEligible` true only in `commit` mode when the required room, actor, audience, revision, and policy inputs are present.
 - Never make `preview` commit-eligible.
+- Propose contract changes through `propose-contract` or `update-contract` operations containing the exact base revision, body reference, body hash, and changed semantic paths.
 - Publish an `ixo.topic.contract` state event only after Topic ID, canonical anchor, current projection, canvas binding, author, timestamp, and publication policy are resolved.
+- Contract acceptance and supersession require separate authorised `accept-contract` or `supersede-contract` operations; composition never performs them implicitly.
 - Treat the event as a materialized head, not a mutation of authoritative history.
 
 ### Phase 13: Validate and hand off

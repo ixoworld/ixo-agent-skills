@@ -141,3 +141,52 @@ test("weighted criteria must be complete and sum to one", async () => {
   ];
   assert(codes(value).has("WEIGHT_SUM"));
 });
+
+test("accepts an adopted existing thread root", async () => {
+  const value = await example("team-project.example.json");
+  value.topic.anchor = {
+    mode: "adopted",
+    roomId: "!room:example.org",
+    rootEventId: "$existing-root",
+    manifestSource: "state-event"
+  };
+  assert.equal(codes(value).has("ANCHOR_MANIFEST_SOURCE"), false);
+  assert.equal(codes(value).has("ADOPTED_ROOT"), false);
+});
+
+test("derives custom kinds from one standard base kind", async () => {
+  const value = await example();
+  value.contractDraft.semantic.kindRef = {
+    source: "custom",
+    customId: "audit",
+    label: "Audit",
+    baseKind: "evaluation"
+  };
+  assert.equal(codes(value).has("KIND_RECIPE"), false);
+});
+
+test("rejects risks outside Incidents and legacy likelihood", async () => {
+  const value = await example();
+  value.contractDraft.semantic.risks = [{
+    id: "risk-1",
+    description: "Uncertainty",
+    likelihood: "medium",
+    status: "open"
+  }];
+  const result = codes(value);
+  assert(result.has("RISKS_INCIDENT_ONLY"));
+  assert(result.has("LEGACY_LIKELIHOOD"));
+});
+
+test("allows unresolved fields in a v2 Draft", async () => {
+  const value = await example("team-project.example.json");
+  delete value.contractDraft.semantic.outcome;
+  delete value.contractDraft.semantic.ownerId;
+  assert.equal(codes(value).has("SUCCESS_CRITERIA"), false);
+});
+
+test("requires UUIDv7 identities for repeatable contract entries", async () => {
+  const value = await example();
+  value.contractDraft.semantic.intent.id = "array-index-0";
+  assert(codes(value).has("ENTRY_ID"));
+});

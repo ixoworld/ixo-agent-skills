@@ -4,13 +4,13 @@ This skill targets two separately governed layers.
 
 ## Normative Topic Protocol baseline
 
-Topic Protocol `0.4.0` defines the durable Topic identity, relation-free Matrix root, native thread messages, append-only operations and records, deterministic projection, Topic Capsule, room-policy boundary, agent participation, Topic-scoped authority, discovery, and VFS references.
+Topic Protocol `0.5.0` defines the durable Topic identity, relation-free Matrix root, native thread messages, append-only operations and records, deterministic projection, Topic Capsule, room-policy boundary, agent participation, Topic-scoped authority, discovery, and VFS references.
 
 The composer must preserve these invariants:
 
 - stable Topic identity uses `ixo:topic:<UUIDv7>`;
-- a live Topic has one canonical Matrix anchor `{ roomId, rootEventId }`;
-- the root is a relation-free `m.room.message`;
+- a live Topic has one canonical native or adopted Matrix anchor `{ mode, roomId, rootEventId, manifestSource }`;
+- a native root is a relation-free `m.room.message`; an adopted anchor retains an existing thread root and sources its manifest from state;
 - Topic messages are native `m.thread` children of the root;
 - current state is projected from authenticated and authorised append-only operations;
 - accepted records retain source-event provenance;
@@ -19,15 +19,15 @@ The composer must preserve these invariants:
 - VFS references do not grant file-byte access;
 - user preferences and provider-private external-session identifiers are not shared Topic state.
 
-## Proposed Topic Contract extension
+## Normative Topic Contract profile
 
-`qi.topic-contract-state/v1` is pinned to Topic Protocol proposal commit:
+`qi.topic-contract-state/v2` is pinned to the Topic Protocol `0.5.0` commit:
 
 ```text
-eb20cf0de9b3321ed842dc5e8b749cc290359222
+71a6b7fe77a0d75a73a5412179080f2364ea48ce
 ```
 
-The proposal introduces a Matrix state-event profile:
+The profile defines a Matrix state-event projection:
 
 ```text
 type:      ixo.topic.contract
@@ -36,7 +36,7 @@ state_key: ixo:topic:<UUIDv7>
 
 Its architectural role is a materialized contract head or pointer. It is not authoritative semantic history and does not replace the root, thread, operations, records, or projection.
 
-The proposed contract body contains:
+The contract body contains:
 
 ```text
 version
@@ -45,6 +45,7 @@ status
 authoredBy
 authoredAt
 workingMode
+kindRef
 recipe
 intent
 outcome
@@ -60,6 +61,8 @@ roles
 agents
 completion
 ```
+
+Draft bodies may omit unresolved semantic fields. Accepted bodies must pass the completeness rules for the standard base kind. Custom kinds inherit one standard base kind and cannot introduce new permissions, automation, schemas, or renderers. Risks are an Impact-only Incident structure; `likelihood` is legacy history and is never copied into v2.
 
 The composer returns a `contractDraft` rather than a complete Matrix state event because these host-resolved values may not exist yet:
 
@@ -125,13 +128,12 @@ The profile supports:
 
 Use reference-only for confidential or restricted work. The state event never embeds BlockNote/Yjs document content or provider-private session identifiers.
 
-## Lifecycle limitation
+## Contract lifecycle
 
-The extension is non-normative and current Topic Protocol operations do not define authoritative `update-contract`, `accept-contract`, or `supersede-contract` mutations.
+Topic Protocol `0.5.0` defines append-only `propose-contract`, `update-contract`, `accept-contract`, and `supersede-contract` operations. The state event exposes separate proposed and effective heads.
 
-Until that is ratified:
-
-- every contract change emitted by this skill is a proposal;
-- accepted records and existing operations remain the authoritative write path;
-- a new state event is a materialized successor, not evidence that the semantic contract was accepted;
-- refine mode must name the exact base revision and must rebase or surface conflict when it changes.
+- this skill emits a proposal, never an implicit acceptance;
+- every proposed change names the exact prior revision, body reference, body hash, and changed semantic paths;
+- acceptance and supersession require separate authorised operations;
+- a projected state event is not itself evidence that terms were accepted; and
+- refine mode must name the exact base revision and rebase or surface conflict when it changes.

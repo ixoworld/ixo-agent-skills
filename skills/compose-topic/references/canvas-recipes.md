@@ -81,7 +81,7 @@ Primary sections:
 3. Problem or opportunity
 4. Proposed approach
 5. Value and evidence
-6. Trade-offs and risks
+6. Trade-offs and uncertainty
 7. Draft, review, and approval
 
 Start with the audience, the action they should take, and the strongest value proposition supported by the user's context.
@@ -99,7 +99,7 @@ Primary sections:
 3. Workstreams or milestones
 4. Immediate actions
 5. Owners and dependencies
-6. Risks and decisions
+6. Dependencies and decisions
 7. Progress and completion
 
 Start with outcome, 2–5 completion conditions, and the next 3 actions. Do not build a large task hierarchy until the work requires it.
@@ -142,9 +142,9 @@ Start with impact, what is known now, and the safest immediate containment actio
 
 Keep facts, hypotheses, actions, and decisions visibly distinct. Time-stamp material updates.
 
-## Flow
+## Agent Task
 
-Purpose: turn repeated work or expertise into an executable, reusable process.
+Purpose: define bounded agent work that may be scheduled through a host-provided automation adapter.
 
 Primary sections:
 
@@ -156,9 +156,25 @@ Primary sections:
 6. Exceptions and escalation
 7. Outputs, measures, and reuse
 
-Start by asking what successful output another person could reliably receive. Then capture one representative execution before abstracting the process.
+Start by asking what successful output another person could reliably receive. Then capture one representative execution before proposing a schedule. Never emit raw cron, schedule IDs, or activation success.
 
 Progressively reveal agent assignment, tools, permissions, claims, evaluation, credentials, payments, and publication as a Blueprint or POD.
+
+## Claims
+
+Purpose: coordinate evidence for a deed or claim collection.
+
+Primary sections:
+
+1. Claim purpose and collection
+2. Required evidence
+3. Eligibility or methodology
+4. Evidence gaps
+5. Review authority
+6. Exceptions
+7. Submission or next action
+
+Start with the deed or claim-collection binding and the evidence needed next. A reference does not grant access to the underlying bytes.
 
 ## Discussion
 
@@ -200,7 +216,7 @@ Keep these visible on first open:
 
 - outcome;
 - the principal working object;
-- one uncertainty or risk when material;
+- one material uncertainty, or an Impact-only risk for Incidents;
 - next action.
 
 Reveal the rest when:
