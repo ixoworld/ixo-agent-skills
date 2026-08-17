@@ -140,7 +140,13 @@ mkdir -p skills/your-skill-name
 ### 3. Validate Locally
 
 ```bash
+# Structural validation (folder name, SKILL.md frontmatter)
 ./scripts/validate-skill.sh skills/your-skill-name
+
+# Security scan with NVIDIA SkillSpector (optional but recommended).
+# Requires Python 3.12+ and SkillSpector installed — see the script's hint.
+# Use --no-llm for a fast static-only scan with no API key:
+./scripts/scan-skill.sh skills/your-skill-name --no-llm
 ```
 
 ### 4. Commit and Push
@@ -157,12 +163,18 @@ Go to GitHub and open a PR against the `main` branch. Fill out the PR template c
 
 ## Review Process
 
-All skills are reviewed before publishing. We check for:
+Every PR that touches `skills/**` is automatically scanned by
+[NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector), which checks for prompt
+injection, data exfiltration, malicious code, supply-chain risks, and other agent-skill
+threats. Results are posted as a PR comment, and a skill whose risk score exceeds the
+threshold will **fail the check and block merge** until the issue is resolved. This automated
+scan is a first pass — every skill is still reviewed by a human. We check for:
 
 ### Security
 - No malicious instructions or code
 - No attempts to exfiltrate data
 - No instructions to bypass safety measures
+- A clean (or justified) SkillSpector report
 
 ### Quality
 - Clear, well-written instructions

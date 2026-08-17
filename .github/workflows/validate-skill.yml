@@ -14,18 +14,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Get changed skills
-        id: changed-skills
+        env:
+          # Pass commit SHAs via env rather than inlining ${{ }} into the script.
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
-          # Get list of changed skill directories
-          CHANGED_SKILLS=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep '^skills/' | cut -d'/' -f2 | sort -u | tr '\n' ' ')
-          echo "skills=$CHANGED_SKILLS" >> $GITHUB_OUTPUT
-          echo "Changed skills: $CHANGED_SKILLS"
+          # Write changed skill directory names (one per line) to a file instead
+          # of a step output. The names come from untrusted PR contents, so they
+          # must be read as data — never interpolated into shell syntax.
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+            | grep '^skills/' | cut -d'/' -f2 | sort -u > changed-skills.txt
+          echo "Changed skills:"
+          cat changed-skills.txt
 
       - name: Validate each skill
         run: |
           ERRORS=0
 
-          for SKILL_NAME in ${{ steps.changed-skills.outputs.skills }}; do
+          # Read names as data (no shell expansion of untrusted input). The
+          # folder-name format check below still flags any malformed name.
+          while IFS= read -r SKILL_NAME; do
+            [ -n "$SKILL_NAME" ] || continue
             SKILL_DIR="skills/$SKILL_NAME"
             echo "::group::Validating $SKILL_NAME"
 
@@ -78,7 +87,7 @@ jobs:
 
             echo "Validation passed for $SKILL_NAME"
             echo "::endgroup::"
-          done
+          done < changed-skills.txt
 
           if [ $ERRORS -gt 0 ]; then
             echo "::error::Validation failed with $ERRORS error(s)"

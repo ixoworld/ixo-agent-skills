@@ -9,8 +9,12 @@ This is a community repository for AI agent skills that get published to the IXO
 ## Commands
 
 ```bash
-# Validate a skill locally before submitting
+# Validate a skill's structure locally before submitting
 ./scripts/validate-skill.sh skills/your-skill-name
+
+# Security-scan a skill with NVIDIA SkillSpector (mirrors the PR check).
+# Requires Python 3.12+ and SkillSpector; --no-llm runs static-only (no API key).
+./scripts/scan-skill.sh skills/your-skill-name --no-llm
 ```
 
 ## Repository Structure
@@ -122,6 +126,7 @@ AI agents execute scripts as black boxes via command line - they read SKILL.md f
 ## GitHub Actions
 
 - **validate-skill.yml**: Runs on PRs touching `skills/**`, validates folder name format, SKILL.md existence and frontmatter
+- **scan-skill.yml**: Runs on PRs touching `skills/**`, security-scans changed skills with [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector), comments results on the PR, and fails the check (blocks merge) when a skill's risk score exceeds the threshold. Uses the `nv_build` LLM provider when the `NVIDIA_INFERENCE_KEY` secret is set (e.g. same-repo PRs), otherwise falls back to static-only analysis (`--no-llm`)
 - **publish-skill.yml**: Runs on merge to main, packages changed skills as tar.gz and uploads to skills server using `SKILLS_API_KEY` secret
 
 ## Naming Conventions

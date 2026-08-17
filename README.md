@@ -67,7 +67,9 @@ See the [full specification](https://agentskills.io/specification) for details.
 
 ### 4. Submit a pull request
 
-Push your changes and open a PR. Our team will review your skill for:
+Push your changes and open a PR. Every PR is automatically security-scanned by
+[NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector) (results are posted as a PR
+comment, and a high risk score blocks merge). Our team will then review your skill for:
 - Correctness and quality
 - Security (no harmful prompts or scripts)
 - Compliance with the specification
@@ -102,10 +104,15 @@ Browse all available skills:
 
 ## Local Validation
 
-Before submitting, you can validate your skill locally:
+Before submitting, you can validate and security-scan your skill locally:
 
 ```bash
+# Structural validation (folder name, SKILL.md frontmatter)
 ./scripts/validate-skill.sh skills/your-skill-name
+
+# Security scan with NVIDIA SkillSpector (same tool the PR check runs).
+# Requires Python 3.12+ and SkillSpector; --no-llm runs static-only with no API key.
+./scripts/scan-skill.sh skills/your-skill-name --no-llm
 ```
 
 ## Contributing

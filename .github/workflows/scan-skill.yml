@@ -1,0 +1,186 @@
+name: Scan Skill (SkillSpector)
+
+# Security-scans skills changed in a PR using NVIDIA SkillSpector
+# (https://github.com/NVIDIA/SkillSpector). Detects prompt injection, data
+# exfiltration, malicious code, supply-chain and other agent-skill risks.
+#
+# The scan is a HARD GATE: SkillSpector exits non-zero when a skill's risk
+# score exceeds its threshold (> 50), which fails this check and blocks merge.
+#
+# Notes on fork PRs: PRs opened from forks do NOT receive repo secrets and get
+# a read-only token. In that case the scan automatically falls back to
+# static-only analysis (--no-llm) and the PR-comment step is best-effort; the
+# full report is always written to the workflow job summary, and the security
+# gate still applies because it relies only on the scanner's exit code.
+
+on:
+  pull_request:
+    paths:
+      - 'skills/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# Pin SkillSpector to a specific commit for reproducibility / supply-chain
+# safety (the project publishes no tags or PyPI package). Bump deliberately.
+env:
+  SKILLSPECTOR_REF: 2eb844780ab163f01468ecf142c40a2ec0fcaec0
+
+jobs:
+  scan:
+    name: Security scan changed skills
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Full history so the PR base commit is available for the diff.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install SkillSpector
+        run: |
+          python -m pip install --upgrade pip
+          pip install "git+https://github.com/NVIDIA/SkillSpector.git@${SKILLSPECTOR_REF}"
+
+      - name: Get changed skills
+        env:
+          # Pass commit SHAs via env rather than inlining ${{ }} into the script.
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          # Write changed skill directory names (one per line) to a file instead
+          # of into a step output. The names come from untrusted PR contents, so
+          # they must be read as data — never interpolated into shell syntax.
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+            | grep '^skills/' | cut -d'/' -f2 | sort -u > changed-skills.txt
+          echo "Changed skills:"
+          cat changed-skills.txt
+
+      - name: Run SkillSpector
+        id: scan
+        continue-on-error: true
+        env:
+          SKILLSPECTOR_PROVIDER: nv_build
+          NVIDIA_INFERENCE_KEY: ${{ secrets.NVIDIA_INFERENCE_KEY }}
+        run: |
+          # Do NOT use `set -e`: a non-zero scan must not abort the loop.
+          set -uo pipefail
+
+          FAILED=0
+          : > report.md
+
+          # Fall back to static-only analysis when no LLM key is available
+          # (e.g. PRs from forks, where secrets are not provided).
+          LLM_FLAG=""
+          if [ -z "${NVIDIA_INFERENCE_KEY:-}" ]; then
+            LLM_FLAG="--no-llm"
+            echo "> :warning: No \`NVIDIA_INFERENCE_KEY\` available — running static-only analysis (\`--no-llm\`). LLM semantic analysis is skipped." >> report.md
+            echo "" >> report.md
+          fi
+
+          if [ ! -s changed-skills.txt ]; then
+            echo "_No changed skill directories detected._" >> report.md
+          fi
+
+          # Read names from the file as data (no shell expansion of untrusted
+          # input). Redirecting from a file keeps the loop in the current shell,
+          # so FAILED set inside persists.
+          while IFS= read -r SKILL_NAME; do
+            [ -n "$SKILL_NAME" ] || continue
+
+            # Defense in depth: only process well-formed skill names. Anything
+            # with unexpected characters (e.g. shell metacharacters) is skipped,
+            # never used in a path or passed to a command.
+            if ! printf '%s' "$SKILL_NAME" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+              echo "::warning::Skipping unexpected skill directory name: $SKILL_NAME"
+              continue
+            fi
+
+            SKILL_DIR="skills/$SKILL_NAME"
+
+            # Skip if directory doesn't exist (was deleted in this PR)
+            if [ ! -d "$SKILL_DIR" ]; then
+              echo "Skipping $SKILL_NAME (deleted)"
+              continue
+            fi
+
+            echo "::group::Scanning $SKILL_NAME"
+            skillspector scan "$SKILL_DIR" $LLM_FLAG --format markdown --output "skillspector-$SKILL_NAME.md"
+            CODE=$?
+            echo "::endgroup::"
+
+            {
+              echo "## \`$SKILL_NAME\`"
+              echo ""
+              cat "skillspector-$SKILL_NAME.md"
+              echo ""
+            } >> report.md
+
+            if [ "$CODE" -gt 0 ]; then
+              echo "::error::SkillSpector flagged '$SKILL_NAME' (exit code $CODE — risk score over threshold)."
+              FAILED=1
+            fi
+          done < changed-skills.txt
+
+          # Always surface the full report in the Actions job summary.
+          {
+            echo "# :shield: SkillSpector security scan"
+            echo ""
+            cat report.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "failed=$FAILED" >> "$GITHUB_OUTPUT"
+
+      - name: Comment scan results on PR
+        if: always()
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          SCAN_FAILED: ${{ steps.scan.outputs.failed }}
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- skillspector-report -->';
+            let report = '';
+            try {
+              report = fs.readFileSync('report.md', 'utf8');
+            } catch (e) {
+              report = '_No report was produced._';
+            }
+            const status = process.env.SCAN_FAILED === '1'
+              ? ':x: **One or more skills exceeded the risk threshold — this check is failing and blocks merge.**'
+              : ':white_check_mark: **No skills exceeded the risk threshold.**';
+            const body = [
+              marker,
+              '## :shield: SkillSpector security scan',
+              '',
+              status,
+              '',
+              report,
+              '',
+              '<sub>Automated scan by [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector). This is a first-pass check, not a substitute for human review.</sub>',
+            ].join('\n');
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+      - name: Enforce security gate
+        if: steps.scan.outputs.failed == '1'
+        run: |
+          echo "::error::SkillSpector flagged one or more skills (risk score over threshold). See the PR comment / job summary for details."
+          exit 1
