@@ -1,0 +1,1511 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "@context": {
+      "type": "object",
+      "properties": {
+        "ixo": {
+          "type": "string",
+          "const": "https://w3id.org/ixo/ns/protocol/"
+        },
+        "@id": {
+          "type": "string",
+          "const": "@type"
+        },
+        "type": {
+          "type": "string",
+          "const": "@type"
+        },
+        "@protected": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": [
+        "ixo",
+        "@id",
+        "type",
+        "@protected"
+      ],
+      "additionalProperties": false
+    },
+    "type": {
+      "type": "string",
+      "const": "ixo:entity#rubric"
+    },
+    "rubric": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "title": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "description": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "claimSchema": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "derived": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "sources": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "aiChecks": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "unique": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "frequency": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "gates": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "scoring": {
+          "$ref": "#/$defs/__schema25"
+        },
+        "review": {
+          "$ref": "#/$defs/__schema38"
+        },
+        "settlement": {
+          "$ref": "#/$defs/__schema41"
+        }
+      },
+      "required": [
+        "@type",
+        "claimSchema"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "gates"
+          ]
+        },
+        {
+          "required": [
+            "scoring"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "@context",
+    "type",
+    "rubric"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "const": "Rubric"
+    },
+    "__schema1": {
+      "type": "string"
+    },
+    "__schema2": {
+      "type": "string"
+    },
+    "__schema3": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "ClaimSchemaBinding"
+        },
+        "protocol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resource": {
+          "type": "string",
+          "const": "#vct"
+        },
+        "proof": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "@type",
+        "protocol",
+        "resource",
+        "proof"
+      ],
+      "additionalProperties": false
+    },
+    "__schema4": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "@type": {
+            "type": "string",
+            "const": "Derived"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "expr": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "@type",
+          "name",
+          "expr"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "__schema5": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "@type": {
+            "type": "string",
+            "const": "ExternalSource"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "endpoint": {
+            "type": "string",
+            "pattern": "^https?:\\/\\/.+"
+          },
+          "audience": {
+            "type": "string",
+            "pattern": "^did:web:.+"
+          },
+          "capability": {
+            "type": "object",
+            "properties": {
+              "can": {
+                "type": "string",
+                "minLength": 1
+              },
+              "with": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "can",
+              "with"
+            ],
+            "additionalProperties": false
+          },
+          "send": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          },
+          "expect": {
+            "type": "string",
+            "enum": [
+              "boolean",
+              "score"
+            ]
+          },
+          "provenance": {
+            "$ref": "#/$defs/__schema6"
+          },
+          "onError": {
+            "type": "string",
+            "enum": [
+              "review",
+              "reject"
+            ]
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 30000
+          }
+        },
+        "required": [
+          "@type",
+          "name",
+          "endpoint",
+          "audience",
+          "send",
+          "expect"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "__schema6": {
+      "type": "string",
+      "enum": [
+        "server_verified",
+        "attested",
+        "client_assisted"
+      ]
+    },
+    "__schema7": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "@type": {
+            "type": "string",
+            "const": "AiCheck"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "send": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          },
+          "instructions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema8"
+            }
+          },
+          "expect": {
+            "type": "string",
+            "const": "boolean"
+          },
+          "onError": {
+            "type": "string",
+            "enum": [
+              "review",
+              "reject"
+            ]
+          }
+        },
+        "required": [
+          "@type",
+          "name",
+          "send",
+          "instructions",
+          "expect"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "__schema8": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema9": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "Unique"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string"
+        },
+        "by": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema10"
+          }
+        },
+        "countPrior": {
+          "default": [
+            "approved",
+            "pending_review",
+            "queued"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "pending_review",
+              "queued"
+            ]
+          }
+        },
+        "attachments": {
+          "default": true,
+          "type": "boolean"
+        },
+        "ai": {
+          "default": {
+            "enabled": true,
+            "maxPairs": 3
+          },
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "type": "boolean"
+            },
+            "maxPairs": {
+              "default": 3,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            }
+          },
+          "additionalProperties": false
+        },
+        "thresholds": {
+          "default": {
+            "rejectAtBps": 9000,
+            "reviewAtBps": 5000
+          },
+          "type": "object",
+          "properties": {
+            "rejectAtBps": {
+              "$ref": "#/$defs/__schema11"
+            },
+            "reviewAtBps": {
+              "$ref": "#/$defs/__schema13"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "@type",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "__schema10": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "granularity": {
+              "type": "string",
+              "enum": [
+                "day",
+                "month",
+                "year"
+              ]
+            }
+          },
+          "required": [
+            "ref"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "__schema11": {
+      "default": 9000,
+      "$ref": "#/$defs/__schema12"
+    },
+    "__schema12": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "__schema13": {
+      "default": 5000,
+      "$ref": "#/$defs/__schema12"
+    },
+    "__schema14": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "Frequency"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string"
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "per": {
+          "type": "string",
+          "enum": [
+            "day",
+            "week",
+            "month",
+            "year"
+          ]
+        },
+        "onBreach": {
+          "default": "review",
+          "type": "string",
+          "enum": [
+            "review",
+            "reject"
+          ]
+        }
+      },
+      "required": [
+        "@type",
+        "id",
+        "max",
+        "per"
+      ],
+      "additionalProperties": false
+    },
+    "__schema15": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "@type": {
+            "type": "string",
+            "const": "Gate"
+          },
+          "code": {
+            "$ref": "#/$defs/__schema16"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "appliesWhen": {
+            "$ref": "#/$defs/__schema17"
+          },
+          "when": {
+            "$ref": "#/$defs/__schema17"
+          },
+          "onFail": {
+            "type": "string",
+            "enum": [
+              "reject",
+              "review"
+            ]
+          },
+          "class": {
+            "type": "string",
+            "enum": [
+              "refuted",
+              "invalid_evidence",
+              "out_of_authority",
+              "insufficient_evidence",
+              "requires_human_review"
+            ]
+          }
+        },
+        "required": [
+          "@type",
+          "code",
+          "when",
+          "class"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "__schema16": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+-[0-9]+-[A-Z0-9-]+$"
+    },
+    "__schema17": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "@type": {
+              "type": "string",
+              "const": "Condition"
+            },
+            "field": {
+              "$ref": "#/$defs/__schema18"
+            },
+            "op": {
+              "type": "string",
+              "enum": [
+                "present",
+                "empty",
+                "==",
+                "!=",
+                ">",
+                ">=",
+                "<",
+                "<=",
+                "between",
+                "approx",
+                "in",
+                "notIn",
+                "matches",
+                "startsWith",
+                "endsWith",
+                "lengthBetween",
+                "contains",
+                "containsAll",
+                "containsAny",
+                "subsetOf",
+                "countBetween",
+                "isTrue",
+                "isFalse",
+                "before",
+                "after",
+                "withinWindow",
+                "withinDays",
+                "notInFuture",
+                "mediaTypeIn",
+                "maxSizeMB",
+                "withinBoundary",
+                "withinRadius"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/__schema21"
+            },
+            "tolerance": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "@type",
+            "field",
+            "op"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "@type": {
+              "type": "string",
+              "const": "Condition"
+            },
+            "forEach": {
+              "$ref": "#/$defs/__schema19"
+            },
+            "every": {
+              "$ref": "#/$defs/__schema17"
+            }
+          },
+          "required": [
+            "@type",
+            "forEach",
+            "every"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "@type": {
+              "type": "string",
+              "const": "Condition"
+            },
+            "forEach": {
+              "$ref": "#/$defs/__schema19"
+            },
+            "some": {
+              "$ref": "#/$defs/__schema17"
+            }
+          },
+          "required": [
+            "@type",
+            "forEach",
+            "some"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "@type": {
+              "type": "string",
+              "const": "Condition"
+            },
+            "all": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema17"
+              }
+            }
+          },
+          "required": [
+            "@type",
+            "all"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "@type": {
+              "type": "string",
+              "const": "Condition"
+            },
+            "any": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema17"
+              }
+            }
+          },
+          "required": [
+            "@type",
+            "any"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "@type": {
+              "type": "string",
+              "const": "Condition"
+            },
+            "not": {
+              "$ref": "#/$defs/__schema17"
+            }
+          },
+          "required": [
+            "@type",
+            "not"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "@type": {
+              "$ref": "#/$defs/__schema22"
+            },
+            "atLeast": {
+              "$ref": "#/$defs/__schema23"
+            },
+            "of": {
+              "$ref": "#/$defs/__schema24"
+            }
+          },
+          "required": [
+            "@type",
+            "atLeast",
+            "of"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "__schema18": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema19"
+        },
+        {
+          "type": "string",
+          "pattern": "^\\.[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+|\\[\\*\\])*$"
+        },
+        {
+          "$ref": "#/$defs/__schema20"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "ctx.now",
+            "ctx.collection.startDate",
+            "ctx.collection.endDate",
+            "ctx.claim.submitter",
+            "ctx.claim.submitterAddress",
+            "ctx.claim.submissionDate",
+            "ctx.submitter.priorClaimCount",
+            "ctx.submitter.priorApprovedCount",
+            "ctx.collection.projectBoundary"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^ext\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
+        },
+        {
+          "type": "string",
+          "pattern": "^ai\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
+        }
+      ]
+    },
+    "__schema19": {
+      "type": "string",
+      "pattern": "^\\$[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+|\\[\\*\\])*$"
+    },
+    "__schema20": {
+      "type": "string",
+      "pattern": "^~[A-Za-z0-9_-]+$"
+    },
+    "__schema21": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema21"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema21"
+          }
+        }
+      ]
+    },
+    "__schema22": {
+      "type": "string",
+      "const": "Condition"
+    },
+    "__schema23": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "__schema24": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema17"
+      }
+    },
+    "__schema25": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/__schema26"
+        },
+        {
+          "$ref": "#/$defs/__schema37"
+        }
+      ]
+    },
+    "__schema26": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "$ref": "#/$defs/__schema27"
+        },
+        "approveAt": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "partialFloor": {
+          "$ref": "#/$defs/__schema28"
+        },
+        "reviewFloor": {
+          "$ref": "#/$defs/__schema29"
+        },
+        "criteria": {
+          "$ref": "#/$defs/__schema30"
+        },
+        "method": {
+          "type": "string",
+          "const": "quorum"
+        },
+        "quorum": {
+          "type": "object",
+          "properties": {
+            "need": {
+              "$ref": "#/$defs/__schema35"
+            },
+            "of": {
+              "$ref": "#/$defs/__schema36"
+            }
+          },
+          "required": [
+            "need",
+            "of"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "@type",
+        "approveAt",
+        "criteria",
+        "method",
+        "quorum"
+      ],
+      "additionalProperties": false
+    },
+    "__schema27": {
+      "type": "string",
+      "const": "Scoring"
+    },
+    "__schema28": {
+      "$ref": "#/$defs/__schema12"
+    },
+    "__schema29": {
+      "$ref": "#/$defs/__schema12"
+    },
+    "__schema30": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "@type": {
+            "type": "string",
+            "const": "Criterion"
+          },
+          "code": {
+            "$ref": "#/$defs/__schema16"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "critical": {
+            "type": "boolean"
+          },
+          "min": {
+            "$ref": "#/$defs/__schema12"
+          },
+          "appliesWhen": {
+            "$ref": "#/$defs/__schema17"
+          },
+          "requireSource": {
+            "$ref": "#/$defs/__schema6"
+          },
+          "trustCap": {
+            "$ref": "#/$defs/__schema12"
+          },
+          "score": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "@type": {
+                    "type": "string",
+                    "const": "BooleanScore"
+                  },
+                  "when": {
+                    "$ref": "#/$defs/__schema17"
+                  },
+                  "onTrue": {
+                    "$ref": "#/$defs/__schema12"
+                  },
+                  "onFalse": {
+                    "$ref": "#/$defs/__schema12"
+                  }
+                },
+                "required": [
+                  "@type",
+                  "when",
+                  "onTrue",
+                  "onFalse"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@type": {
+                    "type": "string",
+                    "const": "BandsScore"
+                  },
+                  "value": {
+                    "$ref": "#/$defs/__schema18"
+                  },
+                  "bands": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/__schema31"
+                    }
+                  }
+                },
+                "required": [
+                  "@type",
+                  "value",
+                  "bands"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@type": {
+                    "type": "string",
+                    "const": "LinearScore"
+                  },
+                  "value": {
+                    "$ref": "#/$defs/__schema18"
+                  },
+                  "zeroAt": {
+                    "$ref": "#/$defs/__schema32"
+                  },
+                  "fullAt": {
+                    "$ref": "#/$defs/__schema32"
+                  },
+                  "clamp": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "@type",
+                  "value",
+                  "zeroAt",
+                  "fullAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@type": {
+                    "type": "string",
+                    "const": "LevelsScore"
+                  },
+                  "levels": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/__schema33"
+                    }
+                  }
+                },
+                "required": [
+                  "@type",
+                  "levels"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@type": {
+                    "type": "string",
+                    "const": "MapScore"
+                  },
+                  "value": {
+                    "$ref": "#/$defs/__schema18"
+                  },
+                  "map": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "$ref": "#/$defs/__schema12"
+                    }
+                  },
+                  "default": {
+                    "$ref": "#/$defs/__schema12"
+                  }
+                },
+                "required": [
+                  "@type",
+                  "value",
+                  "map"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@type": {
+                    "type": "string",
+                    "const": "DeductionsScore"
+                  },
+                  "start": {
+                    "$ref": "#/$defs/__schema12"
+                  },
+                  "floor": {
+                    "$ref": "#/$defs/__schema12"
+                  },
+                  "deduct": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/__schema34"
+                    }
+                  }
+                },
+                "required": [
+                  "@type",
+                  "start",
+                  "deduct"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@type": {
+                    "type": "string",
+                    "const": "ManualScore"
+                  },
+                  "field": {
+                    "$ref": "#/$defs/__schema19"
+                  },
+                  "whenMissing": {
+                    "$ref": "#/$defs/__schema12"
+                  },
+                  "reviewTask": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "@type",
+                  "field",
+                  "reviewTask"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "@type",
+          "code",
+          "weight",
+          "score"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "__schema31": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "==",
+                ">",
+                ">=",
+                "<",
+                "<="
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/__schema32"
+            },
+            "points": {
+              "$ref": "#/$defs/__schema12"
+            }
+          },
+          "required": [
+            "op",
+            "value",
+            "points"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "else": {
+              "type": "boolean",
+              "const": true
+            },
+            "points": {
+              "$ref": "#/$defs/__schema12"
+            }
+          },
+          "required": [
+            "else",
+            "points"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "__schema32": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "$ref": "#/$defs/__schema20"
+        }
+      ]
+    },
+    "__schema33": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "when": {
+              "$ref": "#/$defs/__schema17"
+            },
+            "points": {
+              "$ref": "#/$defs/__schema12"
+            }
+          },
+          "required": [
+            "name",
+            "when",
+            "points"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "else": {
+              "type": "boolean",
+              "const": true
+            },
+            "points": {
+              "$ref": "#/$defs/__schema12"
+            }
+          },
+          "required": [
+            "name",
+            "else",
+            "points"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "__schema34": {
+      "type": "object",
+      "properties": {
+        "when": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "points": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "code": {
+          "$ref": "#/$defs/__schema16"
+        }
+      },
+      "required": [
+        "when",
+        "points",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "__schema35": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "__schema36": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "__schema37": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "$ref": "#/$defs/__schema27"
+        },
+        "approveAt": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "partialFloor": {
+          "$ref": "#/$defs/__schema28"
+        },
+        "reviewFloor": {
+          "$ref": "#/$defs/__schema29"
+        },
+        "criteria": {
+          "$ref": "#/$defs/__schema30"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "weighted_average",
+            "all_pass",
+            "minimum"
+          ]
+        }
+      },
+      "required": [
+        "@type",
+        "approveAt",
+        "criteria",
+        "method"
+      ],
+      "additionalProperties": false
+    },
+    "__schema38": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "HumanReview"
+        },
+        "assignTo": {
+          "type": "object",
+          "properties": {
+            "role": {
+              "type": "string",
+              "minLength": 1
+            },
+            "assigneeDid": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "role"
+          ],
+          "additionalProperties": false
+        },
+        "route": {
+          "type": "object",
+          "properties": {
+            "matrixRoom": {
+              "type": "string",
+              "pattern": "^[!#][^\\s:]+:.+$"
+            }
+          },
+          "required": [
+            "matrixRoom"
+          ],
+          "additionalProperties": false
+        },
+        "slaHours": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "onTimeout": {
+          "type": "string",
+          "const": "reject"
+        },
+        "tasks": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema39"
+          }
+        }
+      },
+      "required": [
+        "@type",
+        "tasks"
+      ],
+      "additionalProperties": false
+    },
+    "__schema39": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "ReviewTask"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "forCriterion": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "show": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema19"
+          }
+        },
+        "answer": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "boolean"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "enum"
+                },
+                "options": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/__schema40"
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "options"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "map": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "partial",
+              "reject"
+            ]
+          }
+        }
+      },
+      "required": [
+        "@type",
+        "id",
+        "answer",
+        "map"
+      ],
+      "additionalProperties": false
+    },
+    "__schema40": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema41": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "Settlement"
+        },
+        "onApprove": {
+          "type": "object",
+          "properties": {
+            "pay": {
+              "type": "string",
+              "const": "approval"
+            }
+          },
+          "required": [
+            "pay"
+          ],
+          "additionalProperties": false
+        },
+        "onPartial": {
+          "type": "object",
+          "properties": {
+            "pay": {
+              "type": "string",
+              "const": "approval"
+            },
+            "prorateBy": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "total",
+                    "none"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/__schema20"
+                },
+                {
+                  "$ref": "#/$defs/__schema19"
+                }
+              ]
+            }
+          },
+          "required": [
+            "pay"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "@type"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

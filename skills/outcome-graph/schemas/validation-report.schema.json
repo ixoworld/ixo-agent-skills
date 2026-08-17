@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/validation-report.v1.json",
+  "title": "ValidationReport",
+  "description": "Adjudication-zone artifact (determinism_class: deterministic where produced by tools; agent judgments are recorded as findings with extraction_method ai_inferred). Aggregates findings from the three validation passes (semantic, structural/causal, empirical — references/causal-checks.md) plus admissibility findings, records edge status changes with their basis, and states the attainable tier.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.validation-report.v1" },
+    "report_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+    "workflow_id": { "type": "string" },
+    "graph_version_ref": { "type": "string" },
+    "evidence_graph_ref": { "type": ["string", "null"] },
+    "ran_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/validation_finding" }
+    },
+    "pass_summary": {
+      "type": "object",
+      "properties": {
+        "passes": { "type": "integer", "minimum": 0 },
+        "failures": { "type": "integer", "minimum": 0 },
+        "warnings": { "type": "integer", "minimum": 0 },
+        "blocking_count": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["passes", "failures", "warnings", "blocking_count"],
+      "additionalProperties": false
+    },
+    "edge_status_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "edge_id": { "type": "string" },
+          "from": { "$ref": "common.defs.v1.json#/$defs/validation_status" },
+          "to": { "$ref": "common.defs.v1.json#/$defs/validation_status" },
+          "basis": {
+            "type": "string",
+            "description": "finding_id(s) or engine evaluation that justify the change. Status never changes without a recorded basis."
+          }
+        },
+        "required": ["edge_id", "from", "to", "basis"],
+        "additionalProperties": false
+      }
+    },
+    "engine_evaluations": {
+      "type": "array",
+      "description": "Records of node/edge claims evaluated by the evals-engine (discovered via its cron after on-chain submission), with verdict classes mapped onto edge statuses per references/causal-checks.md.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim_id": { "type": "string", "description": "CIDv1(raw, sha256) of the claim body — the engine's claim identity and evaluated-once mutex." },
+          "claim_class": { "type": "string", "description": "The impact claim class (protocol entity ref or its impact.* label)." },
+          "target_kind": { "type": "string", "enum": ["node", "edge", "graph"] },
+          "target_id": { "type": "string" },
+          "verdict": { "$ref": "common.defs.v1.json#/$defs/engine_verdict" },
+          "verdict_class": { "$ref": "common.defs.v1.json#/$defs/engine_verdict_class" },
+          "chain_status": { "$ref": "common.defs.v1.json#/$defs/engine_chain_status" },
+          "rubric_id": { "type": "string", "description": "sha256 hex of the governing rubric bytes (= its on-chain LinkedResource proof)." },
+          "result_digest": { "type": "string" },
+          "receipt_cid": { "type": "string", "description": "CID of the signed receipt (public at GET /v1/receipts/:cid)." }
+        },
+        "required": ["claim_id", "claim_class", "target_kind", "target_id", "verdict", "verdict_class"],
+        "additionalProperties": false
+      }
+    },
+    "graph_status_recommendation": {
+      "type": "string",
+      "enum": ["validated", "review_required", "rejected"]
+    },
+    "attainable_tier": {
+      "type": "object",
+      "description": "Computed, never chosen (references/claim-tiers.md rule 1).",
+      "properties": {
+        "tier": { "$ref": "common.defs.v1.json#/$defs/tier" },
+        "capped_by": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "finding_ids, gap_ids, or edge_ids that cap the tier."
+        }
+      },
+      "required": ["tier", "capped_by"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["schema", "report_id", "workflow_id", "graph_version_ref", "ran_at", "findings", "pass_summary", "edge_status_changes", "graph_status_recommendation", "attainable_tier"],
+  "additionalProperties": false,
+  "$defs": {
+    "validation_finding": {
+      "type": "object",
+      "properties": {
+        "finding_id": { "type": "string" },
+        "check_id": {
+          "type": "string",
+          "pattern": "^(SEM|DAG|EDGE|ID|EMP|ADM)-[0-9]{2}$",
+          "description": "Check registry id from references/causal-checks.md (ADM-* = admissibility gates from references/evidence-admissibility.md)."
+        },
+        "layer": { "$ref": "common.defs.v1.json#/$defs/validation_layer" },
+        "target_kind": { "type": "string", "enum": ["node", "edge", "graph", "link", "artifact", "assumption"] },
+        "target_id": { "type": "string" },
+        "status": { "$ref": "common.defs.v1.json#/$defs/check_status" },
+        "severity": { "$ref": "common.defs.v1.json#/$defs/check_severity" },
+        "summary": { "type": "string" },
+        "rationale": { "type": "string" },
+        "produced_by": {
+          "type": "string",
+          "enum": ["deterministic_tool", "agent_judgment", "human_review"],
+          "description": "Graph-level DAG-* checks MUST be deterministic_tool (scripts/check-graph.mjs) — never agent eyeball."
+        },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["finding_id", "check_id", "layer", "target_kind", "target_id", "status", "severity", "summary", "produced_by"],
+      "additionalProperties": false
+    }
+  }
+}

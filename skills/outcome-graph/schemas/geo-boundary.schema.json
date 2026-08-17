@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/geo-boundary.v1.json",
+  "title": "GeoBoundary",
+  "description": "A program's canonical geographic boundary plus its registered reference points (withinRadius centers). The `boundary` member is the content-addressed payload: boundary_id = urn:ixo:geo-boundary:<CIDv1(raw, sha256)> of its canonical-JSON bytes (sorted keys, no whitespace), verified by the graph oracle before every geo answer and anchorable verbatim as a collection LinkedResource when the engine's geo v2 surface activates (rfc-005 §3.2). Geometry is always a MultiPolygon of closed integer micro-degree rings — exterior counterclockwise, holes clockwise, no edge spanning the antimeridian (RFC 7946 §3.1.9 pre-split). Ring closure, winding, and edge-span rules exceed JSON Schema and are enforced by scripts/lib/geo.mjs validateBoundary(). Re-drawing a boundary is a new artifact with a new address, never an edit.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.geo-boundary.v1" },
+    "boundary_id": {
+      "$ref": "common.defs.v1.json#/$defs/content_addressed_uri",
+      "description": "urn:ixo:geo-boundary:<cid of canonical `boundary` bytes>."
+    },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "program_ref": { "type": "string", "description": "The causal graph's stable graph_id this geography belongs to." },
+    "source": { "type": "string", "description": "Provenance note: where the geometry was digitized from." },
+    "boundary": {
+      "type": "object",
+      "description": "The content-addressed payload — every byte is load-bearing.",
+      "properties": {
+        "units": { "const": "microdegrees" },
+        "geometry": {
+          "type": "object",
+          "properties": {
+            "type": { "const": "MultiPolygon" },
+            "coordinates": {
+              "type": "array",
+              "minItems": 1,
+              "description": "polygons → rings (exterior first, then holes) → closed position lists.",
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "array",
+                  "minItems": 4,
+                  "items": { "$ref": "#/$defs/position" }
+                }
+              }
+            }
+          },
+          "required": ["type", "coordinates"],
+          "additionalProperties": false
+        },
+        "reference_points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "point_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+              "label": { "type": "string" },
+              "lon": { "$ref": "#/$defs/lon_micro" },
+              "lat": { "$ref": "#/$defs/lat_micro" }
+            },
+            "required": ["point_id", "label", "lon", "lat"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["units", "geometry", "reference_points"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["schema", "boundary_id", "title", "boundary"],
+  "additionalProperties": false,
+  "$defs": {
+    "position": {
+      "type": "array",
+      "prefixItems": [{ "$ref": "#/$defs/lon_micro" }, { "$ref": "#/$defs/lat_micro" }],
+      "minItems": 2,
+      "maxItems": 2,
+      "items": false,
+      "description": "[lonMicro, latMicro] — integer micro-degrees (1e-6°)."
+    },
+    "lon_micro": { "type": "integer", "minimum": -180000000, "maximum": 180000000 },
+    "lat_micro": { "type": "integer", "minimum": -90000000, "maximum": 90000000 }
+  }
+}

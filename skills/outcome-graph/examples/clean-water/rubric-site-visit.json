@@ -1,0 +1,184 @@
+{
+  "@context": {
+    "ixo": "https://w3id.org/ixo/ns/protocol/",
+    "@id": "@type",
+    "type": "@type",
+    "@protected": true
+  },
+  "type": "ixo:entity#rubric",
+  "rubric": {
+    "@type": "Rubric",
+    "title": "Outcome Graph — water point site visit (WASH v0)",
+    "description": "Evaluates site-visit claims for rehabilitated water points. Geo admissibility runs through the outcome-graph oracle's digest-verified checks (rfc-005 ExternalSource plan — owner read 2026-08-16: native geo activation is not expected in the next few milestones, so this is the anchorable form for ~2 quarters): the capture location must lie inside the program catchment (within-boundary, on-boundary counts as within) and within 250 m of the named registered water point (within-radius, cos at the registered point's latitude). The catchment's content address is pinned in gate OSV-001, making the exact boundary geometry part of this rubric's hash; the 250 m radius is pinned in the source's send payload. Coordinates travel as integer micro-degrees — the oracle rejects float degrees. The v2-pending twin (v2-pending/rubric-site-visit.json) expresses the same checks as native withinBoundary/withinRadius operators, ready for devnet the day the binder accepts them.",
+    "claimSchema": {
+      "@type": "ClaimSchemaBinding",
+      "protocol": "did:ixo:entity:outcome-site-visit-v0",
+      "resource": "#vct",
+      "proof": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "sources": [
+      {
+        "@type": "ExternalSource",
+        "name": "sitegeo",
+        "endpoint": "https://graph-oracle.outcome.ixo.world/v1/checks/within-boundary",
+        "audience": "did:web:graph-oracle.outcome.ixo.world",
+        "send": {
+          "boundaryRef": "$boundaryRef",
+          "lat": "$captureLat",
+          "lon": "$captureLon"
+        },
+        "expect": "boolean",
+        "provenance": "server_verified",
+        "onError": "review",
+        "timeoutMs": 15000
+      },
+      {
+        "@type": "ExternalSource",
+        "name": "assetgeo",
+        "endpoint": "https://graph-oracle.outcome.ixo.world/v1/checks/within-radius",
+        "audience": "did:web:graph-oracle.outcome.ixo.world",
+        "send": {
+          "boundaryRef": "$boundaryRef",
+          "pointId": "$waterPointId",
+          "lat": "$captureLat",
+          "lon": "$captureLon",
+          "radiusMeters": 250
+        },
+        "expect": "boolean",
+        "provenance": "server_verified",
+        "onError": "review",
+        "timeoutMs": 15000
+      }
+    ],
+    "unique": {
+      "@type": "Unique",
+      "id": "one-visit-per-point-per-date",
+      "label": "One site-visit claim per water point per visit date",
+      "by": ["$waterPointId", "$visitDate"]
+    },
+    "gates": [
+      {
+        "@type": "Gate",
+        "code": "OSV-001-BOUNDARY-PIN",
+        "reason": "Claim must cite the program's anchored catchment boundary — the content address is inside this rubric's hash, so a re-drawn boundary is a new rubric",
+        "when": {
+          "@type": "Condition",
+          "field": "$boundaryRef",
+          "op": "==",
+          "value": "urn:ixo:geo-boundary:bafkreic6fazol2t6xoty4r65lxeilqjqeoow3jjxhr57lzuym3iveej3ze"
+        },
+        "class": "invalid_evidence"
+      },
+      {
+        "@type": "Gate",
+        "code": "OSV-002-POINT-PIN",
+        "reason": "Claim must name the registered water point visited",
+        "when": {
+          "@type": "Condition",
+          "field": "$waterPointId",
+          "op": "present"
+        },
+        "class": "invalid_evidence"
+      },
+      {
+        "@type": "Gate",
+        "code": "OSV-003-IN-CATCHMENT",
+        "reason": "Capture location must lie within the program catchment (on-boundary counts as within; quarry exclusion hole is outside)",
+        "when": {
+          "@type": "Condition",
+          "field": "ext.sitegeo.valid",
+          "op": "isTrue"
+        },
+        "class": "out_of_authority"
+      },
+      {
+        "@type": "Gate",
+        "code": "OSV-004-NEAR-ASSET",
+        "reason": "Capture location must be within 250 m of the registered water point; GPS drift goes to review, not rejection",
+        "when": {
+          "@type": "Condition",
+          "field": "ext.assetgeo.valid",
+          "op": "isTrue"
+        },
+        "onFail": "review",
+        "class": "requires_human_review"
+      },
+      {
+        "@type": "Gate",
+        "code": "OSV-005-CAPTURE-DATED",
+        "reason": "Capture timestamp must not be in the future",
+        "when": {
+          "@type": "Condition",
+          "field": "$capturedAt",
+          "op": "notInFuture"
+        },
+        "class": "invalid_evidence"
+      }
+    ],
+    "scoring": {
+      "@type": "Scoring",
+      "method": "weighted_average",
+      "approveAt": 8000,
+      "partialFloor": 6500,
+      "reviewFloor": 5000,
+      "criteria": [
+        {
+          "@type": "Criterion",
+          "code": "OSC-101-SITE-GEO",
+          "reason": "Geo binding: in-catchment verdict from the digest-verified boundary via the outcome-graph oracle",
+          "weight": 5,
+          "critical": true,
+          "min": 5000,
+          "requireSource": "server_verified",
+          "score": {
+            "@type": "BooleanScore",
+            "when": {
+              "@type": "Condition",
+              "field": "ext.sitegeo.valid",
+              "op": "isTrue"
+            },
+            "onTrue": 10000,
+            "onFalse": 0
+          }
+        },
+        {
+          "@type": "Criterion",
+          "code": "OSC-102-PHOTO",
+          "reason": "Site photo attached in an accepted image format",
+          "weight": 2,
+          "score": {
+            "@type": "BooleanScore",
+            "when": {
+              "@type": "Condition",
+              "field": "$sitePhoto",
+              "op": "mediaTypeIn",
+              "value": ["image/jpeg", "image/png"]
+            },
+            "onTrue": 10000,
+            "onFalse": 2000
+          }
+        },
+        {
+          "@type": "Criterion",
+          "code": "OSC-103-FLOW",
+          "reason": "Measured flow rate at the rehabilitated point (claimant-supplied, trust-capped)",
+          "weight": 3,
+          "trustCap": 8000,
+          "score": {
+            "@type": "BandsScore",
+            "value": "$flowLitersPerHour",
+            "bands": [
+              { "op": ">=", "value": 600, "points": 10000 },
+              { "op": ">=", "value": 300, "points": 8000 },
+              { "else": true, "points": 3000 }
+            ]
+          }
+        }
+      ]
+    },
+    "settlement": {
+      "@type": "Settlement",
+      "onApprove": { "pay": "approval" }
+    }
+  }
+}

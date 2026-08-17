@@ -1,0 +1,221 @@
+{
+  "@context": {
+    "ixo": "https://w3id.org/ixo/ns/protocol/",
+    "@id": "@type",
+    "type": "@type",
+    "@protected": true
+  },
+  "type": "ixo:entity#rubric",
+  "rubric": {
+    "@type": "Rubric",
+    "title": "Outcome Graph — causal link verification (WASH v0)",
+    "description": "Evaluates edge claims of the clean-water outcome graph: the claimed causal link must reference a pinned graph version, pass evidence admissibility via the outcome-graph oracle, carry verified supporting claims, and clear weighted criteria for graph validation, mechanism quality, and comparison coverage. Contested effect evidence routes to an analyst review task.",
+    "claimSchema": {
+      "@type": "ClaimSchemaBinding",
+      "protocol": "did:ixo:entity:outcome-causal-link-v0",
+      "resource": "#vct",
+      "proof": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "sources": [
+      {
+        "@type": "ExternalSource",
+        "name": "graphedge",
+        "endpoint": "https://graph-oracle.outcome.ixo.world/v1/checks/edge-validation-score",
+        "audience": "did:web:graph-oracle.outcome.ixo.world",
+        "send": {
+          "graphVersionRef": "$graphVersionRef",
+          "edgeId": "$edgeId"
+        },
+        "expect": "score",
+        "provenance": "server_verified",
+        "onError": "review",
+        "timeoutMs": 15000
+      },
+      {
+        "@type": "ExternalSource",
+        "name": "adm",
+        "endpoint": "https://graph-oracle.outcome.ixo.world/v1/checks/edge-evidence-admissible",
+        "audience": "did:web:graph-oracle.outcome.ixo.world",
+        "send": {
+          "graphVersionRef": "$graphVersionRef",
+          "edgeId": "$edgeId"
+        },
+        "expect": "boolean",
+        "provenance": "server_verified",
+        "onError": "review",
+        "timeoutMs": 15000
+      }
+    ],
+    "aiChecks": [
+      {
+        "@type": "AiCheck",
+        "name": "mechanism",
+        "send": {
+          "mechanism": "$mechanism",
+          "sourceLabel": "$sourceNodeLabel",
+          "targetLabel": "$targetNodeLabel"
+        },
+        "instructions": [
+          "The mechanism text must describe a concrete process by which the source variable changes the target variable",
+          "The mechanism text must not merely restate that the source leads to or causes the target",
+          "The mechanism text must be consistent with the direction of effect implied by the source and target labels"
+        ],
+        "expect": "boolean",
+        "onError": "review"
+      }
+    ],
+    "unique": {
+      "@type": "Unique",
+      "id": "edge-per-graph-version",
+      "label": "One edge claim per graph version",
+      "by": ["$graphVersionRef", "$edgeId"]
+    },
+    "gates": [
+      {
+        "@type": "Gate",
+        "code": "OGL-001-GRAPH-PIN",
+        "reason": "Claim must reference a content-addressed causal graph version",
+        "when": {
+          "@type": "Condition",
+          "field": "$graphVersionRef",
+          "op": "matches",
+          "value": "^urn:ixo:causal-graph:[A-Za-z0-9._-]+$"
+        },
+        "class": "invalid_evidence"
+      },
+      {
+        "@type": "Gate",
+        "code": "OGL-002-EDGE-PIN",
+        "reason": "Claim must name the edge under evaluation",
+        "when": {
+          "@type": "Condition",
+          "field": "$edgeId",
+          "op": "present"
+        },
+        "class": "invalid_evidence"
+      },
+      {
+        "@type": "Gate",
+        "code": "OGL-003-ADMISSIBLE",
+        "reason": "Edge evidence must pass admissibility in the outcome-graph oracle",
+        "when": {
+          "@type": "Condition",
+          "field": "ext.adm.valid",
+          "op": "isTrue"
+        },
+        "class": "invalid_evidence"
+      },
+      {
+        "@type": "Gate",
+        "code": "OGL-004-RECEIPTS",
+        "reason": "Supporting claims must be verified (receipt CIDs present)",
+        "when": {
+          "@type": "Condition",
+          "field": "$supportingReceipts",
+          "op": "countBetween",
+          "value": [1, 50]
+        },
+        "onFail": "review",
+        "class": "insufficient_evidence"
+      }
+    ],
+    "scoring": {
+      "@type": "Scoring",
+      "method": "weighted_average",
+      "approveAt": 8000,
+      "partialFloor": 6500,
+      "reviewFloor": 5000,
+      "criteria": [
+        {
+          "@type": "Criterion",
+          "code": "OGC-101-GRAPH-VALIDATION",
+          "reason": "Impact-graph oracle validation score for this edge (structural + empirical passes)",
+          "weight": 5,
+          "critical": true,
+          "min": 6000,
+          "requireSource": "server_verified",
+          "score": {
+            "@type": "LinearScore",
+            "value": "ext.graphedge.score",
+            "zeroAt": 0,
+            "fullAt": 10000,
+            "clamp": true
+          }
+        },
+        {
+          "@type": "Criterion",
+          "code": "OGC-102-MECHANISM",
+          "reason": "Mechanism describes a real process, not a restatement",
+          "weight": 2,
+          "score": {
+            "@type": "BooleanScore",
+            "when": {
+              "@type": "Condition",
+              "field": "ai.mechanism.valid",
+              "op": "isTrue"
+            },
+            "onTrue": 10000,
+            "onFalse": 3000
+          }
+        },
+        {
+          "@type": "Criterion",
+          "code": "OGC-103-COMPARISON-COVERAGE",
+          "reason": "Share of the outcome series covered by program-vs-comparison data",
+          "weight": 3,
+          "trustCap": 8000,
+          "score": {
+            "@type": "BandsScore",
+            "value": "$comparisonCoverageBps",
+            "bands": [
+              { "op": ">=", "value": 9000, "points": 10000 },
+              { "op": ">=", "value": 7000, "points": 8000 },
+              { "else": true, "points": 4000 }
+            ]
+          }
+        },
+        {
+          "@type": "Criterion",
+          "code": "OGC-104-ANALYST",
+          "reason": "Analyst confirms the effect evidence supports the claimed link",
+          "weight": 4,
+          "score": {
+            "@type": "ManualScore",
+            "field": "$analystReportCid",
+            "whenMissing": 0,
+            "reviewTask": "edge-analyst-check"
+          }
+        }
+      ]
+    },
+    "review": {
+      "@type": "HumanReview",
+      "assignTo": { "role": "reviewer" },
+      "slaHours": 72,
+      "onTimeout": "reject",
+      "tasks": [
+        {
+          "@type": "ReviewTask",
+          "id": "edge-analyst-check",
+          "forCriterion": "OGC-104-ANALYST",
+          "prompt": "Does the attached analyst report support the claimed causal link between the named source and target, at the coverage stated?",
+          "show": ["$analystReportCid"],
+          "answer": {
+            "type": "enum",
+            "options": ["supports", "partially-supports", "does-not-support"]
+          },
+          "map": {
+            "supports": "approve",
+            "partially-supports": "partial",
+            "does-not-support": "reject"
+          }
+        }
+      ]
+    },
+    "settlement": {
+      "@type": "Settlement",
+      "onApprove": { "pay": "approval" },
+      "onPartial": { "pay": "approval", "prorateBy": "total" }
+    }
+  }
+}

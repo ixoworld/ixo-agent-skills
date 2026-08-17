@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/common.defs.v1.json",
+  "title": "Outcome Graph shared definitions",
+  "description": "Shared primitives for all outcome-graph artifacts. Patterns mirror ixo-evals-engine artefacts/common.defs.v1.json so artifacts cross the boundary without translation. Conventions: snake_case field names (archival layer), integer basis points 0..10000 for every score (floats break byte-determinism and replay digests), content-addressed URNs over canonical JSON (sorted keys at every level).",
+  "$defs": {
+    "did": {
+      "type": "string",
+      "pattern": "^did:[a-z0-9]+:[A-Za-z0-9._:%-]+$"
+    },
+    "content_addressed_uri": {
+      "type": "string",
+      "description": "Self-certifying artifact id: urn:ixo:<type>:<multibase-multihash> of the canonicalized artifact bytes.",
+      "pattern": "^urn:ixo:[a-z][a-z0-9-]*:[A-Za-z0-9._-]+$"
+    },
+    "multihash": {
+      "type": "string",
+      "pattern": "^(sha256|sha384|sha512):[a-f0-9]{64,128}$"
+    },
+    "sha256_hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "bps": {
+      "type": "integer",
+      "description": "Basis points. 0 = 0%, 10000 = 100%. Never use floats for scores.",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "iso_datetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "time_interval": {
+      "type": "object",
+      "description": "Half-open interval [start, end). Omit end for open-ended scopes.",
+      "properties": {
+        "start": { "$ref": "#/$defs/iso_datetime" },
+        "end": { "$ref": "#/$defs/iso_datetime" }
+      },
+      "required": ["start"],
+      "additionalProperties": false
+    },
+    "versioned_ref": {
+      "type": "object",
+      "description": "Hash-pinned reference to a versioned artifact (rubric, schema, policy).",
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" },
+        "digest": { "$ref": "#/$defs/multihash" }
+      },
+      "required": ["id", "version", "digest"],
+      "additionalProperties": false
+    },
+    "actor_ref": {
+      "type": "object",
+      "properties": {
+        "did": { "$ref": "#/$defs/did" },
+        "name": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "source_span": {
+      "type": "object",
+      "description": "Provenance pointer into a source artifact. locator uses the evals-engine locator styles (json_pointer, xpath, csv_cell, time_window, page/line, bounding box).",
+      "properties": {
+        "artifact_id": { "type": "string" },
+        "locator": { "type": "string" },
+        "excerpt": { "type": "string", "maxLength": 2000 }
+      },
+      "required": ["artifact_id", "locator"],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "description": "How this element came to exist. ai_inferred elements MUST carry rationale; nothing enters the graph without either a source span or a declared inference.",
+      "properties": {
+        "extraction_method": {
+          "type": "string",
+          "enum": ["human_authored", "ai_extracted", "ai_inferred", "imported"]
+        },
+        "source_spans": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/source_span" }
+        },
+        "rationale": { "type": "string" },
+        "extractor_ref": {
+          "type": "string",
+          "description": "Agent/skill/model that produced the element, e.g. 'outcome-graph/toc-intake@0.1.0'."
+        },
+        "extracted_at": { "$ref": "#/$defs/iso_datetime" }
+      },
+      "required": ["extraction_method"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "extraction_method": { "const": "ai_inferred" } },
+            "required": ["extraction_method"]
+          },
+          "then": {
+            "properties": { "rationale": { "type": "string", "minLength": 1 } },
+            "required": ["rationale"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "extraction_method": { "enum": ["ai_extracted", "imported"] } },
+            "required": ["extraction_method"]
+          },
+          "then": {
+            "properties": { "source_spans": { "type": "array", "minItems": 1 } },
+            "required": ["source_spans"]
+          }
+        }
+      ]
+    },
+    "asserted_proposition": {
+      "type": "object",
+      "description": "Subject-predicate-object triple — the graph-native claim substrate, internal to the pipeline. (The live engine boundary carries canonicalized answers-bag claim bodies instead; S-P-O never crosses it.)",
+      "properties": {
+        "subject": { "type": "string" },
+        "predicate": { "type": "string" },
+        "object": { "type": "string" },
+        "qualifiers": {
+          "type": "object",
+          "properties": {
+            "time_scope": { "$ref": "#/$defs/time_interval" },
+            "location_scope": { "type": ["string", "null"] },
+            "quantity": {
+              "type": ["object", "null"],
+              "properties": {
+                "value": { "type": "number" },
+                "unit": { "type": "string" },
+                "original_unit": { "type": "string" }
+              },
+              "required": ["value", "unit"],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["subject", "predicate", "object"],
+      "additionalProperties": false
+    },
+    "validation_status": {
+      "type": "string",
+      "description": "Epistemic status of a causal edge. See references/causal-checks.md for the promotion/demotion rules and the mapping from evals-engine verdicts.",
+      "enum": ["hypothesized", "plausible", "supported", "contested", "unidentified", "rejected"]
+    },
+    "engine_verdict_class": {
+      "type": "string",
+      "description": "evals-engine VerdictClass (live main@6dae503, src/lib/rubric/eval/decide.ts) — the semantic discriminant of an evaluation. Layered under the 4-value Verdict (approve|partial|reject|review) and above the chain status.",
+      "enum": ["supported", "partial", "refuted", "invalid_evidence", "out_of_authority", "insufficient_evidence", "requires_human_review"]
+    },
+    "engine_verdict": {
+      "type": "string",
+      "description": "evals-engine Verdict (coarse, 4 values). Branch on engine_verdict_class for semantics; this is the disposition.",
+      "enum": ["approve", "partial", "reject", "review"]
+    },
+    "engine_chain_status": {
+      "type": "integer",
+      "description": "x/claims EvaluationStatus as the live engine writes it: 1 approve, 2 reject, 5 review/flag. (The chain enum defines 0-5; the engine constructs only these three. Code 2 aggregates refuted/invalid_evidence/out_of_authority — always branch on engine_verdict_class, never on this alone.)",
+      "enum": [1, 2, 5]
+    },
+    "tier": {
+      "type": "integer",
+      "description": "Impact-claim tier: 1 narrative plausibility, 2 evidence-backed contribution, 3 causally supported outcome, 4 issuance-ready certified outcome. 0 = no tier attainable.",
+      "minimum": 0,
+      "maximum": 4
+    },
+    "check_status": {
+      "type": "string",
+      "enum": ["pass", "fail", "warning"]
+    },
+    "check_severity": {
+      "type": "string",
+      "enum": ["blocking", "warning", "info"]
+    },
+    "validation_layer": {
+      "type": "string",
+      "description": "evals-engine ValidationCheck.layer enum, used verbatim.",
+      "enum": ["integrity", "authority", "schema", "semantic", "cross_evidence", "quality", "adversarial"]
+    },
+    "workflow_state": {
+      "type": "string",
+      "enum": [
+        "SOURCE_ACCEPTED",
+        "TOC_PARSED",
+        "CLAIMS_STRUCTURED",
+        "CAUSAL_GRAPH_DRAFTED",
+        "EVIDENCE_GRAPH_LINKED",
+        "VALIDATION_RUNNING",
+        "REVIEW_REQUIRED",
+        "VALIDATED",
+        "ISSUANCE_ELIGIBLE",
+        "CERTIFICATE_ISSUED",
+        "REJECTED",
+        "VERSION_ARCHIVED"
+      ]
+    },
+    "agent_name": {
+      "type": "string",
+      "enum": ["toc-intake", "causal-modeler", "evidence-mapper", "graph-validator", "certificate-issuer", "review-escalation"]
+    }
+  }
+}

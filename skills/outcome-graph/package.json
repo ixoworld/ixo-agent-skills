@@ -1,0 +1,10 @@
+{
+  "name": "outcome-graph-capsule",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic tools for the Outcome Graph skill capsule.",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "schema": "outcome.validation-report.v1",
+  "report_id": "urn:ixo:validation-report:bafyexamplereport001",
+  "workflow_id": "wf-clean-water-001",
+  "graph_version_ref": "urn:ixo:causal-graph:bafyexamplegraph001",
+  "evidence_graph_ref": "urn:ixo:evidence-graph:bafyexampleevidence001",
+  "ran_at": "2026-08-15T13:00:00Z",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "check_id": "DAG-01",
+      "layer": "semantic",
+      "target_kind": "graph",
+      "target_id": "urn:ixo:causal-graph:bafyexamplegraph001",
+      "status": "pass",
+      "severity": "info",
+      "summary": "Graph is acyclic.",
+      "produced_by": "deterministic_tool"
+    },
+    {
+      "finding_id": "F-002",
+      "check_id": "DAG-02",
+      "layer": "semantic",
+      "target_kind": "node",
+      "target_id": "n-disease-incidence",
+      "status": "pass",
+      "severity": "info",
+      "summary": "Outcome 'n-disease-incidence' reachable from an intervention.",
+      "produced_by": "deterministic_tool"
+    },
+    {
+      "finding_id": "F-101",
+      "check_id": "SEM-01",
+      "layer": "semantic",
+      "target_kind": "node",
+      "target_id": "n-disease-incidence",
+      "status": "pass",
+      "severity": "info",
+      "summary": "Outcome variable operationalized: clinic-reported diarrheal cases per 1,000 under-5 per month.",
+      "produced_by": "agent_judgment"
+    },
+    {
+      "finding_id": "F-102",
+      "check_id": "EDGE-03",
+      "layer": "semantic",
+      "target_kind": "edge",
+      "target_id": "e3-use-disease",
+      "status": "pass",
+      "severity": "info",
+      "summary": "Rainfall confounder measured (n-rainfall) and blocked by the declared adjustment set; both back-door path halves modeled (e4, e5).",
+      "produced_by": "agent_judgment"
+    },
+    {
+      "finding_id": "F-103",
+      "check_id": "ADM-02",
+      "layer": "authority",
+      "target_kind": "link",
+      "target_id": "l-1-maintlog-output",
+      "status": "warning",
+      "severity": "warning",
+      "summary": "Implementing-party maintenance log is client_assisted; admissible with disclosure, reliability-capped.",
+      "produced_by": "agent_judgment",
+      "evidence_refs": ["urn:ixo:evidence-graph:bafyexampleevidence001"]
+    },
+    {
+      "finding_id": "F-104",
+      "check_id": "EMP-01",
+      "layer": "cross_evidence",
+      "target_kind": "edge",
+      "target_id": "e3-use-disease",
+      "status": "pass",
+      "severity": "info",
+      "summary": "Program-vs-comparison surveillance series (l-3-surveillance-edge, coverage 9300 bps) is regime-admissible for a plausible-level contribution finding; supported requires the household-survey mediator measurement.",
+      "produced_by": "agent_judgment",
+      "evidence_refs": ["l-3-surveillance-edge"]
+    },
+    {
+      "finding_id": "F-105",
+      "check_id": "EMP-05",
+      "layer": "quality",
+      "target_kind": "edge",
+      "target_id": "e2-functional-use",
+      "status": "fail",
+      "severity": "warning",
+      "summary": "No admissible evidence bears on the functional-points → water-use relationship; open gap g-1-household-survey.",
+      "produced_by": "agent_judgment",
+      "evidence_refs": ["g-1-household-survey"]
+    }
+  ],
+  "pass_summary": {
+    "passes": 5,
+    "failures": 1,
+    "warnings": 1,
+    "blocking_count": 0
+  },
+  "edge_status_changes": [
+    {
+      "edge_id": "e3-use-disease",
+      "from": "hypothesized",
+      "to": "plausible",
+      "basis": "F-102,F-104: admissible relationship-bearing comparison evidence (l-3-surveillance-edge); capped at plausible pending mediator measurement (g-1-household-survey)."
+    }
+  ],
+  "engine_evaluations": [
+    {
+      "claim_id": "bafyexampleclaimbodycid01",
+      "claim_class": "impact.output.achieved",
+      "target_kind": "node",
+      "target_id": "n-functional-points",
+      "verdict": "approve",
+      "verdict_class": "supported",
+      "chain_status": 1,
+      "receipt_cid": "bafyexampleudidenvelope01"
+    }
+  ],
+  "graph_status_recommendation": "validated",
+  "attainable_tier": {
+    "tier": 2,
+    "capped_by": ["g-1-household-survey", "F-105"]
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "schema": "outcome.evidence-graph.v1",
+  "evidence_graph_id": "urn:ixo:evidence-graph:bafyexampleevidence001",
+  "workflow_id": "wf-clean-water-001",
+  "graph_version_ref": "urn:ixo:causal-graph:bafyexamplegraph001",
+  "artifacts": [
+    {
+      "artifact_id": "a-maintenance-log",
+      "kind": "dataset",
+      "media_type": "table",
+      "description": "Monthly water-point maintenance log with sensor-backed flow readings, Jan 2025 – Jun 2026.",
+      "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae",
+      "storage": {
+        "backend": "matrix",
+        "cid": "bafyexamplemaintlog01"
+      },
+      "producer": {
+        "did": "did:ixo:org:kitui-water-partnership",
+        "name": "Kitui Water Partnership",
+        "independence": "implementing_party",
+        "provenance_class": "client_assisted",
+        "origin_keys": {
+          "submitter": "did:ixo:org:kitui-water-partnership",
+          "funding_source": "fund-kitui-wash-2025"
+        }
+      },
+      "observed_at": {
+        "start": "2025-01-01T00:00:00Z",
+        "end": "2026-06-30T00:00:00Z"
+      },
+      "collected_at": "2026-07-05T00:00:00Z",
+      "envelope_ref": null,
+      "receipt_ref": null
+    },
+    {
+      "artifact_id": "a-clinic-surveillance",
+      "kind": "dataset",
+      "media_type": "timeseries",
+      "description": "DHIS2 extract: monthly diarrheal cases per facility, program and matched comparison catchments, 2024–2026.",
+      "sha256": "fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9",
+      "storage": {
+        "backend": "ipfs",
+        "cid": "bafyexampledhis2extract01"
+      },
+      "producer": {
+        "did": "did:ixo:org:county-health-dept",
+        "name": "Kitui County Department of Health",
+        "independence": "independent_third_party",
+        "provenance_class": "server_verified",
+        "origin_keys": {
+          "api_origin": "dhis2.health.go.ke"
+        }
+      },
+      "observed_at": {
+        "start": "2024-01-01T00:00:00Z",
+        "end": "2026-06-30T00:00:00Z"
+      },
+      "collected_at": "2026-07-10T00:00:00Z",
+      "envelope_ref": null,
+      "receipt_ref": null
+    },
+    {
+      "artifact_id": "a-udid-output-claim",
+      "kind": "verified_claim",
+      "media_type": "credential",
+      "description": "Public evaluation receipt (Ed25519 JWS, CID-addressed): evals-engine evaluation of the output claim 'functional water points achieved' (claim-supports-claim link, dereferenceable at GET /v1/receipts/:cid).",
+      "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+      "storage": {
+        "backend": "ipfs",
+        "cid": "bafyexampleudidenvelope01"
+      },
+      "producer": {
+        "did": "did:ixo:oracle:impact-verify-1",
+        "name": "Impact verification oracle",
+        "independence": "automated_system",
+        "provenance_class": "server_verified",
+        "origin_keys": {
+          "issuer": "did:ixo:oracle:impact-verify-1"
+        }
+      },
+      "collected_at": "2026-07-20T00:00:00Z",
+      "envelope_ref": null,
+      "receipt_ref": {
+        "receipt_cid": "bafyexampleudidenvelope01",
+        "jti": "udid-jti-output-claim-001",
+        "verdict_class": "supported",
+        "claim_id": "bafyexampleclaimbodycid01"
+      }
+    }
+  ],
+  "links": [
+    {
+      "link_id": "l-1-maintlog-output",
+      "target_kind": "node",
+      "target_id": "n-functional-points",
+      "artifact_id": "a-maintenance-log",
+      "role": "supports",
+      "indicator_id": "i-functionality-rate",
+      "admissibility": {
+        "status": "admissible_with_disclosures",
+        "gates": {
+          "integrity": "pass",
+          "authority": "warning",
+          "freshness": "pass",
+          "relevance_completeness": "pass",
+          "provenance_chain": "pass"
+        },
+        "disclosures": [
+          "Produced by the implementing party (client_assisted); reliability capped at 8000 bps per source policy."
+        ],
+        "reasons": [],
+        "evaluated_at": "2026-08-15T12:30:00Z"
+      },
+      "coverage_bps": 10000,
+      "fact_refs": [
+        "fact-functionality-2025h1"
+      ]
+    },
+    {
+      "link_id": "l-2-surveillance-outcome",
+      "target_kind": "node",
+      "target_id": "n-disease-incidence",
+      "artifact_id": "a-clinic-surveillance",
+      "role": "supports",
+      "indicator_id": "i-diarrheal-incidence",
+      "admissibility": {
+        "status": "admissible",
+        "gates": {
+          "integrity": "pass",
+          "authority": "pass",
+          "freshness": "pass",
+          "relevance_completeness": "pass",
+          "provenance_chain": "pass"
+        },
+        "disclosures": [],
+        "reasons": [],
+        "evaluated_at": "2026-08-15T12:30:00Z"
+      },
+      "coverage_bps": 9300,
+      "fact_refs": [
+        "fact-incidence-series"
+      ]
+    },
+    {
+      "link_id": "l-3-surveillance-edge",
+      "target_kind": "edge",
+      "target_id": "e3-use-disease",
+      "artifact_id": "a-clinic-surveillance",
+      "role": "supports",
+      "indicator_id": null,
+      "bears_on_relationship": true,
+      "admissibility": {
+        "status": "admissible",
+        "gates": {
+          "integrity": "pass",
+          "authority": "pass",
+          "freshness": "pass",
+          "relevance_completeness": "pass",
+          "provenance_chain": "pass"
+        },
+        "disclosures": [],
+        "reasons": [],
+        "evaluated_at": "2026-08-15T12:30:00Z"
+      },
+      "coverage_bps": 9300,
+      "fact_refs": [
+        "fact-incidence-comparison"
+      ]
+    },
+    {
+      "link_id": "l-4-udid-output",
+      "target_kind": "node",
+      "target_id": "n-functional-points",
+      "artifact_id": "a-udid-output-claim",
+      "role": "supports",
+      "indicator_id": null,
+      "admissibility": {
+        "status": "admissible",
+        "gates": {
+          "integrity": "pass",
+          "authority": "pass",
+          "freshness": "pass",
+          "relevance_completeness": "pass",
+          "provenance_chain": "pass"
+        },
+        "disclosures": [],
+        "reasons": [],
+        "evaluated_at": "2026-08-15T12:30:00Z"
+      },
+      "coverage_bps": 10000,
+      "fact_refs": []
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "g-1-household-survey",
+      "target_kind": "edge",
+      "target_id": "e2-functional-use",
+      "required_artifact_class": "household water-use survey (quarterly, enumerator spot-checked)",
+      "description": "No measurement of household source choice exists yet; edge e2-functional-use has no admissible evidence bearing on the relationship.",
+      "who_could_produce": "Independent survey firm under county M&E framework",
+      "tier_with": 3,
+      "tier_without": 2,
+      "status": "open"
+    }
+  ]
+}

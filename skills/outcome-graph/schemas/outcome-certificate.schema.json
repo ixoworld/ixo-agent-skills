@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/outcome-certificate.v1.json",
+  "title": "OutcomeCertificate",
+  "description": "The digital outcome certificate: a W3C VC 2.0-shaped verifiable credential issued by a governed authority, whose evidence section cites evals-engine UDID receipts (the ixoev:settle authorization). NOTE the deliberate division of labor: the engine's evaluation receipt is a UDID and is NOT a VC (the engine removed its OracleEvaluationCredential); the certificate is a separate artifact issued downstream of positive verdicts. Per VC/JSON-LD convention this schema uses camelCase — the one outcome-graph artifact that does, mirroring the engine's own archival/runtime convention split. Content-addressed and immutable; re-issuance supersedes.",
+  "type": "object",
+  "properties": {
+    "@context": {
+      "type": "array",
+      "minItems": 2,
+      "prefixItems": [
+        { "const": "https://www.w3.org/ns/credentials/v2" },
+        { "const": "https://w3id.org/ixo/outcome-graph/v1" }
+      ],
+      "items": { "type": "string" }
+    },
+    "id": { "type": "string" },
+    "type": {
+      "type": "array",
+      "prefixItems": [
+        { "const": "VerifiableCredential" },
+        { "const": "OutcomeCertificate" }
+      ],
+      "items": { "type": "string" }
+    },
+    "issuer": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "common.defs.v1.json#/$defs/did" },
+        "name": { "type": "string" }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    },
+    "validFrom": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+    "validUntil": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+    "credentialSubject": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "DID or URN of the project/product/means of production the certificate is about." },
+        "claimType": {
+          "type": "string",
+          "description": "The impact claim type certified, e.g. impact.contribution.supported (Tier 2) or impact.outcome.caused (Tier 3).",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+        },
+        "assessmentTier": { "$ref": "common.defs.v1.json#/$defs/tier" },
+        "tierLabel": {
+          "type": "string",
+          "enum": ["narrative-plausibility", "evidence-backed-contribution", "causally-supported-outcome", "certified-outcome"]
+        },
+        "outcomeStatement": {
+          "type": "string",
+          "description": "The certified claim in plain language, worded to the tier — a Tier-2 certificate says 'contributed to', never 'caused'."
+        },
+        "outcomes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "nodeId": { "type": "string" },
+              "label": { "type": "string" },
+              "unitOfAnalysis": { "type": "string" },
+              "timeScope": { "$ref": "common.defs.v1.json#/$defs/time_interval" },
+              "jurisdiction": { "type": "string" }
+            },
+            "required": ["nodeId", "label"],
+            "additionalProperties": false
+          }
+        },
+        "graphVersionRef": { "type": "string", "description": "Exact CausalGraphVersion certified." },
+        "evidenceBundle": {
+          "type": "object",
+          "properties": {
+            "evidenceGraphRef": { "type": "string" },
+            "digest": { "$ref": "common.defs.v1.json#/$defs/multihash" },
+            "admissibleLinkCount": { "type": "integer", "minimum": 0 },
+            "openGapCount": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["evidenceGraphRef", "digest", "admissibleLinkCount", "openGapCount"],
+          "additionalProperties": false
+        },
+        "identificationDisclosures": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tier 3: identification assumptions verbatim. Tier 2: disclosed contribution assumptions. Never empty for tiers ≥ 2."
+        },
+        "effectEstimates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "edgeId": { "type": "string" },
+              "estimand": { "type": "string", "enum": ["ate", "att", "dose_response", "distributional"] },
+              "value": { "type": "number" },
+              "intervalLow": { "type": "number" },
+              "intervalHigh": { "type": "number" },
+              "unit": { "type": "string" },
+              "method": { "type": "string" }
+            },
+            "required": ["edgeId", "estimand", "value", "intervalLow", "intervalHigh", "unit", "method"],
+            "additionalProperties": false
+          },
+          "description": "Tier 3 only. Point estimates without intervals are never carried."
+        }
+      },
+      "required": ["id", "claimType", "assessmentTier", "tierLabel", "outcomeStatement", "outcomes", "graphVersionRef", "evidenceBundle"],
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "description": "VC 2.0 evidence property: the evals-engine evaluation receipts that authorize this issuance. Each receiptCid is independently dereferenceable at the issuing engine's public GET /v1/receipts/:cid and verifiable against its GET /v1/issuer-keys (Ed25519, kid did:web:<host>#key-1) — a verifier needs no access to this pipeline to check the certificate's evidential basis.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "OracleEvaluationReceipt" },
+          "receiptCid": { "type": "string", "description": "CIDv1 of the compact JWS; also the on-chain MsgEvaluateClaim.verificationProof." },
+          "jti": { "type": "string" },
+          "claimId": { "type": "string", "description": "CIDv1 of the evaluated claim body." },
+          "claimClass": { "type": "string" },
+          "verdictClass": { "$ref": "common.defs.v1.json#/$defs/engine_verdict_class" },
+          "rubricId": { "type": "string", "description": "sha256 hex of the governing rubric bytes." },
+          "engineHost": { "type": "string", "description": "did:web host whose /v1/receipts and /v1/issuer-keys resolve this receipt." }
+        },
+        "required": ["type", "receiptCid", "verdictClass"],
+        "additionalProperties": false
+      }
+    },
+    "credentialStatus": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "statusRef": { "type": "string" }
+      },
+      "required": ["type"],
+      "additionalProperties": true
+    },
+    "supersedes": { "type": ["string", "null"] },
+    "supersededBy": { "type": ["string", "null"] },
+    "disputePolicy": {
+      "type": "object",
+      "properties": {
+        "windowDays": { "type": "integer", "minimum": 0 },
+        "mechanismRef": { "type": "string" }
+      },
+      "required": ["windowDays"],
+      "additionalProperties": false
+    },
+    "revocationConditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["new_refuting_evidence", "source_state_change", "policy_change", "dispute", "key_compromise", "drift_demotion"]
+      },
+      "description": "Uses the engine's supersession-reason vocabulary verbatim."
+    },
+    "proof": {
+      "type": "object",
+      "description": "Data-integrity or JWS proof added by the signing tool (Ed25519/EdDSA, matching engine convention). Absent on drafts.",
+      "additionalProperties": true
+    }
+  },
+  "required": ["@context", "id", "type", "issuer", "validFrom", "credentialSubject", "evidence", "revocationConditions"],
+  "additionalProperties": false
+}
