@@ -1,0 +1,82 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/ixo/outcome-graph/v1"
+  ],
+  "id": "urn:ixo:certificate:bafyexamplecertificate001",
+  "type": [
+    "VerifiableCredential",
+    "OutcomeCertificate"
+  ],
+  "issuer": {
+    "id": "did:ixo:entity:kitui-wash-programme",
+    "name": "Kitui County WASH Programme"
+  },
+  "validFrom": "2026-08-17T10:00:00Z",
+  "credentialSubject": {
+    "id": "did:ixo:entity:kitui-wash-programme",
+    "claimType": "impact.contribution.supported",
+    "assessmentTier": 2,
+    "tierLabel": "evidence-backed-contribution",
+    "outcomeStatement": "Borehole rehabilitation contributed to an increase in functional water points across the Kitui catchment. This certificate does not claim a measured reduction in waterborne disease incidence.",
+    "outcomes": [
+      {
+        "nodeId": "n-functional-points",
+        "label": "Functional water points",
+        "unitOfAnalysis": "water point",
+        "timeScope": {
+          "start": "2025-01-01T00:00:00Z",
+          "end": "2026-07-01T00:00:00Z"
+        },
+        "jurisdiction": "KE-43"
+      }
+    ],
+    "graphVersionRef": "urn:ixo:causal-graph:bafyexamplegraph001",
+    "evidenceBundle": {
+      "evidenceGraphRef": "urn:ixo:evidence-graph:bafyexampleevidence001",
+      "digest": "sha256:5c9e17a4b0d83f26e1a75c380b4d9f62a8371ec50d4b96f8a2c7e310bd58af41",
+      "admissibleLinkCount": 2,
+      "openGapCount": 1
+    },
+    "identificationDisclosures": [
+      "This is a contribution claim, not a causal identification claim. No counterfactual was estimated and no effect size is asserted.",
+      "The cited subgraph is the single edge e1-rehab-functional. The downstream path to disease incidence (e2-functional-use, e3-use-disease) is excluded: e2 is hypothesized and carries the open evidence gap g-1-household-survey.",
+      "Seasonal rainfall (n-rainfall) is an unadjusted common cause of household water use and disease incidence. It does not bear on the certified output edge, but it is why the downstream outcome claim is not made here.",
+      "Link l-1-maintlog-output is admissible with disclosures: the maintenance log is programme-operated and self-reported, corroborated by the independently evaluated UDID receipt on the same node."
+    ]
+  },
+  "evidence": [
+    {
+      "type": "OracleEvaluationReceipt",
+      "receiptCid": "bafyexampleudidenvelope01",
+      "claimId": "bafyexampleclaimbodycid01",
+      "claimClass": "impact.output.achieved",
+      "verdictClass": "supported",
+      "engineHost": "evals.ixo.earth",
+      "rubricId": "bbd34069b974f176788da722cdd945c1e755af11347dabe295d84ce0bf3253ce"
+    }
+  ],
+  "credentialStatus": {
+    "type": "IxoRevocationList2026",
+    "statusRef": "https://status.ixo.earth/outcome-graph/kitui-wash-programme"
+  },
+  "supersedes": null,
+  "disputePolicy": {
+    "windowDays": 90,
+    "mechanismRef": "https://w3id.org/ixo/outcome-graph/dispute/v1"
+  },
+  "revocationConditions": [
+    "new_refuting_evidence",
+    "source_state_change",
+    "dispute",
+    "drift_demotion"
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-08-17T10:00:00Z",
+    "verificationMethod": "did:ixo:entity:kitui-wash-programme#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z-EXAMPLE-FIXTURE-NOT-A-REAL-SIGNATURE-DO-NOT-VERIFY"
+  }
+}

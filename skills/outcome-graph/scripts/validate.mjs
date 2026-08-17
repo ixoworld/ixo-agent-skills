@@ -84,6 +84,8 @@ const cases = [
   ["examples/clean-water/evidence-graph.json", "evidence-link.schema.json"],
   ["examples/clean-water/validation-report.json", "validation-report.schema.json"],
   ["examples/clean-water/geo-boundary.json", "geo-boundary.schema.json"],
+  ["examples/clean-water/issuance-request.json", "issuance-request.schema.json"],
+  ["examples/clean-water/outcome-certificate.json", "outcome-certificate.schema.json"],
 ];
 console.log("Validating examples:");
 for (const [dataPath, schemaFile] of cases.filter(([d]) => present(d))) {

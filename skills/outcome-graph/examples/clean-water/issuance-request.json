@@ -1,0 +1,69 @@
+{
+  "schema": "outcome.issuance-request.v1",
+  "request_id": "urn:ixo:issuance-request:bafyexamplerequest001",
+  "workflow_id": "wf-clean-water-001",
+  "graph_version_ref": "urn:ixo:causal-graph:bafyexamplegraph001",
+  "evidence_graph_ref": "urn:ixo:evidence-graph:bafyexampleevidence001",
+  "validation_report_ref": "urn:ixo:validation-report:bafyexamplereport001",
+  "target_tier": 3,
+  "computed_tier": 2,
+  "certificate_draft_ref": "urn:ixo:certificate-draft:bafyexamplecertdraft001",
+  "policy_evaluation": {
+    "policy_ref": {
+      "id": "ixo:issuance-policy:outcome-graph",
+      "version": "1.0.0",
+      "digest": "sha256:3d2f1a6c8b4e0d97a5c1e8f2b7460d3958ac21e6f4b8d0c7a3e59f1b6d2408ca"
+    },
+    "thresholds_met": true,
+    "checks": [
+      {
+        "requirement": "Tier gate — computed_tier >= 1 and the certificate is drafted at min(target_tier, computed_tier)",
+        "status": "pass",
+        "evidence_ref": "urn:ixo:validation-report:bafyexamplereport001#attainable_tier"
+      },
+      {
+        "requirement": "Tier gate — target tier 3 is not attainable; the certificate is drafted at tier 2",
+        "status": "warning",
+        "evidence_ref": "g-1-household-survey, F-105"
+      },
+      {
+        "requirement": "Graph gate — no contested, unidentified, hypothesized or rejected edge in the cited subgraph",
+        "status": "pass",
+        "evidence_ref": "cited subgraph is e1-rehab-functional only; e2-functional-use (hypothesized) and e3-use-disease (plausible) are excluded"
+      },
+      {
+        "requirement": "Evidence gate — every cited link is admissible or admissible_with_disclosures, and disclosures are copied into the certificate",
+        "status": "pass",
+        "evidence_ref": "l-1-maintlog-output (admissible_with_disclosures), l-4-udid-output (admissible)"
+      },
+      {
+        "requirement": "Evidence gate — no open gap on the cited subgraph below the certificate tier",
+        "status": "pass",
+        "evidence_ref": "g-1-household-survey sits on e2-functional-use with tier_without 2, which the tier-2 certificate tolerates"
+      },
+      {
+        "requirement": "Engine gate — issuance-critical claims evaluated with VerdictClass supported, receipts collected and JWS-verified",
+        "status": "pass",
+        "evidence_ref": "bafyexampleudidenvelope01 (impact.output.achieved on n-functional-points, verdict_class supported)"
+      },
+      {
+        "requirement": "Governance gate — human signoff recorded where the tier or unresolved HumanReview tasks require it",
+        "status": "pass",
+        "evidence_ref": "tier 2 does not require signoff, but issuing below target is a human call and was taken by the named reviewer"
+      },
+      {
+        "requirement": "Assembly gate — the request is complete and its decision is issuable",
+        "status": "pass",
+        "evidence_ref": null
+      }
+    ]
+  },
+  "decision": "issue_at_lower_tier",
+  "decision_basis": "Target tier 3 is not attainable. F-105 and the open gap g-1-household-survey leave e2-functional-use without admissible evidence bearing on the relationship, so the causal path from functional water points through household use to disease incidence cannot carry a tier-3 identification claim. Tier 2 gates all pass on the cited subgraph e1-rehab-functional, which is supported by an admissible maintenance log, an admissible UDID receipt, and an engine evaluation of impact.output.achieved returning verdict_class supported. Issuing at tier 2 as a disclosed contribution claim; the gap's tier_with is 3, so closing g-1-household-survey with the quarterly household water-use survey is what would raise this to the target.",
+  "decided_by": {
+    "kind": "human",
+    "did": "did:ixo:user:kitui-me-lead",
+    "name": "County M&E lead"
+  },
+  "decided_at": "2026-08-17T09:40:00Z"
+}
