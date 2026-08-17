@@ -53,6 +53,60 @@ const STATES = [
   "VERSION_ARCHIVED",
 ];
 
+/**
+ * The schema id of a signed certificate. It has no `schema` field of its own — a W3C
+ * VC 2.0 document must be readable by a verifier that has never heard of this pipeline —
+ * so the gate names it here and recognises the document by its `type` array.
+ */
+const CERTIFICATE_SCHEMA = "outcome.outcome-certificate.v1";
+
+/**
+ * Which states may precede each state. Membership in STATES is not enough: without this,
+ * `advance --to CERTIFICATE_ISSUED` succeeds straight from SOURCE_ACCEPTED, skipping the
+ * graph, evidence, validation and review gates and leaving a run that advertises an issued
+ * certificate with every artifact_ref null. The states that assert an achievement —
+ * VALIDATED, ISSUANCE_ELIGIBLE, CERTIFICATE_ISSUED — therefore have exact predecessors.
+ *
+ * Rework edges are deliberate. Validation that finds problems sends the run back to redraft
+ * the graph or the evidence, and a gate that forbade that would be routed around rather than
+ * obeyed. Self-transitions are how a second candidate version is recorded.
+ *
+ * REJECTED and VERSION_ARCHIVED are permissive because neither asserts an achievement: one
+ * is an ending, the other a filing decision, and a run can honestly reach either from
+ * anywhere. SOURCE_ACCEPTED is absent — `init` is its only writer.
+ */
+const WORKING_STATES = [
+  "TOC_PARSED",
+  "CLAIMS_STRUCTURED",
+  "CAUSAL_GRAPH_DRAFTED",
+  "EVIDENCE_GRAPH_LINKED",
+  "VALIDATION_RUNNING",
+];
+const LEGAL_PREDECESSORS = {
+  SOURCE_ACCEPTED: [],
+  TOC_PARSED: ["SOURCE_ACCEPTED", "TOC_PARSED", "REVIEW_REQUIRED"],
+  CLAIMS_STRUCTURED: ["TOC_PARSED", "CLAIMS_STRUCTURED", "REVIEW_REQUIRED"],
+  CAUSAL_GRAPH_DRAFTED: [
+    "CLAIMS_STRUCTURED",
+    "CAUSAL_GRAPH_DRAFTED",
+    "VALIDATION_RUNNING",
+    "REVIEW_REQUIRED",
+  ],
+  EVIDENCE_GRAPH_LINKED: [
+    "CAUSAL_GRAPH_DRAFTED",
+    "EVIDENCE_GRAPH_LINKED",
+    "VALIDATION_RUNNING",
+    "REVIEW_REQUIRED",
+  ],
+  VALIDATION_RUNNING: ["EVIDENCE_GRAPH_LINKED", "VALIDATION_RUNNING", "REVIEW_REQUIRED"],
+  REVIEW_REQUIRED: [...WORKING_STATES, "VALIDATED", "ISSUANCE_ELIGIBLE"],
+  VALIDATED: ["VALIDATION_RUNNING", "REVIEW_REQUIRED"],
+  ISSUANCE_ELIGIBLE: ["VALIDATED"],
+  CERTIFICATE_ISSUED: ["ISSUANCE_ELIGIBLE"],
+  REJECTED: [...WORKING_STATES, "SOURCE_ACCEPTED", "REVIEW_REQUIRED", "VALIDATED", "ISSUANCE_ELIGIBLE"],
+  VERSION_ARCHIVED: STATES.filter((s) => s !== "VERSION_ARCHIVED"),
+};
+
 /** Which artifact a state must have produced, and where state.json records it. */
 const STATE_ARTIFACT = {
   TOC_PARSED: { schema: "outcome.toc-extraction.v1", ref: "toc_extraction" },
@@ -61,6 +115,14 @@ const STATE_ARTIFACT = {
   EVIDENCE_GRAPH_LINKED: { schema: "outcome.evidence-graph.v1", ref: "evidence_graph" },
   VALIDATION_RUNNING: { schema: "outcome.validation-report.v1", ref: "validation_report" },
   ISSUANCE_ELIGIBLE: { schema: "outcome.issuance-request.v1", ref: "issuance_request" },
+  // VALIDATED is an orchestrator state, but SKILL.md is explicit that it means "the
+  // validation report recommends validated". Requiring the report here is also what stops
+  // REVIEW_REQUIRED being used to launder a run into VALIDATED: review is reachable from
+  // every working state, so without this a run could escalate from TOC_PARSED and come back
+  // validated, having never built a graph, linked evidence, or run a check.
+  VALIDATED: { schema: "outcome.validation-report.v1", ref: "validation_report" },
+  // Without this the state that claims a certificate exists never checks for one.
+  CERTIFICATE_ISSUED: { schema: CERTIFICATE_SCHEMA, ref: "certificate" },
 };
 
 /** States the orchestrator may enter on its own — no specialist output to verify. */
@@ -80,7 +142,22 @@ const ID_FIELDS = {
   "outcome.issuance-request.v1": "request_id",
   "outcome.geo-boundary.v1": "boundary_id",
   "outcome.run-brief.v1": "brief_id",
+  [CERTIFICATE_SCHEMA]: "id",
 };
+
+/**
+ * What an artifact document is, by its own contents. Everything this pipeline authors
+ * declares `schema`; a signed certificate is the exception and is identified by its VC
+ * `type` array. Returns null for a document that is neither.
+ */
+function classify(doc) {
+  if (Array.isArray(doc?.type) && doc.type.includes("OutcomeCertificate")) {
+    return { schema: CERTIFICATE_SCHEMA, idField: "id" };
+  }
+  const schema = doc?.schema;
+  if (typeof schema !== "string" || !ID_FIELDS[schema]) return null;
+  return { schema, idField: ID_FIELDS[schema] };
+}
 
 // ---- plumbing --------------------------------------------------------------
 
@@ -310,16 +387,35 @@ function cmdRecord(argv) {
   loadState(workflowId);
 
   const doc = readJson(resolve(source));
-  const schema = doc.schema ?? die("artifact has no `schema` field");
-  const idField = ID_FIELDS[schema];
-  if (!idField) die(`unknown artifact schema '${schema}'`);
+  const kind =
+    classify(doc) ??
+    die(
+      doc?.schema
+        ? `unknown artifact schema '${doc.schema}'`
+        : "artifact declares no `schema`, and is not an OutcomeCertificate",
+    );
+  const { schema, idField } = kind;
   const id = doc[idField] ?? die(`artifact is missing '${idField}'`);
 
   // The filename is derived from the id, so recording the same artifact twice is idempotent
   // rather than a second copy that later reads as a second version.
   const name = `${String(id).replace(/[^A-Za-z0-9._-]/g, "-")}.json`;
   const target = join(runDir(workflowId), "artifacts", name);
-  writeJson(target, doc);
+
+  // An id is a promise about bytes. Transitions and verification envelopes already recorded
+  // point at this id, so letting a second, different document take the same name would
+  // silently rewrite what those references resolve to — the audit trail would still look
+  // intact while no longer describing what was actually checked. Identical bytes are simply
+  // the same record arriving twice; different bytes are a new artifact and need a new id.
+  const body = `${JSON.stringify(doc, null, 2)}\n`;
+  mkdirSync(dirname(target), { recursive: true });
+  if (existsSync(target) && readFileSync(target, "utf8") !== body) {
+    die(
+      `artifact '${id}' already exists with different content — ` +
+        "an id is content-addressed and immutable; give the revision its own id",
+    );
+  }
+  writeFileSync(target, body);
 
   return emit({
     ok: true,
@@ -341,6 +437,17 @@ async function cmdAdvance(argv) {
   if (!STATES.includes(to)) die(`unknown state '${to}'`);
 
   const { path, state } = loadState(workflowId);
+
+  // Membership in STATES says the name is real, not that the move is legal.
+  const legal = LEGAL_PREDECESSORS[to] ?? [];
+  if (!legal.includes(state.current_state)) {
+    die(
+      `cannot advance ${state.current_state} → ${to}: ` +
+        (legal.length
+          ? `${to} may only follow ${legal.join(", ")}`
+          : `${to} is not reachable with advance`),
+    );
+  }
   const checks = [];
   let envelope = null;
 
@@ -378,7 +485,10 @@ async function cmdAdvance(argv) {
     artifactPath = ref;
 
     const doc = readJson(ref);
-    if (doc.schema !== required.schema) die(`artifact is ${doc.schema}, expected ${required.schema}`);
+    const kind = classify(doc);
+    if (kind?.schema !== required.schema) {
+      die(`artifact is ${kind?.schema ?? "unrecognised"}, expected ${required.schema}`);
+    }
 
     const schemaCheck = await validateArtifact(doc, required.schema);
     checks.push({
@@ -457,7 +567,7 @@ function findArtifact(workflowId, schema) {
     .map((f) => join(dir, f))
     .filter((p) => {
       try {
-        return JSON.parse(readFileSync(p, "utf8")).schema === schema;
+        return classify(JSON.parse(readFileSync(p, "utf8")))?.schema === schema;
       } catch {
         return false;
       }

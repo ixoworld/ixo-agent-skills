@@ -49,6 +49,11 @@ What replaces role isolation:
   the artifact against its schema and re-runs the deterministic graph checks *itself*, on the
   file, not on your account of the file. You cannot argue your way past it, because it is not
   listening to you.
+- **A state can only be entered from a state it may follow.** There is no route to
+  `CERTIFICATE_ISSUED` except through `ISSUANCE_ELIGIBLE`, none to `ISSUANCE_ELIGIBLE` except
+  through `VALIDATED`, and none to `VALIDATED` without a validation report on file. Escalating
+  to `REVIEW_REQUIRED` and returning does not skip the work in between. If a transition is
+  refused, the answer is the missing phase, never a different `--to`.
 - Each phase is worked under `prompts/<specialist>.md`. Load the brief for the phase you are
   in and follow it as written, including the parts that constrain you.
 - The task/result/envelope contracts are still written to `tasks/`. They are the audit trail
@@ -214,6 +219,12 @@ node scripts/run.mjs totals  --workflow <id>
 node scripts/run.mjs snapshot --workflow <id>   # → the artifact the canvas renders
 ```
 
+`record` is content-addressed and immutable: the same id may be recorded again only with
+identical bytes. A corrected artifact is a **new version with its own id**, never the old id
+carrying new content — transitions and envelopes already point at the old one. A signed
+`OutcomeCertificate` is the one artifact with no `schema` field (it is a W3C VC 2.0 document,
+identified by its `type` array); `record` accepts it, and `CERTIFICATE_ISSUED` requires it.
+
 `advance` prints the checks it ran. Read them: they are what you report under
 `Audit trail`, and a `warning` status is worth a sentence to the user.
 
@@ -228,7 +239,7 @@ node scripts/validate.mjs                              # schema suite + examples
 
 | Script | What it does | Usage |
 |---|---|---|
-| `scripts/run.mjs` | The run state gate. Creates runs, records artifacts, and is the only writer of `state.json`. `advance` re-validates the artifact and re-runs the graph checks itself before allowing a transition, and exits non-zero when it refuses. | `node scripts/run.mjs <init\|state\|record\|advance\|totals\|snapshot> --workflow <id> [...]` |
+| `scripts/run.mjs` | The run state gate. Creates runs, records artifacts, and is the only writer of `state.json`. `advance` enforces legal predecessors, re-validates the artifact and re-runs the graph checks itself before allowing a transition, and exits non-zero when it refuses. | `node scripts/run.mjs <init\|state\|record\|advance\|totals\|snapshot> --workflow <id> [...]` |
 | `scripts/check-graph.mjs` | The deterministic DAG checks (DAG-01..05, ID-02, EDGE-04) over one causal graph. Prints an `outcome.check-graph-output.v1` findings envelope; exits 1 on any blocking finding. | `node scripts/check-graph.mjs <graph.json> [--out <file>]` |
 | `scripts/validate.mjs` | Compiles every schema and validates the bundled examples, including the engine's vendored rubric schema. | `node scripts/validate.mjs` |
 

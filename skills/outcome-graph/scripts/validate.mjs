@@ -10,14 +10,40 @@
  * Exit:  0 all green, 1 any failure.
  */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const schemaDir = join(root, "skills/outcome-graph/schemas");
+
+/**
+ * This script runs from two layouts. In the source repo the schemas live under
+ * `skills/outcome-graph/`; in a built capsule the same files sit at the capsule root, and
+ * the capsule deliberately omits the plugin manifest and the v2-pending rubrics. Resolving
+ * paths for the repo alone made `node scripts/validate.mjs` — a command SKILL.md documents —
+ * die with ENOENT before validating anything once it was vendored.
+ */
+const IN_CAPSULE = !existsSync(join(root, "skills/outcome-graph/schemas"));
+const schemaDir = IN_CAPSULE ? join(root, "schemas") : join(root, "skills/outcome-graph/schemas");
+
+/** A repo path rewritten for whichever layout we are in. */
+const at = (rel) => join(root, IN_CAPSULE ? rel.replace(/^skills\/outcome-graph\//, "") : rel);
+
+/**
+ * Files the capsule does not ship. Absent here is expected and reported as skipped; absent
+ * in the source repo is still a failure, because there it means something actually broke.
+ */
+const skipped = [];
+function present(rel) {
+  if (existsSync(at(rel))) return true;
+  if (IN_CAPSULE) {
+    skipped.push(rel);
+    return false;
+  }
+  return true; // let the read fail loudly in the repo
+}
 
 // strictTuples off: VC 2.0 @context/type are open tuples (fixed prefix, unbounded tail),
 // which ajv's strict-tuple heuristic cannot express. Everything else stays strict.
@@ -60,10 +86,10 @@ const cases = [
   ["examples/clean-water/geo-boundary.json", "geo-boundary.schema.json"],
 ];
 console.log("Validating examples:");
-for (const [dataPath, schemaFile] of cases) {
+for (const [dataPath, schemaFile] of cases.filter(([d]) => present(d))) {
   let data;
   try {
-    data = JSON.parse(readFileSync(join(root, dataPath), "utf8"));
+    data = JSON.parse(readFileSync(at(dataPath), "utf8"));
   } catch (e) {
     bad(`${dataPath}: parse failed — ${e.message}`);
     continue;
@@ -96,8 +122,8 @@ const RUBRIC_EXAMPLES = [
 try {
   const vendored = JSON.parse(readFileSync(join(schemaDir, "vendor/evals-engine-rubric.schema.json"), "utf8"));
   const validateRubric = new Ajv2020({ strict: false, allErrors: true }).compile(vendored);
-  for (const rf of RUBRIC_EXAMPLES) {
-    const doc = JSON.parse(readFileSync(join(root, rf), "utf8"));
+  for (const rf of RUBRIC_EXAMPLES.filter(present)) {
+    const doc = JSON.parse(readFileSync(at(rf), "utf8"));
     if (validateRubric(doc)) {
       ok(`${rf} ⊨ vendored evals-engine rubric schema`);
     } else {
@@ -151,13 +177,18 @@ for (const f of [
   "examples/clean-water/claim-form.site-visit.catalog.json",
   "examples/clean-water/v2-pending/claim-form.site-visit.catalog.json",
   "scripts/lib/geo-vectors.json",
-]) {
+].filter(present)) {
   try {
-    JSON.parse(readFileSync(join(root, f), "utf8"));
+    JSON.parse(readFileSync(at(f), "utf8"));
     ok(f);
   } catch (e) {
     bad(`${f}: ${e.message}`);
   }
+}
+
+if (skipped.length) {
+  console.log(`\nSkipped ${skipped.length} file(s) the capsule does not ship:`);
+  for (const f of skipped) console.log(`  – ${f}`);
 }
 
 console.log(failures === 0 ? "\nAll validation checks passed." : `\n${failures} validation failure(s).`);
