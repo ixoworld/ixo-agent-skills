@@ -10,8 +10,7 @@ description: >-
   dispute an outcome certificate.
 license: Apache-2.0
 compatibility: claude
-allowed-tools:
-  - shell
+allowed-tools: shell
 context:
   - _SKILL_CONTEXT_USER_DID
   - _SKILL_CONTEXT_SANDBOX_ID
