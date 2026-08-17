@@ -1,0 +1,313 @@
+{
+  "schema": "outcome.causal-graph.v1",
+  "graph_id": "og-clean-water-kitui",
+  "version": 1,
+  "graph_version_id": "urn:ixo:causal-graph:bafyexamplegraph001",
+  "status": "draft",
+  "supersedes": null,
+  "superseded_by": null,
+  "toc_extraction_ref": "urn:ixo:toc-extraction:bafyexampletoc001",
+  "context": {
+    "domain": "wash",
+    "jurisdiction": "Kitui County, Kenya",
+    "population": "rural households in program catchment areas",
+    "time_frame": { "start": "2025-01-01T00:00:00Z", "end": "2026-12-31T00:00:00Z" }
+  },
+  "nodes": [
+    {
+      "node_id": "n-borehole-rehab",
+      "node_type": "intervention",
+      "label": "Borehole rehabilitation",
+      "definition": "Completion of mechanical rehabilitation and yield test on a previously non-functional borehole, certified by the county water officer.",
+      "unit_of_analysis": "borehole",
+      "time_scope": { "start": "2025-01-01T00:00:00Z", "end": "2025-06-30T00:00:00Z" },
+      "jurisdiction": "Kitui County, Kenya",
+      "indicators": [
+        {
+          "indicator_id": "i-rehab-count",
+          "name": "Boreholes rehabilitated and yield-tested",
+          "measurement_method": "County water officer certification records",
+          "unit": "count",
+          "fact_type": "impact.intervention.delivery_recorded"
+        }
+      ],
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "urn:ixo:toc-extraction:bafyexampletoc001", "locator": "json_pointer:/propositions/0" }],
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      },
+      "semantic_status": "passed",
+      "proposition_refs": ["p-01"]
+    },
+    {
+      "node_id": "n-functional-points",
+      "node_type": "output",
+      "label": "Functional water points",
+      "definition": "Rehabilitated borehole delivering ≥ its tested yield on a given day, verified by the maintenance monitoring system.",
+      "unit_of_analysis": "water point",
+      "time_scope": { "start": "2025-03-01T00:00:00Z" },
+      "jurisdiction": "Kitui County, Kenya",
+      "indicators": [
+        {
+          "indicator_id": "i-functionality-rate",
+          "name": "Water-point functionality rate",
+          "measurement_method": "Monthly maintenance log with sensor-backed flow readings",
+          "unit": "percent",
+          "collection_frequency": "monthly",
+          "fact_type": "impact.output.functionality_recorded"
+        }
+      ],
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "urn:ixo:toc-extraction:bafyexampletoc001", "locator": "json_pointer:/propositions/1" }],
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      },
+      "semantic_status": "passed",
+      "claim_ref": "urn:ixo:claim:bafyexampleoutputclaim01",
+      "proposition_refs": ["p-02"]
+    },
+    {
+      "node_id": "n-safe-water-use",
+      "node_type": "mediator",
+      "label": "Household use of safe water",
+      "definition": "Household's primary drinking-water source is an improved source (JMP definition), self-reported and spot-checked.",
+      "unit_of_analysis": "household",
+      "time_scope": { "start": "2025-04-01T00:00:00Z" },
+      "jurisdiction": "Kitui County, Kenya",
+      "indicators": [
+        {
+          "indicator_id": "i-improved-source-share",
+          "name": "Share of households whose primary source is improved",
+          "measurement_method": "Household survey with enumerator spot-checks",
+          "unit": "percent",
+          "collection_frequency": "quarterly",
+          "fact_type": "impact.outcome.water_use_recorded"
+        }
+      ],
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "urn:ixo:toc-extraction:bafyexampletoc001", "locator": "json_pointer:/propositions/2" }],
+        "rationale": "Operationalization of the ambiguous 'safe water use' proposition; flagged for expert confirmation.",
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      },
+      "semantic_status": "passed",
+      "proposition_refs": ["p-03"]
+    },
+    {
+      "node_id": "n-disease-incidence",
+      "node_type": "outcome",
+      "label": "Waterborne disease incidence (under-5)",
+      "definition": "Clinic-reported diarrheal cases per 1,000 children under five per month in facilities serving program villages.",
+      "unit_of_analysis": "village catchment",
+      "time_scope": { "start": "2025-07-01T00:00:00Z" },
+      "jurisdiction": "Kitui County, Kenya",
+      "indicators": [
+        {
+          "indicator_id": "i-diarrheal-incidence",
+          "name": "Diarrheal cases per 1,000 under-5 per month",
+          "measurement_method": "County health surveillance (DHIS2 extract)",
+          "unit": "cases/1000/month",
+          "collection_frequency": "monthly",
+          "fact_type": "impact.outcome.incidence_recorded"
+        }
+      ],
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "urn:ixo:toc-extraction:bafyexampletoc001", "locator": "json_pointer:/propositions/3" }],
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      },
+      "semantic_status": "passed",
+      "proposition_refs": ["p-04", "p-07"]
+    },
+    {
+      "node_id": "n-rainfall",
+      "node_type": "confounder",
+      "label": "Seasonal rainfall",
+      "definition": "Monthly rainfall in program catchments (county meteorological grid).",
+      "unit_of_analysis": "village catchment",
+      "time_scope": { "start": "2025-01-01T00:00:00Z" },
+      "jurisdiction": "Kitui County, Kenya",
+      "indicators": [
+        {
+          "indicator_id": "i-monthly-rainfall",
+          "name": "Monthly rainfall",
+          "measurement_method": "Meteorological grid data",
+          "unit": "mm",
+          "collection_frequency": "monthly",
+          "fact_type": "impact.context.rainfall_recorded"
+        }
+      ],
+      "provenance": {
+        "extraction_method": "ai_inferred",
+        "rationale": "Common cause of water-source choice and disease transmission; inferred from p-06.",
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      },
+      "semantic_status": "passed",
+      "proposition_refs": ["p-06"]
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "e1-rehab-functional",
+      "source_node_id": "n-borehole-rehab",
+      "target_node_id": "n-functional-points",
+      "relation_type": "causes",
+      "polarity": "increase",
+      "dose_shape": "monotone",
+      "mechanism": "Mechanical rehabilitation restores pumping capacity; certified yield tests convert non-functional assets into working water points.",
+      "comparator": "No rehabilitation: boreholes remain non-functional (baseline functionality census, Dec 2024).",
+      "assumptions": [
+        {
+          "assumption_id": "as-parts",
+          "statement": "Spare parts and trained pump mechanics remain available throughout the program period.",
+          "testability": "monitorable",
+          "status": "open"
+        }
+      ],
+      "confounders": [],
+      "confidence_bps": 9500,
+      "validation_status": "plausible",
+      "issuance_critical": true,
+      "review_required": false,
+      "claim_ref": null,
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "urn:ixo:toc-extraction:bafyexampletoc001", "locator": "json_pointer:/propositions/0" }],
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      }
+    },
+    {
+      "edge_id": "e2-functional-use",
+      "source_node_id": "n-functional-points",
+      "target_node_id": "n-safe-water-use",
+      "relation_type": "enables",
+      "polarity": "increase",
+      "dose_shape": "saturating",
+      "mechanism": "A functioning nearby improved source lowers collection time and cost, shifting household source choice toward the improved source.",
+      "comparator": "Villages with non-functional points: households continue using surface water or distant sources.",
+      "assumptions": [
+        {
+          "assumption_id": "as-affordability",
+          "statement": "User fees at rehabilitated points do not price out poorer households.",
+          "testability": "testable",
+          "status": "open"
+        }
+      ],
+      "confounders": [
+        {
+          "name": "Distance to alternative improved sources",
+          "node_id": null,
+          "treatment": "open_risk"
+        }
+      ],
+      "effect_modifiers": ["n-rainfall"],
+      "confidence_bps": 8600,
+      "validation_status": "hypothesized",
+      "issuance_critical": true,
+      "review_required": false,
+      "claim_ref": null,
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "urn:ixo:toc-extraction:bafyexampletoc001", "locator": "json_pointer:/propositions/2" }],
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      }
+    },
+    {
+      "edge_id": "e3-use-disease",
+      "source_node_id": "n-safe-water-use",
+      "target_node_id": "n-disease-incidence",
+      "relation_type": "causes",
+      "polarity": "decrease",
+      "dose_shape": "monotone",
+      "mechanism": "Improved-source water carries lower pathogen load; reduced ingestion of contaminated water lowers diarrheal disease transmission among under-fives.",
+      "comparator": "Matched non-program catchments with comparable baseline incidence and rainfall exposure.",
+      "assumptions": [
+        {
+          "assumption_id": "as-no-recontamination",
+          "statement": "Point-of-use recontamination does not fully offset source-water quality gains.",
+          "testability": "testable",
+          "status": "open"
+        }
+      ],
+      "confounders": [
+        {
+          "name": "Seasonal rainfall",
+          "node_id": "n-rainfall",
+          "treatment": "measured"
+        }
+      ],
+      "adjustment_set": ["n-rainfall"],
+      "estimand": "att",
+      "evidence_refs": ["l-3-surveillance-edge"],
+      "confidence_bps": 8200,
+      "validation_status": "hypothesized",
+      "issuance_critical": true,
+      "review_required": false,
+      "claim_ref": null,
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "urn:ixo:toc-extraction:bafyexampletoc001", "locator": "json_pointer:/propositions/3" }],
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      }
+    },
+    {
+      "edge_id": "e4-rain-disease",
+      "source_node_id": "n-rainfall",
+      "target_node_id": "n-disease-incidence",
+      "relation_type": "causes",
+      "polarity": "mixed",
+      "dose_shape": "unknown",
+      "mechanism": "Heavy rainfall contaminates surface sources and spreads pathogens; drought concentrates use of unsafe sources.",
+      "comparator": "Not applicable — background confounder path, modeled for adjustment, not certified.",
+      "assumptions": [],
+      "confounders": [],
+      "confidence_bps": 9000,
+      "validation_status": "plausible",
+      "issuance_critical": false,
+      "review_required": false,
+      "claim_ref": null,
+      "provenance": {
+        "extraction_method": "ai_inferred",
+        "rationale": "Standard WASH epidemiology; required to justify the adjustment set on e3-use-disease.",
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      }
+    },
+    {
+      "edge_id": "e5-rain-use",
+      "source_node_id": "n-rainfall",
+      "target_node_id": "n-safe-water-use",
+      "relation_type": "causes",
+      "polarity": "decrease",
+      "dose_shape": "unknown",
+      "mechanism": "In wet months households substitute free surface water for improved sources, reducing improved-source use.",
+      "comparator": "Not applicable — background confounder path, modeled for adjustment, not certified.",
+      "assumptions": [],
+      "confounders": [],
+      "confidence_bps": 8800,
+      "validation_status": "plausible",
+      "issuance_critical": false,
+      "review_required": false,
+      "claim_ref": null,
+      "provenance": {
+        "extraction_method": "ai_inferred",
+        "rationale": "Completes the back-door path rainfall → water use → disease that the adjustment set must block.",
+        "extractor_ref": "outcome-graph/causal-modeler@0.1.0"
+      }
+    }
+  ],
+  "provenance": {
+    "extraction_method": "ai_extracted",
+    "source_spans": [{ "artifact_id": "urn:ixo:toc-extraction:bafyexampletoc001", "locator": "json_pointer:/propositions" }],
+    "extractor_ref": "outcome-graph/causal-modeler@0.1.0",
+    "extracted_at": "2026-08-15T12:00:00Z"
+  },
+  "expert_reviews": [
+    {
+      "reviewer": { "name": "Program M&E lead", "role": "domain_expert" },
+      "reviewed_at": "2026-08-15T15:00:00Z",
+      "verdict": "approved_with_conditions",
+      "conditions": ["Confirm operationalization of 'safe water use' before minting the mediator node claim."],
+      "packet_ref": "urn:ixo:review-packet:bafyexamplepacket001"
+    }
+  ]
+}

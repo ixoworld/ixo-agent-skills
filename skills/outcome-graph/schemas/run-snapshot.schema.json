@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/run-snapshot.v1.json",
+  "title": "RunSnapshot",
+  "description": "One guided run, resolved for display: workflow state, the artifacts it points at, the edge-status overlay, and the checkpoint run totals. Composed server-side by app/shared/snapshot.mjs; consumed by the Outcome Graph portal app. Read-only projection — never an input to the workflow.",
+  "type": "object",
+  "required": ["schema", "run", "overlay", "totals"],
+  "properties": {
+    "schema": { "const": "outcome.run-snapshot.v1" },
+    "generated_at": {
+      "type": ["string", "null"],
+      "description": "ISO 8601. Null when the caller composes deterministically (fixtures, tests)."
+    },
+    "run": {
+      "type": "object",
+      "required": ["workflow_id", "current_state", "phase", "phases", "transitions"],
+      "properties": {
+        "workflow_id": { "type": "string" },
+        "created_at": { "type": ["string", "null"] },
+        "current_state": {
+          "$ref": "https://w3id.org/ixo/outcome-graph/schema/common.defs.v1.json#/$defs/workflow_state"
+        },
+        "phase": {
+          "type": "object",
+          "required": ["number", "of", "name"],
+          "properties": {
+            "number": { "type": "integer", "minimum": 0, "maximum": 7 },
+            "of": { "const": 7 },
+            "name": { "type": "string" },
+            "why": { "type": "string" }
+          }
+        },
+        "phases": {
+          "type": "array",
+          "description": "All seven phases with derived progress, for the timeline rail.",
+          "items": {
+            "type": "object",
+            "required": ["number", "name", "status"],
+            "properties": {
+              "number": { "type": "integer", "minimum": 1, "maximum": 7 },
+              "name": { "type": "string" },
+              "why": { "type": "string" },
+              "states": { "type": "array", "items": { "type": "string" } },
+              "status": {
+                "enum": ["done", "current", "paused", "terminal", "pending"],
+                "description": "paused = REVIEW_REQUIRED. Never render it as failure."
+              },
+              "entered": {
+                "type": ["object", "null"],
+                "properties": {
+                  "at": { "type": "string" },
+                  "approved_by": { "type": ["string", "null"] },
+                  "state": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "target_tier": { "type": ["integer", "null"], "minimum": 0, "maximum": 4 },
+        "issuer_context": { "type": ["object", "null"] },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to", "at", "approved_by"],
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "at": { "type": "string" },
+              "task_id": { "type": ["string", "null"] },
+              "envelope_ref": { "type": ["string", "null"] },
+              "approved_by": { "enum": ["orchestrator", "human_reviewer"] }
+            }
+          }
+        },
+        "open_review_packets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ref"],
+            "properties": {
+              "ref": { "type": "string" },
+              "markdown": {
+                "type": ["string", "null"],
+                "description": "Raw packet source. Rendered as text — never injected as HTML."
+              }
+            }
+          }
+        },
+        "brief": {
+          "type": ["object", "null"],
+          "description": "outcome.run-brief.v1 when the run wrote one; null falls back to a generic phase-1 card."
+        }
+      }
+    },
+    "toc": { "type": ["object", "null"], "description": "outcome.toc-extraction.v1" },
+    "graph": { "type": ["object", "null"], "description": "outcome.causal-graph.v1" },
+    "evidence": { "type": ["object", "null"], "description": "outcome.evidence-graph.v1" },
+    "report": { "type": ["object", "null"], "description": "outcome.validation-report.v1" },
+    "certificate": { "type": ["object", "null"], "description": "OutcomeCertificate (W3C VC 2.0)" },
+    "overlay": {
+      "type": "object",
+      "description": "The immutable graph overlaid by the latest validation report. Computed only by scripts/lib/overlay.mjs.",
+      "required": ["edge_statuses"],
+      "properties": {
+        "edge_statuses": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["status", "base"],
+            "properties": {
+              "status": {
+                "$ref": "https://w3id.org/ixo/outcome-graph/schema/common.defs.v1.json#/$defs/validation_status"
+              },
+              "base": {
+                "$ref": "https://w3id.org/ixo/outcome-graph/schema/common.defs.v1.json#/$defs/validation_status",
+                "description": "Status recorded on the immutable edge, before the overlay."
+              },
+              "bps": { "type": ["integer", "null"], "minimum": 0, "maximum": 10000 },
+              "basis": {
+                "type": ["string", "null"],
+                "description": "The report's stated reason for the change; null when unchanged."
+              }
+            }
+          }
+        },
+        "attainable_tier": {
+          "type": ["object", "null"],
+          "properties": {
+            "tier": { "type": "integer", "minimum": 0, "maximum": 4 },
+            "capped_by": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "stale": {
+          "type": "boolean",
+          "description": "True when the report is bound to an older graph version — displayed statuses need re-validation."
+        }
+      }
+    },
+    "lineage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "graph_version_id": { "type": "string" },
+          "version": { "type": ["integer", "null"] },
+          "status": { "type": ["string", "null"] },
+          "supersedes": { "type": ["string", "null"] },
+          "superseded_by": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "description": "The run-totals row from templates/user-checkpoint.md, in template order. The canvas shows these ten counts in this order so the conversation and the picture describe one run.",
+      "properties": {
+        "sources": { "type": "integer", "minimum": 0 },
+        "propositions": { "type": "integer", "minimum": 0 },
+        "nodes": { "type": "integer", "minimum": 0 },
+        "edges": { "type": "integer", "minimum": 0 },
+        "evidence_links": { "type": "integer", "minimum": 0 },
+        "gaps": { "type": "integer", "minimum": 0, "description": "Open gaps only; closed ones are history." },
+        "passes": { "type": "integer", "minimum": 0 },
+        "warnings": { "type": "integer", "minimum": 0 },
+        "failures": { "type": "integer", "minimum": 0 },
+        "blockers": { "type": "integer", "minimum": 0 }
+      },
+      "required": [
+        "sources",
+        "propositions",
+        "nodes",
+        "edges",
+        "evidence_links",
+        "gaps",
+        "passes",
+        "warnings",
+        "failures",
+        "blockers"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "outcome.geo-boundary.v1",
+  "boundary_id": "urn:ixo:geo-boundary:bafkreic6fazol2t6xoty4r65lxeilqjqeoow3jjxhr57lzuym3iveej3ze",
+  "title": "Safe Water for Kitui — program catchment v1",
+  "description": "Canonical geo boundary for the clean-water program: one concave catchment polygon around Kitui town with one exclusion hole (gazetted quarry site), plus the registered rehabilitated water points used as withinRadius centers. The boundary_id is the CIDv1(raw, sha256) of the canonical-JSON bytes (sorted keys, no whitespace) of the `boundary` member — the oracle re-derives and verifies it before every geo answer, and the same bytes anchor on-chain as a collection LinkedResource when the engine's geo v2 surface activates (rfc-005 §3.2: re-drawing a boundary is a new anchored resource). Coordinates are integer micro-degrees ([lonMicro, latMicro]); rings are closed, exterior counterclockwise, holes clockwise, antimeridian pre-split per RFC 7946 §3.1.9.",
+  "program_ref": "og-clean-water-kitui",
+  "source": "Digitized from the Kitui Water Partnership program map (2026-07); quarry exclusion per county gazette notice. Canonical form per docs/rfcs/rfc-005-geo-v2-activation.md §3.",
+  "boundary": {
+    "units": "microdegrees",
+    "geometry": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [37930000, -1430000],
+            [38020000, -1455000],
+            [38095000, -1420000],
+            [38105000, -1330000],
+            [38040000, -1300000],
+            [38010000, -1345000],
+            [37960000, -1295000],
+            [37925000, -1360000],
+            [37930000, -1430000]
+          ],
+          [
+            [38050000, -1400000],
+            [38050000, -1390000],
+            [38060000, -1390000],
+            [38060000, -1400000],
+            [38050000, -1400000]
+          ]
+        ]
+      ]
+    },
+    "reference_points": [
+      { "point_id": "wp-kitui-007", "label": "Kwa Vonza rehabilitated borehole", "lon": 38046000, "lat": -1402000 },
+      { "point_id": "wp-kitui-014", "label": "Kitui town rehabilitated borehole", "lon": 38016000, "lat": -1366000 },
+      { "point_id": "wp-kitui-021", "label": "Museve rehabilitated borehole", "lon": 37968000, "lat": -1412000 }
+    ]
+  }
+}

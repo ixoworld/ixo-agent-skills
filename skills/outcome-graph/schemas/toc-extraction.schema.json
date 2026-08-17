@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/toc-extraction.v1.json",
+  "title": "TheoryOfChangeExtraction",
+  "description": "Output of the toc-intake agent: a theory of change (any modality) normalized into typed, provenance-carrying propositions. Perception-zone artifact (determinism_class: probabilistic_frozen) — probabilistic extraction is permitted, but the result is frozen and content-addressed before anything downstream consumes it. No causal edges live here; the causal-modeler proposes those separately.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.toc-extraction.v1" },
+    "extraction_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+    "workflow_id": { "type": "string" },
+    "source_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifact_id": { "type": "string" },
+          "media_type": {
+            "type": "string",
+            "enum": ["image", "video", "audio", "text", "document", "table", "json", "rdf", "timeseries", "geospatial", "credential", "log", "api_snapshot", "mixed"]
+          },
+          "sha256": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" },
+          "uri": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "required": ["artifact_id", "media_type", "sha256"],
+        "additionalProperties": false
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Program-level scope every proposition inherits unless it overrides.",
+      "properties": {
+        "domain": { "type": "string" },
+        "jurisdiction": { "type": "string" },
+        "population": { "type": "string" },
+        "time_frame": { "$ref": "common.defs.v1.json#/$defs/time_interval" },
+        "implementing_parties": {
+          "type": "array",
+          "items": { "$ref": "common.defs.v1.json#/$defs/actor_ref" }
+        }
+      },
+      "required": ["domain"],
+      "additionalProperties": false
+    },
+    "propositions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/proposition" }
+    },
+    "unparsed_regions": {
+      "type": "array",
+      "description": "Regions of source artifacts the intake could not confidently parse. Never silently dropped — these route to review.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifact_id": { "type": "string" },
+          "locator": { "type": "string" },
+          "reason": { "type": "string" }
+        },
+        "required": ["artifact_id", "locator", "reason"],
+        "additionalProperties": false
+      }
+    },
+    "extraction_quality": {
+      "type": "object",
+      "properties": {
+        "coverage_bps": {
+          "$ref": "common.defs.v1.json#/$defs/bps",
+          "description": "Estimated share of source content represented by propositions."
+        },
+        "ambiguity_count": { "type": "integer", "minimum": 0 },
+        "requires_review": { "type": "boolean" }
+      },
+      "required": ["coverage_bps", "requires_review"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["schema", "extraction_id", "workflow_id", "source_artifacts", "context", "propositions", "extraction_quality"],
+  "additionalProperties": false,
+  "$defs": {
+    "proposition": {
+      "type": "object",
+      "properties": {
+        "proposition_id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["actor", "intervention", "activity", "output", "outcome", "impact", "mechanism", "assumption", "indicator", "risk", "contextual_factor", "comparator"]
+        },
+        "statement": {
+          "type": "string",
+          "description": "The proposition in normalized natural language, one assertion per proposition."
+        },
+        "asserted_proposition": {
+          "$ref": "common.defs.v1.json#/$defs/asserted_proposition",
+          "description": "S-P-O form where expressible — the graph-native substrate the causal-modeler builds on."
+        },
+        "provenance": { "$ref": "common.defs.v1.json#/$defs/provenance" },
+        "confidence_bps": { "$ref": "common.defs.v1.json#/$defs/bps" },
+        "ambiguities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Unresolved readings. Non-empty ambiguities on intervention/outcome propositions force review — the pipeline never guesses."
+        },
+        "relates_to": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "proposition_ids this one qualifies or depends on (NOT causal edges — those are the causal-modeler's job)."
+        }
+      },
+      "required": ["proposition_id", "kind", "statement", "provenance", "confidence_bps"],
+      "additionalProperties": false
+    }
+  }
+}

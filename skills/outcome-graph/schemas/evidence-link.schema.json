@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/evidence-link.v1.json",
+  "title": "EvidenceGraph",
+  "description": "The evidence layer bound to one CausalGraphVersion: evidence artifacts, typed links from artifacts to nodes/edges, and first-class evidence gaps. Artifacts of kind 'verified_claim' carry a receipt_ref — this is the claim-supports-claim primitive: the supporting claim's evaluation receipt (Ed25519 JWS, sch ixo.eval-engine.receipt.v1) is CID-addressed and PUBLIC at the engine's GET /v1/receipts/:cid, so any verifier can dereference and verify it against GET /v1/issuer-keys. Linked verified claims compose into an evidence graph of independently checkable receipts.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.evidence-graph.v1" },
+    "evidence_graph_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+    "workflow_id": { "type": "string" },
+    "graph_version_ref": { "type": "string" },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidence_artifact" }
+    },
+    "links": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/claim_evidence_link" }
+    },
+    "gaps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidence_gap" }
+    }
+  },
+  "required": ["schema", "evidence_graph_id", "workflow_id", "graph_version_ref", "artifacts", "links", "gaps"],
+  "additionalProperties": false,
+  "$defs": {
+    "evidence_artifact": {
+      "type": "object",
+      "description": "A reference to an external-world observation or attestation. Working material produced by pipeline agents is NEVER an evidence artifact (see references/evidence-admissibility.md anti-gaming rules).",
+      "properties": {
+        "artifact_id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["dataset", "document", "image", "audio", "video", "attestation", "measurement", "api_snapshot", "transcript", "verified_claim", "other"]
+        },
+        "media_type": {
+          "type": "string",
+          "enum": ["image", "video", "audio", "text", "document", "table", "json", "rdf", "timeseries", "geospatial", "credential", "log", "api_snapshot", "mixed"]
+        },
+        "description": { "type": "string" },
+        "sha256": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "backend": { "type": "string", "enum": ["matrix", "ipfs", "cellnode", "local"] },
+            "cid": { "type": "string" },
+            "uri": { "type": "string" }
+          },
+          "required": ["backend"],
+          "additionalProperties": false
+        },
+        "producer": {
+          "type": "object",
+          "properties": {
+            "did": { "$ref": "common.defs.v1.json#/$defs/did" },
+            "name": { "type": "string" },
+            "independence": {
+              "type": "string",
+              "enum": ["implementing_party", "delegated_partner", "independent_third_party", "beneficiary", "automated_system"]
+            },
+            "provenance_class": {
+              "type": "string",
+              "enum": ["client_assisted", "server_verified"],
+              "description": "evals-engine FactOrigin provenance class. client_assisted is reliability-capped."
+            },
+            "origin_keys": {
+              "type": "object",
+              "description": "Keys for the engine's independence-graph computation: artifacts sharing a value on any key are the same effective source.",
+              "properties": {
+                "submitter": { "type": "string" },
+                "device": { "type": "string" },
+                "api_origin": { "type": "string" },
+                "issuer": { "type": "string" },
+                "funding_source": { "type": "string" },
+                "pipeline_run": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["name", "independence"],
+          "additionalProperties": false
+        },
+        "observed_at": { "$ref": "common.defs.v1.json#/$defs/time_interval" },
+        "collected_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+        "envelope_ref": {
+          "type": ["string", "null"],
+          "description": "urn of the full evals-engine evidence-envelope.v2 record, when one has been minted."
+        },
+        "receipt_ref": {
+          "type": ["object", "null"],
+          "description": "Required when kind = 'verified_claim': the supporting claim's evaluation receipt. receipt_cid dereferences at the engine's public GET /v1/receipts/:cid; the JWS verifies against GET /v1/issuer-keys (kid did:web:<host>#key-1).",
+          "properties": {
+            "receipt_cid": { "type": "string", "description": "CIDv1 of the compact JWS — also the on-chain MsgEvaluateClaim.verificationProof." },
+            "jti": { "type": "string", "description": "The receipt payload's jti, once the receipt has been fetched and verified." },
+            "verdict_class": { "$ref": "common.defs.v1.json#/$defs/engine_verdict_class" },
+            "claim_id": { "type": "string", "description": "The supporting claim's id = CIDv1(raw, sha256) of its body bytes." }
+          },
+          "required": ["receipt_cid", "verdict_class"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["artifact_id", "kind", "media_type", "sha256", "storage", "producer", "collected_at"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "kind": { "const": "verified_claim" } },
+            "required": ["kind"]
+          },
+          "then": {
+            "properties": { "receipt_ref": { "type": "object" } },
+            "required": ["receipt_ref"]
+          }
+        }
+      ]
+    },
+    "claim_evidence_link": {
+      "type": "object",
+      "description": "Binds one artifact to one graph element with a polarity and an admissibility record. Admissibility is per (artifact, claim) pair — the same dataset can be admissible for an output claim and inadmissible for an outcome claim.",
+      "properties": {
+        "link_id": { "type": "string" },
+        "target_kind": { "type": "string", "enum": ["node", "edge", "graph"] },
+        "target_id": { "type": "string" },
+        "artifact_id": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": ["supports", "refutes", "qualifies", "neutral"],
+          "description": "evals-engine fact polarity vocabulary, used verbatim."
+        },
+        "indicator_id": {
+          "type": ["string", "null"],
+          "description": "For node links: which indicator this artifact measures."
+        },
+        "bears_on_relationship": {
+          "type": "boolean",
+          "description": "For edge links: true only if the evidence bears on the RELATIONSHIP (comparison, dose-response, mechanism trace), not merely a level of one endpoint. Endpoint-only evidence supports nodes, not edges."
+        },
+        "admissibility": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["admissible", "admissible_with_disclosures", "inadmissible", "unevaluated"]
+            },
+            "gates": {
+              "type": "object",
+              "description": "The five gates of references/evidence-admissibility.md.",
+              "properties": {
+                "integrity": { "$ref": "common.defs.v1.json#/$defs/check_status" },
+                "authority": { "$ref": "common.defs.v1.json#/$defs/check_status" },
+                "freshness": { "$ref": "common.defs.v1.json#/$defs/check_status" },
+                "relevance_completeness": { "$ref": "common.defs.v1.json#/$defs/check_status" },
+                "provenance_chain": { "$ref": "common.defs.v1.json#/$defs/check_status" }
+              },
+              "required": ["integrity", "authority", "freshness", "relevance_completeness", "provenance_chain"],
+              "additionalProperties": false
+            },
+            "disclosures": { "type": "array", "items": { "type": "string" } },
+            "reasons": { "type": "array", "items": { "type": "string" } },
+            "evaluated_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" }
+          },
+          "required": ["status"],
+          "additionalProperties": false
+        },
+        "coverage_bps": {
+          "$ref": "common.defs.v1.json#/$defs/bps",
+          "description": "Share of the claimed population/period this artifact actually covers. Silent extrapolation fails admissibility gate 4."
+        },
+        "fact_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "factIds of StructuredFacts emitted from this link into engine fact packets."
+        }
+      },
+      "required": ["link_id", "target_kind", "target_id", "artifact_id", "role", "admissibility"],
+      "additionalProperties": false
+    },
+    "evidence_gap": {
+      "type": "object",
+      "description": "A missing artifact as a first-class workflow object — never a prose note.",
+      "properties": {
+        "gap_id": { "type": "string" },
+        "target_kind": { "type": "string", "enum": ["node", "edge", "graph"] },
+        "target_id": { "type": "string" },
+        "required_artifact_class": { "type": "string" },
+        "description": { "type": "string" },
+        "who_could_produce": { "type": "string" },
+        "tier_with": { "$ref": "common.defs.v1.json#/$defs/tier" },
+        "tier_without": { "$ref": "common.defs.v1.json#/$defs/tier" },
+        "status": { "type": "string", "enum": ["open", "fulfilled", "waived"] },
+        "waived_by": { "$ref": "common.defs.v1.json#/$defs/actor_ref" }
+      },
+      "required": ["gap_id", "target_kind", "target_id", "required_artifact_class", "description", "tier_with", "tier_without", "status"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "schema": "outcome.toc-extraction.v1",
+  "extraction_id": "urn:ixo:toc-extraction:bafyexampletoc001",
+  "workflow_id": "wf-clean-water-001",
+  "source_artifacts": [
+    {
+      "artifact_id": "src-narrative-01",
+      "media_type": "document",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "description": "Program narrative: 'Safe Water for Kitui' theory of change, 6 pages."
+    }
+  ],
+  "context": {
+    "domain": "wash",
+    "jurisdiction": "Kitui County, Kenya",
+    "population": "rural households in program catchment areas",
+    "time_frame": { "start": "2025-01-01T00:00:00Z", "end": "2026-12-31T00:00:00Z" },
+    "implementing_parties": [{ "name": "Kitui Water Partnership", "role": "implementing_party" }]
+  },
+  "propositions": [
+    {
+      "proposition_id": "p-01",
+      "kind": "intervention",
+      "statement": "The program rehabilitates non-functional boreholes in 40 villages.",
+      "asserted_proposition": {
+        "subject": "Kitui Water Partnership",
+        "predicate": "rehabilitates",
+        "object": "non-functional boreholes",
+        "qualifiers": {
+          "time_scope": { "start": "2025-01-01T00:00:00Z", "end": "2025-06-30T00:00:00Z" },
+          "location_scope": "40 villages, Kitui County",
+          "quantity": { "value": 60, "unit": "boreholes" }
+        }
+      },
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "src-narrative-01", "locator": "page:2,para:1" }],
+        "extractor_ref": "outcome-graph/toc-intake@0.1.0"
+      },
+      "confidence_bps": 9600
+    },
+    {
+      "proposition_id": "p-02",
+      "kind": "output",
+      "statement": "Rehabilitated boreholes remain functional water points serving their villages.",
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "src-narrative-01", "locator": "page:2,para:3" }],
+        "extractor_ref": "outcome-graph/toc-intake@0.1.0"
+      },
+      "confidence_bps": 9400
+    },
+    {
+      "proposition_id": "p-03",
+      "kind": "outcome",
+      "statement": "Households in served villages use safe water for drinking and cooking.",
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "src-narrative-01", "locator": "page:3,para:1" }],
+        "extractor_ref": "outcome-graph/toc-intake@0.1.0"
+      },
+      "confidence_bps": 9100,
+      "ambiguities": ["'Safe water use' is not operationalized in the narrative; intake proposes 'primary drinking-water source is an improved source' pending review."]
+    },
+    {
+      "proposition_id": "p-04",
+      "kind": "outcome",
+      "statement": "Incidence of waterborne disease among children under five falls in served villages.",
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "src-narrative-01", "locator": "page:3,para:4" }],
+        "extractor_ref": "outcome-graph/toc-intake@0.1.0"
+      },
+      "confidence_bps": 9500
+    },
+    {
+      "proposition_id": "p-05",
+      "kind": "assumption",
+      "statement": "Spare parts and trained pump mechanics remain available throughout the program period.",
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "src-narrative-01", "locator": "page:4,para:2" }],
+        "extractor_ref": "outcome-graph/toc-intake@0.1.0"
+      },
+      "confidence_bps": 9000
+    },
+    {
+      "proposition_id": "p-06",
+      "kind": "risk",
+      "statement": "Seasonal rainfall independently changes both water-source choice and disease transmission.",
+      "provenance": {
+        "extraction_method": "ai_inferred",
+        "rationale": "Not stated in the narrative; standard WASH confounder inferred so the causal-modeler must treat rainfall explicitly.",
+        "extractor_ref": "outcome-graph/toc-intake@0.1.0"
+      },
+      "confidence_bps": 8200
+    },
+    {
+      "proposition_id": "p-07",
+      "kind": "indicator",
+      "statement": "Clinic-reported diarrheal cases per 1,000 children under five per month, from county health surveillance.",
+      "provenance": {
+        "extraction_method": "ai_extracted",
+        "source_spans": [{ "artifact_id": "src-narrative-01", "locator": "page:5,table:1" }],
+        "extractor_ref": "outcome-graph/toc-intake@0.1.0"
+      },
+      "confidence_bps": 9700,
+      "relates_to": ["p-04"]
+    }
+  ],
+  "extraction_quality": {
+    "coverage_bps": 9200,
+    "ambiguity_count": 1,
+    "requires_review": false
+  }
+}

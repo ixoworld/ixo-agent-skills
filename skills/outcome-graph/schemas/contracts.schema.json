@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/contracts.v1.json",
+  "title": "WorkflowContracts",
+  "description": "The three contract types that gate every state transition: TaskContract (orchestrator → specialist), ResultContract (specialist → orchestrator), VerificationEnvelope (proof attached before a transition is approved). No step completes because an agent says it is done; it completes when the required structured outputs and validation evidence are attached. Plus the durable WorkflowStateRecord.",
+  "$defs": {
+    "task_contract": {
+      "type": "object",
+      "properties": {
+        "contract": { "const": "outcome.task-contract.v1" },
+        "task_id": { "type": "string" },
+        "workflow_id": { "type": "string" },
+        "state_in": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "agent": { "$ref": "common.defs.v1.json#/$defs/agent_name" },
+        "objective": { "type": "string" },
+        "input_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Content-addressed refs to every input the specialist may use. Inputs not listed here are out of bounds."
+        },
+        "allowed_tools": { "type": "array", "items": { "type": "string" } },
+        "required_output_schema": {
+          "type": "string",
+          "description": "The schema the structured output MUST validate against, e.g. 'outcome.toc-extraction.v1'."
+        },
+        "success_criteria": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "stop_conditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions under which the specialist must stop and return with recommendation 'escalate' instead of guessing."
+        },
+        "escalation_target": { "type": "string" },
+        "attempt": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["contract", "task_id", "workflow_id", "state_in", "agent", "objective", "input_refs", "allowed_tools", "required_output_schema", "success_criteria", "stop_conditions", "escalation_target", "attempt"],
+      "additionalProperties": false
+    },
+    "result_contract": {
+      "type": "object",
+      "properties": {
+        "contract": { "const": "outcome.result-contract.v1" },
+        "task_id": { "type": "string" },
+        "agent": { "$ref": "common.defs.v1.json#/$defs/agent_name" },
+        "state_out_candidate": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "structured_output_ref": {
+          "type": "string",
+          "description": "Content-addressed ref to the produced artifact. The artifact, not this contract, is the deliverable."
+        },
+        "claims_made": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Every completion claim the specialist asserts, each of which the VerificationEnvelope must cover."
+        },
+        "tool_calls_summary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tool": { "type": "string" },
+              "purpose": { "type": "string" },
+              "output_ref": { "type": ["string", "null"] }
+            },
+            "required": ["tool", "purpose"],
+            "additionalProperties": false
+          }
+        },
+        "provenance_refs": { "type": "array", "items": { "type": "string" } },
+        "uncertainties": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Known weaknesses, ambiguities, low-confidence extractions. Empty uncertainties on a non-trivial task is itself suspicious."
+        },
+        "recommendation": { "type": "string", "enum": ["pass", "revise", "escalate"] }
+      },
+      "required": ["contract", "task_id", "agent", "state_out_candidate", "structured_output_ref", "claims_made", "tool_calls_summary", "provenance_refs", "uncertainties", "recommendation"],
+      "additionalProperties": false
+    },
+    "verification_envelope": {
+      "type": "object",
+      "description": "Proof, not self-report: maps each completion claim to checkable evidence. Produced by deterministic tools where possible; agent- or human-produced checks are labeled as such.",
+      "properties": {
+        "contract": { "const": "outcome.verification-envelope.v1" },
+        "envelope_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "claim": { "type": "string", "description": "The completion claim being verified (from ResultContract.claims_made)." },
+              "method": { "type": "string", "enum": ["deterministic_tool", "schema_validation", "agent_judgment", "human_review"] },
+              "status": { "$ref": "common.defs.v1.json#/$defs/check_status" },
+              "evidence_ref": { "type": ["string", "null"], "description": "Tool output, report, or review record backing the status. Required when method is deterministic_tool or schema_validation." }
+            },
+            "required": ["claim", "method", "status"],
+            "additionalProperties": false
+          }
+        },
+        "verdict": { "type": "string", "enum": ["approve_transition", "block_transition"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["contract", "envelope_id", "task_id", "checks", "verdict"],
+      "additionalProperties": false
+    },
+    "workflow_state_record": {
+      "type": "object",
+      "description": "Durable state of one workflow instance (runs/<workflow_id>/state.json). The orchestrator is the only writer. Planning may be agentic; state advancement is deterministic and gated.",
+      "properties": {
+        "contract": { "const": "outcome.workflow-state.v1" },
+        "workflow_id": { "type": "string" },
+        "created_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+        "current_state": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "target_tier": { "$ref": "common.defs.v1.json#/$defs/tier" },
+        "source_hashes": { "type": "array", "items": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" } },
+        "issuer_context": {
+          "type": "object",
+          "properties": {
+            "issuer": { "$ref": "common.defs.v1.json#/$defs/actor_ref" },
+            "outcome_domain": { "type": "string" }
+          },
+          "required": ["outcome_domain"],
+          "additionalProperties": false
+        },
+        "artifact_refs": {
+          "type": "object",
+          "description": "Latest accepted artifact per kind.",
+          "properties": {
+            "toc_extraction": { "type": ["string", "null"] },
+            "causal_graph": { "type": ["string", "null"] },
+            "evidence_graph": { "type": ["string", "null"] },
+            "validation_report": { "type": ["string", "null"] },
+            "issuance_request": { "type": ["string", "null"] },
+            "certificate": { "type": ["string", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+              "to": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+              "at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+              "task_id": { "type": ["string", "null"] },
+              "envelope_ref": { "type": ["string", "null"], "description": "VerificationEnvelope that approved this transition. null only for SOURCE_ACCEPTED." },
+              "approved_by": { "type": "string", "enum": ["orchestrator", "human_reviewer"] }
+            },
+            "required": ["from", "to", "at", "envelope_ref", "approved_by"],
+            "additionalProperties": false
+          }
+        },
+        "open_review_packets": { "type": "array", "items": { "type": "string" } },
+        "retries": {
+          "type": "object",
+          "description": "Retry counters per task kind; orchestrator policy caps retries at 1 for extraction, then escalates.",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "required": ["contract", "workflow_id", "created_at", "current_state", "target_tier", "source_hashes", "issuer_context", "artifact_refs", "transitions"],
+      "additionalProperties": false
+    }
+  }
+}

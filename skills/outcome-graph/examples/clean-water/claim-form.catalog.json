@@ -1,0 +1,55 @@
+{
+  "catalog": "outcome.claim-form-catalog.v1",
+  "claim_class": "causal link (edge claim)",
+  "description": "Authoring-side field catalog for the edge-claim form. The deployed form is a claim-template LinkedResource (#vct) on the protocol entity did:ixo:entity:outcome-causal-link-v0; its content hash goes into the rubric's claimSchema.proof, and every $ref in rubric.json binds against a field listed here. Claim bodies are answers bags over these fields, canonicalized (sorted keys) so claimId = CIDv1(raw, sha256) of the bytes is reproducible.",
+  "fields": [
+    {
+      "name": "graphVersionRef",
+      "kind": "text",
+      "required": true,
+      "description": "Content address of the CausalGraphVersion the edge belongs to (urn:ixo:causal-graph:...)."
+    },
+    {
+      "name": "edgeId",
+      "kind": "text",
+      "required": true,
+      "description": "The edge under claim, e.g. e3-use-disease."
+    },
+    {
+      "name": "sourceNodeLabel",
+      "kind": "text",
+      "required": true,
+      "description": "Human-readable label of the edge's source node (shown to AI check and reviewers)."
+    },
+    {
+      "name": "targetNodeLabel",
+      "kind": "text",
+      "required": true,
+      "description": "Human-readable label of the edge's target node."
+    },
+    {
+      "name": "mechanism",
+      "kind": "text",
+      "required": true,
+      "description": "The mechanism narrative from the causal edge, verbatim."
+    },
+    {
+      "name": "comparisonCoverageBps",
+      "kind": "number",
+      "required": true,
+      "description": "Integer bps: share of the outcome series covered by program-vs-comparison data (from the evidence graph's link coverage)."
+    },
+    {
+      "name": "supportingReceipts",
+      "kind": "list:text",
+      "required": true,
+      "description": "Receipt CIDs of verified supporting claims (e.g. the output claim's evaluation receipt) — the claim-supports-claim carrier. The graph oracle re-verifies each JWS and verdict class server-side."
+    },
+    {
+      "name": "analystReportCid",
+      "kind": "file",
+      "required": false,
+      "description": "Analyst effect-evidence report attachment. When present, criterion OGC-104-ANALYST goes to the edge-analyst-check review task; when missing it scores whenMissing (0) deterministically."
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/causal-graph.v1.json",
+  "title": "CausalGraphVersion",
+  "description": "An immutable version of the causal model derived from a theory of change. Nodes and edges are first-class claim candidates: each can be projected into a claim body (canonicalized answers bag per its claim class's form, claimId = CIDv1 of the bytes) and evaluated independently by the evals-engine. Versions are never edited — revision produces a new version linked via supersedes/superseded_by; a revised element means a new claim body and a fresh evaluation.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.causal-graph.v1" },
+    "graph_id": { "type": "string", "description": "Stable identity across versions." },
+    "version": { "type": "integer", "minimum": 1 },
+    "graph_version_id": {
+      "$ref": "common.defs.v1.json#/$defs/content_addressed_uri",
+      "description": "Content address of this exact version (canonical JSON, sorted keys)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "review_required", "validated", "superseded", "rejected"]
+    },
+    "supersedes": { "type": ["string", "null"] },
+    "superseded_by": { "type": ["string", "null"] },
+    "toc_extraction_ref": { "type": "string" },
+    "context": {
+      "type": "object",
+      "properties": {
+        "domain": { "type": "string" },
+        "jurisdiction": { "type": "string" },
+        "population": { "type": "string" },
+        "time_frame": { "$ref": "common.defs.v1.json#/$defs/time_interval" }
+      },
+      "required": ["domain"],
+      "additionalProperties": false
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/causal_node" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/causal_edge" }
+    },
+    "provenance": { "$ref": "common.defs.v1.json#/$defs/provenance" },
+    "expert_reviews": {
+      "type": "array",
+      "description": "Human review records on this version (required for Tier 1).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reviewer": { "$ref": "common.defs.v1.json#/$defs/actor_ref" },
+          "reviewed_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+          "verdict": { "type": "string", "enum": ["approved", "approved_with_conditions", "rejected"] },
+          "conditions": { "type": "array", "items": { "type": "string" } },
+          "packet_ref": { "type": "string", "description": "Review packet this decision was recorded against." }
+        },
+        "required": ["reviewer", "reviewed_at", "verdict"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["schema", "graph_id", "version", "graph_version_id", "status", "toc_extraction_ref", "context", "nodes", "edges", "provenance"],
+  "additionalProperties": false,
+  "$defs": {
+    "indicator": {
+      "type": "object",
+      "properties": {
+        "indicator_id": { "type": "string" },
+        "name": { "type": "string" },
+        "measurement_method": { "type": "string" },
+        "unit": { "type": "string" },
+        "data_source": { "type": "string" },
+        "collection_frequency": { "type": "string" },
+        "fact_type": {
+          "type": "string",
+          "description": "The evals-engine fact type measurements of this indicator emit, e.g. 'impact.outcome.measured'. Pattern matches engine claim_type/fact_type convention.",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+        }
+      },
+      "required": ["indicator_id", "name", "measurement_method", "unit"],
+      "additionalProperties": false
+    },
+    "causal_node": {
+      "type": "object",
+      "properties": {
+        "node_id": { "type": "string" },
+        "node_type": {
+          "type": "string",
+          "enum": ["intervention", "activity", "output", "mediator", "outcome", "impact", "context", "moderator", "confounder"]
+        },
+        "label": { "type": "string" },
+        "definition": {
+          "type": "string",
+          "description": "Operationalized variable definition (SEM-01): what would count as this, observably."
+        },
+        "unit_of_analysis": {
+          "type": "string",
+          "description": "WHO/WHAT changes: individual, household, facility, cohort, ecosystem... (SEM-03)."
+        },
+        "time_scope": { "$ref": "common.defs.v1.json#/$defs/time_interval" },
+        "jurisdiction": { "type": "string" },
+        "indicators": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/indicator" }
+        },
+        "provenance": { "$ref": "common.defs.v1.json#/$defs/provenance" },
+        "semantic_status": {
+          "type": "string",
+          "enum": ["unchecked", "passed", "failed"],
+          "description": "Result of Pass-1 semantic checks (SEM-01..SEM-06)."
+        },
+        "claim_ref": {
+          "type": ["string", "null"],
+          "description": "Ref of the drafted/submitted claim body for this node, once structured (claim class e.g. 'impact.outcome.achieved'); at the engine boundary the canonical body's CIDv1 is the claimId."
+        },
+        "proposition_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "toc-extraction proposition_ids this node derives from."
+        }
+      },
+      "required": ["node_id", "node_type", "label", "definition", "unit_of_analysis", "provenance", "semantic_status"],
+      "additionalProperties": false
+    },
+    "assumption": {
+      "type": "object",
+      "properties": {
+        "assumption_id": { "type": "string" },
+        "statement": { "type": "string" },
+        "testability": { "type": "string", "enum": ["testable", "monitorable", "untestable"] },
+        "status": { "type": "string", "enum": ["open", "accepted", "resolved", "violated"] },
+        "accepted_by": { "$ref": "common.defs.v1.json#/$defs/actor_ref" }
+      },
+      "required": ["assumption_id", "statement", "testability", "status"],
+      "additionalProperties": false
+    },
+    "confounder_entry": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "node_id": {
+          "type": ["string", "null"],
+          "description": "If the confounder is modeled as a graph node, its id; null if only declared."
+        },
+        "treatment": {
+          "type": "string",
+          "enum": ["measured", "assumed_absent", "open_risk"],
+          "description": "measured → include in adjustment set; assumed_absent → must appear in assumptions[]; open_risk → caps edge at plausible (EDGE-03)."
+        }
+      },
+      "required": ["name", "treatment"],
+      "additionalProperties": false
+    },
+    "causal_edge": {
+      "type": "object",
+      "properties": {
+        "edge_id": { "type": "string" },
+        "source_node_id": { "type": "string" },
+        "target_node_id": { "type": "string" },
+        "relation_type": {
+          "type": "string",
+          "enum": ["causes", "enables", "moderates", "inhibits", "prevents", "contributes_to"]
+        },
+        "polarity": {
+          "type": "string",
+          "enum": ["increase", "decrease", "mixed", "unknown"],
+          "description": "Expected direction of effect on the target (EDGE-05)."
+        },
+        "dose_shape": {
+          "type": "string",
+          "enum": ["monotone", "threshold", "saturating", "u_shaped", "unknown"]
+        },
+        "mechanism": {
+          "type": "string",
+          "description": "By what process does source change target (EDGE-01). 'A leads to B' is not a mechanism."
+        },
+        "comparator": {
+          "type": "string",
+          "description": "The counterfactual comparison state (EDGE-06): no intervention, business-as-usual, alternative program."
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assumption" }
+        },
+        "confounders": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/confounder_entry" }
+        },
+        "effect_modifiers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "node_ids or named factors that change effect size across settings (EDGE-08 transportability)."
+        },
+        "adjustment_set": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "node_ids forming the proposed back-door adjustment set (ID-01). Must not contain mediators (ID-02) or colliders/descendants of target (EDGE-04)."
+        },
+        "estimand": {
+          "type": "string",
+          "enum": ["ate", "att", "dose_response", "distributional", "none_declared"]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "ClaimEvidenceLink link_ids bearing on this edge."
+        },
+        "confidence_bps": { "$ref": "common.defs.v1.json#/$defs/bps" },
+        "validation_status": { "$ref": "common.defs.v1.json#/$defs/validation_status" },
+        "issuance_critical": {
+          "type": "boolean",
+          "description": "True if this edge lies on a path cited by the target certificate. Issuance-critical edges get the strictest gates."
+        },
+        "review_required": { "type": "boolean" },
+        "claim_ref": {
+          "type": ["string", "null"],
+          "description": "Ref of the drafted/submitted claim body for this edge (claim class 'impact.causal_link.holds'), once structured; the canonical body's CIDv1 is the claimId."
+        },
+        "provenance": { "$ref": "common.defs.v1.json#/$defs/provenance" }
+      },
+      "required": ["edge_id", "source_node_id", "target_node_id", "relation_type", "polarity", "mechanism", "comparator", "assumptions", "confounders", "confidence_bps", "validation_status", "issuance_critical", "review_required", "provenance"],
+      "additionalProperties": false
+    }
+  }
+}

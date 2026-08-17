@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/issuance-request.v1.json",
+  "title": "IssuanceRequest",
+  "description": "Assembled by the certificate-issuer agent ONLY at state ISSUANCE_ELIGIBLE. Packages the certificate draft with the complete policy-evaluation record so the issuance decision is inspectable: which thresholds were checked, what the scores were, who signed off. The signing tool refuses any request whose decision is not 'issue' or whose policy_evaluation is incomplete.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.issuance-request.v1" },
+    "request_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+    "workflow_id": { "type": "string" },
+    "graph_version_ref": { "type": "string" },
+    "evidence_graph_ref": { "type": "string" },
+    "validation_report_ref": { "type": "string" },
+    "target_tier": { "$ref": "common.defs.v1.json#/$defs/tier" },
+    "computed_tier": {
+      "$ref": "common.defs.v1.json#/$defs/tier",
+      "description": "From ValidationReport.attainable_tier — the certificate tier MUST equal min(target_tier, computed_tier)."
+    },
+    "certificate_draft_ref": {
+      "type": "string",
+      "description": "Content-addressed ref to the unsigned OutcomeCertificate (outcome-certificate.schema.json)."
+    },
+    "policy_evaluation": {
+      "type": "object",
+      "properties": {
+        "policy_ref": { "$ref": "common.defs.v1.json#/$defs/versioned_ref" },
+        "thresholds_met": { "type": "boolean" },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "requirement": { "type": "string" },
+              "status": { "$ref": "common.defs.v1.json#/$defs/check_status" },
+              "evidence_ref": { "type": ["string", "null"] }
+            },
+            "required": ["requirement", "status"],
+            "additionalProperties": false
+          }
+        },
+        "rubric_scores": {
+          "type": "array",
+          "description": "Scoring outcomes from engine evaluations of the issuance-critical claims. Criteria are author-defined per rubric (live engine model — no fixed dimensions); scores are integer bps.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rubric_id": { "type": "string", "description": "sha256 hex of the rubric bytes (= on-chain LinkedResource proof)." },
+              "claim_id": { "type": "string" },
+              "method": { "type": "string", "enum": ["weighted_average", "all_pass", "minimum", "quorum"] },
+              "criterion_scores": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "pattern": "^[A-Z0-9]+-[0-9]+-[A-Z0-9-]+$" },
+                    "score_bps": { "$ref": "common.defs.v1.json#/$defs/bps" },
+                    "weight": { "type": "integer", "minimum": 1, "maximum": 5 }
+                  },
+                  "required": ["code", "score_bps"],
+                  "additionalProperties": false
+                }
+              },
+              "total_bps": { "$ref": "common.defs.v1.json#/$defs/bps" },
+              "thresholds": {
+                "type": "object",
+                "properties": {
+                  "approve_at": { "$ref": "common.defs.v1.json#/$defs/bps" },
+                  "partial_floor": { "$ref": "common.defs.v1.json#/$defs/bps" },
+                  "review_floor": { "$ref": "common.defs.v1.json#/$defs/bps" }
+                },
+                "required": ["approve_at"],
+                "additionalProperties": false
+              },
+              "verdict": { "$ref": "common.defs.v1.json#/$defs/engine_verdict" },
+              "verdict_class": { "$ref": "common.defs.v1.json#/$defs/engine_verdict_class" }
+            },
+            "required": ["rubric_id", "claim_id", "method", "criterion_scores", "total_bps", "thresholds", "verdict_class"],
+            "additionalProperties": false
+          }
+        },
+        "governance_signoff": {
+          "type": ["object", "null"],
+          "description": "Required for Tier 4, and for any tier where the governing rubric's HumanReview tasks are pending or where the issuance policy demands sign-off. (The live engine has no maturity ladder; autonomy is governed per collection via allowChainEvaluation plus authored HumanReview blocks — our own governance gate is additional to that.)",
+          "properties": {
+            "reviewer": { "$ref": "common.defs.v1.json#/$defs/actor_ref" },
+            "packet_ref": { "type": "string" },
+            "decided_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+            "conditions": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["reviewer", "packet_ref", "decided_at"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["policy_ref", "thresholds_met", "checks"],
+      "additionalProperties": false
+    },
+    "decision": { "type": "string", "enum": ["issue", "issue_at_lower_tier", "defer", "reject"] },
+    "decision_basis": {
+      "type": "string",
+      "description": "Plain-language statement of why, referencing check ids / gap ids."
+    },
+    "decided_by": {
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string", "enum": ["human", "system"] },
+        "did": { "$ref": "common.defs.v1.json#/$defs/did" },
+        "name": { "type": "string" }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
+    "decided_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" }
+  },
+  "required": ["schema", "request_id", "workflow_id", "graph_version_ref", "evidence_graph_ref", "validation_report_ref", "target_tier", "computed_tier", "certificate_draft_ref", "policy_evaluation", "decision", "decision_basis", "decided_by", "decided_at"],
+  "additionalProperties": false
+}

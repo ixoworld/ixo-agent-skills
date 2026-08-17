@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/run-brief.v1.json",
+  "title": "RunBrief",
+  "description": "The plain-language run brief the orchestrator states before invoking any specialist, persisted so surfaces other than the conversation can show it. Fields mirror the seven questions in the guided-mode run brief (SKILL.md) and templates/user-checkpoint.md. Written once at SOURCE_ACCEPTED and updated only when scope is corrected; it records intent, never results — counts live in the artifacts themselves.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.run-brief.v1" },
+    "brief_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+    "workflow_id": { "type": "string" },
+    "created_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+    "why": {
+      "type": "string",
+      "description": "The decision this run clarifies, in the user's terms."
+    },
+    "what": {
+      "type": "string",
+      "description": "The immediate output and the final deliverables."
+    },
+    "who": {
+      "type": "string",
+      "description": "Who supplies inputs, who decides, and who reviews or issues."
+    },
+    "where": {
+      "type": "string",
+      "description": "Accepted source set, the durable run directory, and any external systems."
+    },
+    "run_kind": {
+      "type": "string",
+      "enum": ["diagnostic", "issuance"],
+      "description": "A source with no issuance goal is a diagnostic run: no certificate is implied and the outcome focus stays provisional."
+    },
+    "target_tier": { "$ref": "common.defs.v1.json#/$defs/tier" },
+    "outcome_focus": {
+      "type": "object",
+      "description": "The outcome the run is about. Provisional until the user confirms it.",
+      "properties": {
+        "statement": { "type": "string" },
+        "provisional": { "type": "boolean" }
+      },
+      "required": ["statement", "provisional"],
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "array",
+      "description": "Accepted sources, named as the user would recognise them.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifact_id": { "type": "string" },
+          "label": { "type": "string" },
+          "sha256": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" }
+        },
+        "required": ["artifact_id", "label"],
+        "additionalProperties": false
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "description": "What this run deliberately does not cover, so scope creep is visible.",
+      "items": { "type": "string" }
+    }
+  },
+  "required": [
+    "schema",
+    "brief_id",
+    "workflow_id",
+    "why",
+    "what",
+    "run_kind",
+    "outcome_focus",
+    "sources"
+  ],
+  "additionalProperties": false
+}

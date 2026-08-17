@@ -1,0 +1,55 @@
+{
+  "catalog": "outcome.claim-form-catalog.v1",
+  "claim_class": "water point site visit (output claim)",
+  "description": "Authoring-side field catalog for the site-visit claim form, paired with rubric-site-visit.json (the ExternalSource geo form — anchorable today). The deployed form is a claim-template LinkedResource (#vct) on did:ixo:entity:outcome-site-visit-v0; its content hash goes into the rubric's claimSchema.proof. Coordinates are INTEGER MICRO-DEGREES (1e-6°) — claimant tooling converts device/EXIF degrees before the body is canonicalized; the oracle rejects float degrees with a 400. The v2-pending twin catalog (v2-pending/claim-form.site-visit.catalog.json) replaces the split lat/lon numbers and boundaryRef with native geo-kind fields.",
+  "fields": [
+    {
+      "name": "boundaryRef",
+      "kind": "text",
+      "required": true,
+      "description": "Content address of the program catchment boundary (urn:ixo:geo-boundary:...). Gate OSV-001 pins it to the exact address in the rubric hash; the oracle digest-verifies the bytes on every answer."
+    },
+    {
+      "name": "waterPointId",
+      "kind": "text",
+      "required": true,
+      "description": "Registered water point visited (a reference point_id in the boundary artifact, e.g. wp-kitui-014) — the withinRadius center."
+    },
+    {
+      "name": "visitDate",
+      "kind": "date",
+      "required": true,
+      "description": "Date of the site visit (dedup key with waterPointId — one claim per point per date)."
+    },
+    {
+      "name": "capturedAt",
+      "kind": "date",
+      "required": true,
+      "description": "Photo capture timestamp (gated notInFuture)."
+    },
+    {
+      "name": "captureLat",
+      "kind": "number",
+      "required": true,
+      "description": "Capture latitude in integer micro-degrees (1e-6°), e.g. -1366000 for -1.366°."
+    },
+    {
+      "name": "captureLon",
+      "kind": "number",
+      "required": true,
+      "description": "Capture longitude in integer micro-degrees (1e-6°), e.g. 38016000 for 38.016°."
+    },
+    {
+      "name": "sitePhoto",
+      "kind": "file",
+      "required": true,
+      "description": "Geotagged site photo (jpeg/png). EXIF extraction happens in claimant tooling — never in the engine or oracle decision path."
+    },
+    {
+      "name": "flowLitersPerHour",
+      "kind": "number",
+      "required": true,
+      "description": "Measured flow rate, integer liters/hour (claimant-supplied; criterion OSC-103 is trust-capped)."
+    }
+  ]
+}
