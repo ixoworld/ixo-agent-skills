@@ -17,20 +17,47 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Get changed skills
-        id: changed-skills
-        run: |
-          # Get list of changed skill directories
-          CHANGED_SKILLS=$(git diff --name-only HEAD~1 HEAD | grep '^skills/' | cut -d'/' -f2 | sort -u | tr '\n' ' ')
-          echo "skills=$CHANGED_SKILLS" >> $GITHUB_OUTPUT
-          echo "Changed skills: $CHANGED_SKILLS"
-
-      - name: Publish each skill
+      - name: Publish each changed skill
         env:
           SKILLS_API_KEY: ${{ secrets.SKILLS_API_KEY }}
           SKILLS_SERVER_URL: https://capsules.skills.ixo.earth
         run: |
-          for SKILL_NAME in ${{ steps.changed-skills.outputs.skills }}; do
+          set -uo pipefail
+
+          if ! git cat-file -e 'HEAD~1^{commit}' 2>/dev/null; then
+            echo "::error::HEAD~1 is not available, so the set of changed skills cannot be determined. Do not treat this as nothing to publish."
+            exit 1
+          fi
+
+          # Read NUL-delimited paths into an array rather than joining names with spaces and
+          # letting the shell split them again. A directory such as "skills/bad name" would
+          # otherwise become the two tokens "bad" and "name"; neither exists, so both take
+          # the deleted branch below and the job reports success having published nothing.
+          #
+          # Deduplicated with a plain loop rather than an associative array, so this runs on
+          # bash 3.2 as well as the runner's bash 5 and can be exercised locally. The list is
+          # a handful of entries.
+          NAMES=()
+          while IFS= read -r -d '' path; do
+            rest=${path#skills/}
+            name=${rest%%/*}
+            [ -n "$name" ] || continue
+            seen=""
+            for existing in ${NAMES+"${NAMES[@]}"}; do
+              if [ "$existing" = "$name" ]; then seen=1; break; fi
+            done
+            [ -n "$seen" ] || NAMES+=("$name")
+          done < <(git diff -z --name-only HEAD~1 HEAD -- skills/)
+
+          if [ ${#NAMES[@]} -eq 0 ]; then
+            echo "::error::No changed skills were detected, but this workflow only runs when skills/** changes. Something is wrong with change detection."
+            exit 1
+          fi
+
+          echo "Changed skills:"
+          printf '  %s\n' "${NAMES[@]}"
+
+          for SKILL_NAME in "${NAMES[@]}"; do
             SKILL_DIR="skills/$SKILL_NAME"
 
             # Skip if directory doesn't exist (was deleted)

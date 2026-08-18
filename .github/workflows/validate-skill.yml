@@ -17,8 +17,7 @@ jobs:
           # below fails with "fatal: bad object" and reports no changed skills.
           fetch-depth: 0
 
-      - name: Get changed skills
-        id: changed-skills
+      - name: Validate changed skills
         run: |
           set -euo pipefail
 
@@ -36,25 +35,39 @@ jobs:
             fi
           done
 
-          CHANGED=$(git diff --name-only "$BASE" "$HEAD" -- skills/ | cut -d'/' -f2 | sort -u | tr '\n' ' ')
-          echo "skills=$CHANGED" >> "$GITHUB_OUTPUT"
-          echo "Changed skills: ${CHANGED:-(none)}"
-
-      - name: Validate each skill
-        run: |
-          set -uo pipefail
-
-          CHANGED='${{ steps.changed-skills.outputs.skills }}'
+          # Read NUL-delimited paths into an array, rather than joining names with spaces
+          # and letting the shell split them again. A directory such as "skills/bad name"
+          # would otherwise become the two tokens "bad" and "name"; neither exists, so both
+          # take the deleted branch below and the folder-name check never runs on the skill
+          # that is actually there.
+          #
+          # Deduplicated with a plain loop rather than an associative array, so this runs on
+          # bash 3.2 as well as the runner's bash 5 and can be exercised locally. The list is
+          # a handful of entries.
+          NAMES=()
+          while IFS= read -r -d '' path; do
+            rest=${path#skills/}
+            name=${rest%%/*}
+            [ -n "$name" ] || continue
+            seen=""
+            for existing in ${NAMES+"${NAMES[@]}"}; do
+              if [ "$existing" = "$name" ]; then seen=1; break; fi
+            done
+            [ -n "$seen" ] || NAMES+=("$name")
+          done < <(git diff -z --name-only "$BASE" "$HEAD" -- skills/)
 
           # This workflow only runs when skills/** changes, so an empty list means detection
           # broke rather than that there is nothing to check.
-          if [ -z "$(echo "$CHANGED" | tr -d '[:space:]')" ]; then
+          if [ ${#NAMES[@]} -eq 0 ]; then
             echo "::error::No changed skills were detected, but this workflow only runs when skills/** changes. Something is wrong with change detection."
             exit 1
           fi
 
+          echo "Changed skills:"
+          printf '  %s\n' "${NAMES[@]}"
+
           ERRORS=0
-          for SKILL_NAME in $CHANGED; do
+          for SKILL_NAME in "${NAMES[@]}"; do
             SKILL_DIR="skills/$SKILL_NAME"
 
             # A PR that removes a skill has nothing left to validate.
