@@ -94,7 +94,7 @@ Show example usage...
 |-------|-------------|-------------|
 | `license` | License identifier | Any string (e.g., MIT, Apache-2.0) |
 | `compatibility` | Compatible AI agents | Max 500 characters |
-| `allowed-tools` | Required tool access | Space-delimited tool names |
+| `allowed-tools` | Required tool access | Space-delimited tool names. Must be a **string on one line** — a YAML list is rejected on upload (`expected string, received array`) |
 | `metadata` | Custom key-value pairs | Max 20 pairs, keys max 64 chars, values max 1024 chars |
 
 ## Writing Good Instructions
