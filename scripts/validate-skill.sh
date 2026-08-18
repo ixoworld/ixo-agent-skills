@@ -133,13 +133,87 @@ else
     echo "(not set)"
 fi
 
+# allowed-tools must be an inline string ("shell", "write, shell"). The capsule server
+# rejects any YAML sequence with "expected string, received array", and it does so on
+# upload — which happens on merge to main, so the first sign of a bad value is a red
+# publish workflow on a branch that already landed. Checking it here is the difference
+# between a failed local run and a second PR.
+#
+# Reporting it needs more than the value: with the block-sequence form there is nothing
+# after the colon, so the old `grep | sed` printed "(not set)" — indistinguishable from
+# the field being omitted, and the run still said PASSED.
 echo -n "  allowed-tools: "
-TOOLS=$(echo "$FRONTMATTER" | grep -E '^allowed-tools:' | sed 's/allowed-tools:[[:space:]]*//')
-if [ -n "$TOOLS" ]; then
-    echo "$TOOLS"
-else
-    echo "(not set)"
-fi
+TOOLS_STATE=$(echo "$FRONTMATTER" | awk '
+    function clean(v) {
+        gsub(/["\x27]/, "", v)
+        sub(/^[ \t]+/, "", v); sub(/[ \t]+$/, "", v)
+        return v
+    }
+    /^allowed-tools:/ {
+        value = $0
+        sub(/^allowed-tools:[ \t]*/, "", value)
+        value = clean(value)
+
+        # Flow sequence: allowed-tools: [shell] — an array to YAML, same rejection.
+        if (value ~ /^\[/) {
+            gsub(/^\[|\]$/, "", value)
+            gsub(/[ \t]*,[ \t]*/, ", ", value)
+            print "flow\t" clean(value)
+            exit
+        }
+        if (value != "") { print "inline\t" value; exit }
+
+        # Block sequence: collect every item, so the suggested fix keeps all of them.
+        if ((getline line) > 0 && line ~ /^[ \t]*-[ \t]/) {
+            do {
+                item = line
+                sub(/^[ \t]*-[ \t]*/, "", item)
+                item = clean(item)
+                items = (items == "" ? item : items ", " item)
+            } while ((getline line) > 0 && line ~ /^[ \t]*-[ \t]/)
+            print "block\t" items
+            exit
+        }
+        print "empty\t"
+        exit
+    }
+')
+TOOLS_KIND=${TOOLS_STATE%%$'\t'*}
+TOOLS_VALUE=${TOOLS_STATE#*$'\t'}
+
+case "$TOOLS_KIND" in
+    inline)
+        echo "$TOOLS_VALUE"
+        ;;
+    block|flow)
+        echo "INVALID (a YAML list)"
+        echo "    Error: 'allowed-tools' must be a string, not a list."
+        echo "           The skills server rejects a list on upload:"
+        echo "             Validation failed: allowed-tools: expected string, received array"
+        if [ "$TOOLS_KIND" = "block" ]; then
+            echo "           Found:  allowed-tools:"
+            OLD_IFS=$IFS; IFS=','
+            for item in $TOOLS_VALUE; do
+                echo "                     - ${item# }"
+            done
+            IFS=$OLD_IFS
+        else
+            echo "           Found:  allowed-tools: [$TOOLS_VALUE]"
+        fi
+        echo "           Use:    allowed-tools: $TOOLS_VALUE"
+        echo "           Several tools go on the one line (see CONTRIBUTING.md)."
+        ERRORS=$((ERRORS + 1))
+        ;;
+    empty)
+        echo "INVALID (no value)"
+        echo "    Error: 'allowed-tools' is declared but empty. Give it a value"
+        echo "           (allowed-tools: shell) or remove the field entirely."
+        ERRORS=$((ERRORS + 1))
+        ;;
+    *)
+        echo "(not set)"
+        ;;
+esac
 
 # Summary
 echo ""

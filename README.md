@@ -60,7 +60,7 @@ Instructions for the AI agent on how to use this skill...
 **Optional fields:**
 - `license` - The license for your skill (e.g., MIT, Apache-2.0)
 - `compatibility` - Which AI agents this skill works with
-- `allowed-tools` - Tools the agent needs access to
+- `allowed-tools` - Tools the agent needs access to (a string on one line, not a YAML list)
 - `metadata` - Additional key-value pairs
 
 See the [full specification](https://agentskills.io/specification) for details.
