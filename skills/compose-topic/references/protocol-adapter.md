@@ -133,12 +133,18 @@ function materializeContractBody(
 
 Before materialization, verify:
 
+- the standard base Kind, fixed recipe, and selected draft template agree;
+- an exact Kind Profile and typed resource validate together when present;
 - exact intent fidelity;
 - statement provenance and acceptance rules;
 - selected decisions and achieved outcomes have record IDs;
 - weighted criteria are complete and sum to 1;
 - role assignees and agents resolve to participants;
 - no unresolved suggested role was converted into an agent assignment.
+
+For a supported Kind Profile, run base contract completeness first, then profile-specific resource and acceptance validation. Preserve unknown profiles and resources losslessly, but refuse profile-specific acceptance, completion, automation, or privileged actions when the adapter cannot verify them.
+
+Protocol 0.8 profile v2 Action references must resolve against the exact loaded Action manifest. Validate manifest version and digest, Action type existence, base-Kind compatibility, and declared required Topic ability. A successful validation only makes the Action eligible for presentation; invocation remains a separate authorised Topic Action request that returns an append-only receipt.
 
 ## Build the state-event content
 
@@ -204,7 +210,7 @@ For `continue` or `refine`:
 6. rebase or surface conflict when revision changed;
 7. publish a new materialized head only after authoritative writes and projection complete.
 
-Topic Protocol `0.5.0` records refinement through `update-contract` with previous and next revisions, the validated body reference and hash, and changed semantic paths. Never use a projected state-event replacement as the write operation. Acceptance and supersession remain separate capability-gated operations.
+Topic Protocol `0.8.0` records refinement through `update-contract` with previous and next revisions, the validated body reference and hash, and changed semantic paths. Never use a projected state-event replacement as the write operation. Acceptance and supersession remain separate capability-gated operations.
 
 ## Recovery
 

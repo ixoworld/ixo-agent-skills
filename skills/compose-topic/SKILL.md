@@ -1,14 +1,14 @@
 ---
 name: compose-topic
 description: >-
-  Compose, route, validate, and safely stage a durable Qi Topic from a user's intent. Use when work should persist as a Topic for a decision, investigation, proposal, project, evaluation, incident, discussion, or repeatable flow; when intent should continue, branch, split, or move to a separate confidential room; or when a host needs a protocol-aligned Topic root draft, Topic Contract proposal, BlockNote canvas plan, initial records, and idempotent commit handoff. Do not use for disposable one-turn requests unless the user explicitly asks to create a Topic.
+  Compose, route, validate, and safely stage a durable Qi Topic from a user's intent. Use when authoring or refining a Topic must select the canonical Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident template; when a verified custom Kind Profile such as Job may apply; when intent should continue, branch, split, or move to a separate confidential room; or when a host needs a protocol-aligned Topic root draft, Topic Contract proposal, BlockNote canvas plan, initial records, and idempotent commit handoff. Do not use for disposable one-turn requests unless the user explicitly asks to create a Topic.
 license: Apache-2.0
-compatibility: Agent Skills runtimes with JSON structured output; commit and refine modes require a host adapter for Topic Protocol 0.5.0, Matrix, and the Qi BlockNote/Yjs canvas.
+compatibility: Agent Skills runtimes with JSON structured output; commit and refine modes require a host adapter for Topic Protocol 0.8.0, Matrix, and the Qi BlockNote/Yjs canvas.
 metadata:
   author: IXO
-  version: "1.2.0"
+  version: "1.3.0"
   category: collaboration
-  topic-protocol: "0.5.0"
+  topic-protocol: "0.8.0"
   topic-contract-profile: qi.topic-contract-state/v2
   profile-status: normative
 ---
@@ -25,9 +25,10 @@ Before composing or reviewing a Topic:
 
 1. Read [references/source-lock.json](references/source-lock.json).
 2. Read [references/topic-contract-profile.md](references/topic-contract-profile.md).
-3. Treat Topic Protocol `0.5.0` as the normative protocol baseline pinned in the source lock.
-4. Treat `qi.topic-contract-state/v2` as the normative contract profile pinned to its exact source commit.
-5. Do not silently upgrade either source from memory or an unpinned mutable branch.
+3. Read [references/topic-kind-templates.md](references/topic-kind-templates.md) before selecting a Kind or composing contract fields.
+4. Treat Topic Protocol `0.8.0` as the normative protocol baseline pinned in the source lock.
+5. Treat `qi.topic-contract-state/v2` as the normative contract profile pinned to its exact source commit.
+6. Do not silently upgrade either source from memory or an unpinned mutable branch.
 
 Load [references/canvas-recipes.md](references/canvas-recipes.md) when choosing or rendering a canvas recipe. Load [references/protocol-adapter.md](references/protocol-adapter.md) only for `commit` or `refine` mode. Load [references/refine-existing-topic.md](references/refine-existing-topic.md) when the host supplies a Topic/edit-session identity or the person asks to apply changes proposed earlier. Load [references/security-review.md](references/security-review.md) when the intent is sensitive, consequential, agentic, or action-bearing.
 
@@ -85,7 +86,7 @@ When invoked by a private personal-agent panel, use `preview` for a new empty co
 ### Phase 1: Pin and preflight
 
 1. Verify the source lock and bundled schema digests with `node scripts/audit-skill.mjs --json` when the runtime permits script execution.
-2. Set the output version to `1.2.0` and the contract profile to `qi.topic-contract-state/v2`.
+2. Set the output version to `1.3.0`, Topic Protocol version to `0.8.0`, and the contract profile to `qi.topic-contract-state/v2`.
 3. Inventory host capabilities. Do not assume a tool named in this skill exists or has a remembered signature.
 4. Determine whether a useful preview is possible. Prefer preview over blocking on absent host fields.
 5. Scan supplied content for secrets and excessive sensitive data. Keep only the minimum needed to compose.
@@ -147,7 +148,7 @@ Do not paraphrase away legal meaning, domain terminology, named entities, quanti
 
 ### Phase 5: Select kind, recipe, and work mode
 
-Use one Topic kind and one recipe:
+Read [references/topic-kind-templates.md](references/topic-kind-templates.md). Select exactly one canonical base Kind template, then use its fixed recipe:
 
 | Job | Topic kind | Contract recipe |
 | --- | --- | --- |
@@ -164,6 +165,10 @@ Use one Topic kind and one recipe:
 Use `solo`, `team`, or `client` working mode from supplied context. If uncertain, use a solo-compatible minimum and let collaboration emerge.
 
 Custom kinds are labels over exactly one standard base kind. Emit `kindRef.source: custom`, the user-facing label, and a standard `baseKind`; never create custom schemas, permissions, automation, or rendering behavior. `Thread` is virtual host presentation only and is never emitted as a persisted kind.
+
+When the intent exactly matches a supported, digest-verified Kind Profile, emit its `kindRef`, `kindProfile`, and `kindResource` together. Otherwise use the standard base Kind. Never infer a profile from a label or invent a profile reference. The canonical Job profile applies to digital job cards and work orders, not to every Task.
+
+Instantiate the selected template's draft structures even when some values are unresolved. Populate only supported values and surface missing acceptance fields as focused questions or unresolved paths; do not fabricate completeness. Validate the base Kind first, then any recognised profile.
 
 ### Phase 6: Compose protocol identity correctly
 
@@ -190,6 +195,7 @@ A Topic title must be specific and action-oriented. Do not prefix it with “Hel
 Build `contractDraft.semantic` using the v2 profile shape:
 
 - `kindRef`, `workingMode`, and its derived recipe;
+- exact `kindProfile` and `kindResource` only for a supported, verified profile;
 - exact intent statement with provenance;
 - one outcome and 2–5 observable success criteria;
 - included and excluded scope;
@@ -197,10 +203,22 @@ Build `contractDraft.semantic` using the v2 profile shape:
 - labelled assumptions and questions;
 - Impact-only risks for Incident Topics; do not emit likelihood or fabricate an Impact assessment;
 - optional decision or plan model;
+- reference-only attachments or a verified typed Kind resource where required by the selected template;
 - resolved participants, roles, and agents only;
 - completion definition and outcome-record requirement.
 
 Keep unresolved human and agent roles under `collaborationSuggestions`, not in contract state.
+
+Use the selected Kind template to choose structures:
+
+- Task: plan and milestones;
+- Agent Task: bounded agent assignment shape, activation, output, and stop condition;
+- Proposal: approval decision model;
+- Evaluation: decision question, criteria, method, and authority;
+- Claims: deed or claim-collection attachment/binding;
+- Question: intended answer or research output plus subsidiary questions;
+- Discussion: finite closure rule or ongoing temporal mode; and
+- Incident: response ownership, closure conditions, and Impact-only risks.
 
 Draft contracts may be partial. Never copy the title into intent, outcome, or completion; never assign a hidden owner; and never default materiality, confidence, Impact, working mode, or authority. Recipe-specific completeness is evaluated only when the host proposes acceptance.
 
@@ -213,6 +231,8 @@ Apply these semantic controls:
 - weighted-score criteria must all carry weights that sum to 1, or none may carry weights;
 - every contract agent must resolve to an agent participant and assigned role;
 - every role assignee must resolve to a participant.
+
+For the canonical Job profile, use the exact profile reference from the Kind template reference. Its bound resource is `org.ixo.job-card` version `1`; profile-aware acceptance additionally requires `jobNumber` and `phase`. Job phase and Topic status are separate lifecycles.
 
 Set `contractDraft.envelope` host fields to `null` when unavailable. Mark readiness `requires-host-fields` until revision, author, and timestamp are resolved. Do not fabricate them.
 
@@ -297,6 +317,7 @@ The plan is declarative and side-effect free.
 - Mark `commitEligible` true only in `commit` mode when the required room, actor, audience, revision, and policy inputs are present.
 - Never make `preview` commit-eligible.
 - Propose contract changes through `propose-contract` or `update-contract` operations containing the exact base revision, body reference, body hash, and changed semantic paths.
+- Treat Protocol 0.8 Kind Profile Action references as a verified palette only. Never turn an Action reference into a handler, grant, schedule, or successful receipt.
 - Publish an `ixo.topic.contract` state event only after Topic ID, canonical anchor, current projection, canvas binding, author, timestamp, and publication policy are resolved.
 - Contract acceptance and supersession require separate authorised `accept-contract` or `supersede-contract` operations; composition never performs them implicitly.
 - Treat the event as a materialized head, not a mutation of authoritative history.
@@ -338,6 +359,7 @@ Offer 2–4 concrete options and a recommended default. Otherwise compose immedi
 Use explicit blocked states rather than simulated success:
 
 - `BLOCKED_SPEC_UNAVAILABLE`: pinned sources or bundled schema digests disagree;
+- `BLOCKED_KIND_PROFILE_UNAVAILABLE`: a requested specialised Kind Profile, resource schema, or digest cannot be verified;
 - `BLOCKED_CONFIDENTIALITY_BOUNDARY`: no suitable room can be resolved;
 - `BLOCKED_AUTHORITY`: required Topic ability or human confirmation is unavailable;
 - `BLOCKED_STALE_REVISION`: current Topic state changed;
