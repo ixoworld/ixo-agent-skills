@@ -165,6 +165,102 @@ test("derives custom kinds from one standard base kind", async () => {
   assert.equal(codes(value).has("KIND_RECIPE"), false);
 });
 
+test("requires the canonical draft structures for every standard Kind", async () => {
+  const required = {
+    task: ["outcome", "plan", "completion"],
+    agent_task: ["outcome", "agents", "completion"],
+    proposal: ["outcome", "decision", "completion"],
+    evaluation: ["outcome", "decision", "completion"],
+    claims: ["outcome", "attachments", "completion"],
+    question: ["outcome", "questions", "completion"],
+    discussion: ["completion"],
+    incident: ["completion", "risks"]
+  };
+  const recipes = {
+    task: "project",
+    agent_task: "flow",
+    proposal: "proposal",
+    evaluation: "evaluation",
+    claims: "claims",
+    question: "research",
+    discussion: "discussion",
+    incident: "incident"
+  };
+  for (const [kind, fields] of Object.entries(required)) {
+    const value = await example("team-project.example.json");
+    value.topic.rootDraft.kind = kind;
+    value.contractDraft.semantic.kindRef = { source: "standard", kind };
+    value.contractDraft.semantic.recipe = recipes[kind];
+    for (const field of fields) delete value.contractDraft.semantic[field];
+    assert(codes(value).has("KIND_TEMPLATE_FIELD"), `${kind} must require its canonical draft structures`);
+  }
+});
+
+test("accepts an initialised canonical draft structure for every standard Kind", async () => {
+  const recipes = {
+    task: "project",
+    agent_task: "flow",
+    proposal: "proposal",
+    evaluation: "evaluation",
+    claims: "claims",
+    question: "research",
+    discussion: "discussion",
+    incident: "incident"
+  };
+  const decision = (await example()).contractDraft.semantic.decision;
+  for (const kind of Object.keys(recipes)) {
+    const value = await example("team-project.example.json");
+    const semantic = value.contractDraft.semantic;
+    value.topic.rootDraft.kind = kind;
+    semantic.kindRef = { source: "standard", kind };
+    semantic.recipe = recipes[kind];
+    if (kind === "proposal" || kind === "evaluation") semantic.decision = decision;
+    if (kind === "claims") semantic.attachments = [];
+    if (kind === "discussion") semantic.completion = {};
+    if (kind === "incident") semantic.risks = [];
+    const result = codes(value);
+    assert.equal(result.has("KIND_TEMPLATE_FIELD"), false, `${kind} template must be initialised`);
+    assert.equal(result.has("ROOT_CONTRACT_KIND"), false, `${kind} root and contract must agree`);
+  }
+});
+
+test("binds the canonical Job profile and typed Job Card resource together", async () => {
+  const value = await example("team-project.example.json");
+  const profile = {
+    id: "https://topic-protocol.ixo.world/profiles/job-card",
+    version: "1.0.0",
+    schema: "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
+    digest: "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5"
+  };
+  const id = "urn:ixo:job:019c8e56-9d28-7c9b-b981-7f8298c96c31";
+  value.contractDraft.semantic.kindRef = { source: "custom", customId: "org.ixo.job-card", label: "Job", baseKind: "task" };
+  value.contractDraft.semantic.kindProfile = profile;
+  value.contractDraft.semantic.kindResource = {
+    profile,
+    type: "org.ixo.job-card",
+    id,
+    version: 1,
+    value: { version: 1, type: "org.ixo.job-card", id }
+  };
+  const result = codes(value);
+  assert.equal(result.has("JOB_PROFILE"), false);
+  assert.equal(result.has("JOB_RESOURCE"), false);
+  assert.equal(result.has("PROFILE_RESOURCE_REF"), false);
+});
+
+test("rejects an unpinned or mismatched Job profile", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.kindRef = { source: "custom", customId: "org.ixo.job-card", label: "Job", baseKind: "task" };
+  value.contractDraft.semantic.kindProfile = {
+    id: "https://topic-protocol.ixo.world/profiles/job-card",
+    version: "1.0.0",
+    schema: "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
+    digest: `sha256:${"0".repeat(64)}`
+  };
+  assert(codes(value).has("JOB_PROFILE"));
+  assert(codes(value).has("PROFILE_RESOURCE_PAIR"));
+});
+
 test("rejects risks outside Incidents and legacy likelihood", async () => {
   const value = await example();
   value.contractDraft.semantic.risks = [{
@@ -180,13 +276,58 @@ test("rejects risks outside Incidents and legacy likelihood", async () => {
 
 test("allows unresolved fields in a v2 Draft", async () => {
   const value = await example("team-project.example.json");
-  delete value.contractDraft.semantic.outcome;
+  value.contractDraft.semantic.outcome = {};
   delete value.contractDraft.semantic.ownerId;
   assert.equal(codes(value).has("SUCCESS_CRITERIA"), false);
+  assert.equal(codes(value).has("ACCEPTED_TASK_OWNER"), false);
+});
+
+test("enforces base Kind completeness only when a contract is accepted", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.envelope.status = "accepted";
+  delete value.contractDraft.semantic.ownerId;
+  assert(codes(value).has("ACCEPTED_TASK_OWNER"));
+});
+
+test("enforces Job profile completeness in addition to its Task base", async () => {
+  const value = await example("team-project.example.json");
+  const profile = {
+    id: "https://topic-protocol.ixo.world/profiles/job-card",
+    version: "1.0.0",
+    schema: "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
+    digest: "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5"
+  };
+  const id = "urn:ixo:job:019c8e56-9d28-7c9b-b981-7f8298c96c31";
+  value.contractDraft.envelope.status = "accepted";
+  value.contractDraft.semantic.ownerId = "did:ixo:shaun";
+  value.contractDraft.semantic.kindRef = { source: "custom", customId: "org.ixo.job-card", label: "Job", baseKind: "task" };
+  value.contractDraft.semantic.kindProfile = profile;
+  value.contractDraft.semantic.kindResource = {
+    profile,
+    type: "org.ixo.job-card",
+    id,
+    version: 1,
+    value: { version: 1, type: "org.ixo.job-card", id }
+  };
+  const result = codes(value);
+  assert(result.has("ACCEPTED_JOB_NUMBER"));
+  assert(result.has("ACCEPTED_JOB_PHASE"));
 });
 
 test("requires UUIDv7 identities for repeatable contract entries", async () => {
   const value = await example();
   value.contractDraft.semantic.intent.id = "array-index-0";
   assert(codes(value).has("ENTRY_ID"));
+});
+
+test("contract schema exposes Protocol 0.8 Kind Profile and typed resource fields", async () => {
+  const schema = JSON.parse(await readFile(join(ROOT, "schemas/topic-contract-draft.schema.json"), "utf8"));
+  const semantic = schema.properties.semantic.properties;
+  assert.deepEqual(semantic.kindProfile.required, ["id", "version", "schema", "digest"]);
+  assert.deepEqual(semantic.kindResource.required, ["profile", "type", "id", "version", "value"]);
+  assert.equal(semantic.attachments.type, "array");
+  assert.equal(semantic.bindings, undefined);
+  assert.equal(semantic.completion.properties.acceptanceAuthority, undefined);
+  assert.equal(semantic.completion.properties.acceptanceAuthorityIds.type, "array");
+  assert.deepEqual(semantic.decision.required, []);
 });

@@ -4,7 +4,7 @@ This skill targets two separately governed layers.
 
 ## Normative Topic Protocol baseline
 
-Topic Protocol `0.5.0` defines the durable Topic identity, relation-free Matrix root, native thread messages, append-only operations and records, deterministic projection, Topic Capsule, room-policy boundary, agent participation, Topic-scoped authority, discovery, and VFS references.
+Topic Protocol `0.8.0` defines the durable Topic identity, relation-free Matrix root, native thread messages, append-only operations and records, deterministic projection, Topic Capsule, room-policy boundary, agent participation, Topic-scoped authority, discovery, VFS references, pinned Kind Profiles, typed Kind resources, and capability-gated Topic Action requests and receipts.
 
 The composer must preserve these invariants:
 
@@ -21,10 +21,10 @@ The composer must preserve these invariants:
 
 ## Normative Topic Contract profile
 
-`qi.topic-contract-state/v2` is pinned to the Topic Protocol `0.5.0` commit:
+`qi.topic-contract-state/v2` is pinned to the Topic Protocol `0.8.0` commit:
 
 ```text
-71a6b7fe77a0d75a73a5412179080f2364ea48ce
+08339e19bc6cc891b8cad85713a58fd1ec7b0da4
 ```
 
 The profile defines a Matrix state-event projection:
@@ -46,6 +46,8 @@ authoredBy
 authoredAt
 workingMode
 kindRef
+kindProfile?
+kindResource?
 recipe
 intent
 outcome
@@ -60,9 +62,45 @@ participants
 roles
 agents
 completion
+attachments?
 ```
 
 Draft bodies may omit unresolved semantic fields. Accepted bodies must pass the completeness rules for the standard base kind. Custom kinds inherit one standard base kind and cannot introduce new permissions, automation, schemas, or renderers. Risks are an Impact-only Incident structure; `likelihood` is legacy history and is never copied into v2.
+
+The eight standard Kind-to-recipe mappings are fixed:
+
+```text
+task        -> project
+agent_task  -> flow
+proposal    -> proposal
+evaluation  -> evaluation
+claims      -> claims
+question    -> research
+discussion  -> discussion
+incident    -> incident
+```
+
+Use [topic-kind-templates.md](topic-kind-templates.md) for the canonical draft structures and acceptance fields associated with each mapping.
+
+## Kind Profile boundary
+
+Protocol 0.8 supports an optional exact Kind Profile and typed resource binding alongside a custom `kindRef`. A profile reference contains immutable `id`, `version`, `schema`, and `digest` fields. The resource binding repeats that exact profile reference and adds its namespaced `type`, stable `id`, integer `version`, and validated `value`.
+
+A Kind Profile:
+
+- inherits the standard base Kind and its recipe;
+- may require a typed resource and additional acceptance paths;
+- may declare safe projection and presentation hints;
+- may narrow a verified Action palette; and
+- never grants a capability, changes a Topic lifecycle, executes code, or makes a projection authoritative.
+
+The first-party Job profile is the only bundled profile resolved by the Protocol 0.8 reference implementation. It uses custom ID `org.ixo.job-card`, base Kind `task`, recipe `project`, and a version 1 Job Card resource. Accepted Job contracts require the base Task fields plus a valid pinned Job Card with `jobNumber` and `phase`.
+
+Unknown profiles must be preserved losslessly and validated as their base Kind. The composer must not enable profile-specific acceptance, completion, automation, or privileged actions when it cannot verify the profile and resource schema.
+
+## Topic Action boundary
+
+Protocol 0.8 Kind Profile v2 may reference compatible Action Types from one exact Action manifest. These ordered references shape a client palette; they are not handlers, capability grants, schedules, invocations, or receipts. The host must verify the manifest version and digest, base-Kind compatibility, required Topic ability, request freshness and idempotency before execution.
 
 The composer returns a `contractDraft` rather than a complete Matrix state event because these host-resolved values may not exist yet:
 
@@ -130,7 +168,7 @@ Use reference-only for confidential or restricted work. The state event never em
 
 ## Contract lifecycle
 
-Topic Protocol `0.5.0` defines append-only `propose-contract`, `update-contract`, `accept-contract`, and `supersede-contract` operations. The state event exposes separate proposed and effective heads.
+Topic Protocol `0.8.0` retains append-only `propose-contract`, `update-contract`, `accept-contract`, and `supersede-contract` operations. The state event exposes separate proposed and effective heads.
 
 - this skill emits a proposal, never an implicit acceptance;
 - every proposed change names the exact prior revision, body reference, body hash, and changed semantic paths;
