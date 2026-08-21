@@ -36,6 +36,7 @@ const EMPTY_TOTALS = {
  * @param {object|null} [opts.brief]            outcome.run-brief.v1, when the run wrote one
  * @param {Record<string,string>} [opts.reviewPackets]  packet ref → markdown source
  * @param {string} [opts.generatedAt]           ISO timestamp; caller supplies for determinism
+ * @param {object|null} [opts.control]           manifest and reconciliation metadata
  * @returns {object} outcome.run-snapshot.v1
  */
 export function composeSnapshot(state, readArtifact, opts = {}) {
@@ -70,7 +71,12 @@ export function composeSnapshot(state, readArtifact, opts = {}) {
       phase: phase ?? { number: 0, of: PHASE_COUNT, name: "Unknown phase", why: "" },
       phases: phaseProgress(state.current_state, state.transitions ?? []),
       target_tier: state.target_tier ?? null,
-      issuer_context: state.issuer_context ?? null,
+      issuer_context: state.issuer_context
+        ? {
+            issuer: state.issuer_context.issuer ?? null,
+            outcome_domain: state.issuer_context.outcome_domain,
+          }
+        : null,
       transitions: (state.transitions ?? []).map((t) => ({
         from: t.from,
         to: t.to,
@@ -108,6 +114,7 @@ export function composeSnapshot(state, readArtifact, opts = {}) {
           },
         ]
       : [],
+    control: opts.control ?? null,
     totals: computeTotals({ state, toc, graph, evidence, report }),
   };
 }

@@ -80,6 +80,7 @@ for (const [f, s] of Object.entries(schemas)) {
 const cases = [
   ["examples/clean-water/run-brief.json", "run-brief.schema.json"],
   ["examples/clean-water/toc-extraction.json", "toc-extraction.schema.json"],
+  ["examples/clean-water/toc-semantic-review.json", "toc-semantic-review.schema.json"],
   ["examples/clean-water/causal-graph.json", "causal-graph.schema.json"],
   ["examples/clean-water/evidence-graph.json", "evidence-link.schema.json"],
   ["examples/clean-water/validation-report.json", "validation-report.schema.json"],

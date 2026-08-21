@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://w3id.org/ixo/outcome-graph/schema/causal-graph.v1.json",
   "title": "CausalGraphVersion",
-  "description": "An immutable version of the causal model derived from a theory of change. Nodes and edges are first-class claim candidates: each can be projected into a claim body (canonicalized answers bag per its claim class's form, claimId = CIDv1 of the bytes) and evaluated independently by the evals-engine. Versions are never edited — revision produces a new version linked via supersedes/superseded_by; a revised element means a new claim body and a fresh evaluation.",
+  "description": "An immutable version of the causal model derived from a theory of change. Nodes and edges are first-class claim candidates: each can be projected into a claim body (canonicalized answers bag per its claim class's form, claimId = CIDv1 of the bytes) and evaluated independently by the evals-engine. Versions are never edited. A revision produces a new version with a backward supersedes reference plus an immutable supersession event. A revised element means a new claim body and a fresh evaluation.",
   "type": "object",
   "properties": {
     "schema": { "const": "outcome.causal-graph.v1" },
@@ -17,7 +17,10 @@
       "enum": ["draft", "review_required", "validated", "superseded", "rejected"]
     },
     "supersedes": { "type": ["string", "null"] },
-    "superseded_by": { "type": ["string", "null"] },
+    "superseded_by": {
+      "type": ["string", "null"],
+      "description": "Legacy compatibility field. Keep null on immutable artifacts. Forward lineage is derived from outcome.supersession-event.v1 records."
+    },
     "toc_extraction_ref": { "type": "string" },
     "context": {
       "type": "object",

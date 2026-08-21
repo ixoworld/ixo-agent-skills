@@ -30,22 +30,26 @@ Then commit the result here and open a PR. Merging to `main` runs
 |---|---|
 | `SKILL.md` | The orchestrator: seven phases, the state machine, the issuance gates |
 | `prompts/` | The six specialist roles as per-phase briefs |
-| `scripts/run.mjs` | The run state gate — the deterministic authority on whether a phase is done |
+| `scripts/run.mjs` | The host-invoked deterministic gate for phase completion and run integrity |
 | `scripts/check-graph.mjs`, `validate.mjs` | The deterministic checks the agent defers to |
 | `schemas/`, `references/`, `templates/` | The artifact contracts and the guidance that interprets them |
 | `examples/clean-water/` | One worked run, so every artifact shape has a concrete example |
 
 A QiForge oracle runs **one** agent where the original pipeline ran six specialists in
-separate contexts, so role isolation is gone. `run.mjs advance` replaces it: it re-validates
-the artifact against its schema and re-runs the graph checks itself, refuses an envelope
-whose tool-backed checks cite no evidence, and will not let a reviewer decision be simulated.
-The model proposes; the script decides.
+separate contexts, so role isolation is gone. `run.mjs plan` freezes named, versioned gate
+criteria; `run.mjs advance` independently executes them over one parsed candidate, commits
+through a manifest compare-and-swap, refuses v1 or unbound envelopes, and verifies host-signed
+human decisions and issuance authorizations. Repaired candidates also require a content-addressed
+supersession event that the host persists and registers with the transition. The Portal must
+mediate the command and protect committed control records from generic agent writes; colocated
+hashes are integrity checks, not authorization.
 
 ## Runtime
 
-Injected context: `_SKILL_CONTEXT_USER_DID` (becomes the run's `issuer_context.issuer`),
-`_SKILL_CONTEXT_SANDBOX_ID`, `_SKILL_CONTEXT_TIMESTAMP`. Secrets `EVALS_ENGINE_URL` and
-`EVALS_ENGINE_TOKEN` are needed only for issuance runs; a diagnostic run needs none and the
-skill says so rather than failing.
+Injected context: `_SKILL_CONTEXT_USER_DID` (becomes `issuer_context.issuer.did`),
+`_SKILL_CONTEXT_SANDBOX_ID`, `_SKILL_CONTEXT_TIMESTAMP`, and the base64 Ed25519
+`OUTCOME_GRAPH_REVIEW_PUBLIC_KEY`, used for both review decisions and issuance authorizations.
+Secrets `EVALS_ENGINE_URL` and `EVALS_ENGINE_TOKEN` are needed only for issuance runs; a
+diagnostic run needs none and the skill says so rather than failing.
 
 `OUTCOME_GRAPH_RUNS` overrides the runs root for local testing.

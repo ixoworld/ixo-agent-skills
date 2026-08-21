@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/toc-semantic-review.v1.json",
+  "title": "TheoryOfChangeSemanticReview",
+  "description": "A separate judgment record for proposition-role classification. Schema validity proves that a kind is allowed; this artifact records why the kind is defensible and whether review is still required.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.toc-semantic-review.v1" },
+    "review_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+    "workflow_id": { "type": "string" },
+    "extraction_ref": { "type": "string" },
+    "taxonomy_ref": { "const": "outcome.toc-proposition-kind.v1" },
+    "reviewed_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+    "classifications": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "proposition_id": { "type": "string" },
+          "selected_kind": { "$ref": "#/$defs/proposition_kind" },
+          "rationale": { "type": "string", "minLength": 1 },
+          "confidence_bps": { "$ref": "common.defs.v1.json#/$defs/bps" },
+          "alternative_kinds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "#/$defs/proposition_kind" }
+          },
+          "triggers": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "causal_process_language",
+                "resource_language",
+                "environmental_condition",
+                "changed_state_language",
+                "low_classification_margin",
+                "source_ambiguity",
+                "taxonomy_mismatch",
+                "none"
+              ]
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["accepted", "revise", "review_required"]
+          },
+          "evidence_refs": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": [
+          "proposition_id",
+          "selected_kind",
+          "rationale",
+          "confidence_bps",
+          "alternative_kinds",
+          "triggers",
+          "status",
+          "evidence_refs"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "accepted": { "type": "integer", "minimum": 0 },
+        "revise": { "type": "integer", "minimum": 0 },
+        "review_required": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["accepted", "revise", "review_required"],
+      "additionalProperties": false
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": ["pass", "revise", "review_required"]
+    }
+  },
+  "required": [
+    "schema",
+    "review_id",
+    "workflow_id",
+    "extraction_ref",
+    "taxonomy_ref",
+    "reviewed_at",
+    "classifications",
+    "summary",
+    "recommendation"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "proposition_kind": {
+      "type": "string",
+      "enum": [
+        "actor",
+        "intervention",
+        "activity",
+        "output",
+        "outcome",
+        "impact",
+        "mechanism",
+        "assumption",
+        "indicator",
+        "risk",
+        "contextual_factor",
+        "comparator"
+      ]
+    }
+  }
+}

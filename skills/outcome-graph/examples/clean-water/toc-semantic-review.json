@@ -1,0 +1,86 @@
+{
+  "schema": "outcome.toc-semantic-review.v1",
+  "review_id": "urn:ixo:toc-semantic-review:bafyexamplesemanticreview001",
+  "workflow_id": "wf-clean-water-001",
+  "extraction_ref": "urn:ixo:toc-extraction:bafyexampletoc001",
+  "taxonomy_ref": "outcome.toc-proposition-kind.v1",
+  "reviewed_at": "2026-08-21T00:00:00Z",
+  "classifications": [
+    {
+      "proposition_id": "p-01",
+      "selected_kind": "intervention",
+      "rationale": "Rehabilitating boreholes is the bounded program exposure intended to cause the downstream changes.",
+      "confidence_bps": 9800,
+      "alternative_kinds": ["activity"],
+      "triggers": ["none"],
+      "status": "accepted",
+      "evidence_refs": ["src-narrative-01#page:2,para:1"]
+    },
+    {
+      "proposition_id": "p-02",
+      "selected_kind": "output",
+      "rationale": "Functional water points are the directly observable service state produced by rehabilitation.",
+      "confidence_bps": 9700,
+      "alternative_kinds": ["outcome"],
+      "triggers": ["changed_state_language"],
+      "status": "accepted",
+      "evidence_refs": ["src-narrative-01#page:2,para:3"]
+    },
+    {
+      "proposition_id": "p-03",
+      "selected_kind": "outcome",
+      "rationale": "Household use of safer water is an observable changed behavior downstream of the service output.",
+      "confidence_bps": 9200,
+      "alternative_kinds": ["mechanism"],
+      "triggers": ["causal_process_language"],
+      "status": "accepted",
+      "evidence_refs": ["src-narrative-01#page:3,para:1"]
+    },
+    {
+      "proposition_id": "p-04",
+      "selected_kind": "outcome",
+      "rationale": "Reduced diarrhoeal incidence is the observable health state the program claims will change.",
+      "confidence_bps": 9900,
+      "alternative_kinds": ["impact"],
+      "triggers": ["changed_state_language"],
+      "status": "accepted",
+      "evidence_refs": ["src-narrative-01#page:3,para:4"]
+    },
+    {
+      "proposition_id": "p-05",
+      "selected_kind": "assumption",
+      "rationale": "Continued maintenance is stated as a condition the causal path depends on, not as a delivered activity in scope.",
+      "confidence_bps": 9400,
+      "alternative_kinds": ["activity"],
+      "triggers": ["environmental_condition"],
+      "status": "accepted",
+      "evidence_refs": ["src-narrative-01#page:4,para:2"]
+    },
+    {
+      "proposition_id": "p-06",
+      "selected_kind": "risk",
+      "rationale": "Rainfall is an inferred source of confounding that threatens identification rather than a controlled program input.",
+      "confidence_bps": 8500,
+      "alternative_kinds": ["contextual_factor"],
+      "triggers": ["source_ambiguity"],
+      "status": "accepted",
+      "evidence_refs": ["urn:ixo:toc-extraction:bafyexampletoc001#/propositions/5"]
+    },
+    {
+      "proposition_id": "p-07",
+      "selected_kind": "indicator",
+      "rationale": "The incidence measure specifies how the health outcome is observed rather than a separate causal state.",
+      "confidence_bps": 9900,
+      "alternative_kinds": [],
+      "triggers": ["none"],
+      "status": "accepted",
+      "evidence_refs": ["src-narrative-01#page:5,table:1"]
+    }
+  ],
+  "summary": {
+    "accepted": 7,
+    "revise": 0,
+    "review_required": 0
+  },
+  "recommendation": "pass"
+}

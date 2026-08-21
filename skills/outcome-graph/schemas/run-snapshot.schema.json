@@ -69,7 +69,7 @@
               "at": { "type": "string" },
               "task_id": { "type": ["string", "null"] },
               "envelope_ref": { "type": ["string", "null"] },
-              "approved_by": { "enum": ["orchestrator", "human_reviewer"] }
+              "approved_by": { "enum": ["orchestrator", "human_reviewer", "host_authority"] }
             }
           }
         },
@@ -150,6 +150,41 @@
         }
       }
     },
+    "control": {
+      "type": ["object", "null"],
+      "description": "Manifest-backed reconciliation metadata. Null only for legacy snapshots created before transition commits became authoritative.",
+      "properties": {
+        "manifest_revision": { "type": "integer", "minimum": 0 },
+        "transition_commit_ref": { "type": ["string", "null"] },
+        "includes_uncommitted_work": { "type": "boolean" },
+        "committed": { "$ref": "#/$defs/totals" },
+        "uncommitted": { "$ref": "#/$defs/totals" },
+        "reconciliation": {
+          "type": "object",
+          "required": ["status", "checked_refs", "mismatches"],
+          "properties": {
+            "status": { "enum": ["reconciled", "mismatch"] },
+            "checked_refs": { "type": "array", "items": { "type": "string" } },
+            "mismatches": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "manifest_revision",
+        "transition_commit_ref",
+        "includes_uncommitted_work",
+        "committed",
+        "uncommitted",
+        "reconciliation"
+      ],
+      "additionalProperties": false
+    },
+    "totals": {
+      "$ref": "#/$defs/totals"
+    }
+  },
+  "$defs": {
     "totals": {
       "type": "object",
       "description": "The run-totals row from templates/user-checkpoint.md, in template order. The canvas shows these ten counts in this order so the conversation and the picture describe one run.",

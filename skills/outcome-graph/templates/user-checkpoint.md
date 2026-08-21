@@ -38,6 +38,9 @@ systems: [none yet / named system later].
 **How much:** [source count], [provisional target outcome count], target tier [provided / not yet
 set]. Cost or effort: [known value / not estimated from available information].
 
+**Control status:** Committed state `[MACHINE_STATE]` at manifest revision [N]. Reconciliation
+[reconciled / mismatch]. Draft outputs [none / short list].
+
 **Your next action:** [One instruction, or `No action needed - I am continuing to phase 2.`]
 
 ## Phase checkpoint
@@ -53,6 +56,10 @@ set]. Cost or effort: [known value / not estimated from available information].
 - [Most decision-relevant count or finding.]
 - [Strongest supported path or result.]
 - [Most important ambiguity, evidence gap, or disclosure.]
+
+**Control status:** Committed state `[MACHINE_STATE]` at manifest revision [N]. Reconciliation
+[reconciled / mismatch]. [No uncommitted work / Draft outputs and why they are not committed.]
+When draft work exists, show committed and uncommitted counts separately.
 
 **What this means:** [Plain-language consequence for the intended claim or decision. Translate
 technical status and tier language.]
@@ -70,6 +77,9 @@ continuing to phase [N+1].`]
 
 **Status:** Paused for [reviewer role]'s decision. This is [not a failure / not completion]; the
 pipeline cannot advance until the decision is recorded.
+
+**Control status:** Committed state `REVIEW_REQUIRED` at manifest revision [N]. Reconciliation
+[reconciled / mismatch]. Draft outputs [none / short list].
 
 **Decision requested:** [Exact decision in plain language.]
 
@@ -103,8 +113,13 @@ the run explicitly does not establish.]
 
 **Next owner and action:** [Person or role] should [one action].
 
-**Run totals:** [sources], [propositions], [nodes], [edges], [evidence links], [gaps], [passes],
-[warnings], [failures], [blockers].
+**Committed totals:** [sources], [propositions], [nodes], [edges], [evidence links], [gaps],
+[passes], [warnings], [failures], [blockers].
+
+**Uncommitted work:** [none / draft propositions, nodes, edges, findings, and the criterion that
+blocked commitment].
+
+**Control status:** Manifest revision [N]. Reconciliation [reconciled / mismatch].
 
 **Audit trail:** [State], [ToC extraction], [causal graph], [evidence graph], [validation report],
 [review packet or certificate as applicable].

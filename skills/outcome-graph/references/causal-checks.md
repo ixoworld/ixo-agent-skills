@@ -40,7 +40,8 @@ except `SEM-06`, which is `authority`.
 | `DAG-02` connectivity | Every outcome node is reachable from at least one intervention node. Orphan outcomes are unsupported claims. |
 | `DAG-03` temporal-order | For every edge A→B, time-scope(A) ≤ time-scope(B). Violations are `blocking`. |
 | `DAG-04` node-type-coherence | Edge endpoints respect the type lattice: intervention → {output, mediator}; output → {mediator, outcome}; context/moderator nodes attach as effect modifiers, not on the causal spine. |
-| `DAG-05` single-graph-version | Checks run against one immutable `CausalGraphVersion`; mixed-version findings are void. |
+| `DAG-05` referential-integrity | Node and edge ids are unique; every edge endpoint resolves inside the candidate graph. |
+| `DAG-06` single-graph-version | Checks and findings bind to one immutable graph digest; mixed-version evidence is void. This is a transition-bundle check, not part of `scripts/check-graph.mjs` yet. |
 
 ### Edge-level (judgment-based — validator reasons, then records)
 

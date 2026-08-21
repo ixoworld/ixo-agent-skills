@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/workflow-control.v1.json",
+  "title": "WorkflowControl",
+  "description": "Append-only control records for named gates, committed transitions, manifest pointers, derived snapshots, and immutable repair lineage.",
+  "oneOf": [
+    { "$ref": "#/$defs/gate_plan" },
+    { "$ref": "#/$defs/transition_commit" },
+    { "$ref": "#/$defs/manifest_pointer" },
+    { "$ref": "https://w3id.org/ixo/outcome-graph/schema/run-snapshot.v1.json" },
+    { "$ref": "#/$defs/supersession_event" }
+  ],
+  "$defs": {
+    "criterion_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "validation_dimension": {
+      "type": "string",
+      "enum": ["schema", "provenance", "semantics", "structure", "identification", "governance"]
+    },
+    "gate_status": {
+      "type": "string",
+      "enum": ["pass", "fail", "warning", "review_required", "not_applicable"]
+    },
+    "executor": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["deterministic_tool", "schema_validation", "agent_judgment", "human_review"]
+        },
+        "executor_ref": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "expected_output_schema": { "type": ["string", "null"] }
+      },
+      "required": ["method", "executor_ref", "version", "expected_output_schema"],
+      "additionalProperties": false
+    },
+    "gate_plan": {
+      "type": "object",
+      "properties": {
+        "schema": { "const": "outcome.gate-plan.v1" },
+        "plan_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+        "workflow_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "state_in": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "state_out_candidate": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "criterion_id": { "$ref": "#/$defs/criterion_id" },
+              "dimension": { "$ref": "#/$defs/validation_dimension" },
+              "required": { "type": "boolean" },
+              "executor": { "$ref": "#/$defs/executor" },
+              "input_refs": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+              "blocking_statuses": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "type": "string", "enum": ["fail", "review_required"] }
+              }
+            },
+            "required": [
+              "criterion_id",
+              "dimension",
+              "required",
+              "executor",
+              "input_refs",
+              "blocking_statuses"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["schema", "plan_id", "workflow_id", "task_id", "state_in", "state_out_candidate", "criteria"],
+      "additionalProperties": false
+    },
+    "gate_result": {
+      "type": "object",
+      "properties": {
+        "criterion_id": { "$ref": "#/$defs/criterion_id" },
+        "dimension": { "$ref": "#/$defs/validation_dimension" },
+        "method": {
+          "type": "string",
+          "enum": ["deterministic_tool", "schema_validation", "agent_judgment", "human_review"]
+        },
+        "status": { "$ref": "#/$defs/gate_status" },
+        "evidence_ref": { "type": ["string", "null"] },
+        "validator_ref": { "type": "string", "minLength": 1 },
+        "input_digest": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "output_digest": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "summary": { "type": "string", "minLength": 1 }
+      },
+      "required": [
+        "criterion_id",
+        "dimension",
+        "method",
+        "status",
+        "evidence_ref",
+        "validator_ref",
+        "input_digest",
+        "output_digest",
+        "summary"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "method": { "enum": ["deterministic_tool", "schema_validation"] }
+            },
+            "required": ["method"]
+          },
+          "then": {
+            "properties": {
+              "evidence_ref": { "type": "string", "minLength": 1 },
+              "input_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "output_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+            }
+          }
+        }
+      ]
+    },
+    "dimension_matrix": {
+      "type": "object",
+      "properties": {
+        "schema": { "$ref": "#/$defs/gate_status" },
+        "provenance": { "$ref": "#/$defs/gate_status" },
+        "semantics": { "$ref": "#/$defs/gate_status" },
+        "structure": { "$ref": "#/$defs/gate_status" },
+        "identification": { "$ref": "#/$defs/gate_status" },
+        "governance": { "$ref": "#/$defs/gate_status" }
+      },
+      "required": ["schema", "provenance", "semantics", "structure", "identification", "governance"],
+      "additionalProperties": false
+    },
+    "artifact_registration": {
+      "type": "object",
+      "properties": {
+        "artifact_ref": { "type": "string" },
+        "artifact_kind": { "type": "string" },
+        "digest": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" },
+        "status": {
+          "type": "string",
+          "enum": ["verified", "accepted", "superseded", "rejected"]
+        },
+        "source_task_id": { "type": "string" }
+      },
+      "required": ["artifact_ref", "artifact_kind", "digest", "status", "source_task_id"],
+      "additionalProperties": false
+    },
+    "transition_commit": {
+      "type": "object",
+      "properties": {
+        "schema": { "const": "outcome.transition-commit.v1" },
+        "commit_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+        "workflow_id": { "type": "string" },
+        "expected_manifest_revision": { "type": "integer", "minimum": 0 },
+        "manifest_revision": { "type": "integer", "minimum": 1 },
+        "previous_transition_commit_ref": { "type": ["string", "null"] },
+        "state_before": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "state_after": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "gate_plan_ref": { "type": "string" },
+        "task_ref": { "type": "string" },
+        "result_ref": { "type": "string" },
+        "verification_envelope_ref": { "type": "string" },
+        "gate_results": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/gate_result" } },
+        "dimension_verdicts": { "$ref": "#/$defs/dimension_matrix" },
+        "artifact_registrations": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/artifact_registration" }
+        },
+        "finding_refs": { "type": "array", "items": { "type": "string" } },
+        "supersession_event_refs": { "type": "array", "items": { "type": "string" } },
+        "state_projection_digest": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" },
+        "snapshot_projection_digest": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" },
+        "committed_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" }
+      },
+      "required": [
+        "schema",
+        "commit_id",
+        "workflow_id",
+        "expected_manifest_revision",
+        "manifest_revision",
+        "previous_transition_commit_ref",
+        "state_before",
+        "state_after",
+        "gate_plan_ref",
+        "task_ref",
+        "result_ref",
+        "verification_envelope_ref",
+        "gate_results",
+        "dimension_verdicts",
+        "artifact_registrations",
+        "finding_refs",
+        "supersession_event_refs",
+        "state_projection_digest",
+        "snapshot_projection_digest",
+        "committed_at"
+      ],
+      "additionalProperties": false
+    },
+    "manifest_pointer": {
+      "type": "object",
+      "properties": {
+        "schema": { "const": "outcome.manifest-pointer.v1" },
+        "workflow_id": { "type": "string" },
+        "manifest_revision": { "type": "integer", "minimum": 1 },
+        "transition_commit_ref": { "type": "string" },
+        "transition_commit_digest": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" }
+      },
+      "required": ["schema", "workflow_id", "manifest_revision", "transition_commit_ref", "transition_commit_digest"],
+      "additionalProperties": false
+    },
+    "supersession_event": {
+      "type": "object",
+      "properties": {
+        "schema": { "const": "outcome.supersession-event.v1" },
+        "event_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+        "workflow_id": { "type": "string" },
+        "artifact_kind": { "type": "string" },
+        "predecessor_ref": { "type": "string" },
+        "predecessor_digest": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" },
+        "successor_ref": { "type": "string" },
+        "successor_digest": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" },
+        "failed_check_ids": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/criterion_id" } },
+        "patch_summary": { "type": "string", "minLength": 1 },
+        "actor": { "type": "string", "minLength": 1 },
+        "occurred_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+        "rerun_evidence_refs": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "predecessor_disposition": {
+          "type": "string",
+          "enum": ["superseded", "rejected", "retained_draft"]
+        }
+      },
+      "required": [
+        "schema",
+        "event_id",
+        "workflow_id",
+        "artifact_kind",
+        "predecessor_ref",
+        "predecessor_digest",
+        "successor_ref",
+        "successor_digest",
+        "failed_check_ids",
+        "patch_summary",
+        "actor",
+        "occurred_at",
+        "rerun_evidence_refs",
+        "predecessor_disposition"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
