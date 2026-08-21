@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/issuance-authorization.v1.json",
+  "title": "IssuanceAuthorization",
+  "description": "Host-signed authorization bound to one issuance candidate and workflow revision. For certificate commit it also records the external signing receipt the host verified.",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "outcome.issuance-authorization.v1" },
+    "authorization_id": { "$ref": "common.defs.v1.json#/$defs/content_addressed_uri" },
+    "workflow_id": { "type": "string", "minLength": 1 },
+    "manifest_revision": { "type": "integer", "minimum": 1 },
+    "state_in": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+    "state_out": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+    "candidate_digest": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" },
+    "purpose": { "type": "string", "enum": ["issuance_eligibility", "certificate_commit"] },
+    "issuer_did": { "type": ["string", "null"], "pattern": "^did:[a-z0-9]+:" },
+    "assessment_tier": { "$ref": "common.defs.v1.json#/$defs/tier" },
+    "decision": { "const": "authorize" },
+    "signing_receipt_ref": { "type": ["string", "null"] },
+    "authorized_by_did": { "type": "string", "pattern": "^did:[a-z0-9]+:" },
+    "authorized_at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
+    "proof": {
+      "type": "object",
+      "properties": {
+        "type": { "const": "Ed25519HostSignatureV1" },
+        "verification_method": { "type": "string", "minLength": 1 },
+        "proof_value": { "type": "string", "minLength": 40 }
+      },
+      "required": ["type", "verification_method", "proof_value"],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema",
+    "authorization_id",
+    "workflow_id",
+    "manifest_revision",
+    "state_in",
+    "state_out",
+    "candidate_digest",
+    "purpose",
+    "issuer_did",
+    "assessment_tier",
+    "decision",
+    "signing_receipt_ref",
+    "authorized_by_did",
+    "authorized_at",
+    "proof"
+  ],
+  "additionalProperties": false
+}

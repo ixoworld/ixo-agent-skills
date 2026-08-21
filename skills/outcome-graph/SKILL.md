@@ -19,10 +19,11 @@ secrets:
   oracle:
     - EVALS_ENGINE_URL: 'Base URL of the evals-engine (e.g. https://eval.ixo.earth). Only needed for issuance runs; diagnostic runs need no secrets.'
     - EVALS_ENGINE_TOKEN: 'Bearer token for the engine registration and review endpoints.'
+    - OUTCOME_GRAPH_REVIEW_PUBLIC_KEY: 'Base64-encoded Ed25519 SPKI public key injected by the Portal host. Required for host-signed review decisions and issuance authorizations.'
   user: []
 metadata:
   author: ixo
-  version: "1.0.0"
+  version: "1.1.0"
   category: impact-evaluation
 ---
 
@@ -44,10 +45,12 @@ situation the phase briefs and the state gate exist to handle.
 
 What replaces role isolation:
 
-- `scripts/run.mjs advance` is the authority on whether a phase is complete. It re-validates
-  the artifact against its schema and re-runs the deterministic graph checks *itself*, on the
-  file, not on your account of the file. You cannot argue your way past it, because it is not
-  listening to you.
+- `scripts/run.mjs advance` is the deterministic phase gate the Portal host invokes. It
+  independently
+  executes every required, named criterion from the gate plan against frozen inputs. It rejects
+  missing executors, missing schema validation, stale manifest revisions, v1 envelopes, unbound
+  digests, and failed host checks. You cannot argue your way past it, because it is not listening
+  to you.
 - **A state can only be entered from a state it may follow.** There is no route to
   `CERTIFICATE_ISSUED` except through `ISSUANCE_ELIGIBLE`, none to `ISSUANCE_ELIGIBLE` except
   through `VALIDATED`, and none to `VALIDATED` without a validation report on file. Escalating
@@ -55,11 +58,22 @@ What replaces role isolation:
   refused, the answer is the missing phase, never a different `--to`.
 - Each phase is worked under `prompts/<specialist>.md`. Load the brief for the phase you are
   in and follow it as written, including the parts that constrain you.
-- The task/result/envelope contracts are still written to `tasks/`. They are the audit trail
-  of what was claimed and what was checked, and they are what a reviewer reads.
+- The host-selected `manifest.json` identifies the latest immutable transition commit.
+  `state.json` and
+  `snapshot.json` are projections, not independent authority. `reconcile` blocks or repairs
+  projection drift from the immutable selected revision.
+- Gate plans, v2 task/result contracts, envelopes, host gate results, artifact registrations,
+  and transition commits form one append-only audit chain. Candidate outputs under `work/`
+  remain drafts until that chain commits them.
 
 Where a brief says "you propose, you do not validate your own proposals", it still means
 that — the validator is `run.mjs`, not a later version of you.
+
+This boundary is conditional on host enforcement. The Portal must inject the controller DID and
+review public key, mediate `advance`, and keep the selected manifest and committed records outside
+generic agent writes. Hashes stored beside agent-writable files detect corruption; they are not
+authorization against a process with the same filesystem rights. If the runtime cannot provide
+that separation, stop at an uncommitted draft and label the run non-authoritative.
 
 ## Default experience: guided, not artifact-first
 
@@ -136,19 +150,20 @@ needed to continue.
 
 ### Resume with continuity
 
-On resume, run `scripts/run.mjs state` first and open with: what changed since the last
+On resume, run `scripts/run.mjs reconcile` and then `scripts/run.mjs state` first. Open with: what changed since the last
 checkpoint, the current friendly phase and machine state, the last approved transition,
 unresolved decisions, and one next action. Do not repeat earlier phases or present the run as
 new.
 
 ## Non-negotiables
 
-1. **Proof, not self-report.** No phase completes because you say it is done. A state
-   transition happens only through `run.mjs advance`, which re-validates the artifact and
-   re-runs the deterministic checks, and only with a `VerificationEnvelope` whose verdict is
-   `approve_transition`.
+1. **Proof, not self-report.** No phase completes because you say it is done. Create the named
+   criteria first with `run.mjs plan`, author v2 task/result/envelope records over those exact
+   inputs, and call `run.mjs advance` with the expected manifest revision. The host invokes the
+   gate, which re-runs the
+   criteria and creates the transition commit. An envelope verdict is evidence, not authority.
 2. **You are a proposal engine, not the authority.** You extract, propose, compare, and
-   explain. The scripts perform authoritative checks, persistence, and scoring. Graph
+   explain. Host-invoked scripts perform deterministic checks, persistence, and scoring. Graph
    structure checks (DAG-01..DAG-05, ID-02, EDGE-04) run via `scripts/check-graph.mjs` —
    never by eyeball.
 3. **Basis points, never floats.** Every score and confidence is an integer 0..10000.
@@ -164,7 +179,13 @@ new.
 8. **Tier is computed, never chosen** (`references/claim-tiers.md`). Certificate tier =
    `min(target_tier, attainable_tier)`.
 9. **A reviewer decision is a human's.** `advance --to VALIDATED` out of `REVIEW_REQUIRED`
-   requires `--reviewer`. Never simulate, assume, or time out a human decision into approval.
+   requires a host-signed `outcome.review-decision.v1` through `--review-decision`; a DID string
+   is identity, not authorization. Never simulate, assume, or time out a human decision into
+   approval.
+10. **Issuance authority is also signed and transition-bound.** Both `ISSUANCE_ELIGIBLE` and
+    `CERTIFICATE_ISSUED` require a host-signed `outcome.issuance-authorization.v1` through
+    `--issuance-authorization`. The latter binds the signed certificate, issuer, tier, and
+    external signing receipt. An issuance request or certificate proof cannot authorize itself.
 
 ## Showing the user their graph
 
@@ -198,34 +219,65 @@ sandbox — ordinary files, isolated to this user, which nothing outside the san
 
 ```
 state.json                  the workflow state record; run.mjs is its only writer
+manifest.json               compare-and-swap pointer to the latest transition commit
+commits/<id>.json           immutable transition commits and projection copies
 run-brief.json              outcome.run-brief.v1
-artifacts/<id>.json         one content-addressed file per artifact
-tasks/<envelope>.json       task/result contracts and verification envelopes
-review-packets/<name>.md    packets awaiting a human decision
+artifacts/<id>.json         accepted, committed artifacts only
+tasks/<id>.json             gate plans, v2 task/results, envelopes, and host gate results
+work/<id>.json              frozen but uncommitted candidate artifacts
+review-packets/<hash>.md    packets recorded by full ref and awaiting a human decision
 ```
 
 `init` reports `schema_validation: available | unavailable`. If it is unavailable, run
-`npm install` in the capsule directory before going further — otherwise every artifact
-advances with its schema check recorded as a warning rather than a pass, which is a run whose
-audit trail says less than it appears to.
+`npm install` in the capsule directory before going further. A required validator that is
+unavailable blocks the transition; it is never downgraded into a pass or warning.
 
 ```bash
 node scripts/run.mjs init --workflow <id> --domain <domain> --target-tier 3 --brief brief.json
 node scripts/run.mjs record  --workflow <id> --artifact graph.json
-node scripts/run.mjs advance --workflow <id> --to CAUSAL_GRAPH_DRAFTED --envelope env.json
+node scripts/run.mjs record-packet --workflow <id> --packet <ref> --file review-packet.md
+node scripts/run.mjs plan --workflow <id> --to CAUSAL_GRAPH_DRAFTED --artifact graph.json
+node scripts/run.mjs advance --workflow <id> --to CAUSAL_GRAPH_DRAFTED \
+  --gate-plan gate-plan.json --task-contract task.json --result result.json \
+  --envelope envelope.json --artifact graph.json --expected-revision <n>
 node scripts/run.mjs state   --workflow <id>
 node scripts/run.mjs totals  --workflow <id>
 node scripts/run.mjs snapshot --workflow <id>   # → the artifact the canvas renders
+node scripts/run.mjs reconcile --workflow <id>  # restore projections from the selected commit
 ```
 
-`record` is content-addressed and immutable: the same id may be recorded again only with
-identical bytes. A corrected artifact is a **new version with its own id**, never the old id
-carrying new content — transitions and envelopes already point at the old one. A signed
+When a candidate declares `supersedes`, freeze the predecessor, predeclare the v2 envelope ID you
+will use for the transition, and create a schema-valid, content-addressed
+`outcome.supersession-event.v1` with the predecessor/successor digests, failed
+criterion IDs, patch summary, actor, rerun evidence, and predecessor disposition. Pass the same
+file to both `plan` and `advance` as `--supersession-event event.json`. The host rejects an
+unbound or missing event, persists an accepted event under `revisions/`, registers it, and places
+its ref in the transition commit. `rerun_evidence_refs` must name the exact v2 verification
+envelope for this transition; every listed failed criterion must be a passing, candidate-bound
+check in that envelope and a passing host gate result. A repair without that committed event and
+resolvable proof remains a draft.
+
+For `REVIEW_REQUIRED → VALIDATED`, the Portal host supplies a signed decision bound to the
+workflow ID, current manifest revision, review packet, candidate digest, reviewer DID, and target
+state. Pass that exact file to both `plan` and `advance` as `--review-decision decision.json`.
+
+For `VALIDATED → ISSUANCE_ELIGIBLE` and `ISSUANCE_ELIGIBLE → CERTIFICATE_ISSUED`, the Portal
+host supplies a signed authorization bound to the same workflow/revision/candidate tuple plus the
+purpose, issuer, and tier. Certificate commit authorizations also bind the verified external
+signing receipt. Pass the exact file to both commands as
+`--issuance-authorization issuance-authorization.json`.
+
+`record` freezes an **uncommitted draft** under `work/`; it does not change committed totals,
+artifact refs, or the manifest. `advance` promotes the exact validated bytes. IDs are
+content-addressed and immutable: the same id may be recorded again only with identical bytes.
+A corrected artifact is a **new version with its own id**, never the old id carrying new
+content — transitions and envelopes already point at the old one. A signed
 `OutcomeCertificate` is the one artifact with no `schema` field (it is a W3C VC 2.0 document,
 identified by its `type` array); `record` accepts it, and `CERTIFICATE_ISSUED` requires it.
 
-`advance` prints the checks it ran. Read them: they are what you report under
-`Audit trail`, and a `warning` status is worth a sentence to the user.
+`advance` prints the host `gate_results`, transition commit ref, and new manifest revision.
+Read them: they are what you report under `Audit trail`. `totals` prints `committed` and
+`uncommitted` separately; never merge them into a single claim of progress.
 
 Direct tool use when you need it:
 
@@ -238,7 +290,7 @@ node scripts/validate.mjs                              # schema suite + examples
 
 | Script | What it does | Usage |
 |---|---|---|
-| `scripts/run.mjs` | The run state gate. Creates runs, records artifacts, and is the only writer of `state.json`. `advance` enforces legal predecessors, re-validates the artifact and re-runs the graph checks itself before allowing a transition, and exits non-zero when it refuses. | `node scripts/run.mjs <init\|state\|record\|advance\|totals\|snapshot> --workflow <id> [...]` |
+| `scripts/run.mjs` | The run state gate and control plane. `plan` freezes named criteria; `advance` enforces v2 contract coverage, versioned executors, supersession lineage, host checks, artifact registration, and manifest CAS; `reconcile` verifies or repairs derived projections. | `node scripts/run.mjs <init\|state\|record\|record-packet\|plan\|advance\|totals\|snapshot\|reconcile> --workflow <id> [...]` |
 | `scripts/check-graph.mjs` | The deterministic DAG checks (DAG-01..05, ID-02, EDGE-04) over one causal graph. Prints an `outcome.check-graph-output.v1` findings envelope; exits 1 on any blocking finding. | `node scripts/check-graph.mjs <graph.json> [--out <file>]` |
 | `scripts/validate.mjs` | Compiles every schema and validates the bundled examples, including the engine's vendored rubric schema. | `node scripts/validate.mjs` |
 
@@ -248,13 +300,23 @@ and `check-graph`'s checks are also importable as a pure module at
 
 ## Contracts
 
-For each phase, write a `task_contract` (`schemas/contracts.schema.json`) before the work and
-a `result_contract` after it: objective, exact `input_refs` (inputs not listed are out of
-bounds for that phase), `required_output_schema`, `success_criteria`, `stop_conditions`.
-Then produce the `verification_envelope`: one check per `claims_made` entry, each with a
-`method` (`deterministic_tool`, `schema_validation`, `agent_judgment`, `human_review`) and,
-for tool-backed methods, an `evidence_ref`. `run.mjs advance` rejects a tool-backed check
-that cites no evidence.
+For each phase, call `run.mjs plan` first. It writes `outcome.gate-plan.v1` and
+`outcome.task-contract.v2` (`schemas/workflow-control.schema.json` and
+`schemas/contracts.v2.schema.json`) with the exact content-addressed inputs, named criterion
+IDs, validation dimensions, versioned executors, allowed tools, output schema, and stop
+conditions. Inputs not listed are out of bounds.
+
+After the work, write `outcome.result-contract.v2`; `claims_made` contains criterion IDs, not
+free-form assurances. Produce `outcome.verification-envelope.v2` with one check for every
+required criterion, including the exact validator and version, input digest, output digest,
+method, and immutable evidence ref. Derive all six dimension verdicts from those checks.
+`approve_transition` cannot override a missing or failed host executor. Existing v1 contracts
+remain readable history, but a v1 envelope cannot authorize a new transition.
+
+Before `TOC_PARSED` or `CLAIMS_STRUCTURED`, also supply a complete
+`outcome.toc-semantic-review.v1`. Schema validity only proves that a proposition kind is
+allowed; the review records why each role is defensible, confidence, alternatives, triggers,
+and unresolved review status.
 
 Retry policy: one retry per phase on schema-invalid output (include the validator errors in
 the retry). After that, escalate to review. Request a second candidate graph when the first
@@ -273,7 +335,11 @@ has `open_risk` confounders on issuance-critical edges.
    carries the partial scope. Branch on `VerdictClass`, never on chain status alone.
 5. **Governance gate** — human signoff recorded for Tier 4, and wherever the governing
    rubrics' `HumanReview` tasks are unresolved.
-6. **Assembly gate** — `outcome.issuance-request.v1` complete with `decision: issue`.
+6. **Assembly gate** — `outcome.issuance-request.v1` complete with `decision: issue` or
+   `issue_at_lower_tier`, all policy thresholds met, and no unresolved policy checks.
+7. **Authority gate** — the Portal host signs an `outcome.issuance-authorization.v1` bound to
+   the exact request or certificate bytes; certificate commit also requires a complete issuer
+   proof and supported external receipt references.
 
 If a gate fails: offer `issue_at_lower_tier` when a lower tier's gates pass, else `defer`
 (name the gaps) or `reject` (name what must change). Record the decision and its basis either way.
@@ -296,11 +362,15 @@ continue as a diagnostic run rather than failing the whole run.
 ## Load only what the step needs
 
 - `prompts/<specialist>.md` — the brief for the phase you are entering.
+- `references/workflow-control.md` — before planning, advancing, resuming, or reporting totals.
 - `references/causal-checks.md` — before drafting or validating any graph.
 - `references/evidence-admissibility.md` — before linking or judging evidence.
 - `references/claim-tiers.md` — before computing tiers or drafting a certificate.
 - `references/rubric-authoring.md` — before writing or revising any engine rubric.
 - `schemas/*.schema.json` — the structural contract for each artifact; validate, don't vibe.
+- `schemas/contracts.v2.schema.json` — gate-bound task, result, and envelope contracts for new transitions.
+- `schemas/toc-semantic-review.schema.json` — the separate proposition-role judgment record.
+- `schemas/workflow-control.schema.json` — gate plans, transition commits, manifests, snapshots, and repair lineage.
 - `templates/review-packet.md` — when assembling a review.
 - `templates/user-checkpoint.md` — before every user-facing update.
 - `tools/outcome-graph-source.md` — when a rubric needs a graph-level answer.

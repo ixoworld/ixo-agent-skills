@@ -117,6 +117,16 @@
           "type": "object",
           "properties": {
             "issuer": { "$ref": "common.defs.v1.json#/$defs/actor_ref" },
+            "review_verification_key": {
+              "type": "object",
+              "properties": {
+                "algorithm": { "const": "Ed25519" },
+                "public_key_spki_base64": { "type": "string", "minLength": 40 },
+                "fingerprint": { "$ref": "common.defs.v1.json#/$defs/sha256_hex" }
+              },
+              "required": ["algorithm", "public_key_spki_base64", "fingerprint"],
+              "additionalProperties": false
+            },
             "outcome_domain": { "type": "string" }
           },
           "required": ["outcome_domain"],
@@ -127,6 +137,7 @@
           "description": "Latest accepted artifact per kind.",
           "properties": {
             "toc_extraction": { "type": ["string", "null"] },
+            "toc_semantic_review": { "type": ["string", "null"] },
             "causal_graph": { "type": ["string", "null"] },
             "evidence_graph": { "type": ["string", "null"] },
             "validation_report": { "type": ["string", "null"] },
@@ -145,7 +156,7 @@
               "at": { "$ref": "common.defs.v1.json#/$defs/iso_datetime" },
               "task_id": { "type": ["string", "null"] },
               "envelope_ref": { "type": ["string", "null"], "description": "VerificationEnvelope that approved this transition. null only for SOURCE_ACCEPTED." },
-              "approved_by": { "type": "string", "enum": ["orchestrator", "human_reviewer"] }
+              "approved_by": { "type": "string", "enum": ["orchestrator", "human_reviewer", "host_authority"] }
             },
             "required": ["from", "to", "at", "envelope_ref", "approved_by"],
             "additionalProperties": false

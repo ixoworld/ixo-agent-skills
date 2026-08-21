@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/ixo/outcome-graph/schema/contracts.v2.json",
+  "title": "WorkflowContractsV2",
+  "description": "Gate-bound task, result, and verification contracts for new transitions. Existing v1 records remain readable but cannot authorize a v2 transition commit.",
+  "oneOf": [
+    { "$ref": "#/$defs/task_contract" },
+    { "$ref": "#/$defs/result_contract" },
+    { "$ref": "#/$defs/verification_envelope" }
+  ],
+  "$defs": {
+    "criterion_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "dimension_verdicts": {
+      "type": "object",
+      "properties": {
+        "schema": { "$ref": "workflow-control.v1.json#/$defs/gate_status" },
+        "provenance": { "$ref": "workflow-control.v1.json#/$defs/gate_status" },
+        "semantics": { "$ref": "workflow-control.v1.json#/$defs/gate_status" },
+        "structure": { "$ref": "workflow-control.v1.json#/$defs/gate_status" },
+        "identification": { "$ref": "workflow-control.v1.json#/$defs/gate_status" },
+        "governance": { "$ref": "workflow-control.v1.json#/$defs/gate_status" }
+      },
+      "required": ["schema", "provenance", "semantics", "structure", "identification", "governance"],
+      "additionalProperties": false
+    },
+    "task_contract": {
+      "type": "object",
+      "properties": {
+        "contract": { "const": "outcome.task-contract.v2" },
+        "task_id": { "type": "string" },
+        "workflow_id": { "type": "string" },
+        "state_in": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "agent": { "$ref": "common.defs.v1.json#/$defs/agent_name" },
+        "objective": { "type": "string" },
+        "gate_plan_ref": { "type": "string" },
+        "input_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Content-addressed refs to every input the specialist may use."
+        },
+        "allowed_tools": { "type": "array", "items": { "type": "string" } },
+        "required_output_schema": { "type": "string" },
+        "success_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/criterion_id" },
+          "description": "Criterion IDs from gate_plan_ref. Free-form completion claims are invalid."
+        },
+        "stop_conditions": { "type": "array", "items": { "type": "string" } },
+        "escalation_target": { "type": "string" },
+        "attempt": { "type": "integer", "minimum": 1 }
+      },
+      "required": [
+        "contract",
+        "task_id",
+        "workflow_id",
+        "state_in",
+        "agent",
+        "objective",
+        "gate_plan_ref",
+        "input_refs",
+        "allowed_tools",
+        "required_output_schema",
+        "success_criteria",
+        "stop_conditions",
+        "escalation_target",
+        "attempt"
+      ],
+      "additionalProperties": false
+    },
+    "result_contract": {
+      "type": "object",
+      "properties": {
+        "contract": { "const": "outcome.result-contract.v2" },
+        "task_id": { "type": "string" },
+        "gate_plan_ref": { "type": "string" },
+        "agent": { "$ref": "common.defs.v1.json#/$defs/agent_name" },
+        "state_out_candidate": { "$ref": "common.defs.v1.json#/$defs/workflow_state" },
+        "structured_output_ref": { "type": "string" },
+        "claims_made": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/criterion_id" },
+          "description": "Criterion IDs the specialist claims to have satisfied."
+        },
+        "tool_calls_summary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tool": { "type": "string" },
+              "purpose": { "type": "string" },
+              "output_ref": { "type": ["string", "null"] }
+            },
+            "required": ["tool", "purpose"],
+            "additionalProperties": false
+          }
+        },
+        "provenance_refs": { "type": "array", "items": { "type": "string" } },
+        "uncertainties": { "type": "array", "items": { "type": "string" } },
+        "recommendation": { "type": "string", "enum": ["pass", "revise", "escalate"] }
+      },
+      "required": [
+        "contract",
+        "task_id",
+        "gate_plan_ref",
+        "agent",
+        "state_out_candidate",
+        "structured_output_ref",
+        "claims_made",
+        "tool_calls_summary",
+        "provenance_refs",
+        "uncertainties",
+        "recommendation"
+      ],
+      "additionalProperties": false
+    },
+    "verification_envelope": {
+      "type": "object",
+      "description": "Maps gate-plan criterion IDs to versioned evidence over frozen inputs and outputs.",
+      "properties": {
+        "contract": { "const": "outcome.verification-envelope.v2" },
+        "envelope_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "gate_plan_ref": { "type": "string" },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "criterion_id": { "$ref": "#/$defs/criterion_id" },
+              "dimension": { "$ref": "workflow-control.v1.json#/$defs/validation_dimension" },
+              "method": {
+                "type": "string",
+                "enum": ["deterministic_tool", "schema_validation", "agent_judgment", "human_review"]
+              },
+              "status": { "$ref": "common.defs.v1.json#/$defs/check_status" },
+              "evidence_ref": { "type": ["string", "null"] },
+              "validator_ref": { "type": "string", "minLength": 1 },
+              "input_digest": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+              "output_digest": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+            },
+            "required": [
+              "criterion_id",
+              "dimension",
+              "method",
+              "status",
+              "evidence_ref",
+              "validator_ref",
+              "input_digest",
+              "output_digest"
+            ],
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": { "method": { "enum": ["deterministic_tool", "schema_validation"] } },
+                  "required": ["method"]
+                },
+                "then": {
+                  "properties": {
+                    "evidence_ref": { "type": "string", "minLength": 1 },
+                    "input_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+                    "output_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "dimension_verdicts": { "$ref": "#/$defs/dimension_verdicts" },
+        "verdict": { "type": "string", "enum": ["approve_transition", "block_transition"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["contract", "envelope_id", "task_id", "gate_plan_ref", "checks", "dimension_verdicts", "verdict"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "verdict": { "const": "approve_transition" } },
+            "required": ["verdict"]
+          },
+          "then": {
+            "properties": {
+              "checks": {
+                "not": {
+                  "type": "array",
+                  "contains": {
+                    "type": "object",
+                    "properties": { "status": { "const": "fail" } },
+                    "required": ["status"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
