@@ -1,125 +1,118 @@
 # User checkpoint patterns
 
-Use these patterns for conversational updates. Replace every bracketed field. Omit a field only
-when it genuinely does not apply. Keep artifact identifiers and file links under `Audit trail`.
+Read `references/user-guidance.md` before using these patterns. They are guides, not forms to fill
+mechanically. Omit anything that does not help the user understand the causal story or decide what
+to do next.
 
-When the run has a visual surface — the Outcome Graph portal app, embedded at
-`/domain/<entityDid>/app/outcome-graph` — add one line to `Audit trail`:
+The normal response does not show machine states, manifest revisions, schema names, file paths,
+commands, artifact identifiers, or raw run totals. If the user asks for them, add a short
+`Technical details` section after the user-facing answer.
 
-```
-View live: /domain/<entityDid>/app/outcome-graph
-```
+When the Outcome Graph canvas is available, render it after the written explanation. Do not list
+its route in the main response or use the picture as a substitute for explaining what the graph
+means.
 
-Omit it when there is no such surface, as in a local Claude Code run. The app shows the same
-counts in the same order as the run totals below, so a user moving between the conversation
-and the canvas is reading one run, not two accounts of it.
+## Starting the analysis
 
-## Run brief
+### Ready to understand [the outcome or decision]
 
-### Outcome Graph - Phase 1 of 7: Set the goal (`SOURCE_ACCEPTED`)
+[Say what source was accepted and what real-world question the analysis will examine. State
+clearly that this begins an analysis, not a finding or certificate.]
 
-**Why:** [Decision or outcome claim this run will clarify.]
+[Summarise the early change story in two or three concrete sentences if the source makes it clear.
+Use actors and verbs. If it is not yet clear, say what you will identify next.]
 
-**What we will produce:** [Immediate output], followed by [likely later deliverables]. This is
-[a diagnostic run / an issuance-targeted run]; [state what is not implied].
+**What I will test next**
 
-**How:** Read the theory, map its causal paths, connect evidence, validate the graph, route human
-decisions, and only then evaluate or issue eligible claims.
+[Name the causal work in ordinary language: which changes are expected to lead to which outcome,
+why that might happen, what conditions the story depends on, and what evidence could confirm or
+challenge it.]
 
-**Who:** You [supply/confirm X]. The pipeline [extracts/checks Y]. [Reviewer or issuer] must decide
-[governed action], if the run reaches that gate.
+[If no action is needed: `You do not need to do anything yet. I will pause if a choice would
+materially change the model.` Otherwise ask one precise question.]
 
-**When:** We are starting phase 1. [Phases that can proceed now]. Later phases depend on [evidence,
-review, external authority].
+## Learning checkpoint
 
-**Where:** Source: [source description or count]. Durable run: `[runs/<workflow_id>/]`. External
-systems: [none yet / named system later].
+### [Direct statement of what was learned]
 
-**How much:** [source count], [provisional target outcome count], target tier [provided / not yet
-set]. Cost or effort: [known value / not estimated from available information].
+[In two to four sentences, explain what changed in the analysis and why it matters for the user's
+goal. Start with the result, not the work performed.]
 
-**Control status:** Committed state `[MACHINE_STATE]` at manifest revision [N]. Reconciliation
-[reconciled / mismatch]. Draft outputs [none / short list].
+When a causal path is the useful result, use this compact form:
 
-**Your next action:** [One instruction, or `No action needed - I am continuing to phase 2.`]
+1. [Action or condition] changes [the first observable response].
+2. That could lead to [later outcome] because [mechanism in the real world].
+3. The chain depends on [most important condition] and could be confused by [credible alternative
+   cause, when relevant].
 
-## Phase checkpoint
+**Reality check**
 
-### Phase [N] of 7: [Friendly phase] (`[MACHINE_STATE]`)
+[Distinguish what the source says, what the model proposes, what evidence shows, and what is still
+unknown. Name the one uncertainty most likely to change the conclusion. Explain what observation
+or comparison would reduce that uncertainty.]
 
-**Why this step matters:** [One sentence.]
+**Next**
 
-**What happened:** [Outcome-oriented summary.]
+[Say what the analysis will do next. Ask for one user action only if a real decision or missing
+input blocks progress. Include the exact reply needed when asking.]
 
-**Key results:**
+## Decision checkpoint
 
-- [Most decision-relevant count or finding.]
-- [Strongest supported path or result.]
-- [Most important ambiguity, evidence gap, or disclosure.]
+### A decision is needed about [plain-language issue]
 
-**Control status:** Committed state `[MACHINE_STATE]` at manifest revision [N]. Reconciliation
-[reconciled / mismatch]. [No uncommitted work / Draft outputs and why they are not committed.]
-When draft work exists, show committed and uncommitted counts separately.
+[Explain why this decision changes the causal interpretation or the strength of the claim. Name
+the authorised role when authority matters.]
 
-**What this means:** [Plain-language consequence for the intended claim or decision. Translate
-technical status and tier language.]
+**The choice**
 
-**Your next action:** [One explicit action and a response example, or `No action needed - I am
-continuing to phase [N+1].`]
+[Ask one answerable question.]
 
-**What happens next:** [Next phase and its advancement condition.]
+**What the evidence suggests**
 
-**Audit trail:** [Up to four relevant artifact links.]
+[Give the recommendation and the strongest reason for it. Also state the strongest credible reason
+to choose differently.]
 
-## Governed decision checkpoint
+**What each option changes**
 
-### Phase 6 of 7: Make the governed decision (`REVIEW_REQUIRED`)
+- [Option 1]: [effect on the model, evidence need, or claim wording].
+- [Option 2]: [effect on the model, evidence need, or claim wording].
+- [Optional third option only when materially distinct].
 
-**Status:** Paused for [reviewer role]'s decision. This is [not a failure / not completion]; the
-pipeline cannot advance until the decision is recorded.
+**Next**
 
-**Control status:** Committed state `REVIEW_REQUIRED` at manifest revision [N]. Reconciliation
-[reconciled / mismatch]. Draft outputs [none / short list].
-
-**Decision requested:** [Exact decision in plain language.]
-
-**Recommendation:** [Recommended option and evidence-based reason.]
-
-**If approved:** [Consequence and attainable claim scope.]
-
-**If deferred:** [Missing evidence or condition and who can provide it.]
-
-**If rejected:** [What changes or is excluded.]
-
-**Your next action:** Reply with `[exact response shape]`, or provide `[named artifact]`. If you are
-not the authorized reviewer, name or route this packet to `[reviewer role]`.
-
-**Resume:** Use `--resume <workflow-id>` after the decision or evidence is available.
-
-**Audit trail:** [Review packet], [validation report], [state record].
+[Give the exact response format or name the evidence to provide. If this person is not authorised,
+say who should receive the decision packet.]
 
 ## Final or paused handoff
 
-### Outcome Graph result - [status]
+### [What the analysis can and cannot establish]
 
-**Outcome:** [One sentence describing what the run established.]
+[State the strongest conclusion in ordinary language. Make the boundary explicit: plausible story,
+evidence of contribution, evidence that supports causation, or governed certificate.]
 
-**Claim readiness:** [Attainable tier in plain language, exact certificate scope if any, and what
-the run explicitly does not establish.]
+**Why**
 
-**Strongest basis:** [Most credible path and evidence.]
+[Explain the strongest causal pathway and the most credible evidence in a few sentences.]
 
-**Primary constraint:** [Highest-priority blocker or disclosure.]
+**What limits the conclusion**
 
-**Next owner and action:** [Person or role] should [one action].
+[Name the main assumption, alternative explanation, missing comparison, evidence gap, disclosure,
+or authority requirement. Explain its real-world consequence.]
 
-**Committed totals:** [sources], [propositions], [nodes], [edges], [evidence links], [gaps],
-[passes], [warnings], [failures], [blockers].
+**Next**
 
-**Uncommitted work:** [none / draft propositions, nodes, edges, findings, and the criterion that
-blocked commitment].
+[Name the person or role that owns one next action. If the analysis is complete for its stated
+purpose, say so without inventing more work.]
 
-**Control status:** Manifest revision [N]. Reconciliation [reconciled / mismatch].
+## Optional technical details
 
-**Audit trail:** [State], [ToC extraction], [causal graph], [evidence graph], [validation report],
-[review packet or certificate as applicable].
+Add this only when requested, when troubleshooting, or when an authority record must be inspected.
+Keep it short.
+
+### Technical details
+
+- Run status: [friendly step and machine state]
+- Saved record: [committed or draft status, with revision only if useful]
+- Checks: [brief pass or blocker summary]
+- Files: [up to four relevant links]
+- Canvas: [/domain/<entityDid>/app/outcome-graph, only when available]
