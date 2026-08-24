@@ -1,8 +1,9 @@
 # Outcome Graph
 
-Guides a user from a theory of change to a validated causal model and an evidence graph of
-linked verifiable claims — through seven phases, with deterministic checks and human gates —
-toward issuance of a digital outcome certificate.
+Guides a user from a theory of change to a validated causal model and an evidence graph of linked
+verifiable claims. The conversation explains how change is expected to happen in the real world,
+what each pathway depends on, what evidence could distinguish causation from a plausible story,
+and what the user needs to decide next.
 
 Written for the QiForge oracle runtime: runs in the user's sandbox, writes each run to
 `/workspace/data/output/outcome-graph/runs/<workflow_id>/`, and renders the run as a canvas
@@ -32,7 +33,7 @@ Then commit the result here and open a PR. Merging to `main` runs
 | `prompts/` | The six specialist roles as per-phase briefs |
 | `scripts/run.mjs` | The host-invoked deterministic gate for phase completion and run integrity |
 | `scripts/check-graph.mjs`, `validate.mjs` | The deterministic checks the agent defers to |
-| `schemas/`, `references/`, `templates/` | The artifact contracts and the guidance that interprets them |
+| `schemas/`, `references/`, `templates/` | The artifact contracts and human-first causal guidance |
 | `examples/clean-water/` | One worked run, so every artifact shape has a concrete example |
 
 A QiForge oracle runs **one** agent where the original pipeline ran six specialists in
