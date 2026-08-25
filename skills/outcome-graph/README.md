@@ -38,7 +38,8 @@ Then commit the result here and open a PR. Merging to `main` runs
 
 A QiForge oracle runs **one** agent where the original pipeline ran six specialists in
 separate contexts, so role isolation is gone. `run.mjs plan` freezes named, versioned gate
-criteria; `run.mjs advance` independently executes them over one parsed candidate, commits
+criteria; `run.mjs verify` executes them and materializes the host-owned envelope; and
+`run.mjs advance` independently re-executes them over one parsed candidate, commits
 through a manifest compare-and-swap, refuses v1 or unbound envelopes, and verifies host-signed
 human decisions and issuance authorizations. Repaired candidates also require a content-addressed
 supersession event that the host persists and registers with the transition. The Portal must

@@ -23,7 +23,7 @@ secrets:
   user: []
 metadata:
   author: ixo
-  version: "1.2.2"
+  version: "1.2.3"
   category: impact-evaluation
 ---
 
@@ -45,6 +45,9 @@ situation the phase briefs and the state gate exist to handle.
 
 What replaces role isolation:
 
+- `scripts/run.mjs verify` materializes the verification envelope from the frozen plan using
+  the host's actual executor versions, canonical byte digests, and check results. Never author
+  executor metadata or digests by hand.
 - `scripts/run.mjs advance` is the deterministic phase gate the Portal host invokes. It
   independently
   executes every required, named criterion from the gate plan against frozen inputs. It rejects
@@ -168,8 +171,9 @@ new.
 ## Non-negotiables
 
 1. **Proof, not self-report.** No phase completes because you say it is done. Create the named
-   criteria first with `run.mjs plan`, author v2 task/result/envelope records over those exact
-   inputs, and call `run.mjs advance` with the expected manifest revision. The host invokes the
+   criteria first with `run.mjs plan`, author the v2 result over those exact inputs, call
+   `run.mjs verify` to materialize the host-owned envelope, and pass that exact envelope to
+   `run.mjs advance` with the expected manifest revision. The host invokes the
    gate, which re-runs the
    criteria and creates the transition commit. An envelope verdict is evidence, not authority.
 2. **You are a proposal engine, not the authority.** You extract, propose, compare, and
@@ -211,7 +215,7 @@ manifest. Immediately call `artifact_get_presigned_url({ path })` on the checkpo
 returns. This registers the checkpoint for a later `artifact_list` / `load_artifact` restore; it is
 not the canvas payload and should not be presented as the graph. Create a new checkpoint after any
 command or shell write that changes run files, including `init`, `record`, `record-packet`, `plan`,
-or `advance`.
+`verify`, or `advance`.
 
 `snapshot` composes the whole run into one `outcome.run-snapshot.v1` and prints its path. Then:
 
@@ -270,6 +274,9 @@ node scripts/run.mjs init --workflow <id> --domain <domain> --target-tier 3 --br
 node scripts/run.mjs record  --workflow <id> --artifact graph.json
 node scripts/run.mjs record-packet --workflow <id> --packet <ref> --file review-packet.md
 node scripts/run.mjs plan --workflow <id> --to CAUSAL_GRAPH_DRAFTED --artifact graph.json
+node scripts/run.mjs verify --workflow <id> --to CAUSAL_GRAPH_DRAFTED \
+  --gate-plan gate-plan.json --task-contract task.json --result result.json \
+  --artifact graph.json --expected-revision <n>
 node scripts/run.mjs advance --workflow <id> --to CAUSAL_GRAPH_DRAFTED \
   --gate-plan gate-plan.json --task-contract task.json --result result.json \
   --envelope envelope.json --artifact graph.json --expected-revision <n>
@@ -281,8 +288,8 @@ node scripts/run.mjs restore --workflow <id> --checkpoint <loaded-checkpoint.jso
 node scripts/run.mjs reconcile --workflow <id>  # restore projections from the selected commit
 ```
 
-When a candidate declares `supersedes`, freeze the predecessor, predeclare the v2 envelope ID you
-will use for the transition, and create a schema-valid, content-addressed
+When a candidate declares `supersedes`, freeze the predecessor, predeclare the deterministic v2
+envelope ID for the transition, and create a schema-valid, content-addressed
 `outcome.supersession-event.v1` with the predecessor/successor digests, failed
 criterion IDs, patch summary, actor, rerun evidence, and predecessor disposition. Pass the same
 file to both `plan` and `advance` as `--supersession-event event.json`. The host rejects an
@@ -326,7 +333,7 @@ node scripts/validate.mjs                              # schema suite + examples
 
 | Script | What it does | Usage |
 |---|---|---|
-| `scripts/run.mjs` | The run state gate and control plane. `plan` freezes named criteria; `advance` enforces v2 contract coverage, versioned executors, supersession lineage, host checks, artifact registration, and manifest CAS; `checkpoint` freezes the complete run for artifact-store persistence; `restore` recreates it only when the selected chain reconciles; `reconcile` verifies or repairs derived projections. | `node scripts/run.mjs <init\|state\|record\|record-packet\|plan\|advance\|totals\|snapshot\|checkpoint\|restore\|reconcile> --workflow <id> [...]` |
+| `scripts/run.mjs` | The run state gate and control plane. `plan` freezes named criteria; `verify` executes them and materializes the host-owned envelope; `advance` re-executes them and enforces v2 contract coverage, versioned executors, supersession lineage, artifact registration, and manifest CAS; `checkpoint` freezes the complete run for artifact-store persistence; `restore` recreates it only when the selected chain reconciles; `reconcile` verifies or repairs derived projections. | `node scripts/run.mjs <init\|state\|record\|record-packet\|plan\|verify\|advance\|totals\|snapshot\|checkpoint\|restore\|reconcile> --workflow <id> [...]` |
 | `scripts/check-graph.mjs` | The deterministic DAG checks (DAG-01..05, ID-02, EDGE-04) over one causal graph. Prints an `outcome.check-graph-output.v1` findings envelope; exits 1 on any blocking finding. | `node scripts/check-graph.mjs <graph.json> [--out <file>]` |
 | `scripts/validate.mjs` | Compiles every schema and validates the bundled examples, including the engine's vendored rubric schema. | `node scripts/validate.mjs` |
 
@@ -343,9 +350,11 @@ IDs, validation dimensions, versioned executors, allowed tools, output schema, a
 conditions. Inputs not listed are out of bounds.
 
 After the work, write `outcome.result-contract.v2`; `claims_made` contains criterion IDs, not
-free-form assurances. Produce `outcome.verification-envelope.v2` with one check for every
-required criterion, including the exact validator and version, input digest, output digest,
-method, and immutable evidence ref. Derive all six dimension verdicts from those checks.
+free-form assurances. Then call `run.mjs verify` with that result, the exact plan/task files, the
+candidate, and every transition-specific input used by `plan`. It executes the frozen criteria
+and writes `outcome.verification-envelope.v2` with the host's exact validator versions, canonical
+input/output digests, methods, immutable evidence refs, and derived dimension verdicts. Use the
+returned envelope path unchanged; never recreate or patch it yourself.
 `approve_transition` cannot override a missing or failed host executor. Existing v1 contracts
 remain readable history, but a v1 envelope cannot authorize a new transition.
 
