@@ -23,7 +23,7 @@ secrets:
   user: []
 metadata:
   author: ixo
-  version: "1.2.1"
+  version: "1.2.2"
   category: impact-evaluation
 ---
 
@@ -150,10 +150,20 @@ needed to continue.
 
 ### Resume with continuity
 
-On resume, run `scripts/run.mjs reconcile` and then `scripts/run.mjs state` first. Open with what
-has changed in the causal understanding since the last checkpoint, the unresolved question, and
-one next action. Keep machine state and revision detail out of the main response unless it explains
-a real blocker. Do not repeat earlier steps or present the run as new.
+If the run directory is still present, run `scripts/run.mjs reconcile` and then
+`scripts/run.mjs state` first. If the sandbox was replaced, use `artifact_list` to find the latest
+`outcome.run-checkpoint.v1` for the workflow, restore that single file with `load_artifact`, and run
+`scripts/run.mjs restore --workflow <id> --checkpoint <loaded-path>`. `restore` recreates the exact
+selected manifest, immutable commits, projections, accepted artifacts, task records, and drafts,
+then refuses the restore unless reconciliation passes. Never reconstruct a governed run from a
+handful of individual artifacts and never synthesize a missing manifest. A run with neither its
+directory nor a governed checkpoint is not resumable; report that exact boundary and preserve any
+separate source artifacts for a new run.
+
+After restore, open with what has changed in the causal understanding since the last checkpoint,
+the unresolved question, and one next action. Keep machine state and revision detail out of the
+main response unless it explains a real blocker. Do not repeat earlier steps or present the run as
+new.
 
 ## Non-negotiables
 
@@ -189,13 +199,21 @@ a real blocker. Do not repeat earlier steps or present the run as new.
 
 ## Showing the user their graph
 
-After each phase checkpoint, give the user the picture as well as the words:
+After each phase checkpoint, make the governed run resumable before giving the user the picture:
 
 ```bash
+node scripts/run.mjs checkpoint --workflow <id>
 node scripts/run.mjs snapshot --workflow <id>
 ```
 
-That composes the whole run into one `outcome.run-snapshot.v1` and prints its path. Then:
+`checkpoint` writes one `outcome.run-checkpoint.v1` containing the exact run bytes selected by the
+manifest. Immediately call `artifact_get_presigned_url({ path })` on the checkpoint path it
+returns. This registers the checkpoint for a later `artifact_list` / `load_artifact` restore; it is
+not the canvas payload and should not be presented as the graph. Create a new checkpoint after any
+command or shell write that changes run files, including `init`, `record`, `record-packet`, `plan`,
+or `advance`.
+
+`snapshot` composes the whole run into one `outcome.run-snapshot.v1` and prints its path. Then:
 
 1. Use the exact artifact path returned by the command. The document must parse as JSON and
    declare `schema: "outcome.run-snapshot.v1"`.
@@ -207,11 +225,11 @@ That composes the whole run into one `outcome.run-snapshot.v1` and prints its pa
    such as `kitui_outcome_graph`. Use a versioned id (`kitui_outcome_graph_v2`) when you
    re-render a run that has moved on, so both appear in the conversation.
 
-The Oracle sandbox is ephemeral. Before resuming a run or using a file created in an earlier tool
-call, restore every required durable file with `load_artifact`; a path shown in an earlier response
-does not prove that the file still exists in the current sandbox. Create the snapshot, presign it,
-and render it in the same active sandbox session. If the sandbox is replaced before the action is
-emitted, restore the run and generate a fresh snapshot and URL rather than reusing an old token.
+The Oracle sandbox is ephemeral. A path shown in an earlier response does not prove that the file
+still exists in the current sandbox. Restore the latest governed checkpoint rather than loading
+individual run files, then create the snapshot, presign it, and render it in the same active
+sandbox session. If the sandbox is replaced before the action is emitted, restore the checkpoint
+and generate a fresh snapshot and URL rather than reusing an old token.
 
 Never pass an SVG, Mermaid, HTML, causal-graph, or other fallback artifact to
 `render_outcome_graph`. Those may be offered separately as exports, but they are not governed run
@@ -258,6 +276,8 @@ node scripts/run.mjs advance --workflow <id> --to CAUSAL_GRAPH_DRAFTED \
 node scripts/run.mjs state   --workflow <id>
 node scripts/run.mjs totals  --workflow <id>
 node scripts/run.mjs snapshot --workflow <id>   # → the artifact the canvas renders
+node scripts/run.mjs checkpoint --workflow <id> # → persist this path with artifact_get_presigned_url
+node scripts/run.mjs restore --workflow <id> --checkpoint <loaded-checkpoint.json>
 node scripts/run.mjs reconcile --workflow <id>  # restore projections from the selected commit
 ```
 
@@ -306,7 +326,7 @@ node scripts/validate.mjs                              # schema suite + examples
 
 | Script | What it does | Usage |
 |---|---|---|
-| `scripts/run.mjs` | The run state gate and control plane. `plan` freezes named criteria; `advance` enforces v2 contract coverage, versioned executors, supersession lineage, host checks, artifact registration, and manifest CAS; `reconcile` verifies or repairs derived projections. | `node scripts/run.mjs <init\|state\|record\|record-packet\|plan\|advance\|totals\|snapshot\|reconcile> --workflow <id> [...]` |
+| `scripts/run.mjs` | The run state gate and control plane. `plan` freezes named criteria; `advance` enforces v2 contract coverage, versioned executors, supersession lineage, host checks, artifact registration, and manifest CAS; `checkpoint` freezes the complete run for artifact-store persistence; `restore` recreates it only when the selected chain reconciles; `reconcile` verifies or repairs derived projections. | `node scripts/run.mjs <init\|state\|record\|record-packet\|plan\|advance\|totals\|snapshot\|checkpoint\|restore\|reconcile> --workflow <id> [...]` |
 | `scripts/check-graph.mjs` | The deterministic DAG checks (DAG-01..05, ID-02, EDGE-04) over one causal graph. Prints an `outcome.check-graph-output.v1` findings envelope; exits 1 on any blocking finding. | `node scripts/check-graph.mjs <graph.json> [--out <file>]` |
 | `scripts/validate.mjs` | Compiles every schema and validates the bundled examples, including the engine's vendored rubric schema. | `node scripts/validate.mjs` |
 

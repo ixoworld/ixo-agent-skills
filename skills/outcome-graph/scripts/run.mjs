@@ -26,6 +26,8 @@
  *        [--issuance-authorization <host-signed-json>]
  *   node scripts/run.mjs totals --workflow <id>
  *   node scripts/run.mjs snapshot --workflow <id>
+ *   node scripts/run.mjs checkpoint --workflow <id>
+ *   node scripts/run.mjs restore --workflow <id> --checkpoint <file>
  *   node scripts/run.mjs reconcile --workflow <id>
  *
  * Runs live under $OUTCOME_GRAPH_RUNS, defaulting to the sandbox's output mount at
@@ -2358,6 +2360,163 @@ async function cmdSnapshot(argv) {
   }
 }
 
+function checkpointFiles(root, relative = "") {
+  const files = [];
+  const directory = relative ? join(root, relative) : root;
+  for (const name of readdirSync(directory).sort()) {
+    if (!relative && name === ".manifest-locks") continue;
+    const relativePath = relative ? `${relative}/${name}` : name;
+    const path = join(root, relativePath);
+    const entry = lstatSync(path);
+    if (entry.isSymbolicLink()) die(`checkpoint refuses symbolic link '${relativePath}'`);
+    if (entry.isDirectory()) {
+      files.push(...checkpointFiles(root, relativePath));
+      continue;
+    }
+    if (!entry.isFile()) die(`checkpoint refuses non-file entry '${relativePath}'`);
+    const bytes = readFileSync(path);
+    files.push({
+      path: relativePath,
+      sha256: sha256(bytes),
+      content_base64: bytes.toString("base64"),
+    });
+  }
+  return files;
+}
+
+function checkpointSeed(checkpoint) {
+  const { checkpoint_id: _checkpointId, ...seed } = checkpoint;
+  return seed;
+}
+
+/**
+ * Freeze the complete user-owned run directory into one artifact-store-friendly JSON file.
+ * The manifest remains the authority selector; the checkpoint only carries its exact bytes
+ * across an ephemeral sandbox boundary. `restore` re-validates the selected commit chain.
+ */
+function cmdCheckpoint(argv) {
+  const workflowId = args(argv).workflow ?? die("--workflow is required");
+  const releaseLock = acquireManifestLock(workflowId);
+  try {
+    const { manifest, commit } = reconcileRunIntegrity(workflowId);
+    const checkpoint = {
+      schema: "outcome.run-checkpoint.v1",
+      checkpoint_id: null,
+      workflow_id: workflowId,
+      manifest_revision: manifest.manifest_revision,
+      transition_commit_ref: manifest.transition_commit_ref,
+      transition_commit_digest: manifest.transition_commit_digest,
+      generated_at: commit.committed_at,
+      files: checkpointFiles(runDir(workflowId)),
+    };
+    checkpoint.checkpoint_id = `urn:ixo:run-checkpoint:${sha256(jsonBytes(checkpointSeed(checkpoint)))}`;
+    const directory = resolve(RUNS_ROOT, "checkpoints");
+    const suffix = checkpoint.checkpoint_id.slice(-16);
+    const path = join(directory, `${workflowId}-r${manifest.manifest_revision}-${suffix}.checkpoint.json`);
+    saveImmutable(path, checkpoint);
+    return emit({
+      ok: true,
+      schema: checkpoint.schema,
+      checkpoint_id: checkpoint.checkpoint_id,
+      workflow_id: workflowId,
+      manifest_revision: manifest.manifest_revision,
+      transition_commit_ref: manifest.transition_commit_ref,
+      file_count: checkpoint.files.length,
+      artifact: { path, schema: checkpoint.schema },
+      next: "Call artifact_get_presigned_url({ path }) so this governed checkpoint can be restored in a later sandbox.",
+    });
+  } finally {
+    releaseLock();
+  }
+}
+
+function checkpointRelativePath(value) {
+  if (typeof value !== "string" || value.length === 0 || value.startsWith("/") || value.includes("\\")) {
+    die(`checkpoint contains invalid relative path '${value ?? ""}'`);
+  }
+  const parts = value.split("/");
+  if (parts.some((part) => !part || part === "." || part === "..") || parts[0] === ".manifest-locks") {
+    die(`checkpoint contains invalid relative path '${value}'`);
+  }
+  return value;
+}
+
+function checkpointBytes(file) {
+  if (typeof file?.content_base64 !== "string" || !/^[A-Za-z0-9+/]*={0,2}$/.test(file.content_base64)) {
+    die(`checkpoint file '${file?.path ?? ""}' has invalid base64 content`);
+  }
+  const bytes = Buffer.from(file.content_base64, "base64");
+  if (bytes.toString("base64") !== file.content_base64 || sha256(bytes) !== file.sha256) {
+    die(`checkpoint file '${file?.path ?? ""}' failed its content digest`);
+  }
+  return bytes;
+}
+
+/** Restore only into an absent run directory, then fail closed unless reconciliation passes. */
+function cmdRestore(argv) {
+  const a = args(argv);
+  const workflowId = a.workflow ?? die("--workflow is required");
+  const checkpointPath = a.checkpoint ? resolve(a.checkpoint) : die("--checkpoint is required");
+  const checkpoint = readJson(checkpointPath);
+  if (checkpoint.schema !== "outcome.run-checkpoint.v1") die("restore requires outcome.run-checkpoint.v1");
+  if (checkpoint.workflow_id !== workflowId) {
+    die(`checkpoint belongs to workflow '${checkpoint.workflow_id ?? ""}', not '${workflowId}'`);
+  }
+  if (!Array.isArray(checkpoint.files) || checkpoint.files.length === 0) die("checkpoint contains no run files");
+  const expectedId = `urn:ixo:run-checkpoint:${sha256(jsonBytes(checkpointSeed(checkpoint)))}`;
+  if (checkpoint.checkpoint_id !== expectedId) die("checkpoint digest does not match its contents");
+
+  const destination = runDir(workflowId);
+  if (existsSync(destination)) die(`workflow '${workflowId}' already exists; restore refuses to overwrite it`);
+  const seen = new Set();
+  const prepared = checkpoint.files.map((file) => {
+    const relativePath = checkpointRelativePath(file?.path);
+    if (seen.has(relativePath)) die(`checkpoint contains duplicate path '${relativePath}'`);
+    seen.add(relativePath);
+    return { relativePath, bytes: checkpointBytes(file) };
+  });
+
+  mkdirSync(dirname(destination), { recursive: true });
+  try {
+    mkdirSync(destination);
+  } catch (error) {
+    if (error.code === "EEXIST") {
+      die(`workflow '${workflowId}' already exists; restore refuses to overwrite it`);
+    }
+    die(`cannot create workflow '${workflowId}' for restore: ${error.message}`);
+  }
+
+  try {
+    for (const file of prepared) {
+      const path = resolve(destination, file.relativePath);
+      if (!path.startsWith(`${destination}/`)) die(`checkpoint path escapes the workflow directory: '${file.relativePath}'`);
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, file.bytes, { flag: "wx" });
+    }
+    const { manifest, commit } = reconcileRunIntegrity(workflowId);
+    if (
+      checkpoint.manifest_revision !== manifest.manifest_revision ||
+      checkpoint.transition_commit_ref !== manifest.transition_commit_ref ||
+      checkpoint.transition_commit_digest !== manifest.transition_commit_digest
+    ) {
+      die("checkpoint metadata does not match the restored selected manifest");
+    }
+    return emit({
+      ok: true,
+      schema: checkpoint.schema,
+      checkpoint_id: checkpoint.checkpoint_id,
+      workflow_id: workflowId,
+      current_state: commit.state_after,
+      manifest_revision: manifest.manifest_revision,
+      transition_commit_ref: manifest.transition_commit_ref,
+      reconciliation: "reconciled",
+    });
+  } catch (error) {
+    rmSync(destination, { recursive: true, force: true });
+    throw error;
+  }
+}
+
 function cmdReconcile(argv) {
   const workflowId = args(argv).workflow ?? die("--workflow is required");
   const releaseLock = acquireManifestLock(workflowId);
@@ -2404,10 +2563,14 @@ export async function main(argv = []) {
       return await cmdTotals(rest);
     case "snapshot":
       return await cmdSnapshot(rest);
+    case "checkpoint":
+      return cmdCheckpoint(rest);
+    case "restore":
+      return cmdRestore(rest);
     case "reconcile":
       return cmdReconcile(rest);
     default:
-      return die(`unknown command '${command ?? ""}' — expected init | state | record | record-packet | plan | advance | totals | snapshot | reconcile`);
+      return die(`unknown command '${command ?? ""}' — expected init | state | record | record-packet | plan | advance | totals | snapshot | checkpoint | restore | reconcile`);
   }
 }
 
