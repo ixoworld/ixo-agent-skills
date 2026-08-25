@@ -23,7 +23,7 @@ secrets:
   user: []
 metadata:
   author: ixo
-  version: "1.2.0"
+  version: "1.2.1"
   category: impact-evaluation
 ---
 
@@ -197,12 +197,27 @@ node scripts/run.mjs snapshot --workflow <id>
 
 That composes the whole run into one `outcome.run-snapshot.v1` and prints its path. Then:
 
-1. `artifact_get_presigned_url({ path })`: the sandbox mints a short-lived URL. Only it
-   can; the run files are yours and the user's, and nothing outside the sandbox reads them.
-2. Render it with the **`render_outcome_graph`** AG-UI action, passing `dataHandle` (the
+1. Use the exact artifact path returned by the command. The document must parse as JSON and
+   declare `schema: "outcome.run-snapshot.v1"`.
+2. `artifact_get_presigned_url({ path })`: mint a fresh, short-lived URL for that exact path.
+   Only the sandbox can; the run files are yours and the user's, and nothing outside the sandbox
+   reads them.
+3. Render it with the **`render_outcome_graph`** AG-UI action, passing `dataHandle` (the
    artifact path) and `fetchToken` (the presigned URL), plus a semantic snake_case `id`
    such as `kitui_outcome_graph`. Use a versioned id (`kitui_outcome_graph_v2`) when you
    re-render a run that has moved on, so both appear in the conversation.
+
+The Oracle sandbox is ephemeral. Before resuming a run or using a file created in an earlier tool
+call, restore every required durable file with `load_artifact`; a path shown in an earlier response
+does not prove that the file still exists in the current sandbox. Create the snapshot, presign it,
+and render it in the same active sandbox session. If the sandbox is replaced before the action is
+emitted, restore the run and generate a fresh snapshot and URL rather than reusing an old token.
+
+Never pass an SVG, Mermaid, HTML, causal-graph, or other fallback artifact to
+`render_outcome_graph`. Those may be offered separately as exports, but they are not governed run
+snapshots. If snapshot creation fails, report that exact failure and preserve the resumable run;
+do not call the canvas with a different artifact or describe a payload-contract error as a renderer
+timeout.
 
 Do this at every checkpoint where the shape of the run changed: a new graph version, an
 evidence pass, a validation result, a decision. Not for cosmetic updates.
