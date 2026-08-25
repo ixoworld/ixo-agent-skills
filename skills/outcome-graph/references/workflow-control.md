@@ -141,8 +141,10 @@ selection:
 
 1. Freeze the candidate artifact bytes under `work/` and run every required criterion in the gate
    plan.
-2. Write the result contract, verification envelope, and immutable check outputs. Derive the six
-   dimension verdicts. Never insert `approve_transition` as evidence for itself.
+2. Write the result contract, then invoke the host's `run.mjs verify` command to execute the
+   frozen criteria and materialize the verification envelope with exact executor versions,
+   canonical byte digests, immutable check refs, and all six derived dimension verdicts. Never
+   hand-author host metadata or insert `approve_transition` as evidence for itself.
 3. Register canonical artifacts and findings. If a candidate repairs an earlier artifact, require
    the same `--supersession-event` file during `plan` and `advance`. Verify its content-addressed
    ID, workflow and artifact kind, exact predecessor/successor refs and digests, failed checks,

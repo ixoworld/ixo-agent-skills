@@ -19,6 +19,9 @@
  *   node scripts/run.mjs record-packet --workflow <id> --packet <ref> --file <markdown>
  *   node scripts/run.mjs plan --workflow <id> --to <STATE> --artifact <file>
  *        [--supersession-event <json>]
+ *   node scripts/run.mjs verify --workflow <id> --to <STATE> --gate-plan <file>
+ *        --task-contract <file> --result <file> --expected-revision <n>
+ *        [--artifact <file>] [--supersession-event <json>]
  *   node scripts/run.mjs advance --workflow <id> --to <STATE> --gate-plan <file>
  *        --task-contract <file> --result <file> --envelope <file> --expected-revision <n>
  *        [--supersession-event <json>]
@@ -1271,10 +1274,13 @@ function transitionCommitId({ workflowId, revision, from, to, taskRef, resultRef
 }
 
 function dimensionVerdicts(gateResults) {
-  return Object.fromEntries(DIMENSIONS.map((dimension) => [
-    dimension,
-    gateResults.some((result) => result.dimension === dimension) ? "pass" : "not_applicable",
-  ]));
+  const precedence = ["fail", "review_required", "warning", "pass"];
+  return Object.fromEntries(DIMENSIONS.map((dimension) => {
+    const statuses = gateResults
+      .filter((result) => result.dimension === dimension)
+      .map((result) => result.status);
+    return [dimension, precedence.find((status) => statuses.includes(status)) ?? "not_applicable"];
+  }));
 }
 
 function gateResult(criterionId, { status = "pass", evidenceRef, inputDigest, outputDigest, summary }) {
@@ -1649,6 +1655,10 @@ function inputDigest(refs) {
   return sha256([...refs].sort().join("\n"));
 }
 
+function verificationEnvelopeId(workflowId, to, nextRevision) {
+  return `urn:ixo:verification-envelope:${workflowId}-${to.toLowerCase()}-${nextRevision}`;
+}
+
 function transitionInputRefs({
   workflowId,
   manifestRevision,
@@ -1789,6 +1799,7 @@ async function cmdPlan(argv) {
     gate_plan: { path: planRecord.path, ref: plan.plan_id },
     task_contract: { path: taskRecord.path, ref: task.task_id },
     candidate_ref: candidateId,
+    verification_envelope_ref: verificationEnvelopeId(workflowId, to, manifest.manifest_revision + 1),
     output_digest: candidate ? digestJson(candidate) : digestJson(state),
     criterion_inputs: Object.fromEntries(criteria.map((criterion) => [criterion.criterion_id, inputDigest(criterion.input_refs)])),
   });
@@ -1820,10 +1831,14 @@ function checkControlLinkage({
   if (result.task_id !== task.task_id || result.gate_plan_ref !== plan.plan_id || result.state_out_candidate !== to) {
     die("result contract does not match the task or candidate state");
   }
-  if (envelope.task_id !== task.task_id || envelope.gate_plan_ref !== plan.plan_id) {
-    die("verification envelope does not match the task or gate plan");
+  if (envelope) {
+    if (envelope.task_id !== task.task_id || envelope.gate_plan_ref !== plan.plan_id) {
+      die("verification envelope does not match the task or gate plan");
+    }
+    if (envelope.verdict !== "approve_transition") {
+      die(`envelope verdict is '${envelope.verdict}' — the transition is blocked`);
+    }
   }
-  if (envelope.verdict !== "approve_transition") die(`envelope verdict is '${envelope.verdict}' — the transition is blocked`);
   const candidateKind = candidate ? classify(candidate) : null;
   const candidateId = candidateKind ? candidate[candidateKind.idField] : null;
   const expectedOutputRef = candidateId ?? `workflow:${workflowId}@${manifestRevision}`;
@@ -1850,9 +1865,11 @@ function checkControlLinkage({
   const planned = new Map((plan.criteria ?? []).map((criterion) => [criterion.criterion_id, criterion]));
   const claimed = new Set(result.claims_made ?? []);
   const tasked = new Set(task.success_criteria ?? []);
-  const checked = new Map((envelope.checks ?? []).map((check) => [check.criterion_id, check]));
-  if (planned.size !== (plan.criteria ?? []).length || checked.size !== (envelope.checks ?? []).length ||
-      planned.size !== requiredIds.length || checked.size !== requiredIds.length) {
+  const checked = envelope
+    ? new Map((envelope.checks ?? []).map((check) => [check.criterion_id, check]))
+    : null;
+  if (planned.size !== (plan.criteria ?? []).length || planned.size !== requiredIds.length ||
+      (checked && (checked.size !== (envelope.checks ?? []).length || checked.size !== requiredIds.length))) {
     die("gate plan and verification envelope must not repeat criterion IDs");
   }
   if (!sameStrings(plan.criteria.map((criterion) => criterion.criterion_id), requiredIds) ||
@@ -1876,7 +1893,8 @@ function checkControlLinkage({
   if (plan.plan_id !== expectedPlanId) die("gate plan ID is not the content address of the supplied plan");
   for (const criterionId of requiredIds) {
     const criterion = planned.get(criterionId);
-    if (!criterion?.required || !tasked.has(criterionId) || !claimed.has(criterionId) || !checked.has(criterionId)) {
+    if (!criterion?.required || !tasked.has(criterionId) || !claimed.has(criterionId) ||
+        (checked && !checked.has(criterionId))) {
       die(`required criterion '${criterionId}' is not covered by plan, task, result, and envelope`);
     }
   }
@@ -1892,6 +1910,7 @@ function checkControlLinkage({
     if (!sameStrings(criterion.input_refs, expectedRefs)) {
       die(`criterion '${criterion.criterion_id}' does not name the host-derived frozen inputs`);
     }
+    if (!checked) continue;
     const check = checked.get(criterion.criterion_id);
     if (check?.status !== "pass") die(`criterion '${criterion.criterion_id}' has status '${check?.status ?? "missing"}'`);
     if (check.dimension !== dimension || check.method !== method || check.validator_ref !== `${executorRef}@${version}`) {
@@ -1904,10 +1923,96 @@ function checkControlLinkage({
       die(`verification dimension '${dimension}' is not pass for required criterion '${criterion.criterion_id}'`);
     }
   }
-  if (JSON.stringify(envelope.dimension_verdicts) !== JSON.stringify(dimensionVerdicts(envelope.checks))) {
+  if (envelope && JSON.stringify(envelope.dimension_verdicts) !== JSON.stringify(dimensionVerdicts(envelope.checks))) {
     die("verification dimension verdicts are not derived from the supplied checks");
   }
   return requiredIds;
+}
+
+async function loadTransitionBundle(a, { action, requireEnvelope }) {
+  const workflowId = a.workflow ?? die("--workflow is required");
+  const to = a.to ?? die("--to <STATE> is required");
+  if (!STATES.includes(to)) die(`unknown state '${to}'`);
+  const { manifest, commit: previousCommit } = reconcileRunIntegrity(workflowId);
+  const { state } = loadState(workflowId);
+  const legal = LEGAL_PREDECESSORS[to] ?? [];
+  if (!legal.includes(state.current_state)) {
+    die(`cannot ${action} ${state.current_state} → ${to}: ${to} may only follow ${legal.join(", ")}`);
+  }
+  const expectedRevision = Number(a["expected-revision"]);
+  if (!Number.isInteger(expectedRevision) || expectedRevision !== manifest.manifest_revision) {
+    die(`manifest compare-and-swap failed: expected ${a["expected-revision"] ?? "missing"}, current ${manifest.manifest_revision}`);
+  }
+  for (const flag of ["gate-plan", "task-contract", "result", ...(requireEnvelope ? ["envelope"] : [])]) {
+    if (!a[flag]) die(`state '${to}' requires --${flag}`);
+  }
+  const plan = readJson(resolve(a["gate-plan"]));
+  const task = readJson(resolve(a["task-contract"]));
+  const result = readJson(resolve(a.result));
+  const envelope = requireEnvelope ? readJson(resolve(a.envelope)) : null;
+  if (envelope?.contract === "outcome.verification-envelope.v1") {
+    die("v1 verification envelopes are readable history but cannot authorize a new transition");
+  }
+  const documents = [
+    [plan, "workflow-control.schema.json", "gate plan"],
+    [task, "contracts.v2.schema.json", "task contract"],
+    [result, "contracts.v2.schema.json", "result contract"],
+    ...(envelope ? [[envelope, "contracts.v2.schema.json", "verification envelope"]] : []),
+  ];
+  for (const [doc, schema, label] of documents) {
+    const checked = await validateControl(doc, schema);
+    if (checked.status !== "pass") die(`${label} is not executable: ${checked.detail}`);
+  }
+  const required = STATE_ARTIFACT[to];
+  const candidate = a.artifact ? readJson(resolve(a.artifact)) : null;
+  if (required && classify(candidate)?.schema !== required.schema) {
+    die(`state '${to}' requires --artifact with ${required.schema}`);
+  }
+  const semanticPath = a["semantic-review"] ? resolve(a["semantic-review"]) : null;
+  const semantic = semanticPath ? readJson(semanticPath) : null;
+  if (["TOC_PARSED", "CLAIMS_STRUCTURED"].includes(to)) {
+    const checked = await validateArtifact(semantic, "outcome.toc-semantic-review.v1");
+    if (checked.status !== "pass") die(`semantic review is not executable: ${checked.detail ?? "missing"}`);
+  }
+  const supersessionEvent = a["supersession-event"] ? readJson(resolve(a["supersession-event"])) : null;
+  if (supersessionEvent) {
+    const checked = await validateControl(supersessionEvent, "workflow-control.schema.json");
+    if (checked.status !== "pass" || supersessionEvent.schema !== "outcome.supersession-event.v1") {
+      die(`supersession event is not executable: ${checked.detail ?? "wrong schema"}`);
+    }
+  }
+  const reviewDecision = a["review-decision"] ? readJson(resolve(a["review-decision"])) : null;
+  if (to === "VALIDATED") {
+    const checked = await validateControl(reviewDecision, "review-decision.schema.json");
+    if (checked.status !== "pass") die(`review decision is not executable: ${checked.detail ?? "missing"}`);
+  } else if (reviewDecision) {
+    die("--review-decision is only accepted for the VALIDATED transition");
+  }
+  const issuanceAuthorization = a["issuance-authorization"]
+    ? readJson(resolve(a["issuance-authorization"]))
+    : null;
+  if (["ISSUANCE_ELIGIBLE", "CERTIFICATE_ISSUED"].includes(to)) {
+    const checked = await validateControl(issuanceAuthorization, "issuance-authorization.schema.json");
+    if (checked.status !== "pass") die(`issuance authorization is not executable: ${checked.detail ?? "missing"}`);
+  } else if (issuanceAuthorization) {
+    die("--issuance-authorization is only accepted for issuance transitions");
+  }
+  return {
+    workflowId,
+    to,
+    manifest,
+    previousCommit,
+    state,
+    plan,
+    task,
+    result,
+    envelope,
+    candidate,
+    semantic,
+    supersessionEvent,
+    reviewDecision,
+    issuanceAuthorization,
+  };
 }
 
 async function executeCriterion(criterionId, context) {
@@ -2001,78 +2106,192 @@ async function executeCriterion(criterionId, context) {
   }
 }
 
+async function executeGatePlan({
+  requiredIds,
+  workflowId,
+  manifestRevision,
+  state,
+  to,
+  candidate,
+  semantic,
+  supersessionEvent,
+  envelope,
+  envelopeId,
+  reviewDecision,
+  issuanceAuthorization,
+  packet,
+  plan,
+  task,
+  outputDigest,
+}) {
+  const results = new Map();
+  const execute = async (criterionId, executionEnvelope) => {
+    const executed = await executeCriterion(criterionId, {
+      workflowId,
+      manifestRevision,
+      state,
+      to,
+      candidate,
+      semantic,
+      supersessionEvent,
+      envelope: executionEnvelope,
+      reviewDecision,
+      issuanceAuthorization,
+      packet,
+    });
+    const criterion = plan.criteria.find((item) => item.criterion_id === criterionId);
+    const evidenceRef =
+      `urn:ixo:gate-result:${safeName(task.task_id)}-${criterionId}-${sha256(JSON.stringify(executed)).slice(0, 12)}`;
+    results.set(criterionId, gateResult(criterionId, {
+      status: executed.status,
+      evidenceRef,
+      inputDigest: inputDigest(criterion.input_refs),
+      outputDigest,
+      summary: executed.summary,
+    }));
+  };
+  for (const criterionId of requiredIds.filter((id) => id !== "supersession_lineage_integrity")) {
+    await execute(criterionId, envelope);
+  }
+  if (requiredIds.includes("supersession_lineage_integrity")) {
+    const lineageEnvelope = envelope ?? {
+      envelope_id: envelopeId,
+      checks: [...results.values()].map(({ summary: _summary, ...check }) => check),
+    };
+    await execute("supersession_lineage_integrity", lineageEnvelope);
+  }
+  return requiredIds.map((criterionId) => results.get(criterionId));
+}
+
+function verificationEnvelopeFromGateResults({ workflowId, to, manifestRevision, task, plan, gateResults }) {
+  const checks = gateResults.map(({ summary: _summary, ...check }) => check);
+  const approved = checks.every((check) => check.status === "pass");
+  return {
+    contract: "outcome.verification-envelope.v2",
+    envelope_id: verificationEnvelopeId(workflowId, to, manifestRevision + 1),
+    task_id: task.task_id,
+    gate_plan_ref: plan.plan_id,
+    checks,
+    dimension_verdicts: dimensionVerdicts(checks),
+    verdict: approved ? "approve_transition" : "block_transition",
+    ...(!approved ? {
+      notes: gateResults
+        .filter((result) => result.status !== "pass")
+        .map((result) => `${result.criterion_id}: ${result.summary}`)
+        .join(" | "),
+    } : {}),
+  };
+}
+
+/** Execute the frozen plan and materialize host-owned executor metadata and byte digests. */
+async function cmdVerify(argv) {
+  const a = args(argv);
+  const workflowId = a.workflow ?? die("--workflow is required");
+  const releaseLock = acquireManifestLock(workflowId);
+  try {
+    const bundle = await loadTransitionBundle(a, { action: "verify", requireEnvelope: false });
+    const {
+      to,
+      manifest,
+      state,
+      plan,
+      task,
+      result,
+      candidate,
+      semantic,
+      supersessionEvent,
+      reviewDecision,
+      issuanceAuthorization,
+    } = bundle;
+    const requiredIds = checkControlLinkage({
+      workflowId,
+      manifestRevision: manifest.manifest_revision,
+      state,
+      to,
+      candidate,
+      semantic,
+      supersessionEvent,
+      packet: a.packet,
+      reviewDecision,
+      issuanceAuthorization,
+      plan,
+      task,
+      result,
+      envelope: null,
+    });
+    const outputDigest = candidate ? digestJson(candidate) : digestJson(state);
+    const envelopeId = verificationEnvelopeId(workflowId, to, manifest.manifest_revision + 1);
+    const gateResults = await executeGatePlan({
+      requiredIds,
+      workflowId,
+      manifestRevision: manifest.manifest_revision,
+      state,
+      to,
+      candidate,
+      semantic,
+      supersessionEvent,
+      envelopeId,
+      reviewDecision,
+      issuanceAuthorization,
+      packet: a.packet,
+      plan,
+      task,
+      outputDigest,
+    });
+    const envelope = verificationEnvelopeFromGateResults({
+      workflowId,
+      to,
+      manifestRevision: manifest.manifest_revision,
+      task,
+      plan,
+      gateResults,
+    });
+    const checked = await validateControl(envelope, "contracts.v2.schema.json");
+    if (checked.status !== "pass") die(`host verification envelope is not executable: ${checked.detail}`);
+    const dir = join(runDir(workflowId), "work", "control", safeName(task.task_id));
+    const resultRecord = saveImmutable(join(dir, "result-contract.json"), result);
+    const envelopeRecord = saveImmutable(join(dir, "verification-envelope.json"), envelope);
+    return emit({
+      ok: true,
+      workflow_id: workflowId,
+      state_in: state.current_state,
+      state_out_candidate: to,
+      expected_manifest_revision: manifest.manifest_revision,
+      result_contract: {
+        path: resultRecord.path,
+        ref: `urn:ixo:result-contract:${sha256(JSON.stringify(result))}`,
+      },
+      verification_envelope: { path: envelopeRecord.path, ref: envelope.envelope_id },
+      verdict: envelope.verdict,
+      gate_results: gateResults,
+    });
+  } finally {
+    releaseLock();
+  }
+}
+
 /** Validate, independently execute, and atomically commit one transition. */
 async function cmdAdvance(argv) {
   const a = args(argv);
   const workflowId = a.workflow ?? die("--workflow is required");
-  const to = a.to ?? die("--to <STATE> is required");
-  if (!STATES.includes(to)) die(`unknown state '${to}'`);
   const releaseLock = acquireManifestLock(workflowId);
   try {
-    const { manifest, commit: previousCommit } = reconcileRunIntegrity(workflowId);
-    const { state } = loadState(workflowId);
-    const legal = LEGAL_PREDECESSORS[to] ?? [];
-    if (!legal.includes(state.current_state)) {
-      die(`cannot advance ${state.current_state} → ${to}: ${to} may only follow ${legal.join(", ")}`);
-    }
-    const expectedRevision = Number(a["expected-revision"]);
-    if (!Number.isInteger(expectedRevision) || expectedRevision !== manifest.manifest_revision) {
-      die(`manifest compare-and-swap failed: expected ${a["expected-revision"] ?? "missing"}, current ${manifest.manifest_revision}`);
-    }
-    for (const flag of ["gate-plan", "task-contract", "result", "envelope"]) {
-      if (!a[flag]) die(`state '${to}' requires --${flag}`);
-    }
-    const plan = readJson(resolve(a["gate-plan"]));
-    const task = readJson(resolve(a["task-contract"]));
-    const result = readJson(resolve(a.result));
-    const envelope = readJson(resolve(a.envelope));
-    if (envelope.contract === "outcome.verification-envelope.v1") {
-      die("v1 verification envelopes are readable history but cannot authorize a new transition");
-    }
-    const documents = [
-      [plan, "workflow-control.schema.json", "gate plan"],
-      [task, "contracts.v2.schema.json", "task contract"],
-      [result, "contracts.v2.schema.json", "result contract"],
-      [envelope, "contracts.v2.schema.json", "verification envelope"],
-    ];
-    for (const [doc, schema, label] of documents) {
-      const checked = await validateControl(doc, schema);
-      if (checked.status !== "pass") die(`${label} is not executable: ${checked.detail}`);
-    }
-    const required = STATE_ARTIFACT[to];
-    const candidate = a.artifact ? readJson(resolve(a.artifact)) : null;
-    if (required && classify(candidate)?.schema !== required.schema) {
-      die(`state '${to}' requires --artifact with ${required.schema}`);
-    }
-    const semanticPath = a["semantic-review"] ? resolve(a["semantic-review"]) : null;
-    const semantic = semanticPath ? readJson(semanticPath) : null;
-    if (["TOC_PARSED", "CLAIMS_STRUCTURED"].includes(to)) {
-      const checked = await validateArtifact(semantic, "outcome.toc-semantic-review.v1");
-      if (checked.status !== "pass") die(`semantic review is not executable: ${checked.detail ?? "missing"}`);
-    }
-    const supersessionEvent = a["supersession-event"] ? readJson(resolve(a["supersession-event"])) : null;
-    if (supersessionEvent) {
-      const checked = await validateControl(supersessionEvent, "workflow-control.schema.json");
-      if (checked.status !== "pass" || supersessionEvent.schema !== "outcome.supersession-event.v1") {
-        die(`supersession event is not executable: ${checked.detail ?? "wrong schema"}`);
-      }
-    }
-    const reviewDecision = a["review-decision"] ? readJson(resolve(a["review-decision"])) : null;
-    if (to === "VALIDATED") {
-      const checked = await validateControl(reviewDecision, "review-decision.schema.json");
-      if (checked.status !== "pass") die(`review decision is not executable: ${checked.detail ?? "missing"}`);
-    } else if (reviewDecision) {
-      die("--review-decision is only accepted for the VALIDATED transition");
-    }
-    const issuanceAuthorization = a["issuance-authorization"]
-      ? readJson(resolve(a["issuance-authorization"]))
-      : null;
-    if (["ISSUANCE_ELIGIBLE", "CERTIFICATE_ISSUED"].includes(to)) {
-      const checked = await validateControl(issuanceAuthorization, "issuance-authorization.schema.json");
-      if (checked.status !== "pass") die(`issuance authorization is not executable: ${checked.detail ?? "missing"}`);
-    } else if (issuanceAuthorization) {
-      die("--issuance-authorization is only accepted for issuance transitions");
-    }
+    const bundle = await loadTransitionBundle(a, { action: "advance", requireEnvelope: true });
+    const {
+      to,
+      manifest,
+      previousCommit,
+      state,
+      plan,
+      task,
+      result,
+      envelope,
+      candidate,
+      semantic,
+      supersessionEvent,
+      reviewDecision,
+      issuanceAuthorization,
+    } = bundle;
     const requiredIds = checkControlLinkage({
       workflowId,
       manifestRevision: manifest.manifest_revision,
@@ -2095,34 +2314,29 @@ async function cmdAdvance(argv) {
         die(`verification check '${check.criterion_id}' is not bound to the frozen output bytes`);
       }
     }
-    const gateResults = [];
-    for (const criterionId of requiredIds) {
-      const executed = await executeCriterion(criterionId, {
-        workflowId,
-        manifestRevision: manifest.manifest_revision,
-        state,
-        to,
-        candidate,
-        semantic,
-        supersessionEvent,
-        envelope,
-        reviewDecision,
-        issuanceAuthorization,
-        packet: a.packet,
-      });
-      const criterion = plan.criteria.find((item) => item.criterion_id === criterionId);
-      const checkRef =
-        `urn:ixo:gate-result:${safeName(task.task_id)}-${criterionId}-${sha256(JSON.stringify(executed)).slice(0, 12)}`;
-      const resultRecord = gateResult(criterionId, {
-        status: executed.status,
-        evidenceRef: checkRef,
-        inputDigest: inputDigest(criterion.input_refs),
-        outputDigest,
-        summary: executed.summary,
-      });
-      saveImmutable(artifactPath(workflowId, checkRef, "tasks"), resultRecord);
-      gateResults.push(resultRecord);
-      if (executed.status !== "pass") die(`criterion '${criterionId}' blocked the transition: ${executed.summary}`);
+    const gateResults = await executeGatePlan({
+      requiredIds,
+      workflowId,
+      manifestRevision: manifest.manifest_revision,
+      state,
+      to,
+      candidate,
+      semantic,
+      supersessionEvent,
+      envelope,
+      reviewDecision,
+      issuanceAuthorization,
+      packet: a.packet,
+      plan,
+      task,
+      outputDigest,
+    });
+    const blocked = gateResults.find((gate) => gate.status !== "pass");
+    if (blocked) {
+      die(`criterion '${blocked.criterion_id}' blocked the transition: ${blocked.summary}`);
+    }
+    for (const gate of gateResults) {
+      saveImmutable(artifactPath(workflowId, gate.evidence_ref, "tasks"), gate);
     }
 
     const registrations = [];
@@ -2557,6 +2771,8 @@ export async function main(argv = []) {
       return cmdRecordPacket(rest);
     case "plan":
       return await cmdPlan(rest);
+    case "verify":
+      return await cmdVerify(rest);
     case "advance":
       return await cmdAdvance(rest);
     case "totals":
@@ -2570,7 +2786,7 @@ export async function main(argv = []) {
     case "reconcile":
       return cmdReconcile(rest);
     default:
-      return die(`unknown command '${command ?? ""}' — expected init | state | record | record-packet | plan | advance | totals | snapshot | checkpoint | restore | reconcile`);
+      return die(`unknown command '${command ?? ""}' — expected init | state | record | record-packet | plan | verify | advance | totals | snapshot | checkpoint | restore | reconcile`);
   }
 }
 

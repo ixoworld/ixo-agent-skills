@@ -121,7 +121,7 @@
     },
     "verification_envelope": {
       "type": "object",
-      "description": "Maps gate-plan criterion IDs to versioned evidence over frozen inputs and outputs.",
+      "description": "Host-materialized mapping from gate-plan criterion IDs to versioned evidence over frozen inputs and outputs.",
       "properties": {
         "contract": { "const": "outcome.verification-envelope.v2" },
         "envelope_id": { "type": "string" },
