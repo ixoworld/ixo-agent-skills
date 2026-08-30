@@ -4,7 +4,7 @@ description: Compose the Proposal specialization of a Topic Protocol v1 Draft fo
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "2.0.0"
   parent-skill: compose-topic
   topic-kind: proposal
 ---
@@ -35,7 +35,11 @@ Capture:
 
 Do not collapse “produce the proposal” and “approve the proposal” into one state. A recommendation is not a decision. A selected option or approval requires an accepted decision record and verified authority.
 
-Keep unresolved approvers as suggestions. A role name does not grant the ability to accept terms or record a decision.
+Keep unresolved reviewers and decision authorities as suggestions. A role name does not grant setup-confirmation or decision ability.
+
+## Smallest setup questions
+
+Ask what will be proposed, who is responsible for producing it, who must confirm the Topic setup, and who has the separate authority to approve or reject the proposal. If mutual agreement is actually required, ask for signatories independently and only for a team or client Topic.
 
 ## Progression
 

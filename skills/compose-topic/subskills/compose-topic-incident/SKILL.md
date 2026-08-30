@@ -4,7 +4,7 @@ description: Compose the Incident specialization of a Topic Protocol v1 Draft fo
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "2.0.0"
   parent-skill: compose-topic
   topic-kind: incident
 ---
@@ -34,6 +34,10 @@ Capture:
 8. explicit closure conditions.
 
 Risks are Incident-only and Impact-only. Use description, status, optional Impact, owner, and mitigation. Do not emit likelihood.
+
+## Smallest setup questions
+
+Ask what failed, who is responsible for the response, what proves containment and recovery, who confirms the setup, and who can resolve disputes. Urgency may shorten the questions, but it never permits invented authority or an invented expiry.
 
 ## Urgency and authority
 

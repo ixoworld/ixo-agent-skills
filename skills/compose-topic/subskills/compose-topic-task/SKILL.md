@@ -4,7 +4,7 @@ description: Compose the Task specialization of a Topic Protocol v1 Draft when p
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "2.0.0"
   parent-skill: compose-topic
   topic-kind: task
 ---
@@ -38,9 +38,13 @@ Title plus Kind is a valid initial Draft. Missing outcome or owner remains visib
 
 The first canvas should show the outcome, the next milestone or work breakdown, open questions, and one next action.
 
+## Smallest setup questions
+
+Ask for the intended result, the person responsible for it, the completion rule, and who must confirm the setup. Ask timing, review, expiry, and dispute questions only when the use case calls for them. Do not turn the owner into the confirmer or dispute resolver unless the person explicitly selects that same actor for both responsibilities.
+
 ## Progression
 
-Terms must be accepted before `start-work` becomes legal. Work submission is evidence for the work axis, not Topic completion. Completion still requires the Shape's `complete-topic` transition.
+Setup must be confirmed before `start-work` becomes legal. Confirmation permits progression; it is not mutual agreement. Work submission is evidence for the work axis, not Topic completion. Completion still requires the Shape's `complete-topic` transition.
 
 If waiting or blocked, require a source, reason, and explicit target. A dependency may target an actor, Flow, resource, or external system; never default it to the owner.
 

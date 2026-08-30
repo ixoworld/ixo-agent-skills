@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77703",
   "mode": "preview",
   "disposition": "create",
@@ -10,17 +10,17 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.1",
-    "rootVersion": 3,
-    "contractBodyVersion": 3,
-    "stateVersion": 3,
-    "contractProfile": "qi.topic-contract-state/v3",
+    "topicProtocolVersion": "1.0.0-rc.2",
+    "rootVersion": 4,
+    "contractBodyVersion": 4,
+    "stateVersion": 4,
+    "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
-    "packageShasum": "962da70e62f7a705b159edf2b55e03ca443f72d1",
+    "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
+    "packageShasum": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
-    "legacyPolicy": "v3-only-no-migration"
+    "legacyPolicy": "v4-only-no-migration"
   },
   "routing": {
     "rationale": "The primary job is bounded agent delivery with review and a Flow handoff.",
@@ -38,22 +38,22 @@
   "topic": {
     "operation": "create",
     "rootDraft": {
-      "version": 3,
+      "version": 4,
       "title": "Design the grant assessment Flow",
       "kind": "agent_task",
       "status": "draft",
       "baseRecipe": "flow",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:5d92d85cd9a6aeef0d4d0c89588412328ad98ca111f1f58d78dee6c98b2a14a0"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
       },
-      "shapeDigest": "sha256:322b4925d6dcb53320f428b32d42fb38d86214a2842bcb7b92eb5fbef1d1fe9e",
+      "shapeDigest": "sha256:64460773d23c216956240f432420dd4aada8d880251e183c4f5141d6bbc67aff",
       "context": [],
       "overview": {
         "summary": "Capture a bounded expert method, review its delivery, and keep execution in a Flow.",
         "nextStep": {
-          "summary": "Review the proposed inputs, output, stop condition, and confidentiality boundary."
+          "summary": "Choose who is responsible for the result."
         }
       }
     },
@@ -68,8 +68,8 @@
     "topicRecipeCode": "agent-delivery",
     "topicRecipeRef": {
       "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-      "version": "1.0.0-rc.1",
-      "digest": "sha256:5d92d85cd9a6aeef0d4d0c89588412328ad98ca111f1f58d78dee6c98b2a14a0"
+      "version": "1.0.0-rc.2",
+      "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
     },
     "registryLookup": "not-performed",
     "registryReason": "pinned-catalog-only",
@@ -78,28 +78,27 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/flow",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/agent_task",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:eafe6fb122cdf433772de7891a35abc7be56750b72d2dce1e317ee981062c5e4"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:fc14c140eb2849d1c5e424fa4449f5c39264a288cefc309ccdff8615c99724d2"
       },
       {
         "kind": "topic-recipe",
         "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:5d92d85cd9a6aeef0d4d0c89588412328ad98ca111f1f58d78dee6c98b2a14a0"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
       }
     ],
-    "shapeDigest": "sha256:322b4925d6dcb53320f428b32d42fb38d86214a2842bcb7b92eb5fbef1d1fe9e"
+    "shapeDigest": "sha256:64460773d23c216956240f432420dd4aada8d880251e183c4f5141d6bbc67aff"
   },
   "contractDraft": {
     "envelope": {
-      "version": 3,
-      "status": "draft",
+      "version": 4,
       "revision": null,
       "authoredBy": null,
       "authoredAt": null
@@ -113,30 +112,30 @@
       "baseRecipe": "flow",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:5d92d85cd9a6aeef0d4d0c89588412328ad98ca111f1f58d78dee6c98b2a14a0"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
       },
       "shapeSources": [
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/flow",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/agent_task",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:eafe6fb122cdf433772de7891a35abc7be56750b72d2dce1e317ee981062c5e4"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:fc14c140eb2849d1c5e424fa4449f5c39264a288cefc309ccdff8615c99724d2"
         },
         {
           "kind": "topic-recipe",
           "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:5d92d85cd9a6aeef0d4d0c89588412328ad98ca111f1f58d78dee6c98b2a14a0"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
         }
       ],
-      "shapeDigest": "sha256:322b4925d6dcb53320f428b32d42fb38d86214a2842bcb7b92eb5fbef1d1fe9e",
+      "shapeDigest": "sha256:64460773d23c216956240f432420dd4aada8d880251e183c4f5141d6bbc67aff",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77731",
         "text": "Capture the grant assessor's method as a controlled agent delivery workflow.",
@@ -176,7 +175,12 @@
       "assumptions": [],
       "questions": [],
       "participants": [],
-      "roles": []
+      "roles": [],
+      "activationPolicy": {
+        "lifecycle": {
+          "onExpiry": "pause-consequential"
+        }
+      }
     },
     "publication": {
       "disclosure": "reference-only",
@@ -188,7 +192,50 @@
       "containsProviderSessionIds": false
     },
     "readiness": "requires-host-fields",
-    "unresolvedHostFields": ["revision", "authoredBy", "authoredAt", "flowBinding"]
+    "unresolvedHostFields": [
+      "revision",
+      "authoredBy",
+      "authoredAt",
+      "flowBinding"
+    ],
+    "setupObligations": [
+      {
+        "code": "setup.owner",
+        "path": "/ownerId",
+        "prompt": "Choose who is responsible for the result.",
+        "purpose": "The agent can deliver work, but a person must remain responsible for the result.",
+        "responsibility": "unassigned",
+        "priority": 400,
+        "unlocks": "The Agent Task can identify who owns the result before setup confirmation."
+      },
+      {
+        "code": "setup.editors",
+        "path": "/activationPolicy/editors",
+        "prompt": "Choose who can update this setup.",
+        "purpose": "This makes responsibility for preparing and changing the setup explicit.",
+        "responsibility": "unassigned",
+        "priority": 600,
+        "unlocks": "The chosen editors can prepare a complete setup for review."
+      },
+      {
+        "code": "setup.confirmation-policy",
+        "path": "/activationPolicy/confirmation",
+        "prompt": "Select who must confirm this setup.",
+        "purpose": "Confirmation authorizes the Topic to progress without implying mutual or legal agreement.",
+        "responsibility": "unassigned",
+        "priority": 610,
+        "unlocks": "The named confirmer or confirmers can review this exact setup revision."
+      },
+      {
+        "code": "setup.dispute-resolvers",
+        "path": "/activationPolicy/dispute/resolvers",
+        "prompt": "Choose who can resolve a setup dispute.",
+        "purpose": "A dispute needs an explicitly authorized resolver or governed process.",
+        "responsibility": "unassigned",
+        "priority": 630,
+        "unlocks": "Disputes can be handled without inventing authority."
+      }
+    ]
   },
   "canvas": {
     "format": "blocknote",
@@ -211,7 +258,11 @@
         "basis": "suggested",
         "visibility": "primary",
         "content": {
-          "columns": ["Inputs", "Output", "Stop condition"],
+          "columns": [
+            "Inputs",
+            "Output",
+            "Stop condition"
+          ],
           "rows": []
         },
         "editable": true
@@ -222,7 +273,9 @@
         "semanticRole": "next-action",
         "basis": "suggested",
         "visibility": "primary",
-        "content": ["Review the assignment before any Flow is bound."],
+        "content": [
+          "Review the assignment before any Flow is bound."
+        ],
         "editable": true
       }
     ],
@@ -244,7 +297,9 @@
         "purpose": "Structure the supplied assessment method without external execution.",
         "output": "A proposed Flow specification and test delivery.",
         "activation": "on_demand",
-        "requiredAbilities": ["topic/read"],
+        "requiredAbilities": [
+          "topic/read"
+        ],
         "stopWhen": "The proposed delivery is ready for expert review."
       }
     ]
@@ -282,7 +337,13 @@
   "execution": {
     "commitEligible": false,
     "hostContext": {},
-    "requiredHostFields": ["protectedRoomId", "actorId", "matrixWrite", "verifiedAbilities", "flowBinding"],
+    "requiredHostFields": [
+      "protectedRoomId",
+      "actorId",
+      "matrixWrite",
+      "verifiedAbilities",
+      "flowBinding"
+    ],
     "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77703:commit",
     "proposedCalls": [],
     "externalActions": [],
@@ -290,10 +351,10 @@
       "enabled": true,
       "eventType": "ixo.topic.contract",
       "stateKeySource": "topicId",
-      "profile": "qi.topic-contract-state/v3",
-      "version": 3,
+      "profile": "qi.topic-contract-state/v4",
+      "version": 4,
       "role": "materialized-head-only",
-      "publishAfter": "human-acceptance",
+      "publishAfter": "setup-confirmation",
       "disclosure": "reference-only",
       "embedsCanvasContent": false,
       "shapeRecordPersisted": false
@@ -303,7 +364,10 @@
     "confidence": 0.91,
     "unresolvedPaths": [
       "/contractDraft/semantic/ownerId",
-      "/runtimeBindings/flows"
+      "/runtimeBindings/flows",
+      "/contractDraft/semantic/activationPolicy/editors",
+      "/contractDraft/semantic/activationPolicy/confirmation",
+      "/contractDraft/semantic/activationPolicy/dispute/resolvers"
     ],
     "warnings": [
       "No Flow or agent identity has been fabricated, and no external Action is planned."

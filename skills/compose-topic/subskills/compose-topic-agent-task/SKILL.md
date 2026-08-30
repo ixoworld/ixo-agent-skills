@@ -4,7 +4,7 @@ description: Compose the Agent Task specialization of a Topic Protocol v1 Draft 
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "2.0.0"
   parent-skill: compose-topic
   topic-kind: agent_task
 ---
@@ -26,16 +26,28 @@ Select `agent-delivery` only when the Topic commissions agent work, reviews a de
 
 Describe the assignment as a proposal:
 
-- bounded purpose and output;
+- the agent's bounded delivery: what it must produce, in what form, and what is out of scope;
+- the person responsible for the result, kept distinct from the agent that performs the work;
 - supplied inputs and allowed context;
 - exclusions and data classification;
 - success criteria;
 - stop condition;
-- review and decision authority;
+- the setup confirmer, kept distinct from delivery responsibility and decision authority;
 - expected Flow role; and
 - what must happen if the Flow or adapter is unavailable.
 
 Agent identity is not a contract-body field. Keep unresolved agent roles in `collaborationSuggestions`. A resolved agent still executes through a Flow/Action binding and verified UCAN authority outside the Topic contract.
+
+## Smallest setup questions
+
+Ask only the first unanswered question needed for an honest Draft:
+
+1. What must the agent deliver?
+2. Who is responsible for the result?
+3. Who must confirm this setup before work progresses?
+4. Is there an existing Flow the agent must use?
+
+These answers are four different facts. Never copy the agent, creator, owner, or room member into another role. If any answer is absent, keep the matching obligation visible. The best missing Agent Task step is usually “Choose who is responsible for the result” after the delivery itself is known.
 
 ## Flow and consequence boundary
 

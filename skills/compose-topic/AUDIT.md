@@ -1,16 +1,16 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `2.0.0`
-Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.1`
-Topic Contract profile: `qi.topic-contract-state/v3`
-Pinned protocol commit: `db925bece7269a3c11e3081f301c7e7d7dd7bab4`
-Published package shasum: `962da70e62f7a705b159edf2b55e03ca443f72d1`
+Audit target: `compose-topic` `3.0.0`
+Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.2`
+Topic Contract profile: `qi.topic-contract-state/v4`
+Pinned protocol commit: `0407c6e7e3f77091260a08d586441e5323a0227f`
+Published package shasum: `2e35955b3c5b374e023b8d317e1f3a14c0ffe72f`
 
 ## Review scope
 
 The audit covers:
 
-- root/body/state version 3 and v0.8 exclusion;
+- root/body/state version 4 and all legacy-version exclusion;
 - canonical Kind to Base Recipe mapping;
 - Effective Shape resolution and digest pins;
 - three Draft-producing seed Topic Recipes;
@@ -19,6 +19,8 @@ The audit covers:
 - Flow, Action, UDID, evaluation, effect, and settlement boundaries;
 - Matrix plus UCAN authority requirements;
 - deterministic progress and viewer-specific Now separation;
+- immutable body revisions, activation confirmation, optional assent, expiry, and dispute boundaries;
+- structured setup obligations and Kind-specific focused questions;
 - inference auto-accept boundaries;
 - provenance, disclosure, revision, idempotency, and secret controls;
 - Portal-compatible Draft creation and refinement;
@@ -30,7 +32,7 @@ The audit covers:
 
 Finding: the earlier skill emitted `recipe` and could write resolved agents into the Topic Contract.
 
-Resolution: v3 uses `baseRecipe`, optional digest-pinned `topicRecipeRef`, `shapeSources`, and `shapeDigest`. The schema and validator reject `recipe`, `agents`, Action/effect contracts, evaluation-kit contents, schedules, progress, state tags, viewer attention, and settlement contracts.
+Resolution: v4 uses `baseRecipe`, optional digest-pinned `topicRecipeRef`, `shapeSources`, and `shapeDigest`. The schema and validator reject `recipe`, `agents`, Action/effect contracts, evaluation-kit contents, schedules, progress, state tags, viewer attention, and settlement contracts.
 
 ### Kind guidance was too broad for progressive loading
 
@@ -68,6 +70,24 @@ Finding: Action success, an achieved outcome, evaluation, or settlement could be
 
 Resolution: progression remains axis-specific. Only the resolved Shape transition marked `completesTopic` completes the Topic. The Portal derives Now phase, condition, state tags, and legal viewer moves; the skill does not author them.
 
+### Generic terms did not tell a person what to do
+
+Finding: a partial Draft could collapse specific missing content and authority choices into an unexplained count or a request to complete “terms.”
+
+Resolution: every composition emits a partial activation policy and structured setup obligations that name the choice, purpose, responsibility state, focused path, priority, and what resolving it unlocks. Agent Tasks distinguish delivery, result responsibility, setup confirmation, and external Flow binding.
+
+### Authorship could be mistaken for setup authority
+
+Finding: creator, owner, membership, and completion authority could silently become confirmation or dispute authority.
+
+Resolution: named setup editors, confirmers, signatories, dates, and dispute resolvers require explicit or accepted-context provenance. The validator rejects owner-as-authority fallback, invented lifecycle dates, invalid thresholds, and agreement signatories on solo Topics. Confirmation authorizes progression only; optional assent is separate.
+
+### Contract lifecycle lived in mutable body content
+
+Finding: body status blurred immutable setup content with proposal effectiveness and supersession.
+
+Resolution: v4 bodies carry no lifecycle status. Contract heads and append-only operations project proposed, effective, and superseded state. Editing creates a new proposal, invalidates its earlier confirmations, and leaves the prior effective revision in force until replacement.
+
 ### Inference acceptance lacked consequence classification
 
 Finding: the earlier rule treated all generated records alike.
@@ -78,8 +98,8 @@ Resolution: Shape-permitted non-effecting fact, summary, and classification reco
 
 The package includes:
 
-- five valid v1 examples, including all three seed Topic Recipes;
-- negative tests for v0.8, Shape pins, recipe mismatch, claims, Action/effect leakage, authority, inference, decisions, outcomes, secrets, canvas bounds, and refinement pins;
+- five valid v4 examples, including all three seed Topic Recipes and explicit unresolved setup obligations;
+- negative tests for v3 and older Topics, Shape pins, policy provenance, owner fallback, assent, expiry, thresholds, claims, Action/effect leakage, authority, inference, decisions, outcomes, secrets, canvas bounds, and refinement pins;
 - package audit for root and nested skill frontmatter, links, source locks, local digests, schemas, examples, eval coverage, scripts, and secret patterns; and
 - behavioral evals covering all eight Kinds, three seed recipes, future Marketplace posture, Portal viewer authority, legacy exclusion, and Flow/Action boundaries.
 

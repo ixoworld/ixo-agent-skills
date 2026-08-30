@@ -15,7 +15,7 @@
     "quality"
   ],
   "properties": {
-    "version": { "const": "2.0.0" },
+    "version": { "const": "3.0.0" },
     "compositionId": {
       "type": "string",
       "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
@@ -51,17 +51,17 @@
       ],
       "properties": {
         "package": { "const": "@ixo/topic-protocol" },
-        "topicProtocolVersion": { "const": "1.0.0-rc.1" },
-        "rootVersion": { "const": 3 },
-        "contractBodyVersion": { "const": 3 },
-        "stateVersion": { "const": 3 },
-        "contractProfile": { "const": "qi.topic-contract-state/v3" },
+        "topicProtocolVersion": { "const": "1.0.0-rc.2" },
+        "rootVersion": { "const": 4 },
+        "contractBodyVersion": { "const": 4 },
+        "stateVersion": { "const": 4 },
+        "contractProfile": { "const": "qi.topic-contract-state/v4" },
         "profileStatus": { "const": "normative" },
-        "sourceCommit": { "const": "db925bece7269a3c11e3081f301c7e7d7dd7bab4" },
-        "packageShasum": { "const": "962da70e62f7a705b159edf2b55e03ca443f72d1" },
+        "sourceCommit": { "const": "0407c6e7e3f77091260a08d586441e5323a0227f" },
+        "packageShasum": { "const": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f" },
         "authoritativeHistory": { "const": "topic-root+operations+records+projection" },
         "stateEventRole": { "const": "materialized-head-only" },
-        "legacyPolicy": { "const": "v3-only-no-migration" }
+        "legacyPolicy": { "const": "v4-only-no-migration" }
       },
       "additionalProperties": false
     },
@@ -113,7 +113,7 @@
       "properties": {
         "operation": { "enum": ["create", "reuse"] },
         "topicId": { "$ref": "#/$defs/topicId" },
-        "observedProfile": { "const": "qi.topic-contract-state/v3" },
+        "observedProfile": { "const": "qi.topic-contract-state/v4" },
         "expectedTopicRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
         "expectedContractRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
         "expectedShapeDigest": { "$ref": "#/$defs/digest" },
@@ -121,7 +121,7 @@
           "type": "object",
           "required": ["version", "title", "kind", "status", "baseRecipe", "shapeDigest", "context", "overview"],
           "properties": {
-            "version": { "const": 3 },
+            "version": { "const": 4 },
             "title": { "type": "string", "minLength": 1, "maxLength": 280 },
             "kind": { "$ref": "#/$defs/kind" },
             "status": { "const": "draft" },
@@ -434,10 +434,10 @@
             "enabled": { "type": "boolean" },
             "eventType": { "const": "ixo.topic.contract" },
             "stateKeySource": { "const": "topicId" },
-            "profile": { "const": "qi.topic-contract-state/v3" },
-            "version": { "const": 3 },
+            "profile": { "const": "qi.topic-contract-state/v4" },
+            "version": { "const": 4 },
             "role": { "const": "materialized-head-only" },
-            "publishAfter": { "enum": ["root-and-projection", "human-acceptance"] },
+            "publishAfter": { "enum": ["root-and-projection", "setup-confirmation"] },
             "disclosure": { "enum": ["inline", "reference-only"] },
             "embedsCanvasContent": { "const": false },
             "shapeRecordPersisted": { "const": false }

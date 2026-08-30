@@ -27,19 +27,19 @@ function codes(value) {
   return new Set(validateComposition(value).map((item) => item.code));
 }
 
-test("all bundled v1 examples pass", async () => {
+test("all bundled v4 examples pass", async () => {
   for (const name of EXAMPLES) {
     const report = await validateFile(join(ROOT, "examples", name));
     assert.equal(report.ok, true, JSON.stringify(report.findings, null, 2));
   }
 });
 
-test("new Topics are always root and contract Drafts", async () => {
+test("new Topics are Drafts and immutable bodies do not carry lifecycle status", async () => {
   const value = await example();
   value.topic.rootDraft.status = "active";
   value.contractDraft.envelope.status = "accepted";
   const result = codes(value);
-  assert(result.has("NEW_TOPIC_DRAFT"));
+  assert(result.has("IMMUTABLE_BODY_STATUS"));
   assert(result.has("NEW_ROOT_DRAFT"));
 });
 
@@ -57,7 +57,7 @@ test("rejects legacy protocol and state profiles", async () => {
   const result = codes(value);
   assert(result.has("PROTOCOL_VERSION"));
   assert(result.has("CONTRACT_PROFILE"));
-  assert(result.has("PROTOCOL_V3"));
+  assert(result.has("PROTOCOL_V4"));
 });
 
 test("requires exact pinned Effective Shape sources and digest", async () => {
@@ -96,12 +96,12 @@ test("does not allow invented Marketplace lookup or unpinned recipe refs", async
   assert(result.has("TOPIC_RECIPE_REF"));
 });
 
-test("rejects v0.8 recipe and agent fields from the v3 contract", async () => {
+test("rejects v0.8 recipe and agent fields from the v4 contract", async () => {
   const value = await example("expert-service-flow.example.json");
   value.contractDraft.semantic.recipe = "flow";
   value.contractDraft.semantic.agents = [{ agentId: "did:ixo:agent:invented" }];
   const result = codes(value);
-  assert(result.has("V3_CONTRACT_BOUNDARY"));
+  assert(result.has("V4_CONTRACT_BOUNDARY"));
 });
 
 test("rejects Action, effect, evaluation-kit, and settlement contracts in Topic terms", async () => {
@@ -109,14 +109,14 @@ test("rejects Action, effect, evaluation-kit, and settlement contracts in Topic 
   for (const field of fields) {
     const value = await example("verified-work-payment.example.json");
     value.contractDraft.semantic[field] = {};
-    assert(codes(value).has("V3_CONTRACT_BOUNDARY"), field);
+    assert(codes(value).has("V4_CONTRACT_BOUNDARY"), field);
   }
 });
 
 test("keeps protocol state tags out of user-authored tags", async () => {
   const value = await example();
   value.contractDraft.semantic.stateTags = [{ code: "phase-forming" }];
-  assert(codes(value).has("V3_CONTRACT_BOUNDARY"));
+  assert(codes(value).has("V4_CONTRACT_BOUNDARY"));
 });
 
 test("rejects generated contract statements marked accepted", async () => {
@@ -239,7 +239,7 @@ test("does not persist a separate Effective Shape record", async () => {
   assert(codes(value).has("EFFECTIVE_SHAPE_RECORD"));
 });
 
-test("continue and refine require v3 plus Topic, contract, and Shape pins", async () => {
+test("continue and refine require v4 plus Topic, contract, and Shape pins", async () => {
   const value = await example();
   value.mode = "refine";
   value.disposition = "continue";
@@ -317,13 +317,85 @@ test("secret-like material is rejected", async () => {
   assert(codes(value).has("SECRET_DETECTED"));
 });
 
-test("contract schema exposes v3 Shape and singular claim fields without agents", async () => {
+test("contract schema exposes v4 Shape and singular claim fields without agents", async () => {
   const schema = JSON.parse(await readFile(join(ROOT, "schemas/topic-contract-draft.schema.json"), "utf8"));
   const semantic = schema.properties.semantic.properties;
+  assert.equal(schema.properties.envelope.properties.status, undefined);
   assert.equal(semantic.baseRecipe.$ref, "#/$defs/baseRecipe");
   assert.equal(semantic.topicRecipeRef.$ref, "#/$defs/topicRecipeRef");
   assert.equal(semantic.shapeSources.type, "array");
   assert.equal(semantic.claimBinding.$ref, "#/$defs/claimBinding");
+  assert.equal(semantic.activationPolicy.$ref, "#/$defs/activationPolicy");
+  assert.equal(semantic.assentPolicy.$ref, "#/$defs/assentPolicy");
+  assert.equal(schema.properties.setupObligations.type, "array");
   assert.equal(semantic.agents, undefined);
   assert.equal(semantic.recipe, undefined);
+});
+
+test("keeps every unresolved setup authority choice visible as an obligation", async () => {
+  const value = await example();
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(({ code }) => code !== "setup.editors");
+  assert(codes(value).has("MISSING_SETUP_OBLIGATION"));
+});
+
+test("rejects owner-as-authority fallback without explicit policy provenance", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.activationPolicy.editors = [{ kind: "actor", id: value.contractDraft.semantic.ownerId }];
+  assert(codes(value).has("POLICY_PROVENANCE"));
+});
+
+test("accepts explicitly supplied setup authority even when that actor is also the owner", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.activationPolicy.editors = [{ kind: "actor", id: value.contractDraft.semantic.ownerId }];
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance["/activationPolicy/editors"] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: [],
+  };
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(({ code }) => code !== "setup.editors");
+  assert.equal(codes(value).has("POLICY_PROVENANCE"), false);
+  assert.equal(codes(value).has("MISSING_SETUP_OBLIGATION"), false);
+});
+
+test("rejects invented lifecycle dates and invalid thresholds", async () => {
+  const value = await example();
+  value.contractDraft.semantic.activationPolicy.lifecycle.expiresAt = "2030-01-01T00:00:00Z";
+  value.contractDraft.semantic.activationPolicy.confirmation = {
+    mode: "threshold",
+    subjects: [{ kind: "actor", id: "did:ixo:reviewer" }],
+    threshold: 2,
+  };
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance["/activationPolicy/confirmation"] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: [],
+  };
+  const result = codes(value);
+  assert(result.has("LIFECYCLE_PROVENANCE"));
+  assert(result.has("POLICY_THRESHOLD"));
+});
+
+test("keeps optional agreement signatories out of solo Topics", async () => {
+  const value = await example("research-brief.example.json");
+  value.contractDraft.semantic.assentPolicy = {
+    mode: "all",
+    signatories: [{ kind: "actor", id: "did:ixo:signatory" }],
+  };
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance["/assentPolicy"] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: [],
+  };
+  assert(codes(value).has("SOLO_ASSENT"));
+});
+
+test("Agent Task Draft names delivery responsibility as its best missing setup step", async () => {
+  const value = await example("expert-service-flow.example.json");
+  const first = value.contractDraft.setupObligations[0];
+  assert.equal(first.code, "setup.owner");
+  assert.equal(first.prompt, "Choose who is responsible for the result.");
+  assert.equal(value.topic.rootDraft.overview.nextStep.summary, first.prompt);
 });

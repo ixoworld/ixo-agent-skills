@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77704",
   "mode": "preview",
   "disposition": "create",
@@ -10,17 +10,17 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.1",
-    "rootVersion": 3,
-    "contractBodyVersion": 3,
-    "stateVersion": 3,
-    "contractProfile": "qi.topic-contract-state/v3",
+    "topicProtocolVersion": "1.0.0-rc.2",
+    "rootVersion": 4,
+    "contractBodyVersion": 4,
+    "stateVersion": 4,
+    "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
-    "packageShasum": "962da70e62f7a705b159edf2b55e03ca443f72d1",
+    "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
+    "packageShasum": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
-    "legacyPolicy": "v3-only-no-migration"
+    "legacyPolicy": "v4-only-no-migration"
   },
   "routing": {
     "rationale": "The intent is a bounded research question whose answer should be verified and retained.",
@@ -38,22 +38,22 @@
   "topic": {
     "operation": "create",
     "rootDraft": {
-      "version": 3,
+      "version": 4,
       "title": "Assess accessible soil carbon measurement in Kenya",
       "kind": "question",
       "status": "draft",
       "baseRecipe": "research",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:76aa6428b3a41ea0652c078f8020ba7918fe0f8c3ac79ef941c88b33ee62294b"
       },
-      "shapeDigest": "sha256:f5bdbf1f72e96232868550ebe199b9fda25a7a3fb7461a8ea7b83283e1303fc0",
+      "shapeDigest": "sha256:1b715cf518f7c723ae16ee55dd181fb3af0caa225216e12dec218d7c64f3715d",
       "context": [],
       "overview": {
         "summary": "Research accessible measurement methods, costs, constraints, and evidence quality.",
         "nextStep": {
-          "summary": "Review the research question, answer standard, and source plan."
+          "summary": "Choose who will review the answer."
         }
       }
     },
@@ -68,8 +68,8 @@
     "topicRecipeCode": "research-brief",
     "topicRecipeRef": {
       "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-      "version": "1.0.0-rc.1",
-      "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+      "version": "1.0.0-rc.2",
+      "digest": "sha256:76aa6428b3a41ea0652c078f8020ba7918fe0f8c3ac79ef941c88b33ee62294b"
     },
     "registryLookup": "not-performed",
     "registryReason": "pinned-catalog-only",
@@ -78,28 +78,27 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/research",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/question",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:7a0135cfb9f32fdfa3595d0f04328d40bb777dbfdfd91043460ba33857172aaf"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b"
       },
       {
         "kind": "topic-recipe",
         "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:76aa6428b3a41ea0652c078f8020ba7918fe0f8c3ac79ef941c88b33ee62294b"
       }
     ],
-    "shapeDigest": "sha256:f5bdbf1f72e96232868550ebe199b9fda25a7a3fb7461a8ea7b83283e1303fc0"
+    "shapeDigest": "sha256:1b715cf518f7c723ae16ee55dd181fb3af0caa225216e12dec218d7c64f3715d"
   },
   "contractDraft": {
     "envelope": {
-      "version": 3,
-      "status": "draft",
+      "version": 4,
       "revision": null,
       "authoredBy": null,
       "authoredAt": null
@@ -113,30 +112,30 @@
       "baseRecipe": "research",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:76aa6428b3a41ea0652c078f8020ba7918fe0f8c3ac79ef941c88b33ee62294b"
       },
       "shapeSources": [
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/research",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/question",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:7a0135cfb9f32fdfa3595d0f04328d40bb777dbfdfd91043460ba33857172aaf"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b"
         },
         {
           "kind": "topic-recipe",
           "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:76aa6428b3a41ea0652c078f8020ba7918fe0f8c3ac79ef941c88b33ee62294b"
         }
       ],
-      "shapeDigest": "sha256:f5bdbf1f72e96232868550ebe199b9fda25a7a3fb7461a8ea7b83283e1303fc0",
+      "shapeDigest": "sha256:1b715cf518f7c723ae16ee55dd181fb3af0caa225216e12dec218d7c64f3715d",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77741",
         "text": "Research whether smallholder farmers can access affordable soil carbon measurement in Kenya.",
@@ -180,7 +179,12 @@
       "constraints": [],
       "assumptions": [],
       "participants": [],
-      "roles": []
+      "roles": [],
+      "activationPolicy": {
+        "lifecycle": {
+          "onExpiry": "pause-consequential"
+        }
+      }
     },
     "publication": {
       "disclosure": "inline",
@@ -192,7 +196,50 @@
       "containsProviderSessionIds": false
     },
     "readiness": "requires-host-fields",
-    "unresolvedHostFields": ["revision", "authoredBy", "authoredAt", "completionAuthorityIds"]
+    "unresolvedHostFields": [
+      "revision",
+      "authoredBy",
+      "authoredAt",
+      "completionAuthorityIds"
+    ],
+    "setupObligations": [
+      {
+        "code": "setup.answer-reviewer",
+        "path": "/completion/acceptanceAuthorityIds",
+        "prompt": "Choose who will review the answer.",
+        "purpose": "A durable answer needs a named person who can judge whether it meets the brief.",
+        "responsibility": "unassigned",
+        "priority": 400,
+        "unlocks": "The answer can be reviewed and the Topic can progress toward completion."
+      },
+      {
+        "code": "setup.editors",
+        "path": "/activationPolicy/editors",
+        "prompt": "Choose who can update this setup.",
+        "purpose": "This makes responsibility for preparing and changing the setup explicit.",
+        "responsibility": "unassigned",
+        "priority": 600,
+        "unlocks": "The chosen editors can prepare a complete setup for review."
+      },
+      {
+        "code": "setup.confirmation-policy",
+        "path": "/activationPolicy/confirmation",
+        "prompt": "Select who must confirm this setup.",
+        "purpose": "Confirmation authorizes the Topic to progress without implying mutual or legal agreement.",
+        "responsibility": "unassigned",
+        "priority": 610,
+        "unlocks": "The named confirmer or confirmers can review this exact setup revision."
+      },
+      {
+        "code": "setup.dispute-resolvers",
+        "path": "/activationPolicy/dispute/resolvers",
+        "prompt": "Choose who can resolve a setup dispute.",
+        "purpose": "A dispute needs an explicitly authorized resolver or governed process.",
+        "responsibility": "unassigned",
+        "priority": 630,
+        "unlocks": "Disputes can be handled without inventing authority."
+      }
+    ]
   },
   "canvas": {
     "format": "blocknote",
@@ -215,7 +262,12 @@
         "basis": "suggested",
         "visibility": "primary",
         "content": {
-          "columns": ["Claim", "Source", "Quality", "Uncertainty"],
+          "columns": [
+            "Claim",
+            "Source",
+            "Quality",
+            "Uncertainty"
+          ],
           "rows": []
         },
         "editable": true
@@ -226,7 +278,9 @@
         "semanticRole": "next-action",
         "basis": "suggested",
         "visibility": "primary",
-        "content": ["Confirm the affordability threshold and source standard."],
+        "content": [
+          "Confirm the affordability threshold and source standard."
+        ],
         "editable": true
       }
     ],
@@ -242,7 +296,9 @@
         "purpose": "Gather and structure sources with visible uncertainty.",
         "output": "A proposed evidence map and brief.",
         "activation": "on_demand",
-        "requiredAbilities": ["topic/read"],
+        "requiredAbilities": [
+          "topic/read"
+        ],
         "stopWhen": "The proposed brief is ready for source verification."
       }
     ]
@@ -280,7 +336,12 @@
   "execution": {
     "commitEligible": false,
     "hostContext": {},
-    "requiredHostFields": ["roomId", "actorId", "matrixWrite", "verifiedAbilities"],
+    "requiredHostFields": [
+      "roomId",
+      "actorId",
+      "matrixWrite",
+      "verifiedAbilities"
+    ],
     "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77704:commit",
     "proposedCalls": [],
     "externalActions": [],
@@ -288,8 +349,8 @@
       "enabled": true,
       "eventType": "ixo.topic.contract",
       "stateKeySource": "topicId",
-      "profile": "qi.topic-contract-state/v3",
-      "version": 3,
+      "profile": "qi.topic-contract-state/v4",
+      "version": 4,
       "role": "materialized-head-only",
       "publishAfter": "root-and-projection",
       "disclosure": "inline",
@@ -300,7 +361,10 @@
   "quality": {
     "confidence": 0.9,
     "unresolvedPaths": [
-      "/contractDraft/semantic/completion/acceptanceAuthorityIds"
+      "/contractDraft/semantic/completion/acceptanceAuthorityIds",
+      "/contractDraft/semantic/activationPolicy/editors",
+      "/contractDraft/semantic/activationPolicy/confirmation",
+      "/contractDraft/semantic/activationPolicy/dispute/resolvers"
     ],
     "warnings": [
       "No source claims are treated as verified until the Shape's verification evidence exists."

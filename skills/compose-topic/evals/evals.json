@@ -1,11 +1,11 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "skill": "compose-topic",
   "protocol": {
-    "topicProtocolVersion": "1.0.0-rc.1",
-    "contractProfile": "qi.topic-contract-state/v3",
+    "topicProtocolVersion": "1.0.0-rc.2",
+    "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4"
+    "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f"
   },
   "cases": [
     {
@@ -145,7 +145,7 @@
       },
       "must": [
         "Do not invent agentId.",
-        "Do not add the role or an agents field to the v3 Topic contract."
+        "Do not add the role or an agents field to the v4 Topic contract."
       ]
     },
     {
@@ -628,7 +628,7 @@
         "mode": "preview"
       },
       "must": [
-        "Do not put Action, effect, schedule, or settlement contracts in Topic terms.",
+        "Do not put Action, effect, schedule, or settlement contracts in the Topic setup body.",
         "Offer a Flow/resource handoff."
       ]
     },
@@ -654,15 +654,87 @@
         "Only Shape-permitted non-effecting facts, summaries, and classifications may auto-accept.",
         "Keep contract, outcome, authority, Action, claim, evaluation, and settlement suggestions proposed."
       ]
+    },
+    {
+      "id": "legacy-v3",
+      "input": "Continue this existing Topic.",
+      "context": "The Topic uses qi.topic-contract-state/v3.",
+      "expected": {
+        "blockedCode": "BLOCKED_LEGACY_TOPIC"
+      },
+      "must": [
+        "Do not read v3 as v4.",
+        "Do not produce migration writes."
+      ]
+    },
+    {
+      "id": "partial-activation-policy",
+      "input": "Create an Agent Task draft. I know what the agent should deliver but I have not chosen who is responsible or who confirms it.",
+      "expected": {
+        "kind": "agent_task",
+        "status": "draft"
+      },
+      "must": [
+        "Keep activationPolicy partial.",
+        "Expose setup.owner, setup.editors, setup.confirmation-policy, and setup.dispute-resolvers as concrete obligations.",
+        "Use Choose who is responsible for the result as the best next step."
+      ]
+    },
+    {
+      "id": "owner-authority-fallback",
+      "input": "I own this Topic, so make me the confirmer and dispute resolver too.",
+      "context": "Ownership is known but no explicit setup-policy selection or authority proof is supplied.",
+      "expected": {
+        "mode": "preview"
+      },
+      "must": [
+        "Do not derive confirmation or dispute authority from ownership.",
+        "Keep the policy choices unresolved until explicitly selected and verified."
+      ]
+    },
+    {
+      "id": "confirmation-not-assent",
+      "input": "Let the project lead confirm this setup. We do not need signatures.",
+      "expected": {
+        "assentPolicy": "omitted"
+      },
+      "must": [
+        "Record setup confirmation separately from mutual agreement.",
+        "Never call confirmation agreement when no assent policy exists."
+      ]
+    },
+    {
+      "id": "expiry-non-invention",
+      "input": "Make this Topic expire later.",
+      "context": "No expiry date or time is supplied.",
+      "expected": {
+        "status": "draft"
+      },
+      "must": [
+        "Do not invent an expiry date.",
+        "Keep expiresAt unresolved and retain pause-consequential as the fixed expiry behavior."
+      ]
+    },
+    {
+      "id": "dispute-authority",
+      "input": "Add a dispute process through this verified Flow.",
+      "context": "The Flow is supplied but no resolver is named.",
+      "expected": {
+        "status": "draft"
+      },
+      "must": [
+        "Retain the supplied Flow process without inventing a resolver.",
+        "Keep setup.dispute-resolvers visible and do not imply that dispute resolution confirms setup or completes the Topic."
+      ]
     }
   ],
   "globalAssertions": [
     "sourceIntent.verbatim is preserved exactly.",
     "One primary outcome exists for every composed Topic.",
     "Every new Base or Topic Recipe instantiation is a user-reviewable Draft.",
-    "Inferred, suggested, and retrieved contract terms remain proposed.",
+    "Inferred, suggested, and retrieved setup content remains proposed.",
     "The Topic Contract state event remains a materialized head only.",
-    "No agent or Action contract is written into the v3 Topic Contract body.",
+    "No agent or Action contract is written into the v4 Topic Contract body.",
     "No external action appears in execution.externalActions.",
     "All Topic abilities use slash syntax.",
     "The initial canvas has at most seven primary blocks, starts with outcome, and contains a next action.",
@@ -672,6 +744,9 @@
     "Thread is never emitted as a persisted kind.",
     "Risks are emitted only for Incidents and never include likelihood.",
     "Drafts leave unresolved fields omitted rather than fabricating defaults.",
+    "Every composition exposes a partial activationPolicy and structured obligations for unresolved setup authority.",
+    "Authorship, ownership, membership, and completion authority never silently become setup confirmation, assent, or dispute authority.",
+    "Setup confirmation is never described as mutual agreement without an explicit assentPolicy.",
     "Existing Topic refinement stages a revision-bound change set and never falls back to creation.",
     "Every composed Topic selects one canonical Kind and its fixed Base Recipe.",
     "Kind-specific draft structures are initialised without fabricating unresolved values.",

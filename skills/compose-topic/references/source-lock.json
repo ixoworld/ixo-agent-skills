@@ -1,49 +1,49 @@
 {
-  "version": 4,
+  "version": 5,
   "skill": "compose-topic",
   "topicProtocol": {
     "repository": "https://github.com/ixoworld/topic-protocol",
-    "version": "1.0.0-rc.1",
-    "normativeBaseCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
+    "version": "1.0.0-rc.2",
+    "normativeBaseCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
     "package": {
       "name": "@ixo/topic-protocol",
-      "version": "1.0.0-rc.1",
-      "gitHead": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
-      "shasum": "962da70e62f7a705b159edf2b55e03ca443f72d1",
-      "integrity": "sha512-o2WFDh2NiK32qZ8plen0QL+acSjbg8R2UNcRjHaHd/FRtWnl4sHNYGbS/jpi3S8kXXJ2ghWiftBbSDC7csQ2fw=="
+      "version": "1.0.0-rc.2",
+      "gitHead": "0407c6e7e3f77091260a08d586441e5323a0227f",
+      "shasum": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f",
+      "integrity": "sha512-5sIJLV9ARobosp+T5PROFQ/S0Z2S1Ybo+soFxtnHJJdMRVK8w3XqDX2LYcObyuCxguzDAFppsU8NNgs7MOhmHQ=="
     },
     "contractProfile": {
-      "profile": "qi.topic-contract-state/v3",
+      "profile": "qi.topic-contract-state/v4",
       "status": "normative",
-      "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
-      "rootVersion": 3,
-      "bodyVersion": 3,
-      "stateVersion": 3,
+      "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
+      "rootVersion": 4,
+      "bodyVersion": 4,
+      "stateVersion": 4,
       "eventType": "ixo.topic.contract",
       "schema": "https://topic-protocol.ixo.world/schemas/topic-contract-state.schema.json",
       "stateEventRole": "materialized-head-only",
-      "legacyPolicy": "v3-only-no-migration"
+      "legacyPolicy": "v4-only-no-migration"
     },
     "sourceFiles": [
       {
         "path": "protocol-manifest.json",
-        "blobSha": "3f9c202fbe8d72bb9ae58deac5046213666d129a"
+        "blobSha": "0be72092e65b9eba5a753f31ea542f1e581bf119"
       },
       {
         "path": "schemas/topic-root.schema.json",
-        "blobSha": "b263100cf34e871b7a3db92d196d82780b630589"
+        "blobSha": "1f6fbf0885bd76cb4412047c53acd2d4d74a5848"
       },
       {
         "path": "schemas/topic-contract-body.schema.json",
-        "blobSha": "7a901fac7ea584ae324fb8faa9ac0c4525e76e78"
+        "blobSha": "f2314e40e4e5492cd9d54a6c68e113b2d3b95b95"
       },
       {
         "path": "schemas/topic-contract-state.schema.json",
-        "blobSha": "3dd6687738fe835d0e6da2e851381b08891b4719"
+        "blobSha": "ebfa9d00a230bbaf492fd7dc58a8fe1f27117e09"
       },
       {
         "path": "schemas/topic-shape.schema.json",
-        "blobSha": "2ecb7653f34d79fdea456a74e8a917a38941a3d1"
+        "blobSha": "5368c1c71b51c590c5f015132c65b38a6cabb95b"
       },
       {
         "path": "schemas/topic-recipe.schema.json",
@@ -63,35 +63,35 @@
       },
       {
         "path": "src/contracts/topic-contract.ts",
-        "blobSha": "8ddb8f72eb3f5f159144f24d05fb64a0e3f771b3"
+        "blobSha": "b8a729a82e5f8533d7572482e5c8d16ba3f00717"
       },
       {
         "path": "src/projector/types.ts",
-        "blobSha": "f927650dd0efd5bc3208caaf3583e5dddbf766d5"
+        "blobSha": "07e5d5d3d4965e1a42d9ad43e59b103f5b69eea1"
       },
       {
         "path": "src/shapes/types.ts",
-        "blobSha": "3acfacb973b90880c38a4a01f23238c0b5fdc47d"
+        "blobSha": "0d489d942fa94db7843926f37956db7ad559a75a"
       },
       {
         "path": "src/shapes/state.ts",
-        "blobSha": "e06524f11d13dd53ba299061c0821b93011d1add"
+        "blobSha": "b03bebdb2897991ee7a49148bc68802cbaf8044f"
       },
       {
         "path": "src/shapes/resolver.ts",
-        "blobSha": "7d5640c02c8b3c17d8cdfb9bf051e524559ea785"
+        "blobSha": "4bcab6b060fcc69d1c486a2f2ce9a03b47c6fbcb"
       },
       {
         "path": "src/shapes/recipes.ts",
-        "blobSha": "881ce68416fb594cd1e360daba64cbbd284bd876"
+        "blobSha": "a7097f5049604712851680376259b783ee9648ed"
       },
       {
         "path": "src/shapes/progress.ts",
-        "blobSha": "b501d33afe33665f3b6e29f11d8b23db4ab240a4"
+        "blobSha": "53966c95c058e395513c70f66d37f60ad5ec281d"
       },
       {
         "path": "src/shapes/now.ts",
-        "blobSha": "8e7820d979b688aeed036f647f407d79d9d51db2"
+        "blobSha": "112a76ba340ecef9f86e529fa2389aba96414f43"
       },
       {
         "path": "src/shapes/claims.ts",
@@ -99,23 +99,23 @@
       },
       {
         "path": "recipes/registry.json",
-        "blobSha": "d32e3527e2e068d167fa8922fd1abd1a8dcf6463"
+        "blobSha": "b26ec8c1ffa0c2885bf8e8c1b88b4fadb5c676fa"
       },
       {
         "path": "recipes/research-brief.json",
-        "blobSha": "2e01fe593781046b5787a7985cf356ed33cb2c63"
+        "blobSha": "800cd16cd56bec686a710e60d39e859b87e24759"
       },
       {
         "path": "recipes/agent-delivery.json",
-        "blobSha": "7d2ebdddc731b789c1167657beae44e8cf72b130"
+        "blobSha": "095c09598ee319ef46bcbb78af1c5e8da4b61bd7"
       },
       {
         "path": "recipes/verified-work-payment.json",
-        "blobSha": "e70a500a29a5fd219280f7d3dfdbcb1d44034bd9"
+        "blobSha": "8cdcb6c66ad139339dd77180e6db6609c0819169"
       },
       {
         "path": "docs/topic-shape-framework.md",
-        "blobSha": "0b962427b5900a2ddd467e1cb038874ed6367159"
+        "blobSha": "943df286f84caa2c0eb0a0e4d631df75cf402ef0"
       },
       {
         "path": "schemas/topic-kind-profile.schema.json",
@@ -132,6 +132,18 @@
       {
         "path": "profiles/job-card/profile.json",
         "blobSha": "f218525106ff46e895e28e60b259aa81b4456fa3"
+      },
+      {
+        "path": "schemas/topic-operation.schema.json",
+        "blobSha": "fe1e32401a8d98ec8dc432b3a21840d340957bfe"
+      },
+      {
+        "path": "src/projector/payload.ts",
+        "blobSha": "d1d9ed55d4a4bfea769ee88eb973a80b8affab6c"
+      },
+      {
+        "path": "src/projector/state.ts",
+        "blobSha": "eada1f24b0dfafec6dc54d620caa582b50858cc8"
       }
     ],
     "kindProfiles": {
@@ -140,37 +152,74 @@
         "version": "1.0.0",
         "schema": "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
         "digest": "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5",
-        "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4"
+        "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f"
       }
     },
     "topicRecipes": {
       "registry": "references/topic-shape-pins.json",
-      "codes": ["research-brief", "agent-delivery", "verified-work-payment"],
+      "codes": [
+        "research-brief",
+        "agent-delivery",
+        "verified-work-payment"
+      ],
       "creates": "draft",
       "marketplaceLookup": "not-performed"
     }
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "de5138fea3493682286f115e640620323f7f22d95d32af1b1ce5c1f7ce449115"
+      "sha256": "459f2def5b6219c8eb744b27bb7732e44dcdda1383c7fdea5c30dc25ae1aa963"
     },
     "schemas/topic-contract-draft.schema.json": {
-      "sha256": "937d0bc820dabe626a2ad113199792189b2a13d81a00eec586ac803c30061f3a"
+      "sha256": "4f058b30cf095ffbbf4d664c13843ab2ed2df6ae130d0bd09d52499e35ae9479"
     },
     "schemas/topic-refine-change-set.schema.json": {
-      "sha256": "121c917628c847aa6fda166624a9db7585a0aadeb9d2cc74ce21c5161daa548a"
+      "sha256": "c09b669324dc4de72b9a0d19b5f9be6017f86017f75cebbd47ef7d069c5c1763"
     },
     "references/topic-contract-profile.md": {
-      "sha256": "61fc5bf503cf14a2b738b8a69ff595c08937738deb24d57ff36e82a25c97082b"
+      "sha256": "ad049b22a92cd17ae408ef8802e8876683be5b7005b050b82a3df6875c644256"
     },
     "references/topic-recipe-selection.md": {
-      "sha256": "38b76c8512b5999b4406f5fc5ba8d0c407eba7f9d287bcbb7df6c889cfecc062"
+      "sha256": "5a05183fcda3fc2c90b666f064e9d74f57ceeef37c3feca4b81e0cd0644e39d2"
     },
     "references/topic-shape-pins.json": {
-      "sha256": "a69e0d77e0c2687d9681bc7c1a16facedb7e5d4136bc233ad4cb619a993e6e6e"
+      "sha256": "a500ef67d6cd5bbcd5216815a48e9a7884ac3648c3e2b8b57f625943d769945e"
     },
     "references/topic-kind-templates.md": {
       "sha256": "c055d09d21db1e8c470cfec217fa7815fe5afe6e8359712abf47e4130b623a51"
+    },
+    "SKILL.md": {
+      "sha256": "d62fabf488de9f7785f330acc8d8ffcaefae962ac83dd0b9d56f4a6bf586eb46"
+    },
+    "AUDIT.md": {
+      "sha256": "a385fdc67c27656f786af5758474054428c02a8fc72705bc3cb8ebcf5975f09f"
+    },
+    "evals/evals.json": {
+      "sha256": "c79af0ce980fbac188261f2308acf2bd2c7038bd55f8e2788dd3a7d05ab58bfd"
+    },
+    "subskills/compose-topic-agent-task/SKILL.md": {
+      "sha256": "09e9517347bac8168525a37e053b42fab4d6c5409be321519a2e356990f8ab71"
+    },
+    "subskills/compose-topic-claims/SKILL.md": {
+      "sha256": "cbc285817717396b16b7357a4eeee2da45c64455549afa6b5ab4e3bc55de80ae"
+    },
+    "subskills/compose-topic-discussion/SKILL.md": {
+      "sha256": "ef3ddbc13bb66c636e1f464e780818b504f7dec0acbd25844c454f83aab7b23f"
+    },
+    "subskills/compose-topic-evaluation/SKILL.md": {
+      "sha256": "6312d22c22c87742422bb0b00c2da27516883a7af936238696f2862439631403"
+    },
+    "subskills/compose-topic-incident/SKILL.md": {
+      "sha256": "ebbc5a611274705f842b859e01c5bb708ceb2fd0b2ece9a929cc0f367a29f761"
+    },
+    "subskills/compose-topic-proposal/SKILL.md": {
+      "sha256": "eb8431fca2f22537b40606aa17d8b883c42dea3c6a9516649f3a968fe992a573"
+    },
+    "subskills/compose-topic-question/SKILL.md": {
+      "sha256": "dfbb99c0acf94d5df4e0d362c13f587b37b28ec043ceabdc015863b4614cedba"
+    },
+    "subskills/compose-topic-task/SKILL.md": {
+      "sha256": "24f664209744ca22c3fd4618e403c04dc7b981b80a46d2306af9819ad2cc397b"
     }
   }
 }

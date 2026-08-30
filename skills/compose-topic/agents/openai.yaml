@@ -1,4 +1,4 @@
 interface:
   display_name: "Compose Topic"
   short_description: "Compose reviewable Topic Protocol v1 Drafts"
-  default_prompt: "Use $compose-topic to choose the right Topic Kind, resolve its pinned Shape, and produce a Portal-ready v1 Draft for my intent."
+  default_prompt: "Use $compose-topic to choose the right Topic Kind, resolve its pinned Shape, and produce a Portal-ready v4 Draft with explicit setup choices and concrete remaining obligations."
