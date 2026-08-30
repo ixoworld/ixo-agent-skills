@@ -1,0 +1,309 @@
+{
+  "version": "2.0.0",
+  "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77704",
+  "mode": "preview",
+  "disposition": "create",
+  "sourceIntent": {
+    "verbatim": "Research whether smallholder farmers can access affordable soil carbon measurement in Kenya.",
+    "sourceSurface": "qi-home",
+    "language": "en"
+  },
+  "protocolBinding": {
+    "package": "@ixo/topic-protocol",
+    "topicProtocolVersion": "1.0.0-rc.1",
+    "rootVersion": 3,
+    "contractBodyVersion": 3,
+    "stateVersion": 3,
+    "contractProfile": "qi.topic-contract-state/v3",
+    "profileStatus": "normative",
+    "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
+    "packageShasum": "962da70e62f7a705b159edf2b55e03ca443f72d1",
+    "authoritativeHistory": "topic-root+operations+records+projection",
+    "stateEventRole": "materialized-head-only",
+    "legacyPolicy": "v3-only-no-migration"
+  },
+  "routing": {
+    "rationale": "The intent is a bounded research question whose answer should be verified and retained.",
+    "audience": "unknown",
+    "indexCompleteness": "unknown",
+    "duplicateDetection": "not-run"
+  },
+  "interpretation": {
+    "job": "Research and verify a bounded question",
+    "subject": "Affordable soil carbon measurement for Kenyan smallholders",
+    "outcome": "A source-backed brief explains available methods, access constraints, and remaining uncertainty.",
+    "value": "A programme designer can decide whether further field validation is warranted.",
+    "stakes": "medium"
+  },
+  "topic": {
+    "operation": "create",
+    "rootDraft": {
+      "version": 3,
+      "title": "Assess accessible soil carbon measurement in Kenya",
+      "kind": "question",
+      "status": "draft",
+      "baseRecipe": "research",
+      "topicRecipeRef": {
+        "id": "https://topic-protocol.ixo.world/recipes/research-brief",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+      },
+      "shapeDigest": "sha256:f5bdbf1f72e96232868550ebe199b9fda25a7a3fb7461a8ea7b83283e1303fc0",
+      "context": [],
+      "overview": {
+        "summary": "Research accessible measurement methods, costs, constraints, and evidence quality.",
+        "nextStep": {
+          "summary": "Review the research question, answer standard, and source plan."
+        }
+      }
+    },
+    "anchor": {
+      "mode": "native",
+      "manifestSource": "root-event"
+    }
+  },
+  "recipeSelection": {
+    "strategy": "topic-recipe",
+    "baseRecipe": "research",
+    "topicRecipeCode": "research-brief",
+    "topicRecipeRef": {
+      "id": "https://topic-protocol.ixo.world/recipes/research-brief",
+      "version": "1.0.0-rc.1",
+      "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+    },
+    "registryLookup": "not-performed",
+    "registryReason": "pinned-catalog-only",
+    "reviewState": "draft",
+    "shapeSources": [
+      {
+        "kind": "base-recipe",
+        "id": "https://topic-protocol.ixo.world/base-recipes/research",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+      },
+      {
+        "kind": "kind",
+        "id": "https://topic-protocol.ixo.world/kinds/question",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:7a0135cfb9f32fdfa3595d0f04328d40bb777dbfdfd91043460ba33857172aaf"
+      },
+      {
+        "kind": "topic-recipe",
+        "id": "https://topic-protocol.ixo.world/recipes/research-brief",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+      }
+    ],
+    "shapeDigest": "sha256:f5bdbf1f72e96232868550ebe199b9fda25a7a3fb7461a8ea7b83283e1303fc0"
+  },
+  "contractDraft": {
+    "envelope": {
+      "version": 3,
+      "status": "draft",
+      "revision": null,
+      "authoredBy": null,
+      "authoredAt": null
+    },
+    "semantic": {
+      "kindRef": {
+        "source": "standard",
+        "kind": "question"
+      },
+      "workingMode": "solo",
+      "baseRecipe": "research",
+      "topicRecipeRef": {
+        "id": "https://topic-protocol.ixo.world/recipes/research-brief",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+      },
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/research",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/question",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:7a0135cfb9f32fdfa3595d0f04328d40bb777dbfdfd91043460ba33857172aaf"
+        },
+        {
+          "kind": "topic-recipe",
+          "id": "https://topic-protocol.ixo.world/recipes/research-brief",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+        }
+      ],
+      "shapeDigest": "sha256:f5bdbf1f72e96232868550ebe199b9fda25a7a3fb7461a8ea7b83283e1303fc0",
+      "intent": {
+        "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77741",
+        "text": "Research whether smallholder farmers can access affordable soil carbon measurement in Kenya.",
+        "provenance": {
+          "basis": "explicit",
+          "acceptance": "accepted",
+          "sourceEventIds": []
+        }
+      },
+      "outcome": {
+        "statement": {
+          "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77742",
+          "text": "A source-backed brief explains available methods, access constraints, and remaining uncertainty.",
+          "provenance": {
+            "basis": "suggested",
+            "acceptance": "proposed",
+            "sourceEventIds": []
+          }
+        },
+        "status": "proposed",
+        "successCriteria": []
+      },
+      "questions": [
+        {
+          "statement": {
+            "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77743",
+            "text": "What cost threshold counts as affordable for the intended programme?",
+            "provenance": {
+              "basis": "suggested",
+              "acceptance": "proposed",
+              "sourceEventIds": []
+            }
+          },
+          "status": "open"
+        }
+      ],
+      "completion": {
+        "definition": "The sources and conclusions are reviewed, verification is recorded, and the Topic is explicitly completed.",
+        "requiresOutcomeRecord": true
+      },
+      "constraints": [],
+      "assumptions": [],
+      "participants": [],
+      "roles": []
+    },
+    "publication": {
+      "disclosure": "inline",
+      "dataClassification": "internal",
+      "e2eeRequired": false,
+      "maxInlineBytes": 49152,
+      "reason": "The Draft contains a research frame rather than sensitive source bodies.",
+      "embedsCanvasContent": false,
+      "containsProviderSessionIds": false
+    },
+    "readiness": "requires-host-fields",
+    "unresolvedHostFields": ["revision", "authoredBy", "authoredAt", "completionAuthorityIds"]
+  },
+  "canvas": {
+    "format": "blocknote",
+    "collaboration": "yjs",
+    "contentEmbedded": false,
+    "blocks": [
+      {
+        "id": "outcome",
+        "type": "callout",
+        "semanticRole": "outcome",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": "Produce a source-backed brief on accessible soil carbon measurement.",
+        "editable": true
+      },
+      {
+        "id": "evidence-map",
+        "type": "table",
+        "semanticRole": "evidence-map",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": {
+          "columns": ["Claim", "Source", "Quality", "Uncertainty"],
+          "rows": []
+        },
+        "editable": true
+      },
+      {
+        "id": "next",
+        "type": "checklist",
+        "semanticRole": "next-action",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": ["Confirm the affordability threshold and source standard."],
+        "editable": true
+      }
+    ],
+    "focusBlockId": "evidence-map",
+    "nextActionBlockId": "next"
+  },
+  "collaborationSuggestions": {
+    "humanRoles": [],
+    "agentRoles": [
+      {
+        "roleId": "researcher",
+        "role": "Research agent",
+        "purpose": "Gather and structure sources with visible uncertainty.",
+        "output": "A proposed evidence map and brief.",
+        "activation": "on_demand",
+        "requiredAbilities": ["topic/read"],
+        "stopWhen": "The proposed brief is ready for source verification."
+      }
+    ]
+  },
+  "firstTurn": {
+    "message": "I structured this as a Research Brief Draft with a separate verification stage.",
+    "quickActions": [
+      {
+        "id": "review",
+        "label": "Review Draft",
+        "action": "Review the research question and answer standard."
+      },
+      {
+        "id": "define-affordable",
+        "label": "Define affordable",
+        "action": "Set the intended affordability threshold."
+      }
+    ],
+    "defaultActionId": "review"
+  },
+  "records": [
+    {
+      "localId": "intent",
+      "kind": "memory",
+      "recordClass": "ixo.topic.intent",
+      "basis": "explicit",
+      "accepted": true,
+      "sourceEventIds": [],
+      "content": {
+        "type": "user-intent",
+        "verbatim": "Research whether smallholder farmers can access affordable soil carbon measurement in Kenya."
+      }
+    }
+  ],
+  "execution": {
+    "commitEligible": false,
+    "hostContext": {},
+    "requiredHostFields": ["roomId", "actorId", "matrixWrite", "verifiedAbilities"],
+    "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77704:commit",
+    "proposedCalls": [],
+    "externalActions": [],
+    "stateEventPlan": {
+      "enabled": true,
+      "eventType": "ixo.topic.contract",
+      "stateKeySource": "topicId",
+      "profile": "qi.topic-contract-state/v3",
+      "version": 3,
+      "role": "materialized-head-only",
+      "publishAfter": "root-and-projection",
+      "disclosure": "inline",
+      "embedsCanvasContent": false,
+      "shapeRecordPersisted": false
+    }
+  },
+  "quality": {
+    "confidence": 0.9,
+    "unresolvedPaths": [
+      "/contractDraft/semantic/completion/acceptanceAuthorityIds"
+    ],
+    "warnings": [
+      "No source claims are treated as verified until the Shape's verification evidence exists."
+    ]
+  }
+}

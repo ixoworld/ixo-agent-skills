@@ -1,66 +1,565 @@
 #!/usr/bin/env node
-/** Validate Compose Topic output. Usage: node scripts/validate-composition.mjs FILE [--json] | --examples [--json] */
+/** Validate Compose Topic v2 output. Usage: node scripts/validate-composition.mjs FILE [--json] | --examples [--json] */
+
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"..");
-const WORK=new Set(["create","continue","branch","split"]);
-const ACCEPTED=new Set(["explicit","contextual"]);
-const ABILITY=/^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/u;
-const TOPIC=/^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
-const ENTRY=/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
-const COMMIT="08339e19bc6cc891b8cad85713a58fd1ec7b0da4";
-const PROTOCOL_VERSION="0.8.0";
-const COMPOSITION_VERSION="1.3.0";
-const KINDS=new Set(["task","agent_task","proposal","evaluation","claims","question","discussion","incident"]);
-const RECIPE_BY_KIND={task:"project",agent_task:"flow",proposal:"proposal",evaluation:"evaluation",claims:"claims",question:"research",discussion:"discussion",incident:"incident"};
-const SECRETS=[/-----BEGIN [A-Z ]*PRIVATE KEY-----/u,/\bsk-[A-Za-z0-9_-]{20,}\b/u,/\bghp_[A-Za-z0-9]{30,}\b/u,/\bgithub_pat_[A-Za-z0-9_]{30,}\b/u,/\bxox[baprs]-[A-Za-z0-9-]{20,}\b/u,/\bAKIA[0-9A-Z]{16}\b/u,/\bBearer\s+[A-Za-z0-9._~+/-]{20,}={0,2}\b/u,/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/u,/\b(?:mnemonic|seed phrase|private key)\s*[:=]\s*["']?[^\s"']{16,}/iu];
-const isObj=v=>typeof v==="object"&&v!==null&&!Array.isArray(v);
-const unique=a=>new Set(a).size===a.length;
-const F=(code,path,message,severity="error")=>({code,severity,path,message});
-const add=(out,ok,code,path,message,severity)=>{if(!ok)out.push(F(code,path,message,severity));};
-const req=(out,v,path,keys)=>{if(!isObj(v)){out.push(F("TYPE_OBJECT",path,"must be an object"));return false;}for(const k of keys)add(out,Object.hasOwn(v,k),"REQUIRED_FIELD",`${path}/${k}`,"is required");return true;};
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const SHAPE_PINS = JSON.parse(readFileSync(join(ROOT, "references", "topic-shape-pins.json"), "utf8"));
+const WORK = new Set(["create", "continue", "branch", "split"]);
+const ACCEPTABLE_ACCEPTED_BASIS = new Set(["explicit", "contextual"]);
+const AUTO_ACCEPT_RECORD_CLASSES = new Set(["ixo.topic.fact", "ixo.topic.summary", "ixo.topic.classification"]);
+const NEVER_AUTO_ACCEPT_RECORD_CLASSES = new Set([
+  "ixo.topic.contract",
+  "ixo.topic.outcome",
+  "ixo.topic.authority",
+  "ixo.topic.action",
+  "ixo.claim",
+  "ixo.evaluation",
+  "ixo.settlement",
+]);
+const ABILITY = /^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/u;
+const TOPIC = /^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
+const ENTRY = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
+const DIGEST = /^sha256:[0-9a-f]{64}$/u;
+const COMMIT = "db925bece7269a3c11e3081f301c7e7d7dd7bab4";
+const PACKAGE_SHASUM = "962da70e62f7a705b159edf2b55e03ca443f72d1";
+const PROTOCOL_VERSION = "1.0.0-rc.1";
+const COMPOSITION_VERSION = "2.0.0";
+const PROFILE = "qi.topic-contract-state/v3";
+const KINDS = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
+const RECIPE_BY_KIND = {
+  task: "project",
+  agent_task: "flow",
+  proposal: "proposal",
+  evaluation: "evaluation",
+  claims: "claims",
+  question: "research",
+  discussion: "discussion",
+  incident: "incident",
+};
+const KIND_FIELDS = {
+  task: ["outcome", "plan", "completion"],
+  agent_task: ["outcome", "plan", "completion"],
+  proposal: ["outcome", "decision", "completion"],
+  evaluation: ["outcome", "decision", "completion"],
+  claims: ["outcome", "completion"],
+  question: ["outcome", "questions", "completion"],
+  discussion: ["completion"],
+  incident: ["completion", "risks"],
+};
+const FORBIDDEN_CONTRACT_FIELDS = new Set([
+  "recipe",
+  "agents",
+  "actions",
+  "action",
+  "actionContract",
+  "effectContract",
+  "evaluationKit",
+  "schedule",
+  "automation",
+  "settlementContract",
+  "claimResolution",
+  "progress",
+  "stateTags",
+  "attention",
+]);
+const EXAMPLES = [
+  "decision.example.json",
+  "expert-service-flow.example.json",
+  "research-brief.example.json",
+  "team-project.example.json",
+  "verified-work-payment.example.json",
+];
+const SECRETS = [
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
+  /\bsk-[A-Za-z0-9_-]{20,}\b/u,
+  /\bghp_[A-Za-z0-9]{30,}\b/u,
+  /\bgithub_pat_[A-Za-z0-9_]{30,}\b/u,
+  /\bxox[baprs]-[A-Za-z0-9-]{20,}\b/u,
+  /\bAKIA[0-9A-Z]{16}\b/u,
+  /\bBearer\s+[A-Za-z0-9._~+/-]{20,}={0,2}\b/u,
+  /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/u,
+  /\b(?:mnemonic|seed phrase|private key)\s*[:=]\s*["']?[^\s"']{16,}/iu,
+];
 
-function statements(s){const a=[],p=(v,path)=>{if(isObj(v))a.push([v,path]);};p(s?.intent,"/contractDraft/semantic/intent");p(s?.outcome?.statement,"/contractDraft/semantic/outcome/statement");for(const [k,x] of [["included",s?.scope?.included],["excluded",s?.scope?.excluded],["constraints",s?.constraints]])for(const [i,v] of (x??[]).entries())p(v,`/contractDraft/semantic/${k}/${i}`);for(const [k,x] of [["assumptions",s?.assumptions],["questions",s?.questions]])for(const [i,v] of (x??[]).entries())p(v?.statement,`/contractDraft/semantic/${k}/${i}/statement`);p(s?.decision?.question,"/contractDraft/semantic/decision/question");return a;}
+const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+const unique = (values) => new Set(values).size === values.length;
+const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+const finding = (code, path, message, severity = "error") => ({ code, severity, path, message });
 
-function repeatableEntries(s){const a=[...statements(s)];const add=(xs,path)=>{for(const [i,x]of(xs??[]).entries())if(isObj(x))a.push([x,`${path}/${i}`]);};add(s?.outcome?.successCriteria,"/contractDraft/semantic/outcome/successCriteria");add(s?.risks,"/contractDraft/semantic/risks");add(s?.decision?.options,"/contractDraft/semantic/decision/options");add(s?.decision?.criteria,"/contractDraft/semantic/decision/criteria");add(s?.plan?.milestones,"/contractDraft/semantic/plan/milestones");return a;}
+function add(findings, condition, code, path, message, severity = "error") {
+  if (!condition) findings.push(finding(code, path, message, severity));
+}
 
-function top(v,o){req(o,v,"",["version","compositionId","mode","disposition","sourceIntent","protocolBinding","routing","execution","quality"]);add(o,v?.version===COMPOSITION_VERSION,"VERSION","/version",`must equal ${COMPOSITION_VERSION}`);add(o,typeof v?.compositionId==="string"&&v.compositionId.startsWith("urn:uuid:"),"COMPOSITION_ID","/compositionId","must be urn:uuid");add(o,["preview","commit","refine"].includes(v?.mode),"MODE","/mode","unsupported mode");add(o,["create","continue","branch","split","clarify","answer-without-topic"].includes(v?.disposition),"DISPOSITION","/disposition","unsupported disposition");add(o,typeof v?.sourceIntent?.verbatim==="string"&&v.sourceIntent.verbatim.length>0,"VERBATIM_INTENT","/sourceIntent/verbatim","must preserve user intent");}
+function requireObject(findings, value, path, keys) {
+  if (!isObject(value)) {
+    findings.push(finding("TYPE_OBJECT", path, "must be an object"));
+    return false;
+  }
+  for (const key of keys) {
+    add(findings, Object.hasOwn(value, key), "REQUIRED_FIELD", `${path}/${key}`, "is required");
+  }
+  return true;
+}
 
-function binding(v,o){const b=v.protocolBinding;req(o,b,"/protocolBinding",["topicProtocolVersion","contractProfile","profileStatus","sourceCommit","authoritativeHistory","stateEventRole"]);add(o,b?.topicProtocolVersion===PROTOCOL_VERSION,"PROTOCOL_VERSION","/protocolBinding/topicProtocolVersion",`must equal ${PROTOCOL_VERSION}`);add(o,b?.contractProfile==="qi.topic-contract-state/v2","CONTRACT_PROFILE","/protocolBinding/contractProfile","profile mismatch");add(o,b?.profileStatus==="normative","PROFILE_STATUS","/protocolBinding/profileStatus","must remain normative");add(o,b?.sourceCommit===COMMIT,"SOURCE_COMMIT","/protocolBinding/sourceCommit",`must equal ${COMMIT}`);add(o,b?.authoritativeHistory==="topic-root+operations+records+projection","AUTHORITATIVE_HISTORY","/protocolBinding/authoritativeHistory","canonical history mismatch");add(o,b?.stateEventRole==="materialized-head-only","STATE_EVENT_ROLE","/protocolBinding/stateEventRole","must be materialized-head-only");}
+function baseKind(kindRef) {
+  if (!isObject(kindRef)) return undefined;
+  return kindRef.source === "standard" ? kindRef.kind : kindRef.source === "custom" ? kindRef.baseKind : undefined;
+}
 
-function disposition(v,o){if(WORK.has(v.disposition))req(o,v,"",["interpretation","topic","contractDraft","canvas","collaborationSuggestions","firstTurn","records"]);if(["create","branch","split"].includes(v.disposition)){add(o,v.topic?.operation==="create","CREATE_OPERATION","/topic/operation","must be create");add(o,isObj(v.topic?.rootDraft),"ROOT_DRAFT","/topic/rootDraft","required");add(o,v.contractDraft?.lifecycle?.kind==="initial","CONTRACT_LIFECYCLE","/contractDraft/lifecycle/kind","must be initial");}if(v.disposition==="continue"||v.mode==="refine"){add(o,v.topic?.operation==="reuse","REUSE_OPERATION","/topic/operation","must be reuse");add(o,TOPIC.test(v.topic?.topicId??""),"TOPIC_ID","/topic/topicId","invalid Topic ID");add(o,typeof v.topic?.expectedStateRevision==="string"&&v.topic.expectedStateRevision.length>0,"EXPECTED_REVISION","/topic/expectedStateRevision","required");add(o,v.contractDraft?.lifecycle?.kind==="successor-proposal","SUCCESSOR_LIFECYCLE","/contractDraft/lifecycle/kind","must be successor-proposal");add(o,v.contractDraft?.lifecycle?.baseRevision===v.topic?.expectedStateRevision,"BASE_REVISION","/contractDraft/lifecycle/baseRevision","must equal expected revision");}if(v.disposition==="branch")add(o,TOPIC.test(v.routing?.parentTopicId??""),"PARENT_TOPIC","/routing/parentTopicId","required");if(v.disposition==="split")add(o,(v.routing?.proposedChildren?.length??0)>0,"SPLIT_CHILDREN","/routing/proposedChildren","required");if(v.disposition==="clarify")add(o,isObj(v.clarification),"CLARIFICATION","/clarification","required");if(v.disposition==="answer-without-topic")add(o,typeof v.directResponse==="string"&&v.directResponse.length>0,"DIRECT_RESPONSE","/directResponse","required");}
+function statementEntries(semantic) {
+  const entries = [];
+  const push = (value, path) => {
+    if (isObject(value)) entries.push([value, path]);
+  };
+  push(semantic?.intent, "/contractDraft/semantic/intent");
+  push(semantic?.outcome?.statement, "/contractDraft/semantic/outcome/statement");
+  for (const [name, values] of [
+    ["included", semantic?.scope?.included],
+    ["excluded", semantic?.scope?.excluded],
+    ["constraints", semantic?.constraints],
+  ]) {
+    for (const [index, value] of (values ?? []).entries()) {
+      push(value, `/contractDraft/semantic/${name}/${index}`);
+    }
+  }
+  for (const [name, values] of [
+    ["assumptions", semantic?.assumptions],
+    ["questions", semantic?.questions],
+  ]) {
+    for (const [index, value] of (values ?? []).entries()) {
+      push(value?.statement, `/contractDraft/semantic/${name}/${index}/statement`);
+    }
+  }
+  return entries;
+}
 
-function root(v,o){const r=v.topic?.rootDraft;if(!isObj(r))return;req(o,r,"/topic/rootDraft",["version","title","kind","status","context","overview"]);add(o,r.version===2,"ROOT_VERSION","/topic/rootDraft/version","must equal 2");add(o,typeof r.title==="string"&&r.title.length<=280,"ROOT_TITLE","/topic/rootDraft/title","invalid title");add(o,!/^(?:help me|topic|discussion about)\b/iu.test(r.title??""),"GENERIC_TITLE","/topic/rootDraft/title","must be specific");add(o,KINDS.has(r.kind),"TOPIC_KIND","/topic/rootDraft/kind","invalid kind");add(o,["draft","active"].includes(r.status),"ROOT_STATUS","/topic/rootDraft/status","invalid initial status");add(o,!Object.hasOwn(r,"id")&&!Object.hasOwn(r,"createdBy")&&!Object.hasOwn(r,"createdAt"),"HOST_ROOT_FIELDS","/topic/rootDraft","must not fabricate host fields");add(o,(r.overview?.summary?.length??9999)<=280,"OVERVIEW_LENGTH","/topic/rootDraft/overview/summary","too long");add(o,(r.overview?.nextStep?.summary?.length??9999)<=280,"NEXT_STEP_LENGTH","/topic/rootDraft/overview/nextStep/summary","too long");const a=v.topic?.anchor;if(isObj(a)){add(o,["native","adopted"].includes(a.mode),"ANCHOR_MODE","/topic/anchor/mode","must be native or adopted");add(o,a.manifestSource===(a.mode==="adopted"?"state-event":"root-event"),"ANCHOR_MANIFEST_SOURCE","/topic/anchor/manifestSource","does not match anchor mode");if(a.mode==="adopted"){add(o,typeof a.roomId==="string"&&a.roomId.startsWith("!"),"ADOPTED_ROOM","/topic/anchor/roomId","required");add(o,typeof a.rootEventId==="string"&&a.rootEventId.startsWith("$"),"ADOPTED_ROOT","/topic/anchor/rootEventId","required");}}}
+function repeatableEntries(semantic) {
+  const entries = [...statementEntries(semantic)];
+  const append = (values, path) => {
+    for (const [index, value] of (values ?? []).entries()) {
+      if (isObject(value)) entries.push([value, `${path}/${index}`]);
+    }
+  };
+  append(semantic?.outcome?.successCriteria, "/contractDraft/semantic/outcome/successCriteria");
+  append(semantic?.risks, "/contractDraft/semantic/risks");
+  append(semantic?.decision?.options, "/contractDraft/semantic/decision/options");
+  append(semantic?.decision?.criteria?.filter(isObject), "/contractDraft/semantic/decision/criteria");
+  append(semantic?.plan?.milestones, "/contractDraft/semantic/plan/milestones");
+  return entries;
+}
 
-function participants(s,o){const ps=s.participants??[],pm=new Map(ps.map(x=>[x.id,x]));add(o,unique(ps.map(x=>x.id)),"DUPLICATE_PARTICIPANT","/contractDraft/semantic/participants","IDs must be unique");const rs=s.roles??[],rm=new Map(rs.map(x=>[x.roleId,x]));add(o,unique(rs.map(x=>x.roleId)),"DUPLICATE_ROLE","/contractDraft/semantic/roles","IDs must be unique");for(const [i,r]of rs.entries())for(const a of r.assignees??[])add(o,pm.has(a),"ROLE_ASSIGNEE",`/contractDraft/semantic/roles/${i}/assignees`,`${a} is not a participant`);const as=s.agents??[];add(o,unique(as.map(x=>x.agentId)),"DUPLICATE_AGENT","/contractDraft/semantic/agents","IDs must be unique");for(const [i,a]of as.entries()){add(o,pm.get(a.agentId)?.kind==="agent","AGENT_PARTICIPANT",`/contractDraft/semantic/agents/${i}/agentId`,`must resolve to agent participant`);add(o,rm.has(a.roleId),"AGENT_ROLE",`/contractDraft/semantic/agents/${i}/roleId`,`must resolve to role`);if(a.activation==="on_condition")add(o,typeof a.activationCondition==="string"&&a.activationCondition.length>0,"AGENT_CONDITION",`/contractDraft/semantic/agents/${i}/activationCondition`,`required`);}}
+function validateTop(value, findings) {
+  requireObject(findings, value, "", [
+    "version",
+    "compositionId",
+    "mode",
+    "disposition",
+    "sourceIntent",
+    "protocolBinding",
+    "routing",
+    "execution",
+    "quality",
+  ]);
+  add(findings, value?.version === COMPOSITION_VERSION, "VERSION", "/version", `must equal ${COMPOSITION_VERSION}`);
+  add(
+    findings,
+    /^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(value?.compositionId ?? ""),
+    "COMPOSITION_ID",
+    "/compositionId",
+    "must be a UUIDv7 URN",
+  );
+  add(findings, ["preview", "commit", "refine"].includes(value?.mode), "MODE", "/mode", "unsupported mode");
+  add(findings, ["create", "continue", "branch", "split", "clarify", "answer-without-topic"].includes(value?.disposition), "DISPOSITION", "/disposition", "unsupported disposition");
+  add(findings, typeof value?.sourceIntent?.verbatim === "string" && value.sourceIntent.verbatim.length > 0, "VERBATIM_INTENT", "/sourceIntent/verbatim", "must preserve the person's exact intent");
+}
 
-const TEMPLATE_FIELDS={task:["outcome","plan","completion"],agent_task:["outcome","agents","completion"],proposal:["outcome","decision","completion"],evaluation:["outcome","decision","completion"],claims:["outcome","attachments","completion"],question:["outcome","questions","completion"],discussion:["completion"],incident:["completion","risks"]};
-const JOB_PROFILE={id:"https://topic-protocol.ixo.world/profiles/job-card",version:"1.0.0",schema:"https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",digest:"sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5"};
-const sameProfile=(a,b)=>isObj(a)&&isObj(b)&&a.id===b.id&&a.version===b.version&&a.schema===b.schema&&a.digest===b.digest;
+function validateProtocolBinding(value, findings) {
+  const binding = value.protocolBinding;
+  requireObject(findings, binding, "/protocolBinding", [
+    "package",
+    "topicProtocolVersion",
+    "rootVersion",
+    "contractBodyVersion",
+    "stateVersion",
+    "contractProfile",
+    "sourceCommit",
+    "packageShasum",
+    "legacyPolicy",
+  ]);
+  add(findings, binding?.package === "@ixo/topic-protocol", "PROTOCOL_PACKAGE", "/protocolBinding/package", "package mismatch");
+  add(findings, binding?.topicProtocolVersion === PROTOCOL_VERSION, "PROTOCOL_VERSION", "/protocolBinding/topicProtocolVersion", `must equal ${PROTOCOL_VERSION}`);
+  add(findings, binding?.rootVersion === 3 && binding?.contractBodyVersion === 3 && binding?.stateVersion === 3, "PROTOCOL_V3", "/protocolBinding", "root, body, and state must use version 3");
+  add(findings, binding?.contractProfile === PROFILE, "CONTRACT_PROFILE", "/protocolBinding/contractProfile", `must equal ${PROFILE}`);
+  add(findings, binding?.sourceCommit === COMMIT, "SOURCE_COMMIT", "/protocolBinding/sourceCommit", `must equal ${COMMIT}`);
+  add(findings, binding?.packageShasum === PACKAGE_SHASUM, "PACKAGE_SHASUM", "/protocolBinding/packageShasum", "published package shasum mismatch");
+  add(findings, binding?.legacyPolicy === "v3-only-no-migration", "LEGACY_POLICY", "/protocolBinding/legacyPolicy", "must reject legacy runtime and migration");
+}
 
-function kindTemplate(v,s,kind,o){for(const field of TEMPLATE_FIELDS[kind]??[])add(o,Object.hasOwn(s,field),"KIND_TEMPLATE_FIELD",`/contractDraft/semantic/${field}`,`${kind} drafts must initialise ${field}`);if(isObj(v.topic?.rootDraft))add(o,v.topic.rootDraft.kind===kind,"ROOT_CONTRACT_KIND","/topic/rootDraft/kind","must equal the contract base kind");if(kind==="discussion"&&s.temporalMode==="finite")add(o,typeof s.completion?.definition==="string"&&s.completion.definition.length>0,"FINITE_DISCUSSION_CLOSURE","/contractDraft/semantic/completion/definition","finite Discussion drafts require a closure rule");const profile=s.kindProfile,resource=s.kindResource;add(o,(profile===undefined)===(resource===undefined),"PROFILE_RESOURCE_PAIR","/contractDraft/semantic","kindProfile and kindResource must be emitted together");if(profile!==undefined&&resource!==undefined)add(o,sameProfile(profile,resource.profile),"PROFILE_RESOURCE_REF","/contractDraft/semantic/kindResource/profile","must equal kindProfile exactly");if(s.kindRef?.source==="custom"&&s.kindRef.customId==="org.ixo.job-card"){add(o,s.kindRef.baseKind==="task","JOB_BASE_KIND","/contractDraft/semantic/kindRef/baseKind","Job must inherit task");add(o,sameProfile(profile,JOB_PROFILE),"JOB_PROFILE","/contractDraft/semantic/kindProfile","must use the canonical pinned Job profile");add(o,resource?.type==="org.ixo.job-card"&&resource?.version===1,"JOB_RESOURCE","/contractDraft/semantic/kindResource","must bind a version 1 org.ixo.job-card resource");add(o,resource?.id===resource?.value?.id,"JOB_RESOURCE_ID","/contractDraft/semantic/kindResource/value/id","must equal the binding ID");add(o,resource?.value?.version===1&&resource?.value?.type==="org.ixo.job-card","JOB_RESOURCE_VALUE","/contractDraft/semantic/kindResource/value","must use the Job Card v1 envelope");}}
+function validateDisposition(value, findings) {
+  if (WORK.has(value.disposition)) {
+    for (const key of ["interpretation", "topic", "recipeSelection", "contractDraft", "canvas", "collaborationSuggestions", "firstTurn", "records"]) {
+      add(findings, Object.hasOwn(value, key), "REQUIRED_WORK_FIELD", `/${key}`, "is required for a Topic disposition");
+    }
+  }
+  if (["create", "branch", "split"].includes(value.disposition)) {
+    add(findings, value.topic?.operation === "create", "CREATE_OPERATION", "/topic/operation", "must be create");
+    add(findings, isObject(value.topic?.rootDraft), "ROOT_DRAFT", "/topic/rootDraft", "is required");
+    add(findings, value.contractDraft?.lifecycle?.kind !== "successor-proposal", "CONTRACT_LIFECYCLE", "/contractDraft", "new Topics cannot be successor proposals");
+  }
+  if (value.disposition === "continue" || value.mode === "refine") {
+    add(findings, value.topic?.operation === "reuse", "REUSE_OPERATION", "/topic/operation", "must be reuse");
+    add(findings, TOPIC.test(value.topic?.topicId ?? ""), "TOPIC_ID", "/topic/topicId", "must identify the existing Topic");
+    add(findings, value.topic?.observedProfile === PROFILE, "LEGACY_TOPIC", "/topic/observedProfile", "only v3 Topics may be refined");
+    add(findings, typeof value.topic?.expectedTopicRevision === "string", "EXPECTED_TOPIC_REVISION", "/topic/expectedTopicRevision", "is required");
+    add(findings, typeof value.topic?.expectedContractRevision === "string", "EXPECTED_CONTRACT_REVISION", "/topic/expectedContractRevision", "is required");
+    add(findings, DIGEST.test(value.topic?.expectedShapeDigest ?? ""), "EXPECTED_SHAPE_DIGEST", "/topic/expectedShapeDigest", "is required");
+  }
+  if (value.disposition === "branch") {
+    add(findings, TOPIC.test(value.routing?.parentTopicId ?? ""), "PARENT_TOPIC", "/routing/parentTopicId", "is required");
+  }
+  if (value.disposition === "split") {
+    add(findings, (value.routing?.proposedChildren?.length ?? 0) > 0, "SPLIT_CHILDREN", "/routing/proposedChildren", "must propose at least one child");
+  }
+}
 
-function acceptedCompleteness(d,s,kind,o){if(d.envelope?.status!=="accepted")return;add(o,typeof s.intent?.text==="string"&&s.intent.text.length>0,"ACCEPTED_INTENT","/contractDraft/semantic/intent/text","accepted contracts require intent");if(["task","agent_task","proposal","evaluation","claims","question"].includes(kind))add(o,typeof s.outcome?.statement?.text==="string"&&s.outcome.statement.text.length>0,"ACCEPTED_OUTCOME","/contractDraft/semantic/outcome/statement/text",`accepted ${kind} contracts require an outcome`);if(kind==="task")add(o,typeof s.ownerId==="string"&&s.ownerId.length>0,"ACCEPTED_TASK_OWNER","/contractDraft/semantic/ownerId","accepted Tasks require an owner");if(kind==="agent_task")add(o,(s.agents?.length??0)>0,"ACCEPTED_AGENT_ASSIGNMENT","/contractDraft/semantic/agents","accepted Agent Tasks require an agent assignment");if(kind==="proposal"||kind==="evaluation")add(o,isObj(s.decision),"ACCEPTED_DECISION_MODEL","/contractDraft/semantic/decision",`accepted ${kind} contracts require a decision model`);if(kind==="claims")add(o,(s.attachments?.length??0)>0,"ACCEPTED_CLAIMS_BINDING","/contractDraft/semantic/attachments","accepted Claims Topics require a deed or claim-collection binding");if(kind==="incident"){add(o,typeof s.ownerId==="string"&&s.ownerId.length>0,"ACCEPTED_INCIDENT_OWNER","/contractDraft/semantic/ownerId","accepted Incidents require a response owner");add(o,typeof s.completion?.definition==="string"&&s.completion.definition.length>0,"ACCEPTED_INCIDENT_CLOSURE","/contractDraft/semantic/completion/definition","accepted Incidents require closure conditions");}if(kind==="discussion"&&s.temporalMode!=="ongoing")add(o,typeof s.completion?.definition==="string"&&s.completion.definition.length>0,"ACCEPTED_DISCUSSION_CLOSURE","/contractDraft/semantic/completion/definition","finite Discussions require a closure rule");if(s.kindRef?.source==="custom"&&s.kindRef.customId==="org.ixo.job-card"){add(o,typeof s.kindResource?.value?.jobNumber==="string"&&s.kindResource.value.jobNumber.length>0,"ACCEPTED_JOB_NUMBER","/contractDraft/semantic/kindResource/value/jobNumber","accepted Jobs require a job number");add(o,typeof s.kindResource?.value?.phase==="string","ACCEPTED_JOB_PHASE","/contractDraft/semantic/kindResource/value/phase","accepted Jobs require a phase");}}
+function validateRecipe(value, findings) {
+  if (!WORK.has(value.disposition)) return;
+  const semantic = value.contractDraft?.semantic;
+  const kind = baseKind(semantic?.kindRef);
+  const selection = value.recipeSelection;
+  add(findings, KINDS.has(kind), "KIND", "/contractDraft/semantic/kindRef", "must resolve to one canonical Kind");
+  const expectedBase = RECIPE_BY_KIND[kind];
+  add(findings, selection?.baseRecipe === expectedBase, "KIND_BASE_RECIPE", "/recipeSelection/baseRecipe", "must match the selected Kind");
+  add(findings, semantic?.baseRecipe === expectedBase, "CONTRACT_BASE_RECIPE", "/contractDraft/semantic/baseRecipe", "must match the selected Kind");
+  add(findings, value.topic?.rootDraft === undefined || value.topic.rootDraft.baseRecipe === expectedBase, "ROOT_BASE_RECIPE", "/topic/rootDraft/baseRecipe", "must match the selected Kind");
+  add(findings, selection?.registryLookup === "not-performed" && selection?.registryReason === "pinned-catalog-only", "RECIPE_LOOKUP", "/recipeSelection", "Marketplace lookup is not available yet");
+  add(findings, selection?.reviewState === "draft", "RECIPE_REVIEW_STATE", "/recipeSelection/reviewState", "every recipe selection must remain a Draft");
 
-function contract(v,o){const d=v.contractDraft;if(!isObj(d))return;add(o,d.profile==="qi.topic-contract-state/v2","DRAFT_PROFILE","/contractDraft/profile","profile mismatch");add(o,d.profileStatus==="normative","DRAFT_PROFILE_STATUS","/contractDraft/profileStatus","must be normative");add(o,d.lifecycle?.authority==="proposal-only","PROPOSAL_ONLY","/contractDraft/lifecycle/authority","must be proposal-only");add(o,d.lifecycle?.stateEventRole==="materialized-head-only","DRAFT_STATE_ROLE","/contractDraft/lifecycle/stateEventRole","must be materialized-head-only");add(o,d.envelope?.version===2,"CONTRACT_VERSION","/contractDraft/envelope/version","must equal 2");const u=d.unresolvedHostFields??[];if(d.readiness==="ready-to-materialize"){add(o,u.length===0,"READY_UNRESOLVED","/contractDraft/unresolvedHostFields","must be empty");for(const k of ["revision","authoredBy","authoredAt"])add(o,typeof d.envelope?.[k]==="string"&&d.envelope[k].length>0,"READY_FIELD",`/contractDraft/envelope/${k}`,"required");}if(d.readiness==="requires-host-fields")add(o,u.length>0,"HOST_FIELDS_LIST","/contractDraft/unresolvedHostFields","must identify missing fields");const s=d.semantic;if(!req(o,s,"/contractDraft/semantic",["kindRef","workingMode","recipe"]))return;const kind=s.kindRef?.source==="custom"?s.kindRef.baseKind:s.kindRef?.kind;add(o,KINDS.has(kind),"CONTRACT_KIND","/contractDraft/semantic/kindRef","invalid kind reference");add(o,s.recipe===RECIPE_BY_KIND[kind],"KIND_RECIPE","/contractDraft/semantic/recipe","must match the base kind");kindTemplate(v,s,kind,o);acceptedCompleteness(d,s,kind,o);if(isObj(s.intent))add(o,s.intent.text===v.sourceIntent?.verbatim,"INTENT_FIDELITY","/contractDraft/semantic/intent/text","must equal verbatim intent");if(isObj(s.outcome)&&Array.isArray(s.outcome.successCriteria))add(o,s.outcome.successCriteria.length>=2&&s.outcome.successCriteria.length<=5,"SUCCESS_CRITERIA","/contractDraft/semantic/outcome/successCriteria","must contain 2 to 5 criteria");for(const [x,p]of repeatableEntries(s))add(o,ENTRY.test(x.id??""),"ENTRY_ID",p+"/id","must be UUIDv7");for(const [x,p]of statements(s))if(x.provenance?.acceptance==="accepted")add(o,ACCEPTED.has(x.provenance?.basis),"GENERATED_ACCEPTED",`${p}/provenance/acceptance`,"generated statements must remain proposed");if(s.outcome?.status==="achieved")add(o,typeof s.outcome.outcomeRecordId==="string"&&s.outcome.outcomeRecordId.length>0,"OUTCOME_RECORD","/contractDraft/semantic/outcome/outcomeRecordId","required");if(kind!=="incident")add(o,(s.risks?.length??0)===0,"RISKS_INCIDENT_ONLY","/contractDraft/semantic/risks","risks are only emitted for Incident Topics");for(const [i,r]of(s.risks??[]).entries()){add(o,!Object.hasOwn(r,"likelihood"),"LEGACY_LIKELIHOOD",`/contractDraft/semantic/risks/${i}/likelihood`,"v2 risks use Impact only");add(o,r.impact===undefined||["low","medium","high","critical"].includes(r.impact),"RISK_IMPACT",`/contractDraft/semantic/risks/${i}/impact`,"must be unassessed or a valid impact");}const q=s.decision;if(isObj(q)){if((q.options??[]).some(x=>x.status==="selected"))add(o,typeof q.decisionRecordId==="string"&&q.decisionRecordId.length>0,"DECISION_RECORD","/contractDraft/semantic/decision/decisionRecordId","required");const cs=q.criteria??[],ws=cs.filter(x=>typeof x.weight==="number");if(ws.length){add(o,ws.length===cs.length,"PARTIAL_WEIGHTS","/contractDraft/semantic/decision/criteria","all or no weights required");add(o,Math.abs(ws.reduce((n,x)=>n+x.weight,0)-1)<=1e-9,"WEIGHT_SUM","/contractDraft/semantic/decision/criteria","weights must sum to 1");}if(q.method==="weighted_score")add(o,cs.length>0&&ws.length===cs.length,"WEIGHTED_METHOD","/contractDraft/semantic/decision/criteria","weights required");}participants(s,o);const p=d.publication;add(o,p?.embedsCanvasContent===false,"CANVAS_EMBED","/contractDraft/publication/embedsCanvasContent","must be false");add(o,p?.containsProviderSessionIds===false,"SESSION_IDS","/contractDraft/publication/containsProviderSessionIds","must be false");add(o,Number.isInteger(p?.maxInlineBytes)&&p.maxInlineBytes<=49152,"INLINE_BUDGET","/contractDraft/publication/maxInlineBytes","must not exceed 49152");if(["confidential","restricted"].includes(p?.dataClassification)){add(o,p.disclosure==="reference-only","SENSITIVE_INLINE","/contractDraft/publication/disclosure","must be reference-only");add(o,p.e2eeRequired===true,"SENSITIVE_E2EE","/contractDraft/publication/e2eeRequired","must be true");}const sp=v.execution?.stateEventPlan;add(o,sp?.role==="materialized-head-only","EXECUTION_STATE_ROLE","/execution/stateEventPlan/role","must be materialized-head-only");add(o,sp?.embedsCanvasContent===false,"EXECUTION_CANVAS_EMBED","/execution/stateEventPlan/embedsCanvasContent","must be false");add(o,sp?.disclosure===p?.disclosure,"DISCLOSURE_MISMATCH","/execution/stateEventPlan/disclosure","must match publication");}
+  const pin = selection?.strategy === "topic-recipe"
+    ? SHAPE_PINS.topicRecipes?.[selection.topicRecipeCode]
+    : SHAPE_PINS.baseCompositions?.[kind];
+  add(findings, isObject(pin), "SHAPE_PIN", "/recipeSelection", "must use a pinned Base or Topic Recipe entry");
+  if (!isObject(pin)) return;
+  add(findings, pin.kind === undefined || pin.kind === kind, "TOPIC_RECIPE_KIND", "/recipeSelection/topicRecipeCode", "Topic Recipe does not match Kind");
+  add(findings, pin.baseRecipe === expectedBase, "TOPIC_RECIPE_BASE", "/recipeSelection/baseRecipe", "Topic Recipe does not extend this Base Recipe");
+  add(findings, same(selection.shapeSources, pin.shapeSources), "SHAPE_SOURCES", "/recipeSelection/shapeSources", "must equal the resolver's pinned source list");
+  add(findings, selection.shapeDigest === pin.shapeDigest, "SHAPE_DIGEST", "/recipeSelection/shapeDigest", "must equal the resolver's Effective Shape digest");
+  if (selection.strategy === "topic-recipe") {
+    add(findings, same(selection.topicRecipeRef, pin.topicRecipeRef), "TOPIC_RECIPE_REF", "/recipeSelection/topicRecipeRef", "must equal the pinned Topic Recipe reference");
+    add(findings, pin.creates === "draft", "TOPIC_RECIPE_CREATES", "/recipeSelection/reviewState", "Topic Recipe must create a Draft");
+  } else {
+    add(findings, selection.topicRecipeRef === undefined && selection.topicRecipeCode === undefined, "BASE_RECIPE_ONLY", "/recipeSelection", "Base Recipe strategy cannot carry a Topic Recipe");
+  }
+  add(findings, same(semantic?.shapeSources, selection.shapeSources), "CONTRACT_SHAPE_SOURCES", "/contractDraft/semantic/shapeSources", "must match recipe selection");
+  add(findings, semantic?.shapeDigest === selection.shapeDigest, "CONTRACT_SHAPE_DIGEST", "/contractDraft/semantic/shapeDigest", "must match recipe selection");
+  add(findings, same(semantic?.topicRecipeRef, selection.topicRecipeRef), "CONTRACT_TOPIC_RECIPE", "/contractDraft/semantic/topicRecipeRef", "must match recipe selection");
+  if (value.topic?.rootDraft) {
+    add(findings, value.topic.rootDraft.shapeDigest === selection.shapeDigest, "ROOT_SHAPE_DIGEST", "/topic/rootDraft/shapeDigest", "must match recipe selection");
+    add(findings, same(value.topic.rootDraft.topicRecipeRef, selection.topicRecipeRef), "ROOT_TOPIC_RECIPE", "/topic/rootDraft/topicRecipeRef", "must match recipe selection");
+    add(findings, value.topic.rootDraft.kind === kind, "ROOT_CONTRACT_KIND", "/topic/rootDraft/kind", "root and contract Kind must agree");
+  }
+}
 
-function canvas(v,o){const c=v.canvas;if(!isObj(c))return;add(o,c.format==="blocknote"&&c.collaboration==="yjs","CANVAS_FORMAT","/canvas","must be BlockNote/Yjs");add(o,c.contentEmbedded===false,"CANVAS_CONTENT_EMBEDDED","/canvas/contentEmbedded","must be false");const bs=c.blocks??[];add(o,Array.isArray(bs)&&bs.length>=3&&bs.length<=20,"CANVAS_BLOCK_COUNT","/canvas/blocks","must contain 3 to 20 blocks");const ids=bs.map(x=>x.id);add(o,unique(ids),"DUPLICATE_BLOCK_ID","/canvas/blocks","IDs must be unique");add(o,bs.filter(x=>x.visibility==="primary").length<=7,"PRIMARY_CANVAS_LIMIT","/canvas/blocks","at most seven primary blocks");add(o,bs[0]?.semanticRole==="outcome","OUTCOME_FIRST","/canvas/blocks/0/semanticRole","outcome must be first");add(o,ids.includes(c.focusBlockId),"FOCUS_BLOCK","/canvas/focusBlockId","must resolve");add(o,ids.includes(c.nextActionBlockId),"NEXT_ACTION_BLOCK","/canvas/nextActionBlockId","must resolve");add(o,bs.find(x=>x.id===c.nextActionBlockId)?.semanticRole==="next-action","NEXT_ACTION_ROLE","/canvas/nextActionBlockId","must identify next action");}
+function validateContract(value, findings) {
+  const draft = value.contractDraft;
+  if (!requireObject(findings, draft, "/contractDraft", ["envelope", "semantic", "publication", "readiness", "unresolvedHostFields"])) return;
+  const envelope = draft.envelope;
+  const semantic = draft.semantic;
+  requireObject(findings, envelope, "/contractDraft/envelope", ["version", "status", "revision", "authoredBy", "authoredAt"]);
+  requireObject(findings, semantic, "/contractDraft/semantic", ["kindRef", "workingMode", "baseRecipe", "shapeSources", "shapeDigest"]);
+  add(findings, envelope?.version === 3, "CONTRACT_VERSION", "/contractDraft/envelope/version", "must equal 3");
+  if (["create", "branch", "split"].includes(value.disposition)) {
+    add(findings, envelope?.status === "draft", "NEW_TOPIC_DRAFT", "/contractDraft/envelope/status", "every new Topic contract must be a Draft");
+    add(findings, value.topic?.rootDraft?.status === "draft", "NEW_ROOT_DRAFT", "/topic/rootDraft/status", "every new Topic root must be a Draft");
+  }
+  for (const field of Object.keys(semantic ?? {})) {
+    add(findings, !FORBIDDEN_CONTRACT_FIELDS.has(field), "V3_CONTRACT_BOUNDARY", `/contractDraft/semantic/${field}`, "does not belong in a v3 Topic Contract body");
+  }
+  add(findings, Array.isArray(semantic?.shapeSources) && semantic.shapeSources.length >= 2, "SHAPE_SOURCE_COUNT", "/contractDraft/semantic/shapeSources", "must pin the Base Recipe and Kind Shape at minimum");
+  add(findings, DIGEST.test(semantic?.shapeDigest ?? ""), "CONTRACT_SHAPE_DIGEST", "/contractDraft/semantic/shapeDigest", "must be a SHA-256 digest");
 
-function collaboration(v,o){const s=v.collaborationSuggestions;if(!isObj(s))return;add(o,unique((s.humanRoles??[]).map(x=>x.roleId)),"DUPLICATE_HUMAN_ROLE","/collaborationSuggestions/humanRoles","IDs must be unique");add(o,unique((s.agentRoles??[]).map(x=>x.roleId)),"DUPLICATE_AGENT_ROLE","/collaborationSuggestions/agentRoles","IDs must be unique");add(o,(s.agentRoles??[]).filter(x=>x.activation==="now").length<=1,"IMMEDIATE_AGENT_LIMIT","/collaborationSuggestions/agentRoles","at most one immediate agent");for(const [i,r]of(s.agentRoles??[]).entries()){add(o,!Object.hasOwn(r,"agentId"),"INVENTED_AGENT_ID",`/collaborationSuggestions/agentRoles/${i}`,"must not contain agentId");for(const [j,a]of(r.requiredAbilities??[]).entries())add(o,ABILITY.test(a),"ABILITY_SYNTAX",`/collaborationSuggestions/agentRoles/${i}/requiredAbilities/${j}`,"use slash syntax");if(r.activation==="on_condition")add(o,typeof r.activationCondition==="string"&&r.activationCondition.length>0,"SUGGESTED_AGENT_CONDITION",`/collaborationSuggestions/agentRoles/${i}/activationCondition`,"required");}}
+  const kind = baseKind(semantic?.kindRef);
+  for (const field of KIND_FIELDS[kind] ?? []) {
+    add(findings, Object.hasOwn(semantic ?? {}, field), "KIND_TEMPLATE_FIELD", `/contractDraft/semantic/${field}`, `${kind} Draft must initialise this structure`);
+  }
+  if (kind !== "incident" && Array.isArray(semantic?.risks) && semantic.risks.length > 0) {
+    findings.push(finding("RISKS_INCIDENT_ONLY", "/contractDraft/semantic/risks", "risks are an Incident-only structure"));
+  }
+  for (const [index, risk] of (semantic?.risks ?? []).entries()) {
+    add(findings, !Object.hasOwn(risk, "likelihood"), "LEGACY_LIKELIHOOD", `/contractDraft/semantic/risks/${index}`, "v3 uses Impact-only risk");
+  }
 
-function records(v,o){const rs=v.records;if(!Array.isArray(rs))return;add(o,unique(rs.map(x=>x.localId)),"DUPLICATE_RECORD","/records","IDs must be unique");for(const [i,r]of rs.entries())if(r.accepted)add(o,ACCEPTED.has(r.basis),"GENERATED_RECORD_ACCEPTED",`/records/${i}/accepted`,`generated records must remain unaccepted`);if(["create","branch","split"].includes(v.disposition)){const r=rs.find(x=>x.kind==="memory"&&x.accepted&&x.content?.type==="user-intent");add(o,isObj(r),"INTENT_MEMORY","/records","accepted intent memory required");add(o,r?.content?.verbatim===v.sourceIntent?.verbatim,"INTENT_MEMORY_FIDELITY","/records","verbatim mismatch");}}
+  for (const [statement, path] of statementEntries(semantic)) {
+    add(findings, ENTRY.test(statement.id ?? ""), "ENTRY_ID", `${path}/id`, "must be UUIDv7");
+    const provenance = statement.provenance;
+    add(findings, isObject(provenance), "STATEMENT_PROVENANCE", `${path}/provenance`, "is required");
+    if (["inferred", "suggested", "retrieved"].includes(provenance?.basis)) {
+      add(findings, provenance.acceptance === "proposed", "GENERATED_ACCEPTED", `${path}/provenance/acceptance`, "generated contract terms must remain proposed");
+    }
+  }
+  for (const [entry, path] of repeatableEntries(semantic)) {
+    add(findings, ENTRY.test(entry.id ?? ""), "ENTRY_ID", `${path}/id`, "must be UUIDv7");
+  }
 
-function first(v,o){const f=v.firstTurn;if(!isObj(f))return;const as=f.quickActions??[],ids=as.map(x=>x.id);add(o,as.length>=2&&as.length<=4,"QUICK_ACTION_COUNT","/firstTurn/quickActions","must contain 2 to 4 actions");add(o,unique(ids),"DUPLICATE_QUICK_ACTION","/firstTurn/quickActions","IDs must be unique");add(o,ids.includes(f.defaultActionId),"DEFAULT_QUICK_ACTION","/firstTurn/defaultActionId","must resolve");}
+  const selected = semantic?.decision?.options?.some((option) => option.status === "selected");
+  add(findings, !selected || typeof semantic?.decision?.decisionRecordId === "string", "DECISION_RECORD", "/contractDraft/semantic/decision/decisionRecordId", "a selected option requires an accepted decision record");
+  add(findings, semantic?.outcome?.status !== "achieved" || typeof semantic?.outcome?.outcomeRecordId === "string", "OUTCOME_RECORD", "/contractDraft/semantic/outcome/outcomeRecordId", "an achieved outcome requires an accepted outcome record");
 
-function execution(v,o){const e=v.execution;if(!req(o,e,"/execution",["commitEligible","hostContext","idempotencyKey","proposedCalls","externalActions","stateEventPlan"]))return;add(o,Array.isArray(e.externalActions)&&e.externalActions.length===0,"EXTERNAL_ACTIONS","/execution/externalActions","must be empty");if(v.mode==="preview")add(o,e.commitEligible===false,"PREVIEW_COMMIT","/execution/commitEligible","preview cannot commit");if(e.commitEligible){add(o,v.mode==="commit","COMMIT_MODE","/execution/commitEligible","requires commit mode");add(o,e.hostContext?.roomId?.startsWith("!"),"COMMIT_ROOM","/execution/hostContext/roomId","required");add(o,typeof e.hostContext?.actorId==="string"&&e.hostContext.actorId.length>0,"COMMIT_ACTOR","/execution/hostContext/actorId","required");}add(o,e.idempotencyKey?.startsWith(`${v.compositionId}:`),"COMMIT_IDEMPOTENCY","/execution/idempotencyKey","must derive from compositionId");const cs=e.proposedCalls??[],keys=[e.idempotencyKey,...cs.map(x=>x.idempotencyKey)];add(o,unique(keys),"DUPLICATE_IDEMPOTENCY","/execution","keys must be unique");for(const [i,c]of cs.entries()){add(o,c.idempotencyKey?.startsWith(`${v.compositionId}:`),"CALL_IDEMPOTENCY",`/execution/proposedCalls/${i}/idempotencyKey`,`must derive from compositionId`);add(o,ABILITY.test(c.requiredAbility??""),"CALL_ABILITY",`/execution/proposedCalls/${i}/requiredAbility`,`use slash syntax`);if(c.sideEffect!=="none")add(o,["policy","human"].includes(c.confirmation),"SIDE_EFFECT_CONFIRMATION",`/execution/proposedCalls/${i}/confirmation`,`required`);}}
+  const criteria = semantic?.decision?.criteria?.filter(isObject) ?? [];
+  const weights = criteria.map((criterion) => criterion.weight).filter((weight) => typeof weight === "number");
+  if (weights.length > 0) {
+    add(findings, weights.length === criteria.length, "WEIGHT_COMPLETENESS", "/contractDraft/semantic/decision/criteria", "all criteria must be weighted or none");
+    const sum = weights.reduce((total, weight) => total + weight, 0);
+    add(findings, Math.abs(sum - 1) < 1e-9, "WEIGHT_SUM", "/contractDraft/semantic/decision/criteria", "weights must sum to 1");
+  }
 
-function sensitive(v,o){const text=JSON.stringify(v);for(const p of SECRETS)add(o,!p.test(text),"SECRET_DETECTED","","contains secret-like material");const walk=(x,path="")=>{if(Array.isArray(x))return x.forEach((y,i)=>walk(y,`${path}/${i}`));if(!isObj(x))return;for(const[k,y]of Object.entries(x)){const p=`${path}/${k}`,n=k.toLowerCase();if(["chainofthought","chain_of_thought","reasoningtrace","private_reasoning","providersessionid","sessionreference"].includes(n))o.push(F("PROHIBITED_FIELD",p,"must not be shared"));walk(y,p);}};walk(v);}
+  const claim = semantic?.claimBinding;
+  if (claim !== undefined) {
+    add(findings, isObject(claim) && Object.keys(claim).length === 2, "SINGULAR_CLAIM_BINDING", "/contractDraft/semantic/claimBinding", "must contain only entityDid and collectionId");
+    add(findings, /^did:ixo:/u.test(claim?.entityDid ?? ""), "CLAIM_ENTITY", "/contractDraft/semantic/claimBinding/entityDid", "must be one IXO Entity DID");
+    add(findings, typeof claim?.collectionId === "string" && claim.collectionId.length > 0, "CLAIM_COLLECTION", "/contractDraft/semantic/claimBinding/collectionId", "must be one collection ID");
+  }
+  if (value.claimResolutionEvidence !== undefined) {
+    add(findings, isObject(claim), "CLAIM_RESOLUTION_BINDING", "/claimResolutionEvidence", "requires a contract claim binding");
+    add(findings, value.claimResolutionEvidence.entityDid === claim?.entityDid && value.claimResolutionEvidence.collectionId === claim?.collectionId, "CLAIM_RESOLUTION_MATCH", "/claimResolutionEvidence", "must resolve the exact bound entity and collection");
+    add(findings, value.claimResolutionEvidence.readOnly === true, "CLAIM_RESOLUTION_READ_ONLY", "/claimResolutionEvidence/readOnly", "resolution evidence is read-only");
+  }
 
-export function validateComposition(v){const o=[];top(v,o);if(!isObj(v))return o;binding(v,o);disposition(v,o);root(v,o);if(WORK.has(v.disposition)){contract(v,o);canvas(v,o);collaboration(v,o);records(v,o);first(v,o);}execution(v,o);sensitive(v,o);return o;}
-export async function validateFile(file){const p=resolve(file);try{const v=JSON.parse(await readFile(p,"utf8")),findings=validateComposition(v);return{file:p,ok:findings.length===0,findings};}catch(e){return{file:p,ok:false,findings:[F("JSON_PARSE","",e instanceof Error?e.message:String(e))]};}}
-export async function main(options={}){if(!options.examples&&!options.file)throw new Error("A composition file or --examples is required");const fs=options.examples?["decision.example.json","expert-service-flow.example.json","team-project.example.json"].map(n=>join(ROOT,"examples",n)):[resolve(options.file)];const rs=[];for(const f of fs)rs.push(await validateFile(f));const findings=rs.flatMap(r=>r.findings.map(x=>({...x,file:r.file})));return{validator:"compose-topic-validator",version:COMPOSITION_VERSION,ok:findings.length===0,files:rs.map(r=>({file:r.file,ok:r.ok,findingCount:r.findings.length})),findings};}
-function args(xs){const o={json:false,examples:false};for(const x of xs)if(x==="--json")o.json=true;else if(x==="--examples")o.examples=true;else if(x.startsWith("-"))throw new Error(`Unknown option: ${x}`);else if(!o.file)o.file=x;else throw new Error(`Unexpected argument: ${x}`);return o;}
-async function cli(){try{const o=args(process.argv.slice(2)),r=await main(o);if(o.json)console.log(JSON.stringify(r,null,2));else{console.log(`Compose Topic validation: ${r.ok?"PASSED":"FAILED"}`);for(const f of r.files)console.log(`- ${f.file}: ${f.ok?"OK":`${f.findingCount} finding(s)`}`);for(const x of r.findings)console.error(`  ${x.code} ${x.path}: ${x.message}`);}process.exitCode=r.ok?0:1;}catch(e){console.error(e instanceof Error?e.message:String(e));process.exitCode=2;}}
-if(process.argv[1]!==undefined&&resolve(process.argv[1])===fileURLToPath(import.meta.url))await cli();
+  if (envelope?.status === "accepted") validateAcceptedContract(value, kind, semantic, findings);
+  const publication = draft.publication;
+  if (["confidential", "restricted"].includes(publication?.dataClassification)) {
+    add(findings, publication.disclosure === "reference-only", "SENSITIVE_INLINE", "/contractDraft/publication/disclosure", "sensitive contracts must be reference-only");
+    add(findings, publication.e2eeRequired === true, "SENSITIVE_E2EE", "/contractDraft/publication/e2eeRequired", "sensitive contracts require E2EE");
+  }
+  add(findings, publication?.embedsCanvasContent === false, "CANVAS_EMBED", "/contractDraft/publication/embedsCanvasContent", "canvas content must not be embedded");
+  add(findings, publication?.containsProviderSessionIds === false, "PROVIDER_SESSION", "/contractDraft/publication/containsProviderSessionIds", "provider session IDs must remain private");
+}
+
+function validateAcceptedContract(value, kind, semantic, findings) {
+  add(findings, typeof semantic?.intent?.text === "string" && semantic.intent.text.trim().length > 0, "ACCEPTED_INTENT", "/contractDraft/semantic/intent", "accepted contracts require intent");
+  if (["task", "agent_task", "proposal", "evaluation", "claims", "question"].includes(kind)) {
+    add(findings, typeof semantic?.outcome?.statement?.text === "string", "ACCEPTED_OUTCOME", "/contractDraft/semantic/outcome/statement", "accepted contract requires an outcome");
+  }
+  if (["task", "agent_task"].includes(kind)) {
+    add(findings, typeof semantic?.ownerId === "string", "ACCEPTED_TASK_OWNER", "/contractDraft/semantic/ownerId", "accepted work requires an owner");
+  }
+  if (kind === "proposal") {
+    add(findings, typeof semantic?.decision?.governanceProposal === "string", "ACCEPTED_PROPOSAL_DECISION", "/contractDraft/semantic/decision/governanceProposal", "accepted Proposal requires an approval model");
+  }
+  if (kind === "evaluation") {
+    add(findings, isObject(semantic?.decision), "ACCEPTED_EVALUATION_DECISION", "/contractDraft/semantic/decision", "accepted Evaluation requires criteria and authority");
+  }
+  if (kind === "claims") {
+    add(findings, isObject(semantic?.claimBinding), "ACCEPTED_CLAIM_BINDING", "/contractDraft/semantic/claimBinding", "accepted Claims Topic requires one entity and collection");
+  }
+  if (kind === "question") {
+    add(findings, (semantic?.completion?.acceptanceAuthorityIds?.length ?? 0) > 0, "ACCEPTED_QUESTION_AUTHORITY", "/contractDraft/semantic/completion/acceptanceAuthorityIds", "accepted Question requires completion authority");
+  }
+  if (kind === "discussion") {
+    add(findings, semantic?.temporalMode === "ongoing" || typeof semantic?.completion?.definition === "string", "ACCEPTED_DISCUSSION_CLOSURE", "/contractDraft/semantic/completion", "finite Discussion requires a closure rule");
+  }
+  if (kind === "incident") {
+    add(findings, typeof semantic?.ownerId === "string", "ACCEPTED_INCIDENT_OWNER", "/contractDraft/semantic/ownerId", "accepted Incident requires a response owner");
+    add(findings, typeof semantic?.completion?.definition === "string", "ACCEPTED_INCIDENT_CLOSURE", "/contractDraft/semantic/completion/definition", "accepted Incident requires closure conditions");
+  }
+  add(findings, value.recipeSelection?.reviewState === "draft", "ACCEPTED_RECIPE_SELECTION", "/recipeSelection/reviewState", "recipe instantiation remains reviewable even when a later body is accepted");
+}
+
+function validateCanvas(value, findings) {
+  const canvas = value.canvas;
+  if (!isObject(canvas)) return;
+  const blocks = canvas.blocks ?? [];
+  const ids = blocks.map((block) => block.id);
+  add(findings, blocks.length >= 3 && blocks.length <= 20, "CANVAS_LIMIT", "/canvas/blocks", "must contain 3 to 20 blocks");
+  add(findings, unique(ids), "DUPLICATE_CANVAS_BLOCK", "/canvas/blocks", "block IDs must be unique");
+  add(findings, blocks.filter((block) => block.visibility === "primary").length <= 7, "PRIMARY_CANVAS_LIMIT", "/canvas/blocks", "at most seven primary blocks");
+  add(findings, blocks[0]?.semanticRole === "outcome", "OUTCOME_FIRST", "/canvas/blocks/0/semanticRole", "outcome must be first");
+  add(findings, ids.includes(canvas.focusBlockId), "FOCUS_BLOCK", "/canvas/focusBlockId", "must resolve");
+  add(findings, ids.includes(canvas.nextActionBlockId), "NEXT_ACTION_BLOCK", "/canvas/nextActionBlockId", "must resolve");
+  add(findings, blocks.find((block) => block.id === canvas.nextActionBlockId)?.semanticRole === "next-action", "NEXT_ACTION_ROLE", "/canvas/nextActionBlockId", "must identify the next action");
+}
+
+function validateCollaboration(value, findings) {
+  const suggestions = value.collaborationSuggestions;
+  if (!isObject(suggestions)) return;
+  add(findings, unique((suggestions.humanRoles ?? []).map((role) => role.roleId)), "DUPLICATE_HUMAN_ROLE", "/collaborationSuggestions/humanRoles", "role IDs must be unique");
+  add(findings, unique((suggestions.agentRoles ?? []).map((role) => role.roleId)), "DUPLICATE_AGENT_ROLE", "/collaborationSuggestions/agentRoles", "role IDs must be unique");
+  add(findings, (suggestions.agentRoles ?? []).filter((role) => role.activation === "now").length <= 1, "IMMEDIATE_AGENT_LIMIT", "/collaborationSuggestions/agentRoles", "at most one agent role may be suggested now");
+  for (const [index, role] of (suggestions.agentRoles ?? []).entries()) {
+    add(findings, !Object.hasOwn(role, "agentId"), "INVENTED_AGENT_ID", `/collaborationSuggestions/agentRoles/${index}`, "suggestions must not contain a stable agent identity");
+    for (const [abilityIndex, ability] of (role.requiredAbilities ?? []).entries()) {
+      add(findings, ABILITY.test(ability), "ABILITY_SYNTAX", `/collaborationSuggestions/agentRoles/${index}/requiredAbilities/${abilityIndex}`, "must use slash syntax");
+    }
+    if (role.activation === "on_condition") {
+      add(findings, typeof role.activationCondition === "string" && role.activationCondition.length > 0, "SUGGESTED_AGENT_CONDITION", `/collaborationSuggestions/agentRoles/${index}/activationCondition`, "is required");
+    }
+  }
+}
+
+function validateRecords(value, findings) {
+  const records = value.records;
+  if (!Array.isArray(records)) return;
+  add(findings, unique(records.map((record) => record.localId)), "DUPLICATE_RECORD", "/records", "record IDs must be unique");
+  for (const [index, record] of records.entries()) {
+    if (!record.accepted) continue;
+    if (record.basis === "inferred") {
+      add(findings, record.kind === "fact" && AUTO_ACCEPT_RECORD_CLASSES.has(record.recordClass), "INFERRED_RECORD_POLICY", `/records/${index}`, "only Shape-permitted non-effecting fact, summary, or classification records may auto-accept");
+    } else {
+      add(findings, ACCEPTABLE_ACCEPTED_BASIS.has(record.basis), "GENERATED_RECORD_ACCEPTED", `/records/${index}/accepted`, "suggested or retrieved records must remain proposed");
+    }
+    add(findings, !NEVER_AUTO_ACCEPT_RECORD_CLASSES.has(record.recordClass), "CONSEQUENTIAL_RECORD_ACCEPTED", `/records/${index}/accepted`, "consequential inferred records must remain proposed");
+  }
+  if (["create", "branch", "split"].includes(value.disposition)) {
+    const intent = records.find((record) => record.kind === "memory" && record.accepted && record.content?.type === "user-intent");
+    add(findings, isObject(intent), "INTENT_MEMORY", "/records", "the first accepted record must preserve intent");
+    add(findings, intent?.content?.verbatim === value.sourceIntent?.verbatim, "INTENT_MEMORY_FIDELITY", "/records", "verbatim intent does not match");
+    add(findings, records[0] === intent, "INTENT_MEMORY_FIRST", "/records/0", "verbatim intent memory must be the first accepted record");
+  }
+}
+
+function validateFirstTurn(value, findings) {
+  const first = value.firstTurn;
+  if (!isObject(first)) return;
+  const actions = first.quickActions ?? [];
+  const ids = actions.map((action) => action.id);
+  add(findings, actions.length >= 2 && actions.length <= 4, "QUICK_ACTION_COUNT", "/firstTurn/quickActions", "must contain 2 to 4 actions");
+  add(findings, unique(ids), "DUPLICATE_QUICK_ACTION", "/firstTurn/quickActions", "action IDs must be unique");
+  add(findings, ids.includes(first.defaultActionId), "DEFAULT_QUICK_ACTION", "/firstTurn/defaultActionId", "must resolve");
+}
+
+function validateExecution(value, findings) {
+  const execution = value.execution;
+  if (!requireObject(findings, execution, "/execution", ["commitEligible", "hostContext", "idempotencyKey", "proposedCalls", "externalActions", "stateEventPlan"])) return;
+  add(findings, Array.isArray(execution.externalActions) && execution.externalActions.length === 0, "EXTERNAL_ACTIONS", "/execution/externalActions", "must remain empty");
+  if (value.mode === "preview") {
+    add(findings, execution.commitEligible === false, "PREVIEW_COMMIT", "/execution/commitEligible", "preview cannot commit");
+  }
+  const calls = execution.proposedCalls ?? [];
+  if (execution.commitEligible) {
+    add(findings, value.mode === "commit", "COMMIT_MODE", "/execution/commitEligible", "requires commit mode");
+    add(findings, execution.hostContext?.roomId?.startsWith("!"), "COMMIT_ROOM", "/execution/hostContext/roomId", "is required");
+    add(findings, typeof execution.hostContext?.actorId === "string", "COMMIT_ACTOR", "/execution/hostContext/actorId", "is required");
+    add(findings, execution.hostContext?.matrixWrite === true, "MATRIX_WRITE", "/execution/hostContext/matrixWrite", "verified Matrix write permission is required");
+    const abilities = new Set(execution.hostContext?.verifiedAbilities ?? []);
+    for (const [index, call] of calls.entries()) {
+      add(findings, abilities.has(call.requiredAbility), "VERIFIED_ABILITY", `/execution/proposedCalls/${index}/requiredAbility`, "required ability is not verified");
+    }
+  }
+  add(findings, execution.idempotencyKey?.startsWith(`${value.compositionId}:`), "COMMIT_IDEMPOTENCY", "/execution/idempotencyKey", "must derive from compositionId");
+  const keys = [execution.idempotencyKey, ...calls.map((call) => call.idempotencyKey)];
+  add(findings, unique(keys), "DUPLICATE_IDEMPOTENCY", "/execution", "idempotency keys must be unique");
+  for (const [index, call] of calls.entries()) {
+    add(findings, call.idempotencyKey?.startsWith(`${value.compositionId}:`), "CALL_IDEMPOTENCY", `/execution/proposedCalls/${index}/idempotencyKey`, "must derive from compositionId");
+    add(findings, ABILITY.test(call.requiredAbility ?? ""), "CALL_ABILITY", `/execution/proposedCalls/${index}/requiredAbility`, "must use slash syntax");
+    add(findings, call.boundTo?.shapeDigest === value.recipeSelection?.shapeDigest, "CALL_SHAPE_BINDING", `/execution/proposedCalls/${index}/boundTo/shapeDigest`, "must bind the resolved Shape digest");
+    if (call.sideEffect !== "none") {
+      add(findings, ["policy", "human"].includes(call.confirmation), "SIDE_EFFECT_CONFIRMATION", `/execution/proposedCalls/${index}/confirmation`, "is required");
+    }
+  }
+  const plan = execution.stateEventPlan;
+  add(findings, plan?.profile === PROFILE && plan?.version === 3, "STATE_PROFILE", "/execution/stateEventPlan", "must publish the v3 profile");
+  add(findings, plan?.shapeRecordPersisted === false, "EFFECTIVE_SHAPE_RECORD", "/execution/stateEventPlan/shapeRecordPersisted", "must not persist a separate Effective Shape record");
+}
+
+function validateSensitive(value, findings) {
+  const text = JSON.stringify(value);
+  for (const pattern of SECRETS) {
+    add(findings, !pattern.test(text), "SECRET_DETECTED", "", "contains secret-like material");
+  }
+  const walk = (entry, path = "") => {
+    if (Array.isArray(entry)) {
+      entry.forEach((child, index) => walk(child, `${path}/${index}`));
+      return;
+    }
+    if (!isObject(entry)) return;
+    for (const [key, child] of Object.entries(entry)) {
+      const childPath = `${path}/${key}`;
+      const normalized = key.toLowerCase();
+      if (["chainofthought", "chain_of_thought", "reasoningtrace", "private_reasoning", "providersessionid", "sessionreference", "companionSessionId"].map((name) => name.toLowerCase()).includes(normalized)) {
+        findings.push(finding("PROHIBITED_FIELD", childPath, "must not enter shared output"));
+      }
+      walk(child, childPath);
+    }
+  };
+  walk(value);
+}
+
+export function validateComposition(value) {
+  const findings = [];
+  validateTop(value, findings);
+  if (!isObject(value)) return findings;
+  validateProtocolBinding(value, findings);
+  validateDisposition(value, findings);
+  if (WORK.has(value.disposition)) {
+    validateRecipe(value, findings);
+    validateContract(value, findings);
+    validateCanvas(value, findings);
+    validateCollaboration(value, findings);
+    validateRecords(value, findings);
+    validateFirstTurn(value, findings);
+  }
+  validateExecution(value, findings);
+  validateSensitive(value, findings);
+  return findings;
+}
+
+export async function validateFile(file) {
+  const path = resolve(file);
+  try {
+    const value = JSON.parse(await readFile(path, "utf8"));
+    const findings = validateComposition(value);
+    return { file: path, ok: findings.length === 0, findings };
+  } catch (error) {
+    return { file: path, ok: false, findings: [finding("JSON_PARSE", "", error instanceof Error ? error.message : String(error))] };
+  }
+}
+
+export async function main(options = {}) {
+  if (!options.examples && !options.file) throw new Error("A composition file or --examples is required");
+  const files = options.examples ? EXAMPLES.map((name) => join(ROOT, "examples", name)) : [resolve(options.file)];
+  const reports = [];
+  for (const file of files) reports.push(await validateFile(file));
+  const findings = reports.flatMap((report) => report.findings.map((item) => ({ ...item, file: report.file })));
+  return {
+    validator: "compose-topic-validator",
+    version: COMPOSITION_VERSION,
+    ok: findings.length === 0,
+    files: reports.map((report) => ({ file: report.file, ok: report.ok, findingCount: report.findings.length })),
+    findings,
+  };
+}
+
+function argumentsFrom(argv) {
+  const options = { json: false, examples: false };
+  for (const value of argv) {
+    if (value === "--json") options.json = true;
+    else if (value === "--examples") options.examples = true;
+    else if (value.startsWith("-")) throw new Error(`Unknown option: ${value}`);
+    else if (!options.file) options.file = value;
+    else throw new Error(`Unexpected argument: ${value}`);
+  }
+  return options;
+}
+
+async function cli() {
+  try {
+    const options = argumentsFrom(process.argv.slice(2));
+    const result = await main(options);
+    if (options.json) console.log(JSON.stringify(result, null, 2));
+    else {
+      console.log(`Compose Topic validation: ${result.ok ? "PASSED" : "FAILED"}`);
+      for (const file of result.files) console.log(`- ${file.file}: ${file.ok ? "OK" : `${file.findingCount} finding(s)`}`);
+      for (const item of result.findings) console.error(`  ${item.code} ${item.path}: ${item.message}`);
+    }
+    process.exitCode = result.ok ? 0 : 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 2;
+  }
+}
+
+if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await cli();

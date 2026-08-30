@@ -144,7 +144,7 @@ Keep facts, hypotheses, actions, and decisions visibly distinct. Time-stamp mate
 
 ## Agent Task
 
-Purpose: define bounded agent work that may be scheduled through a host-provided automation adapter.
+Purpose: define bounded agent work that may execute through a host-verified Flow.
 
 Primary sections:
 
@@ -156,7 +156,7 @@ Primary sections:
 6. Exceptions and escalation
 7. Outputs, measures, and reuse
 
-Start by asking what successful output another person could reliably receive. Then capture one representative execution before proposing a schedule. Never emit raw cron, schedule IDs, or activation success.
+Start by asking what successful output another person could reliably receive. Then capture one representative execution before proposing a Flow binding. Never emit raw cron, schedule IDs, Action contracts, or activation success.
 
 Progressively reveal agent assignment, tools, permissions, claims, evaluation, credentials, payments, and publication as a Blueprint or POD.
 
@@ -174,7 +174,7 @@ Primary sections:
 6. Exceptions
 7. Submission or next action
 
-Start with the deed or claim-collection binding and the evidence needed next. A reference does not grant access to the underlying bytes.
+Start with one entity DID, one claim collection ID, and the evidence needed next. A reference does not grant access to the underlying bytes or evaluation authority.
 
 ## Discussion
 

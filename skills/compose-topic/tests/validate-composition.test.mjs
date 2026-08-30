@@ -3,28 +3,125 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
 import { validateComposition, validateFile } from "../scripts/validate-composition.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const EXAMPLES = [
+  "decision.example.json",
+  "expert-service-flow.example.json",
+  "research-brief.example.json",
+  "team-project.example.json",
+  "verified-work-payment.example.json",
+];
 
 async function example(name = "decision.example.json") {
   return JSON.parse(await readFile(join(ROOT, "examples", name), "utf8"));
+}
+
+async function pins() {
+  return JSON.parse(await readFile(join(ROOT, "references", "topic-shape-pins.json"), "utf8"));
 }
 
 function codes(value) {
   return new Set(validateComposition(value).map((item) => item.code));
 }
 
-test("all bundled examples pass", async () => {
-  for (const name of ["decision.example.json", "expert-service-flow.example.json", "team-project.example.json"]) {
+test("all bundled v1 examples pass", async () => {
+  for (const name of EXAMPLES) {
     const report = await validateFile(join(ROOT, "examples", name));
     assert.equal(report.ok, true, JSON.stringify(report.findings, null, 2));
   }
 });
 
-test("rejects generated statements marked accepted", async () => {
+test("new Topics are always root and contract Drafts", async () => {
   const value = await example();
-  value.contractDraft.semantic.assumptions[0].statement.provenance.acceptance = "accepted";
+  value.topic.rootDraft.status = "active";
+  value.contractDraft.envelope.status = "accepted";
+  const result = codes(value);
+  assert(result.has("NEW_TOPIC_DRAFT"));
+  assert(result.has("NEW_ROOT_DRAFT"));
+});
+
+test("composition identity is a UUIDv7 URN", async () => {
+  const value = await example();
+  value.compositionId = "urn:uuid:550e8400-e29b-41d4-a716-446655440000";
+  assert(codes(value).has("COMPOSITION_ID"));
+});
+
+test("rejects legacy protocol and state profiles", async () => {
+  const value = await example();
+  value.protocolBinding.topicProtocolVersion = "0.8.0";
+  value.protocolBinding.contractProfile = "qi.topic-contract-state/v2";
+  value.protocolBinding.rootVersion = 2;
+  const result = codes(value);
+  assert(result.has("PROTOCOL_VERSION"));
+  assert(result.has("CONTRACT_PROFILE"));
+  assert(result.has("PROTOCOL_V3"));
+});
+
+test("requires exact pinned Effective Shape sources and digest", async () => {
+  const value = await example();
+  value.recipeSelection.shapeDigest = `sha256:${"0".repeat(64)}`;
+  value.recipeSelection.shapeSources[0].digest = `sha256:${"1".repeat(64)}`;
+  const result = codes(value);
+  assert(result.has("SHAPE_DIGEST"));
+  assert(result.has("SHAPE_SOURCES"));
+});
+
+test("requires root and contract Shape pins to match recipe selection", async () => {
+  const value = await example();
+  value.topic.rootDraft.shapeDigest = `sha256:${"0".repeat(64)}`;
+  value.contractDraft.semantic.shapeDigest = `sha256:${"1".repeat(64)}`;
+  const result = codes(value);
+  assert(result.has("ROOT_SHAPE_DIGEST"));
+  assert(result.has("CONTRACT_SHAPE_DIGEST"));
+});
+
+test("rejects a Topic Recipe on the wrong Kind or Base Recipe", async () => {
+  const value = await example("research-brief.example.json");
+  value.contractDraft.semantic.kindRef = { source: "standard", kind: "task" };
+  value.topic.rootDraft.kind = "task";
+  const result = codes(value);
+  assert(result.has("TOPIC_RECIPE_KIND"));
+  assert(result.has("KIND_BASE_RECIPE"));
+});
+
+test("does not allow invented Marketplace lookup or unpinned recipe refs", async () => {
+  const value = await example("research-brief.example.json");
+  value.recipeSelection.registryLookup = "complete";
+  value.recipeSelection.topicRecipeRef.digest = `sha256:${"0".repeat(64)}`;
+  const result = codes(value);
+  assert(result.has("RECIPE_LOOKUP"));
+  assert(result.has("TOPIC_RECIPE_REF"));
+});
+
+test("rejects v0.8 recipe and agent fields from the v3 contract", async () => {
+  const value = await example("expert-service-flow.example.json");
+  value.contractDraft.semantic.recipe = "flow";
+  value.contractDraft.semantic.agents = [{ agentId: "did:ixo:agent:invented" }];
+  const result = codes(value);
+  assert(result.has("V3_CONTRACT_BOUNDARY"));
+});
+
+test("rejects Action, effect, evaluation-kit, and settlement contracts in Topic terms", async () => {
+  const fields = ["actionContract", "effectContract", "evaluationKit", "settlementContract"];
+  for (const field of fields) {
+    const value = await example("verified-work-payment.example.json");
+    value.contractDraft.semantic[field] = {};
+    assert(codes(value).has("V3_CONTRACT_BOUNDARY"), field);
+  }
+});
+
+test("keeps protocol state tags out of user-authored tags", async () => {
+  const value = await example();
+  value.contractDraft.semantic.stateTags = [{ code: "phase-forming" }];
+  assert(codes(value).has("V3_CONTRACT_BOUNDARY"));
+});
+
+test("rejects generated contract statements marked accepted", async () => {
+  const value = await example();
+  value.contractDraft.semantic.outcome.statement.provenance.acceptance = "accepted";
   assert(codes(value).has("GENERATED_ACCEPTED"));
 });
 
@@ -33,36 +130,18 @@ test("requires confidential contracts to be reference-only and encrypted", async
   value.contractDraft.publication.dataClassification = "confidential";
   value.contractDraft.publication.disclosure = "inline";
   value.contractDraft.publication.e2eeRequired = false;
-  assert(codes(value).has("SENSITIVE_INLINE"));
-  assert(codes(value).has("SENSITIVE_E2EE"));
+  const result = codes(value);
+  assert(result.has("SENSITIVE_INLINE"));
+  assert(result.has("SENSITIVE_E2EE"));
 });
 
-test("rejects colon-form abilities", async () => {
+test("rejects colon-form abilities and invented agent identity", async () => {
   const value = await example();
   value.collaborationSuggestions.agentRoles[0].requiredAbilities = ["topic:read"];
-  assert(codes(value).has("ABILITY_SYNTAX"));
-});
-
-test("rejects invented agent identity in an unresolved suggestion", async () => {
-  const value = await example();
-  value.collaborationSuggestions.agentRoles[0].agentId = "did:ixo:invented-agent";
-  assert(codes(value).has("INVENTED_AGENT_ID"));
-});
-
-test("requires contract agents to resolve to participants and roles", async () => {
-  const value = await example();
-  value.contractDraft.semantic.agents.push({
-    agentId: "did:ixo:agent:analyst",
-    roleId: "missing-role",
-    purpose: "Analyse",
-    status: "proposed",
-    activation: "on_demand",
-    output: "Analysis",
-    stopWhen: "Complete"
-  });
+  value.collaborationSuggestions.agentRoles[0].agentId = "did:ixo:agent:invented";
   const result = codes(value);
-  assert(result.has("AGENT_PARTICIPANT"));
-  assert(result.has("AGENT_ROLE"));
+  assert(result.has("ABILITY_SYNTAX"));
+  assert(result.has("INVENTED_AGENT_ID"));
 });
 
 test("requires a decision record for a selected option", async () => {
@@ -77,257 +156,174 @@ test("requires an outcome record for achieved state", async () => {
   assert(codes(value).has("OUTCOME_RECORD"));
 });
 
+test("weighted criteria must be complete and sum to one", async () => {
+  const value = await example();
+  value.contractDraft.semantic.decision.criteria[0].weight = 0.7;
+  value.contractDraft.semantic.decision.criteria[1].weight = 0.4;
+  assert(codes(value).has("WEIGHT_SUM"));
+  delete value.contractDraft.semantic.decision.criteria[1].weight;
+  assert(codes(value).has("WEIGHT_COMPLETENESS"));
+});
+
+test("claim binding is singular and exact", async () => {
+  const value = await example("verified-work-payment.example.json");
+  value.contractDraft.semantic.claimBinding.collectionIds = ["one", "two"];
+  assert(codes(value).has("SINGULAR_CLAIM_BINDING"));
+});
+
+test("claim resolution is read-only and must match the bound entity and collection", async () => {
+  const value = await example("verified-work-payment.example.json");
+  value.claimResolutionEvidence.collectionId = "different";
+  value.claimResolutionEvidence.readOnly = false;
+  const result = codes(value);
+  assert(result.has("CLAIM_RESOLUTION_MATCH"));
+  assert(result.has("CLAIM_RESOLUTION_READ_ONLY"));
+});
+
+test("inferred auto-accept is limited to non-effecting record classes", async () => {
+  const value = await example();
+  value.records.push({
+    localId: "summary",
+    kind: "fact",
+    recordClass: "ixo.topic.summary",
+    basis: "inferred",
+    accepted: true,
+    sourceEventIds: [],
+    content: { text: "A non-effecting summary" },
+  });
+  assert.equal(codes(value).has("INFERRED_RECORD_POLICY"), false);
+  value.records.at(-1).recordClass = "ixo.evaluation";
+  const result = codes(value);
+  assert(result.has("INFERRED_RECORD_POLICY"));
+  assert(result.has("CONSEQUENTIAL_RECORD_ACCEPTED"));
+});
+
+test("the exact intent memory is first", async () => {
+  const value = await example();
+  value.records.unshift({
+    localId: "other",
+    kind: "fact",
+    recordClass: "ixo.topic.fact",
+    basis: "explicit",
+    accepted: true,
+    sourceEventIds: [],
+    content: { text: "Other" },
+  });
+  assert(codes(value).has("INTENT_MEMORY_FIRST"));
+});
+
 test("preview cannot be commit eligible", async () => {
   const value = await example();
   value.execution.commitEligible = true;
   assert(codes(value).has("PREVIEW_COMMIT"));
 });
 
-test("continue requires exact revision agreement", async () => {
+test("commit requires verified Matrix write and every protocol ability", async () => {
+  const value = await example("team-project.example.json");
+  value.execution.hostContext.matrixWrite = false;
+  value.execution.hostContext.verifiedAbilities = ["topic/create"];
+  const result = codes(value);
+  assert(result.has("MATRIX_WRITE"));
+  assert(result.has("VERIFIED_ABILITY"));
+});
+
+test("host calls are bound to the Effective Shape digest", async () => {
+  const value = await example("team-project.example.json");
+  value.execution.proposedCalls[0].boundTo.shapeDigest = `sha256:${"0".repeat(64)}`;
+  assert(codes(value).has("CALL_SHAPE_BINDING"));
+});
+
+test("does not persist a separate Effective Shape record", async () => {
+  const value = await example();
+  value.execution.stateEventPlan.shapeRecordPersisted = true;
+  assert(codes(value).has("EFFECTIVE_SHAPE_RECORD"));
+});
+
+test("continue and refine require v3 plus Topic, contract, and Shape pins", async () => {
   const value = await example();
   value.mode = "refine";
   value.disposition = "continue";
   value.topic = {
     operation: "reuse",
     topicId: "ixo:topic:019c8e56-9d28-7c9b-b981-7f8298c96c30",
-    expectedStateRevision: "revision-a"
-  };
-  value.contractDraft.lifecycle = {
-    kind: "successor-proposal",
-    authority: "proposal-only",
-    baseRevision: "revision-b",
-    stateEventRole: "materialized-head-only"
-  };
-  assert(codes(value).has("BASE_REVISION"));
-});
-
-test("external actions are prohibited", async () => {
-  const value = await example();
-  value.execution.externalActions.push({ action: "send-email" });
-  assert(codes(value).has("EXTERNAL_ACTIONS"));
-});
-
-test("secret-like content is rejected", async () => {
-  const value = await example();
-  value.sourceIntent.verbatim = `Use token ${["sk", "abcdefghijklmnopqrstuvwxyz1234567890"].join("-")}`;
-  value.contractDraft.semantic.intent.text = value.sourceIntent.verbatim;
-  value.records[0].content.verbatim = value.sourceIntent.verbatim;
-  assert(codes(value).has("SECRET_DETECTED"));
-});
-
-test("canvas primary surface is bounded", async () => {
-  const value = await example();
-  while (value.canvas.blocks.filter((block) => block.visibility === "primary").length <= 7) {
-    const index = value.canvas.blocks.length;
-    value.canvas.blocks.push({
-      id: `extra-${index}`,
-      type: "paragraph",
-      semanticRole: "extra",
-      basis: "suggested",
-      visibility: "primary",
-      content: "Extra",
-      editable: true
-    });
-  }
-  assert(codes(value).has("PRIMARY_CANVAS_LIMIT"));
-});
-
-test("weighted criteria must be complete and sum to one", async () => {
-  const value = await example();
-  value.contractDraft.semantic.decision.method = "weighted_score";
-  value.contractDraft.semantic.decision.criteria = [
-    { id: "cost", label: "Cost", direction: "minimize", weight: 0.7 },
-    { id: "fit", label: "Fit", direction: "maximize", weight: 0.4 }
-  ];
-  assert(codes(value).has("WEIGHT_SUM"));
-});
-
-test("accepts an adopted existing thread root", async () => {
-  const value = await example("team-project.example.json");
-  value.topic.anchor = {
-    mode: "adopted",
-    roomId: "!room:example.org",
-    rootEventId: "$existing-root",
-    manifestSource: "state-event"
-  };
-  assert.equal(codes(value).has("ANCHOR_MANIFEST_SOURCE"), false);
-  assert.equal(codes(value).has("ADOPTED_ROOT"), false);
-});
-
-test("derives custom kinds from one standard base kind", async () => {
-  const value = await example();
-  value.contractDraft.semantic.kindRef = {
-    source: "custom",
-    customId: "audit",
-    label: "Audit",
-    baseKind: "evaluation"
-  };
-  assert.equal(codes(value).has("KIND_RECIPE"), false);
-});
-
-test("requires the canonical draft structures for every standard Kind", async () => {
-  const required = {
-    task: ["outcome", "plan", "completion"],
-    agent_task: ["outcome", "agents", "completion"],
-    proposal: ["outcome", "decision", "completion"],
-    evaluation: ["outcome", "decision", "completion"],
-    claims: ["outcome", "attachments", "completion"],
-    question: ["outcome", "questions", "completion"],
-    discussion: ["completion"],
-    incident: ["completion", "risks"]
-  };
-  const recipes = {
-    task: "project",
-    agent_task: "flow",
-    proposal: "proposal",
-    evaluation: "evaluation",
-    claims: "claims",
-    question: "research",
-    discussion: "discussion",
-    incident: "incident"
-  };
-  for (const [kind, fields] of Object.entries(required)) {
-    const value = await example("team-project.example.json");
-    value.topic.rootDraft.kind = kind;
-    value.contractDraft.semantic.kindRef = { source: "standard", kind };
-    value.contractDraft.semantic.recipe = recipes[kind];
-    for (const field of fields) delete value.contractDraft.semantic[field];
-    assert(codes(value).has("KIND_TEMPLATE_FIELD"), `${kind} must require its canonical draft structures`);
-  }
-});
-
-test("accepts an initialised canonical draft structure for every standard Kind", async () => {
-  const recipes = {
-    task: "project",
-    agent_task: "flow",
-    proposal: "proposal",
-    evaluation: "evaluation",
-    claims: "claims",
-    question: "research",
-    discussion: "discussion",
-    incident: "incident"
-  };
-  const decision = (await example()).contractDraft.semantic.decision;
-  for (const kind of Object.keys(recipes)) {
-    const value = await example("team-project.example.json");
-    const semantic = value.contractDraft.semantic;
-    value.topic.rootDraft.kind = kind;
-    semantic.kindRef = { source: "standard", kind };
-    semantic.recipe = recipes[kind];
-    if (kind === "proposal" || kind === "evaluation") semantic.decision = decision;
-    if (kind === "claims") semantic.attachments = [];
-    if (kind === "discussion") semantic.completion = {};
-    if (kind === "incident") semantic.risks = [];
-    const result = codes(value);
-    assert.equal(result.has("KIND_TEMPLATE_FIELD"), false, `${kind} template must be initialised`);
-    assert.equal(result.has("ROOT_CONTRACT_KIND"), false, `${kind} root and contract must agree`);
-  }
-});
-
-test("binds the canonical Job profile and typed Job Card resource together", async () => {
-  const value = await example("team-project.example.json");
-  const profile = {
-    id: "https://topic-protocol.ixo.world/profiles/job-card",
-    version: "1.0.0",
-    schema: "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
-    digest: "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5"
-  };
-  const id = "urn:ixo:job:019c8e56-9d28-7c9b-b981-7f8298c96c31";
-  value.contractDraft.semantic.kindRef = { source: "custom", customId: "org.ixo.job-card", label: "Job", baseKind: "task" };
-  value.contractDraft.semantic.kindProfile = profile;
-  value.contractDraft.semantic.kindResource = {
-    profile,
-    type: "org.ixo.job-card",
-    id,
-    version: 1,
-    value: { version: 1, type: "org.ixo.job-card", id }
+    observedProfile: "qi.topic-contract-state/v2",
   };
   const result = codes(value);
-  assert.equal(result.has("JOB_PROFILE"), false);
-  assert.equal(result.has("JOB_RESOURCE"), false);
-  assert.equal(result.has("PROFILE_RESOURCE_REF"), false);
+  assert(result.has("LEGACY_TOPIC"));
+  assert(result.has("EXPECTED_TOPIC_REVISION"));
+  assert(result.has("EXPECTED_CONTRACT_REVISION"));
+  assert(result.has("EXPECTED_SHAPE_DIGEST"));
 });
 
-test("rejects an unpinned or mismatched Job profile", async () => {
-  const value = await example("team-project.example.json");
-  value.contractDraft.semantic.kindRef = { source: "custom", customId: "org.ixo.job-card", label: "Job", baseKind: "task" };
-  value.contractDraft.semantic.kindProfile = {
-    id: "https://topic-protocol.ixo.world/profiles/job-card",
-    version: "1.0.0",
-    schema: "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
-    digest: `sha256:${"0".repeat(64)}`
+test("all canonical Kinds require their focused Draft structures", async () => {
+  const required = {
+    task: ["outcome", "plan", "completion"],
+    agent_task: ["outcome", "plan", "completion"],
+    proposal: ["outcome", "decision", "completion"],
+    evaluation: ["outcome", "decision", "completion"],
+    claims: ["outcome", "completion"],
+    question: ["outcome", "questions", "completion"],
+    discussion: ["completion"],
+    incident: ["completion", "risks"],
   };
-  assert(codes(value).has("JOB_PROFILE"));
-  assert(codes(value).has("PROFILE_RESOURCE_PAIR"));
+  const catalog = await pins();
+  for (const [kind, fields] of Object.entries(required)) {
+    for (const field of fields) {
+      const value = await example("team-project.example.json");
+      const pin = catalog.baseCompositions[kind];
+      value.topic.rootDraft.kind = kind;
+      value.topic.rootDraft.baseRecipe = pin.baseRecipe;
+      value.topic.rootDraft.shapeDigest = pin.shapeDigest;
+      value.recipeSelection = {
+        strategy: "base-recipe",
+        baseRecipe: pin.baseRecipe,
+        registryLookup: "not-performed",
+        registryReason: "pinned-catalog-only",
+        reviewState: "draft",
+        shapeSources: pin.shapeSources,
+        shapeDigest: pin.shapeDigest,
+      };
+      value.contractDraft.semantic.kindRef = { source: "standard", kind };
+      value.contractDraft.semantic.baseRecipe = pin.baseRecipe;
+      value.contractDraft.semantic.shapeSources = pin.shapeSources;
+      value.contractDraft.semantic.shapeDigest = pin.shapeDigest;
+      value.contractDraft.semantic.plan ??= { milestones: [] };
+      value.contractDraft.semantic.decision ??= {};
+      value.contractDraft.semantic.questions ??= [];
+      value.contractDraft.semantic.risks ??= [];
+      delete value.contractDraft.semantic[field];
+      assert(codes(value).has("KIND_TEMPLATE_FIELD"), `${kind} must initialise ${field}`);
+    }
+  }
 });
 
-test("rejects risks outside Incidents and legacy likelihood", async () => {
+test("risks are Incident-only and never use likelihood", async () => {
   const value = await example();
   value.contractDraft.semantic.risks = [{
-    id: "risk-1",
+    id: "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77999",
     description: "Uncertainty",
     likelihood: "medium",
-    status: "open"
+    status: "open",
   }];
   const result = codes(value);
   assert(result.has("RISKS_INCIDENT_ONLY"));
   assert(result.has("LEGACY_LIKELIHOOD"));
 });
 
-test("allows unresolved fields in a v2 Draft", async () => {
-  const value = await example("team-project.example.json");
-  value.contractDraft.semantic.outcome = {};
-  delete value.contractDraft.semantic.ownerId;
-  assert.equal(codes(value).has("SUCCESS_CRITERIA"), false);
-  assert.equal(codes(value).has("ACCEPTED_TASK_OWNER"), false);
-});
-
-test("enforces base Kind completeness only when a contract is accepted", async () => {
-  const value = await example("team-project.example.json");
-  value.contractDraft.envelope.status = "accepted";
-  delete value.contractDraft.semantic.ownerId;
-  assert(codes(value).has("ACCEPTED_TASK_OWNER"));
-});
-
-test("enforces Job profile completeness in addition to its Task base", async () => {
-  const value = await example("team-project.example.json");
-  const profile = {
-    id: "https://topic-protocol.ixo.world/profiles/job-card",
-    version: "1.0.0",
-    schema: "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
-    digest: "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5"
-  };
-  const id = "urn:ixo:job:019c8e56-9d28-7c9b-b981-7f8298c96c31";
-  value.contractDraft.envelope.status = "accepted";
-  value.contractDraft.semantic.ownerId = "did:ixo:shaun";
-  value.contractDraft.semantic.kindRef = { source: "custom", customId: "org.ixo.job-card", label: "Job", baseKind: "task" };
-  value.contractDraft.semantic.kindProfile = profile;
-  value.contractDraft.semantic.kindResource = {
-    profile,
-    type: "org.ixo.job-card",
-    id,
-    version: 1,
-    value: { version: 1, type: "org.ixo.job-card", id }
-  };
-  const result = codes(value);
-  assert(result.has("ACCEPTED_JOB_NUMBER"));
-  assert(result.has("ACCEPTED_JOB_PHASE"));
-});
-
-test("requires UUIDv7 identities for repeatable contract entries", async () => {
+test("secret-like material is rejected", async () => {
   const value = await example();
-  value.contractDraft.semantic.intent.id = "array-index-0";
-  assert(codes(value).has("ENTRY_ID"));
+  value.sourceIntent.verbatim = `Use token ${["sk", "abcdefghijklmnopqrstuvwxyz1234567890"].join("-")}`;
+  value.records[0].content.verbatim = value.sourceIntent.verbatim;
+  assert(codes(value).has("SECRET_DETECTED"));
 });
 
-test("contract schema exposes Protocol 0.8 Kind Profile and typed resource fields", async () => {
+test("contract schema exposes v3 Shape and singular claim fields without agents", async () => {
   const schema = JSON.parse(await readFile(join(ROOT, "schemas/topic-contract-draft.schema.json"), "utf8"));
   const semantic = schema.properties.semantic.properties;
-  assert.deepEqual(semantic.kindProfile.required, ["id", "version", "schema", "digest"]);
-  assert.deepEqual(semantic.kindResource.required, ["profile", "type", "id", "version", "value"]);
-  assert.equal(semantic.attachments.type, "array");
-  assert.equal(semantic.bindings, undefined);
-  assert.equal(semantic.completion.properties.acceptanceAuthority, undefined);
-  assert.equal(semantic.completion.properties.acceptanceAuthorityIds.type, "array");
-  assert.deepEqual(semantic.decision.required, []);
+  assert.equal(semantic.baseRecipe.$ref, "#/$defs/baseRecipe");
+  assert.equal(semantic.topicRecipeRef.$ref, "#/$defs/topicRecipeRef");
+  assert.equal(semantic.shapeSources.type, "array");
+  assert.equal(semantic.claimBinding.$ref, "#/$defs/claimBinding");
+  assert.equal(semantic.agents, undefined);
+  assert.equal(semantic.recipe, undefined);
 });
