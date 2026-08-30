@@ -55,8 +55,8 @@ const EXPECTED_FILES = [
   "tests/audit-skill.test.mjs",
   ...SUBSKILLS.map((name) => `subskills/${name}/SKILL.md`),
 ];
-const EXPECTED_SOURCE_COMMIT = "db925bece7269a3c11e3081f301c7e7d7dd7bab4";
-const EXPECTED_PACKAGE_SHASUM = "962da70e62f7a705b159edf2b55e03ca443f72d1";
+const EXPECTED_SOURCE_COMMIT = "0407c6e7e3f77091260a08d586441e5323a0227f";
+const EXPECTED_PACKAGE_SHASUM = "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f";
 const ACTUAL_SECRET_PATTERNS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
   /\bsk-[A-Za-z0-9_-]{32,}\b/u,
@@ -212,16 +212,16 @@ async function auditSourceLock(findings) {
   const lockPath = join(SKILL_ROOT, "references/source-lock.json");
   const lock = JSON.parse(await readFile(lockPath, "utf8"));
   if (lock.skill !== "compose-topic") findings.push(finding("LOCK_SKILL", "references/source-lock.json", "skill must equal compose-topic"));
-  if (lock.version !== 4) findings.push(finding("LOCK_VERSION", "references/source-lock.json", "source lock must use version 4"));
-  if (lock.topicProtocol?.version !== "1.0.0-rc.1") findings.push(finding("LOCK_PROTOCOL", "references/source-lock.json", "Topic Protocol must be pinned to 1.0.0-rc.1"));
+  if (lock.version !== 5) findings.push(finding("LOCK_VERSION", "references/source-lock.json", "source lock must use version 5"));
+  if (lock.topicProtocol?.version !== "1.0.0-rc.2") findings.push(finding("LOCK_PROTOCOL", "references/source-lock.json", "Topic Protocol must be pinned to 1.0.0-rc.2"));
   if (lock.topicProtocol?.normativeBaseCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_BASE_COMMIT", "references/source-lock.json", `normative commit must equal ${EXPECTED_SOURCE_COMMIT}`));
   if (lock.topicProtocol?.contractProfile?.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_COMMIT", "references/source-lock.json", `source commit must equal ${EXPECTED_SOURCE_COMMIT}`));
   if (lock.topicProtocol?.contractProfile?.status !== "normative") findings.push(finding("LOCK_STATUS", "references/source-lock.json", "contract profile must be normative"));
-  if (lock.topicProtocol?.contractProfile?.profile !== "qi.topic-contract-state/v3") findings.push(finding("LOCK_PROFILE", "references/source-lock.json", "contract profile must be qi.topic-contract-state/v3"));
-  if (lock.topicProtocol?.contractProfile?.rootVersion !== 3 || lock.topicProtocol?.contractProfile?.bodyVersion !== 3 || lock.topicProtocol?.contractProfile?.stateVersion !== 3) findings.push(finding("LOCK_V3", "references/source-lock.json", "root, body, and state must use version 3"));
+  if (lock.topicProtocol?.contractProfile?.profile !== "qi.topic-contract-state/v4") findings.push(finding("LOCK_PROFILE", "references/source-lock.json", "contract profile must be qi.topic-contract-state/v4"));
+  if (lock.topicProtocol?.contractProfile?.rootVersion !== 4 || lock.topicProtocol?.contractProfile?.bodyVersion !== 4 || lock.topicProtocol?.contractProfile?.stateVersion !== 4) findings.push(finding("LOCK_V4", "references/source-lock.json", "root, body, and state must use version 4"));
   if (lock.topicProtocol?.package?.shasum !== EXPECTED_PACKAGE_SHASUM) findings.push(finding("LOCK_PACKAGE_SHASUM", "references/source-lock.json", "published package shasum mismatch"));
   const sources = lock.topicProtocol?.sourceFiles ?? [];
-  if (sources.length < 20) findings.push(finding("LOCK_SOURCE_COUNT", "references/source-lock.json", "must pin v3 contracts, Shape resolution/projection, and all seed Topic Recipes"));
+  if (sources.length < 20) findings.push(finding("LOCK_SOURCE_COUNT", "references/source-lock.json", "must pin v4 contracts, Shape resolution/projection, and all seed Topic Recipes"));
   const sourcePaths = sources.map((item) => item.path);
   if (new Set(sourcePaths).size !== sourcePaths.length) findings.push(finding("LOCK_DUPLICATE_SOURCE", "references/source-lock.json", "source paths must be unique"));
   for (const item of sources) {
@@ -241,8 +241,8 @@ async function auditSourceLock(findings) {
 async function auditShapePins(findings) {
   const path = "references/topic-shape-pins.json";
   const pins = JSON.parse(await readFile(join(SKILL_ROOT, path), "utf8"));
-  if (pins.version !== 1) findings.push(finding("PIN_VERSION", path, "must use catalog version 1"));
-  if (pins.protocolVersion !== "1.0.0-rc.1") findings.push(finding("PIN_PROTOCOL", path, "must pin Topic Protocol 1.0.0-rc.1"));
+  if (pins.version !== 2) findings.push(finding("PIN_VERSION", path, "must use catalog version 2"));
+  if (pins.protocolVersion !== "1.0.0-rc.2") findings.push(finding("PIN_PROTOCOL", path, "must pin Topic Protocol 1.0.0-rc.2"));
   if (pins.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("PIN_COMMIT", path, "must pin the published git head"));
   const expectedKinds = ["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"];
   const expectedRecipes = ["research-brief", "agent-delivery", "verified-work-payment"];
@@ -271,13 +271,13 @@ async function auditExamples(findings) {
 
 async function auditEvals(findings) {
   const evals = JSON.parse(await readFile(join(SKILL_ROOT, "evals/evals.json"), "utf8"));
-  if (evals.version !== "2.0.0") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 2.0.0"));
+  if (evals.version !== "3.0.0") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.0.0"));
   if (evals.skill !== "compose-topic") findings.push(finding("EVAL_SKILL", "evals/evals.json", "must equal compose-topic"));
   const cases = evals.cases ?? [];
   if (cases.length < 36) findings.push(finding("EVAL_COVERAGE", "evals/evals.json", "must include all Kinds, recipes, Shapes, Portal progression, authority, inference, and security cases"));
   const ids = cases.map((item) => item.id);
   if (new Set(ids).size !== ids.length) findings.push(finding("EVAL_DUPLICATE", "evals/evals.json", "case IDs must be unique"));
-  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "legacy-v08", "adopt-existing-thread", "custom-kind", "partial-draft", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question", "kind-task", "kind-agent-task", "kind-proposal", "kind-evaluation", "kind-claims", "kind-question", "kind-discussion", "kind-incident", "kind-job-profile", "recipe-research-brief", "recipe-agent-delivery", "recipe-verified-work-payment", "recipe-marketplace-future", "shape-digest-mismatch", "claim-singular-binding", "flow-action-boundary", "viewer-authority", "inference-boundary"];
+  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "legacy-v08", "legacy-v3", "adopt-existing-thread", "custom-kind", "partial-draft", "partial-activation-policy", "owner-authority-fallback", "confirmation-not-assent", "expiry-non-invention", "dispute-authority", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question", "kind-task", "kind-agent-task", "kind-proposal", "kind-evaluation", "kind-claims", "kind-question", "kind-discussion", "kind-incident", "kind-job-profile", "recipe-research-brief", "recipe-agent-delivery", "recipe-verified-work-payment", "recipe-marketplace-future", "shape-digest-mismatch", "claim-singular-binding", "flow-action-boundary", "viewer-authority", "inference-boundary"];
   for (const id of required) if (!ids.includes(id)) findings.push(finding("EVAL_REQUIRED", "evals/evals.json", `missing security or protocol case: ${id}`));
 }
 
@@ -321,7 +321,7 @@ export async function main(options = {}) {
   findings.sort((left, right) => left.path.localeCompare(right.path) || left.code.localeCompare(right.code));
   return {
     auditor: "compose-topic-skill-audit",
-    version: "2.0.0",
+    version: "3.0.0",
     root: options.root ?? SKILL_ROOT,
     ok: findings.length === 0,
     findingCount: findings.length,

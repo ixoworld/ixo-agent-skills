@@ -4,7 +4,7 @@ description: Compose the Discussion specialization of a Topic Protocol v1 Draft 
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "2.0.0"
   parent-skill: compose-topic
   topic-kind: discussion
 ---
@@ -35,8 +35,12 @@ Capture:
 
 Do not use “Discussion” as a generic fallback for an unclear intent. Prefer one clarification when two materially different outcomes would produce different Kinds.
 
+## Smallest setup questions
+
+Ask what needs discussion, whether it is finite or ongoing, what closes it or branches from it, who facilitates when needed, and who confirms the setup. Add signatories only if the group explicitly wants a mutual agreement record.
+
 ## Progression
 
-For a finite Discussion, terms and the closure rule must be accepted before work can be considered complete. For an ongoing Discussion, use the explicit temporal mode; do not pretend that activity equals completion.
+For a finite Discussion, setup and the closure rule must be confirmed before work can be considered complete. For an ongoing Discussion, use the explicit temporal mode; do not pretend that activity equals completion.
 
 If deliberation yields a proposal, evaluation, or task with an independent lifecycle, branch it instead of mutating the Kind in place.

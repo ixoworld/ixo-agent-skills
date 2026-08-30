@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77705",
   "mode": "preview",
   "disposition": "create",
@@ -10,17 +10,17 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.1",
-    "rootVersion": 3,
-    "contractBodyVersion": 3,
-    "stateVersion": 3,
-    "contractProfile": "qi.topic-contract-state/v3",
+    "topicProtocolVersion": "1.0.0-rc.2",
+    "rootVersion": 4,
+    "contractBodyVersion": 4,
+    "stateVersion": 4,
+    "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
-    "packageShasum": "962da70e62f7a705b159edf2b55e03ca443f72d1",
+    "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
+    "packageShasum": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
-    "legacyPolicy": "v3-only-no-migration"
+    "legacyPolicy": "v4-only-no-migration"
   },
   "routing": {
     "rationale": "The lifecycle binds a claim collection, verification, decision, external payment Action, and settlement receipt.",
@@ -38,17 +38,17 @@
   "topic": {
     "operation": "create",
     "rootDraft": {
-      "version": 3,
+      "version": 4,
       "title": "Verify and settle the solar installation claim",
       "kind": "claims",
       "status": "draft",
       "baseRecipe": "claims",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:27c0e70c6bfac1557ae402673bd4aa8bace7ff50c82c5e30cf5e6f356114fb86"
       },
-      "shapeDigest": "sha256:473803cb09ea3d949d1b2d6127dfa2cebe9a4f6ec912162300346d399accb8a7",
+      "shapeDigest": "sha256:1d327440c4f63396cb2bed8b2fb565fdf9d8a154cbb820554a908495d7c05ca4",
       "context": [
         {
           "type": "ixo.entity",
@@ -58,7 +58,7 @@
       "overview": {
         "summary": "Bind the claim, verify evidence, decide, and hand payment and settlement to a Flow.",
         "nextStep": {
-          "summary": "Review the bound entity, collection, evidence expectation, and authorities."
+          "summary": "Choose who can update this setup."
         }
       }
     },
@@ -73,8 +73,8 @@
     "topicRecipeCode": "verified-work-payment",
     "topicRecipeRef": {
       "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-      "version": "1.0.0-rc.1",
-      "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+      "version": "1.0.0-rc.2",
+      "digest": "sha256:27c0e70c6bfac1557ae402673bd4aa8bace7ff50c82c5e30cf5e6f356114fb86"
     },
     "registryLookup": "not-performed",
     "registryReason": "pinned-catalog-only",
@@ -83,28 +83,27 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/claims",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:9bf1b5266a9d3e6c8a68f6d5d70da2642800903f01d42b449f1f20f78d824d69"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:b996ae37785fe3c54eaaca026d32c241e7977cb29266f37cc933f0576326b8de"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/claims",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:3f9d395d9ea16de70c47bae3784d922bae29b7b9c2b5c4ad24b676d5b9287a3e"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:604309d70c2d762551dc9c11572bf095c8879f255dcff0d78adb4f1b13815f47"
       },
       {
         "kind": "topic-recipe",
         "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:27c0e70c6bfac1557ae402673bd4aa8bace7ff50c82c5e30cf5e6f356114fb86"
       }
     ],
-    "shapeDigest": "sha256:473803cb09ea3d949d1b2d6127dfa2cebe9a4f6ec912162300346d399accb8a7"
+    "shapeDigest": "sha256:1d327440c4f63396cb2bed8b2fb565fdf9d8a154cbb820554a908495d7c05ca4"
   },
   "contractDraft": {
     "envelope": {
-      "version": 3,
-      "status": "draft",
+      "version": 4,
       "revision": null,
       "authoredBy": null,
       "authoredAt": null
@@ -118,30 +117,30 @@
       "baseRecipe": "claims",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:27c0e70c6bfac1557ae402673bd4aa8bace7ff50c82c5e30cf5e6f356114fb86"
       },
       "shapeSources": [
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/claims",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:9bf1b5266a9d3e6c8a68f6d5d70da2642800903f01d42b449f1f20f78d824d69"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:b996ae37785fe3c54eaaca026d32c241e7977cb29266f37cc933f0576326b8de"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/claims",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:3f9d395d9ea16de70c47bae3784d922bae29b7b9c2b5c4ad24b676d5b9287a3e"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:604309d70c2d762551dc9c11572bf095c8879f255dcff0d78adb4f1b13815f47"
         },
         {
           "kind": "topic-recipe",
           "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:27c0e70c6bfac1557ae402673bd4aa8bace7ff50c82c5e30cf5e6f356114fb86"
         }
       ],
-      "shapeDigest": "sha256:473803cb09ea3d949d1b2d6127dfa2cebe9a4f6ec912162300346d399accb8a7",
+      "shapeDigest": "sha256:1d327440c4f63396cb2bed8b2fb565fdf9d8a154cbb820554a908495d7c05ca4",
       "claimBinding": {
         "entityDid": "did:ixo:entity:solar-programme",
         "collectionId": "solar-installations-2026"
@@ -176,7 +175,12 @@
       "assumptions": [],
       "questions": [],
       "participants": [],
-      "roles": []
+      "roles": [],
+      "activationPolicy": {
+        "lifecycle": {
+          "onExpiry": "pause-consequential"
+        }
+      }
     },
     "publication": {
       "disclosure": "reference-only",
@@ -188,7 +192,42 @@
       "containsProviderSessionIds": false
     },
     "readiness": "requires-host-fields",
-    "unresolvedHostFields": ["revision", "authoredBy", "authoredAt", "flowBinding", "verifiedAuthorities"]
+    "unresolvedHostFields": [
+      "revision",
+      "authoredBy",
+      "authoredAt",
+      "flowBinding",
+      "verifiedAuthorities"
+    ],
+    "setupObligations": [
+      {
+        "code": "setup.editors",
+        "path": "/activationPolicy/editors",
+        "prompt": "Choose who can update this setup.",
+        "purpose": "This makes responsibility for preparing and changing the setup explicit.",
+        "responsibility": "unassigned",
+        "priority": 600,
+        "unlocks": "The chosen editors can prepare a complete setup for review."
+      },
+      {
+        "code": "setup.confirmation-policy",
+        "path": "/activationPolicy/confirmation",
+        "prompt": "Select who must confirm this setup.",
+        "purpose": "Confirmation authorizes the Topic to progress without implying mutual or legal agreement.",
+        "responsibility": "unassigned",
+        "priority": 610,
+        "unlocks": "The named confirmer or confirmers can review this exact setup revision."
+      },
+      {
+        "code": "setup.dispute-resolvers",
+        "path": "/activationPolicy/dispute/resolvers",
+        "prompt": "Choose who can resolve a setup dispute.",
+        "purpose": "A dispute needs an explicitly authorized resolver or governed process.",
+        "responsibility": "unassigned",
+        "priority": 630,
+        "unlocks": "Disputes can be handled without inventing authority."
+      }
+    ]
   },
   "claimResolutionEvidence": {
     "entityDid": "did:ixo:entity:solar-programme",
@@ -221,7 +260,11 @@
         "basis": "suggested",
         "visibility": "primary",
         "content": {
-          "columns": ["Requirement", "Evidence", "Status"],
+          "columns": [
+            "Requirement",
+            "Evidence",
+            "Status"
+          ],
           "rows": []
         },
         "editable": true
@@ -232,7 +275,9 @@
         "semanticRole": "next-action",
         "basis": "suggested",
         "visibility": "primary",
-        "content": ["Review the entity, collection, evaluation evidence, and authority."],
+        "content": [
+          "Review the entity, collection, evaluation evidence, and authority."
+        ],
         "editable": true
       }
     ],
@@ -254,7 +299,9 @@
         "purpose": "Structure referenced claim evidence without evaluating or paying.",
         "output": "A proposed evidence map.",
         "activation": "on_demand",
-        "requiredAbilities": ["topic/read"],
+        "requiredAbilities": [
+          "topic/read"
+        ],
         "stopWhen": "The evidence map is ready for the authorised evaluation service."
       }
     ]
@@ -265,7 +312,7 @@
       {
         "id": "review",
         "label": "Review Draft",
-        "action": "Review the claim binding and terms."
+        "action": "Review the claim binding and setup."
       },
       {
         "id": "open-flow",
@@ -292,7 +339,13 @@
   "execution": {
     "commitEligible": false,
     "hostContext": {},
-    "requiredHostFields": ["protectedRoomId", "actorId", "matrixWrite", "verifiedAbilities", "flowBinding"],
+    "requiredHostFields": [
+      "protectedRoomId",
+      "actorId",
+      "matrixWrite",
+      "verifiedAbilities",
+      "flowBinding"
+    ],
     "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77705:commit",
     "proposedCalls": [],
     "externalActions": [],
@@ -300,10 +353,10 @@
       "enabled": true,
       "eventType": "ixo.topic.contract",
       "stateKeySource": "topicId",
-      "profile": "qi.topic-contract-state/v3",
-      "version": 3,
+      "profile": "qi.topic-contract-state/v4",
+      "version": 4,
       "role": "materialized-head-only",
-      "publishAfter": "human-acceptance",
+      "publishAfter": "setup-confirmation",
       "disclosure": "reference-only",
       "embedsCanvasContent": false,
       "shapeRecordPersisted": false
@@ -314,7 +367,10 @@
     "unresolvedPaths": [
       "/runtimeBindings/flows",
       "/runtimeBindings/udidReferences",
-      "/verifiedAuthorities"
+      "/verifiedAuthorities",
+      "/contractDraft/semantic/activationPolicy/editors",
+      "/contractDraft/semantic/activationPolicy/confirmation",
+      "/contractDraft/semantic/activationPolicy/dispute/resolvers"
     ],
     "warnings": [
       "No evaluation, Action, payment, or settlement success is claimed during composition."

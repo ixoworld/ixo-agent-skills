@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702",
   "mode": "commit",
   "disposition": "create",
@@ -10,17 +10,17 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.1",
-    "rootVersion": 3,
-    "contractBodyVersion": 3,
-    "stateVersion": 3,
-    "contractProfile": "qi.topic-contract-state/v3",
+    "topicProtocolVersion": "1.0.0-rc.2",
+    "rootVersion": 4,
+    "contractBodyVersion": 4,
+    "stateVersion": 4,
+    "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
-    "packageShasum": "962da70e62f7a705b159edf2b55e03ca443f72d1",
+    "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
+    "packageShasum": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
-    "legacyPolicy": "v3-only-no-migration"
+    "legacyPolicy": "v4-only-no-migration"
   },
   "routing": {
     "rationale": "The launch is a durable, multi-step team outcome with coordinated work and explicit completion.",
@@ -38,12 +38,12 @@
   "topic": {
     "operation": "create",
     "rootDraft": {
-      "version": 3,
+      "version": 4,
       "title": "Launch the new onboarding experience",
       "kind": "task",
       "status": "draft",
       "baseRecipe": "project",
-      "shapeDigest": "sha256:497a83f43538a5e9e9f1a782cbacd0326be6df6d5969d8b50213fc304dc9fe14",
+      "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72",
       "context": [
         {
           "type": "ixo.domain",
@@ -53,7 +53,7 @@
       "overview": {
         "summary": "Coordinate the reviewed scope, milestones, owner, and readiness for onboarding launch.",
         "nextStep": {
-          "summary": "Review and accept the Draft launch terms.",
+          "summary": "Choose who can update this setup.",
           "assignee": "did:ixo:shaun"
         }
       }
@@ -73,22 +73,21 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/project",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/task",
-        "version": "1.0.0-rc.1",
-        "digest": "sha256:d29a378becb7b2fe5b6cf04699bc95d79d037a6e7360d14c371cc8806e4bf236"
+        "version": "1.0.0-rc.2",
+        "digest": "sha256:70fd94bfd73b2cccd65e841fda1dd90d6692ab1a53028d825ab4aabe30f31b25"
       }
     ],
-    "shapeDigest": "sha256:497a83f43538a5e9e9f1a782cbacd0326be6df6d5969d8b50213fc304dc9fe14"
+    "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72"
   },
   "contractDraft": {
     "envelope": {
-      "version": 3,
-      "status": "draft",
+      "version": 4,
       "revision": null,
       "authoredBy": "did:ixo:shaun",
       "authoredAt": "2026-08-30T02:30:00Z"
@@ -104,17 +103,17 @@
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/project",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/task",
-          "version": "1.0.0-rc.1",
-          "digest": "sha256:d29a378becb7b2fe5b6cf04699bc95d79d037a6e7360d14c371cc8806e4bf236"
+          "version": "1.0.0-rc.2",
+          "digest": "sha256:70fd94bfd73b2cccd65e841fda1dd90d6692ab1a53028d825ab4aabe30f31b25"
         }
       ],
-      "shapeDigest": "sha256:497a83f43538a5e9e9f1a782cbacd0326be6df6d5969d8b50213fc304dc9fe14",
+      "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72",
       "timezone": "Asia/Singapore",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77721",
@@ -150,7 +149,9 @@
       },
       "completion": {
         "definition": "The reviewed release is live and the authorised completion transition is recorded.",
-        "acceptanceAuthorityIds": ["did:ixo:shaun"],
+        "acceptanceAuthorityIds": [
+          "did:ixo:shaun"
+        ],
         "requiresOutcomeRecord": true
       },
       "scope": {
@@ -161,7 +162,12 @@
       "assumptions": [],
       "questions": [],
       "participants": [],
-      "roles": []
+      "roles": [],
+      "activationPolicy": {
+        "lifecycle": {
+          "onExpiry": "pause-consequential"
+        }
+      }
     },
     "publication": {
       "disclosure": "inline",
@@ -173,7 +179,40 @@
       "containsProviderSessionIds": false
     },
     "readiness": "requires-host-fields",
-    "unresolvedHostFields": ["revision", "topicId", "rootEventId"]
+    "unresolvedHostFields": [
+      "revision",
+      "topicId",
+      "rootEventId"
+    ],
+    "setupObligations": [
+      {
+        "code": "setup.editors",
+        "path": "/activationPolicy/editors",
+        "prompt": "Choose who can update this setup.",
+        "purpose": "This makes responsibility for preparing and changing the setup explicit.",
+        "responsibility": "unassigned",
+        "priority": 600,
+        "unlocks": "The chosen editors can prepare a complete setup for review."
+      },
+      {
+        "code": "setup.confirmation-policy",
+        "path": "/activationPolicy/confirmation",
+        "prompt": "Select who must confirm this setup.",
+        "purpose": "Confirmation authorizes the Topic to progress without implying mutual or legal agreement.",
+        "responsibility": "unassigned",
+        "priority": 610,
+        "unlocks": "The named confirmer or confirmers can review this exact setup revision."
+      },
+      {
+        "code": "setup.dispute-resolvers",
+        "path": "/activationPolicy/dispute/resolvers",
+        "prompt": "Choose who can resolve a setup dispute.",
+        "purpose": "A dispute needs an explicitly authorized resolver or governed process.",
+        "responsibility": "unassigned",
+        "priority": 630,
+        "unlocks": "Disputes can be handled without inventing authority."
+      }
+    ]
   },
   "canvas": {
     "format": "blocknote",
@@ -195,7 +234,9 @@
         "semanticRole": "milestones",
         "basis": "suggested",
         "visibility": "primary",
-        "content": ["Confirm minimum launch scope."],
+        "content": [
+          "Confirm minimum launch scope."
+        ],
         "editable": true
       },
       {
@@ -204,7 +245,9 @@
         "semanticRole": "next-action",
         "basis": "suggested",
         "visibility": "primary",
-        "content": ["Review and accept the Draft launch terms."],
+        "content": [
+          "Review the Draft launch setup and choose its confirmer."
+        ],
         "editable": true
       }
     ],
@@ -227,7 +270,7 @@
       {
         "id": "review",
         "label": "Review Draft",
-        "action": "Review the proposed terms."
+        "action": "Review the proposed setup."
       },
       {
         "id": "edit-scope",
@@ -257,21 +300,28 @@
       "roomId": "!product-team:matrix.ixo.world",
       "actorId": "did:ixo:shaun",
       "matrixWrite": true,
-      "verifiedAbilities": ["topic/create", "topic/write"]
+      "verifiedAbilities": [
+        "topic/create",
+        "topic/write"
+      ]
     },
-    "requiredHostFields": ["topicId", "rootEventId", "revision"],
+    "requiredHostFields": [
+      "topicId",
+      "rootEventId",
+      "revision"
+    ],
     "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:commit",
     "proposedCalls": [
       {
         "stage": 1,
         "tool": "topic_composition_commit",
-        "purpose": "Create or recover the v3 Draft root and exact intent record.",
+        "purpose": "Create or recover the v4 Draft root and exact intent record.",
         "sideEffect": "topic-state",
         "confirmation": "policy",
         "requiredAbility": "topic/create",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:topic-create",
         "boundTo": {
-          "shapeDigest": "sha256:497a83f43538a5e9e9f1a782cbacd0326be6df6d5969d8b50213fc304dc9fe14"
+          "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72"
         }
       },
       {
@@ -283,19 +333,19 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:canvas",
         "boundTo": {
-          "shapeDigest": "sha256:497a83f43538a5e9e9f1a782cbacd0326be6df6d5969d8b50213fc304dc9fe14"
+          "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72"
         }
       },
       {
         "stage": 3,
         "tool": "topic_projection_publish",
-        "purpose": "Project and publish the v3 materialized Topic state.",
+        "purpose": "Project and publish the v4 materialized Topic state.",
         "sideEffect": "topic-state",
         "confirmation": "policy",
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:projection",
         "boundTo": {
-          "shapeDigest": "sha256:497a83f43538a5e9e9f1a782cbacd0326be6df6d5969d8b50213fc304dc9fe14"
+          "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72"
         }
       }
     ],
@@ -304,8 +354,8 @@
       "enabled": true,
       "eventType": "ixo.topic.contract",
       "stateKeySource": "topicId",
-      "profile": "qi.topic-contract-state/v3",
-      "version": 3,
+      "profile": "qi.topic-contract-state/v4",
+      "version": 4,
       "role": "materialized-head-only",
       "publishAfter": "root-and-projection",
       "disclosure": "inline",
@@ -315,7 +365,12 @@
   },
   "quality": {
     "confidence": 0.93,
-    "unresolvedPaths": ["/contractDraft/envelope/revision"],
+    "unresolvedPaths": [
+      "/contractDraft/envelope/revision",
+      "/contractDraft/semantic/activationPolicy/editors",
+      "/contractDraft/semantic/activationPolicy/confirmation",
+      "/contractDraft/semantic/activationPolicy/dispute/resolvers"
+    ],
     "warnings": [
       "The host must still allocate Topic identity and publish only the Draft projection."
     ]

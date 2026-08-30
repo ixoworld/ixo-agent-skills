@@ -1,13 +1,13 @@
 ---
 name: compose-topic
-description: "Compose, route, validate, and safely stage a Topic Protocol v1 Draft from a person's intent. Use when creating or refining a Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Topic; selecting a Base Recipe or one of the pinned seed Topic Recipes; resolving the Effective Topic Shape and digest; preparing Portal-compatible terms, canvas content, claim or Flow handoffs; or producing an idempotent Matrix host plan. Do not use for disposable one-turn requests unless the person explicitly asks to create a Topic."
+description: "Compose, route, validate, and safely stage a Topic Protocol v1 Draft from a person's intent. Use when creating or refining a Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Topic; selecting a Base Recipe or pinned Topic Recipe; resolving the Effective Topic Shape; proposing explicit setup editors, confirmation, lifecycle, dispute, and optional assent policies; preparing Portal-compatible setup, canvas, claim, or Flow handoffs; or producing an idempotent Matrix host plan."
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "2.0.0"
+  version: "3.0.0"
   category: collaboration
-  topic-protocol: "1.0.0-rc.1"
-  topic-contract-profile: qi.topic-contract-state/v3
+  topic-protocol: "1.0.0-rc.2"
+  topic-contract-profile: qi.topic-contract-state/v4
   profile-status: normative
 ---
 
@@ -35,7 +35,7 @@ Before composing:
    - [Discussion](subskills/compose-topic-discussion/SKILL.md)
    - [Incident](subskills/compose-topic-incident/SKILL.md)
 
-Load [references/canvas-recipes.md](references/canvas-recipes.md) when producing canvas blocks. Load [references/protocol-adapter.md](references/protocol-adapter.md) only for `commit` or `refine`. Load [references/refine-existing-topic.md](references/refine-existing-topic.md) for an existing v3 Topic. Load [references/security-review.md](references/security-review.md) for sensitive, consequential, agentic, Action-bearing, evaluation, claim, or settlement work.
+Load [references/canvas-recipes.md](references/canvas-recipes.md) when producing canvas blocks. Load [references/protocol-adapter.md](references/protocol-adapter.md) only for `commit` or `refine`. Load [references/refine-existing-topic.md](references/refine-existing-topic.md) for an existing v4 Topic. Load [references/security-review.md](references/security-review.md) for sensitive, consequential, agentic, Action-bearing, evaluation, claim, or settlement work.
 
 The pinned release candidate is the authority. Do not silently substitute a remembered version, a mutable branch, a legacy v0.8 shape, or an unverified Marketplace recipe.
 
@@ -46,7 +46,7 @@ Return a `TopicComposition` conforming to [schemas/topic-composition.schema.json
 The output separates:
 
 - composition: intent routing, recipe selection, canvas, records, and a side-effect-free host plan;
-- contract proposal: a partial or complete Topic Contract body v3 Draft;
+- contract proposal: a partial or complete Topic Contract body v4 Draft;
 - runtime state: created only by the host from the root, operations, records, resolved Shape, verified authority, and Matrix projection.
 
 Never emit `ixo.topic.contract` state as authoritative history. Never persist a separate Effective Shape record. Persist the pinned Shape sources and digest, then let the protocol projector reproduce progress and state tags.
@@ -55,7 +55,7 @@ Never emit `ixo.topic.contract` state as authoritative history. Never persist a 
 
 - `preview`: compose without side effects. Default to this.
 - `commit`: emit a policy-gated, idempotent host plan. The skill still performs no side effect.
-- `refine`: propose revision-bound changes to an existing v3 Topic.
+- `refine`: propose revision-bound changes to an existing v4 Topic.
 
 Missing host identity, room, revision, Shape source, Matrix permission, or verified ability disables the affected host call. It does not justify inventing data or abandoning a useful Draft preview.
 
@@ -79,13 +79,16 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 16. Protocol-derived state tags are not user-authored search tags. Never write `stateTags` into contract `tags`.
 17. If a Shape source is missing or incompatible, mark the handoff degraded and suppress privileged moves. Do not fall back to a different executable Shape.
 18. Never read, migrate, or write a v0.8/v2 Topic as a v1 Topic. Direct legacy links are unsupported-version reads only.
+19. Authorship is provenance, not authority. Creator, owner, membership, and completion authority never silently become setup editors, confirmers, signatories, or dispute resolvers.
+20. Never invent a confirmer, signatory, expiry, effective or review date, dispute resolver, or dispute process. Keep each unresolved decision visible as a structured setup obligation.
+21. Setup confirmation permits Topic progression only. It is not assent, outcome approval, Action confirmation, legal agreement, or Topic completion.
 
 ## Workflow
 
 ### 1. Pin and preflight
 
 - Run `node scripts/audit-skill.mjs --json` when scripts are available.
-- Use composition version `2.0.0`, Topic Protocol `1.0.0-rc.1`, root/body/state version `3`, and `qi.topic-contract-state/v3`.
+- Use composition version `3.0.0`, Topic Protocol `1.0.0-rc.2`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Inventory real host capabilities. Do not assume a named tool exists.
 - Scan for secrets and excessive sensitive data.
 
@@ -130,22 +133,37 @@ Resolve the Effective Shape with the pinned protocol resolver. If the runtime ca
 
 For a new Topic:
 
-- `rootDraft.version` is `3` and `status` is always `draft`;
+- `rootDraft.version` is `4` and `status` is always `draft`;
 - include the Kind, `baseRecipe`, optional `topicRecipeRef`, and resolved `shapeDigest`;
 - omit Topic ID, creator, and timestamp until the host creates the root;
 - use an adopted anchor only when the host supplies a real Matrix thread root;
 - initialise the Kind's structures without fabricating completeness;
-- surface missing fields as unresolved paths and focused prompts.
+- propose `activationPolicy` only from explicit or accepted choices and keep omitted policy fields unresolved;
+- add `assentPolicy` only when the person explicitly wants named signatories and mutual agreement; and
+- surface every missing content or policy field as a coded obligation with a focused prompt, purpose, responsibility state, and what resolving it unlocks.
 
-For an existing Topic, require v3 plus exact Topic revision, contract revision, and Shape digest. Editing accepted terms creates a replacement Draft against those pins.
+For an existing Topic, require v4 plus the exact Topic revision, effective contract revision, proposed revision, body hash, policy digest, and Shape digest required by the operation. Editing creates a new proposed immutable body. It invalidates confirmations for that proposal but leaves the previous effective revision in force until its replacement becomes effective.
 
-### 6. Preserve inference and consequence boundaries
+### 6. Compose setup and authority explicitly
+
+Keep four decisions separate:
+
+- `activationPolicy.editors`: who may prepare and revise setup;
+- `activationPolicy.confirmation`: who must authorize progression, using `any`, `all`, or an explicit threshold;
+- `activationPolicy.dispute`: who may resolve a dispute and the optional Flow/resource process; and
+- optional `assentPolicy`: who must record mutual agreement, only when signatories are explicitly requested.
+
+`activationPolicy.lifecycle.onExpiry` is always `pause-consequential`. Omit `effectiveAt`, `reviewAt`, and `expiresAt` unless supplied. A Draft may remain incomplete; it cannot become effective until editors, confirmation subjects, lifecycle policy, dispute resolvers, actor resolution, confirmations, optional assent, and time gates are satisfied.
+
+Do not emit `confirm-setup`, `record-assent`, withdrawal, dispute, or resolution operations. The host may offer them only after replay, revision binding, body and policy digest checks, Matrix permission, verified ability, and trusted-time validation.
+
+### 7. Preserve inference and consequence boundaries
 
 Only non-effecting inferred facts, summaries, and classifications may auto-accept, and only when the Effective Shape permits their record class. Contract, outcome, authority, Action, claim, evaluation, and settlement suggestions always remain proposed.
 
 Writing an allowed inferred record to shared Matrix Topic state is not itself an external effect. Invoking a Flow, issuing a credential, executing a transaction, publishing, paying, or settling is an external effect and requires its Action/Flow contract, authority, gates, and confirmation.
 
-### 7. Compose the Portal handoff
+### 8. Compose the Portal handoff
 
 The Portal owns the viewer-specific “Now” card. Do not author arbitrary lifecycle labels, status pills, “Needs you” copy, or hard-coded next actions.
 
@@ -153,22 +171,24 @@ The host must:
 
 - project progress with `projectTopicProgress` from the Effective Shape and durable history;
 - project viewer attention with `projectTopicNow` using verified Matrix permission and UCAN abilities;
+- preserve the primary blocking obligation even when it belongs to another person, then classify it as `mine`, `theirs`, `unassigned`, `unauthorized`, or `unavailable`;
+- present one concrete obligation, why it matters, who is responsible, what it unlocks, and a focused action rather than a generic count or “terms” label;
 - key private attention facts by Topic revision, contract revision, and Shape digest;
 - show unavailable evaluation, decision, effect, or settlement adapters as honest Flow/resource handoffs rather than simulated success;
 - show a legacy Topic as unsupported without migration writes.
 
 Composition may suggest human-friendly first-turn copy and canvas blocks. It may not claim that any transition is legal or assigned to the viewer.
 
-### 8. Plan host calls safely
+### 9. Plan host calls safely
 
 - `execution.externalActions` is always empty.
 - Every proposed call has a unique idempotency key derived from `compositionId`.
 - Commit eligibility requires the room, actor, Matrix write permission, and every call's verified ability.
-- Create the root, accepted verbatim intent memory, canvas, proposed records, and v3 materialized projection through the host adapter.
+- Create the root, accepted verbatim intent memory, canvas, proposed records, and v4 materialized projection through the host adapter.
 - Never issue credentials, invoke Actions, spend funds, or settle value during composition.
 - Never retry an uncertain root send by creating another root; recover using the same idempotency key.
 
-### 9. Validate
+### 10. Validate
 
 Run:
 
@@ -194,7 +214,7 @@ Ask at most one question before producing a useful preview, and only when confid
 - `BLOCKED_CONFIDENTIALITY_BOUNDARY`: no suitable Matrix room can be resolved.
 - `BLOCKED_AUTHORITY`: Matrix write permission or required verified ability is absent.
 - `BLOCKED_STALE_REVISION`: Topic revision, contract revision, or Shape digest changed.
-- `BLOCKED_LEGACY_TOPIC`: the target does not use root/body/state version 3.
+- `BLOCKED_LEGACY_TOPIC`: the target does not use root/body/state version 4.
 - `BLOCKED_SECRET_DETECTED`: the input contains credentials or private key material.
 - `PARTIAL_ROOT_CREATED`: the root exists but a later idempotent stage failed.
 - `PARTIAL_CANVAS`: the Topic and intent record exist but canvas initialisation failed.
@@ -209,9 +229,10 @@ For interactive preview, render a calm Draft:
 [Title]  [Kind]
 [One-sentence intended outcome]
 
-Draft terms
+Draft setup
 • [first useful structure]
 • [second useful structure]
+• [unresolved setup decision, named plainly]
 
 [Review Draft]  [Adjust]
 ```

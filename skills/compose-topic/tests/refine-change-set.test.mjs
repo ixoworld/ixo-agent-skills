@@ -4,16 +4,17 @@ import test from "node:test";
 import { validateRefineChangeSet } from "../scripts/validate-refine-change-set.mjs";
 
 const valid = () => ({
-  version: "2.0",
+  version: "3.0",
   status: "ready-to-stage",
   changeSetId: "019ff687-3b07-7b79-8dd4-6de9b3111830",
   editSessionId: "019ff687-3b07-7b79-8dd4-6de9b3111831",
   topicId: "ixo:topic:019ff687-3b07-706c-bab4-bfdd665ebc93",
-  profile: "qi.topic-contract-state/v3",
+  profile: "qi.topic-contract-state/v4",
   expectedTopicRevision: "ixo:topic-operation:019ff687-3b07-7e7f-8ee6-28b632bdc296",
   expectedContractRevision: "contract-3",
   expectedShapeDigest: `sha256:${"a".repeat(64)}`,
-  expectedBodyHash: "sha256:current",
+  expectedBodyHash: `sha256:${"b".repeat(64)}`,
+  expectedPolicyDigest: `sha256:${"c".repeat(64)}`,
   changes: [
     { op: "set-date", path: "/outcome/target/value", value: "2026-08-20" },
     {
@@ -38,11 +39,15 @@ test("rejects a refinement that falls back to Topic creation or lacks the expect
   delete value.expectedTopicRevision;
   delete value.expectedContractRevision;
   delete value.expectedShapeDigest;
+  delete value.expectedBodyHash;
+  delete value.expectedPolicyDigest;
   const result = codes(value);
   assert(result.has("REFINE_TARGET"));
   assert(result.has("EXPECTED_TOPIC_REVISION"));
   assert(result.has("EXPECTED_CONTRACT_REVISION"));
   assert(result.has("EXPECTED_SHAPE_DIGEST"));
+  assert(result.has("EXPECTED_BODY_HASH"));
+  assert(result.has("EXPECTED_POLICY_DIGEST"));
 });
 
 test("rejects a legacy contract profile", () => {
@@ -55,4 +60,13 @@ test("rejects an answer operation without the stable question identity", () => {
   const value = valid();
   delete value.changes[1].questionId;
   assert(codes(value).has("QUESTION_ID"));
+});
+
+test("accepts a revision-bound activation policy replacement", () => {
+  const value = valid();
+  value.changes = [{
+    op: "replace-activation-policy",
+    value: { lifecycle: { onExpiry: "pause-consequential" } },
+  }];
+  assert.deepEqual(validateRefineChangeSet(value), []);
 });

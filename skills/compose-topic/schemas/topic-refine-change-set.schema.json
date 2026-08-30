@@ -13,11 +13,13 @@
     "expectedTopicRevision",
     "expectedContractRevision",
     "expectedShapeDigest",
+    "expectedBodyHash",
+    "expectedPolicyDigest",
     "changes"
   ],
   "properties": {
     "version": {
-      "const": "2.0"
+      "const": "3.0"
     },
     "status": {
       "const": "ready-to-stage"
@@ -33,7 +35,7 @@
       "pattern": "^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
     "profile": {
-      "const": "qi.topic-contract-state/v3"
+      "const": "qi.topic-contract-state/v4"
     },
     "expectedTopicRevision": {
       "type": "string",
@@ -51,8 +53,11 @@
     },
     "expectedBodyHash": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 256
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "expectedPolicyDigest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
     },
     "changes": {
       "type": "array",
@@ -129,6 +134,29 @@
               },
               "status": {
                 "const": "answered"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["op", "value"],
+            "properties": {
+              "op": { "const": "replace-activation-policy" },
+              "value": { "$ref": "topic-contract-draft.schema.json#/$defs/activationPolicy" }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["op", "value"],
+            "properties": {
+              "op": { "const": "replace-assent-policy" },
+              "value": {
+                "oneOf": [
+                  { "$ref": "topic-contract-draft.schema.json#/$defs/assentPolicy" },
+                  { "type": "null" }
+                ]
               }
             },
             "additionalProperties": false

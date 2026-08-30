@@ -4,7 +4,7 @@ description: Compose the Evaluation specialization of a Topic Protocol v1 Draft 
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "2.0.0"
   parent-skill: compose-topic
   topic-kind: evaluation
 ---
@@ -36,6 +36,10 @@ Capture:
 If weighted scoring is used, provide all weights and make them sum to 1; otherwise omit all weights.
 
 An evaluation result is not automatically a decision, external effect, or Topic completion. Preserve those boundaries.
+
+## Smallest setup questions
+
+Ask what is being evaluated, which criteria decide whether the evaluation is adequate, who performs or owns the evaluation, who confirms the Topic setup, and who may record any later decision. Do not infer any of these actors from the creator or room membership.
 
 ## Evaluation kit boundary
 

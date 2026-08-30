@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Validate Compose Topic v2 output. Usage: node scripts/validate-composition.mjs FILE [--json] | --examples [--json] */
+/** Validate Compose Topic v3 output. Usage: node scripts/validate-composition.mjs FILE [--json] | --examples [--json] */
 
 import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -24,11 +24,11 @@ const ABILITY = /^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/u;
 const TOPIC = /^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const ENTRY = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
-const COMMIT = "db925bece7269a3c11e3081f301c7e7d7dd7bab4";
-const PACKAGE_SHASUM = "962da70e62f7a705b159edf2b55e03ca443f72d1";
-const PROTOCOL_VERSION = "1.0.0-rc.1";
-const COMPOSITION_VERSION = "2.0.0";
-const PROFILE = "qi.topic-contract-state/v3";
+const COMMIT = "0407c6e7e3f77091260a08d586441e5323a0227f";
+const PACKAGE_SHASUM = "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f";
+const PROTOCOL_VERSION = "1.0.0-rc.2";
+const COMPOSITION_VERSION = "3.0.0";
+const PROFILE = "qi.topic-contract-state/v4";
 const KINDS = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
 const RECIPE_BY_KIND = {
   task: "project",
@@ -192,11 +192,11 @@ function validateProtocolBinding(value, findings) {
   ]);
   add(findings, binding?.package === "@ixo/topic-protocol", "PROTOCOL_PACKAGE", "/protocolBinding/package", "package mismatch");
   add(findings, binding?.topicProtocolVersion === PROTOCOL_VERSION, "PROTOCOL_VERSION", "/protocolBinding/topicProtocolVersion", `must equal ${PROTOCOL_VERSION}`);
-  add(findings, binding?.rootVersion === 3 && binding?.contractBodyVersion === 3 && binding?.stateVersion === 3, "PROTOCOL_V3", "/protocolBinding", "root, body, and state must use version 3");
+  add(findings, binding?.rootVersion === 4 && binding?.contractBodyVersion === 4 && binding?.stateVersion === 4, "PROTOCOL_V4", "/protocolBinding", "root, body, and state must use version 4");
   add(findings, binding?.contractProfile === PROFILE, "CONTRACT_PROFILE", "/protocolBinding/contractProfile", `must equal ${PROFILE}`);
   add(findings, binding?.sourceCommit === COMMIT, "SOURCE_COMMIT", "/protocolBinding/sourceCommit", `must equal ${COMMIT}`);
   add(findings, binding?.packageShasum === PACKAGE_SHASUM, "PACKAGE_SHASUM", "/protocolBinding/packageShasum", "published package shasum mismatch");
-  add(findings, binding?.legacyPolicy === "v3-only-no-migration", "LEGACY_POLICY", "/protocolBinding/legacyPolicy", "must reject legacy runtime and migration");
+  add(findings, binding?.legacyPolicy === "v4-only-no-migration", "LEGACY_POLICY", "/protocolBinding/legacyPolicy", "must reject legacy runtime and migration");
 }
 
 function validateDisposition(value, findings) {
@@ -213,7 +213,7 @@ function validateDisposition(value, findings) {
   if (value.disposition === "continue" || value.mode === "refine") {
     add(findings, value.topic?.operation === "reuse", "REUSE_OPERATION", "/topic/operation", "must be reuse");
     add(findings, TOPIC.test(value.topic?.topicId ?? ""), "TOPIC_ID", "/topic/topicId", "must identify the existing Topic");
-    add(findings, value.topic?.observedProfile === PROFILE, "LEGACY_TOPIC", "/topic/observedProfile", "only v3 Topics may be refined");
+    add(findings, value.topic?.observedProfile === PROFILE, "LEGACY_TOPIC", "/topic/observedProfile", "only v4 Topics may be refined");
     add(findings, typeof value.topic?.expectedTopicRevision === "string", "EXPECTED_TOPIC_REVISION", "/topic/expectedTopicRevision", "is required");
     add(findings, typeof value.topic?.expectedContractRevision === "string", "EXPECTED_CONTRACT_REVISION", "/topic/expectedContractRevision", "is required");
     add(findings, DIGEST.test(value.topic?.expectedShapeDigest ?? ""), "EXPECTED_SHAPE_DIGEST", "/topic/expectedShapeDigest", "is required");
@@ -266,18 +266,18 @@ function validateRecipe(value, findings) {
 
 function validateContract(value, findings) {
   const draft = value.contractDraft;
-  if (!requireObject(findings, draft, "/contractDraft", ["envelope", "semantic", "publication", "readiness", "unresolvedHostFields"])) return;
+  if (!requireObject(findings, draft, "/contractDraft", ["envelope", "semantic", "setupObligations", "publication", "readiness", "unresolvedHostFields"])) return;
   const envelope = draft.envelope;
   const semantic = draft.semantic;
-  requireObject(findings, envelope, "/contractDraft/envelope", ["version", "status", "revision", "authoredBy", "authoredAt"]);
-  requireObject(findings, semantic, "/contractDraft/semantic", ["kindRef", "workingMode", "baseRecipe", "shapeSources", "shapeDigest"]);
-  add(findings, envelope?.version === 3, "CONTRACT_VERSION", "/contractDraft/envelope/version", "must equal 3");
+  requireObject(findings, envelope, "/contractDraft/envelope", ["version", "revision", "authoredBy", "authoredAt"]);
+  requireObject(findings, semantic, "/contractDraft/semantic", ["kindRef", "workingMode", "baseRecipe", "shapeSources", "shapeDigest", "activationPolicy"]);
+  add(findings, envelope?.version === 4, "CONTRACT_VERSION", "/contractDraft/envelope/version", "must equal 4");
+  add(findings, !Object.hasOwn(envelope ?? {}, "status"), "IMMUTABLE_BODY_STATUS", "/contractDraft/envelope/status", "lifecycle status belongs to contract heads and replayed operations, not the immutable body");
   if (["create", "branch", "split"].includes(value.disposition)) {
-    add(findings, envelope?.status === "draft", "NEW_TOPIC_DRAFT", "/contractDraft/envelope/status", "every new Topic contract must be a Draft");
     add(findings, value.topic?.rootDraft?.status === "draft", "NEW_ROOT_DRAFT", "/topic/rootDraft/status", "every new Topic root must be a Draft");
   }
   for (const field of Object.keys(semantic ?? {})) {
-    add(findings, !FORBIDDEN_CONTRACT_FIELDS.has(field), "V3_CONTRACT_BOUNDARY", `/contractDraft/semantic/${field}`, "does not belong in a v3 Topic Contract body");
+    add(findings, !FORBIDDEN_CONTRACT_FIELDS.has(field), "V4_CONTRACT_BOUNDARY", `/contractDraft/semantic/${field}`, "does not belong in a v4 Topic Contract body");
   }
   add(findings, Array.isArray(semantic?.shapeSources) && semantic.shapeSources.length >= 2, "SHAPE_SOURCE_COUNT", "/contractDraft/semantic/shapeSources", "must pin the Base Recipe and Kind Shape at minimum");
   add(findings, DIGEST.test(semantic?.shapeDigest ?? ""), "CONTRACT_SHAPE_DIGEST", "/contractDraft/semantic/shapeDigest", "must be a SHA-256 digest");
@@ -290,7 +290,7 @@ function validateContract(value, findings) {
     findings.push(finding("RISKS_INCIDENT_ONLY", "/contractDraft/semantic/risks", "risks are an Incident-only structure"));
   }
   for (const [index, risk] of (semantic?.risks ?? []).entries()) {
-    add(findings, !Object.hasOwn(risk, "likelihood"), "LEGACY_LIKELIHOOD", `/contractDraft/semantic/risks/${index}`, "v3 uses Impact-only risk");
+    add(findings, !Object.hasOwn(risk, "likelihood"), "LEGACY_LIKELIHOOD", `/contractDraft/semantic/risks/${index}`, "v4 uses Impact-only risk");
   }
 
   for (const [statement, path] of statementEntries(semantic)) {
@@ -328,8 +328,7 @@ function validateContract(value, findings) {
     add(findings, value.claimResolutionEvidence.entityDid === claim?.entityDid && value.claimResolutionEvidence.collectionId === claim?.collectionId, "CLAIM_RESOLUTION_MATCH", "/claimResolutionEvidence", "must resolve the exact bound entity and collection");
     add(findings, value.claimResolutionEvidence.readOnly === true, "CLAIM_RESOLUTION_READ_ONLY", "/claimResolutionEvidence/readOnly", "resolution evidence is read-only");
   }
-
-  if (envelope?.status === "accepted") validateAcceptedContract(value, kind, semantic, findings);
+  validateSetupPolicy(draft, semantic, findings);
   const publication = draft.publication;
   if (["confidential", "restricted"].includes(publication?.dataClassification)) {
     add(findings, publication.disclosure === "reference-only", "SENSITIVE_INLINE", "/contractDraft/publication/disclosure", "sensitive contracts must be reference-only");
@@ -339,34 +338,57 @@ function validateContract(value, findings) {
   add(findings, publication?.containsProviderSessionIds === false, "PROVIDER_SESSION", "/contractDraft/publication/containsProviderSessionIds", "provider session IDs must remain private");
 }
 
-function validateAcceptedContract(value, kind, semantic, findings) {
-  add(findings, typeof semantic?.intent?.text === "string" && semantic.intent.text.trim().length > 0, "ACCEPTED_INTENT", "/contractDraft/semantic/intent", "accepted contracts require intent");
-  if (["task", "agent_task", "proposal", "evaluation", "claims", "question"].includes(kind)) {
-    add(findings, typeof semantic?.outcome?.statement?.text === "string", "ACCEPTED_OUTCOME", "/contractDraft/semantic/outcome/statement", "accepted contract requires an outcome");
+function validateSetupPolicy(draft, semantic, findings) {
+  const policy = semantic?.activationPolicy;
+  add(findings, isObject(policy), "ACTIVATION_POLICY", "/contractDraft/semantic/activationPolicy", "every v4 composition must expose a partial activation policy object");
+  const obligations = Array.isArray(draft.setupObligations) ? draft.setupObligations : [];
+  const obligationCodes = new Set(obligations.map((item) => item?.code));
+  const expectedMissing = [
+    [!(policy?.editors?.length > 0), "setup.editors"],
+    [!isObject(policy?.confirmation), "setup.confirmation-policy"],
+    [!isObject(policy?.lifecycle), "setup.lifecycle-policy"],
+    [!(policy?.dispute?.resolvers?.length > 0), "setup.dispute-resolvers"],
+  ];
+  for (const [missing, code] of expectedMissing) {
+    add(findings, !missing || obligationCodes.has(code), "MISSING_SETUP_OBLIGATION", "/contractDraft/setupObligations", `${code} must remain visible while unresolved`);
   }
-  if (["task", "agent_task"].includes(kind)) {
-    add(findings, typeof semantic?.ownerId === "string", "ACCEPTED_TASK_OWNER", "/contractDraft/semantic/ownerId", "accepted work requires an owner");
+  for (const [index, obligation] of obligations.entries()) {
+    add(findings, typeof obligation?.prompt === "string" && obligation.prompt.length > 0, "OBLIGATION_PROMPT", `/contractDraft/setupObligations/${index}/prompt`, "must name the concrete choice in plain language");
+    add(findings, typeof obligation?.purpose === "string" && obligation.purpose.length > 0, "OBLIGATION_PURPOSE", `/contractDraft/setupObligations/${index}/purpose`, "must explain why the choice is needed");
+    add(findings, typeof obligation?.unlocks === "string" && obligation.unlocks.length > 0, "OBLIGATION_UNLOCKS", `/contractDraft/setupObligations/${index}/unlocks`, "must explain what resolving the choice permits");
   }
-  if (kind === "proposal") {
-    add(findings, typeof semantic?.decision?.governanceProposal === "string", "ACCEPTED_PROPOSAL_DECISION", "/contractDraft/semantic/decision/governanceProposal", "accepted Proposal requires an approval model");
+  if (policy?.lifecycle !== undefined) {
+    add(findings, policy.lifecycle.onExpiry === "pause-consequential", "EXPIRY_BEHAVIOR", "/contractDraft/semantic/activationPolicy/lifecycle/onExpiry", "must pause consequential progression");
   }
-  if (kind === "evaluation") {
-    add(findings, isObject(semantic?.decision), "ACCEPTED_EVALUATION_DECISION", "/contractDraft/semantic/decision", "accepted Evaluation requires criteria and authority");
+  const thresholdRules = [
+    [policy?.confirmation, "/contractDraft/semantic/activationPolicy/confirmation"],
+    [semantic?.assentPolicy, "/contractDraft/semantic/assentPolicy"],
+  ];
+  for (const [rule, path] of thresholdRules) {
+    if (!isObject(rule)) continue;
+    const subjects = rule.subjects ?? rule.signatories ?? [];
+    add(findings, rule.mode !== "threshold" || (Number.isInteger(rule.threshold) && rule.threshold > 0 && rule.threshold <= subjects.length), "POLICY_THRESHOLD", path, "threshold must be positive and no greater than the named subjects");
   }
-  if (kind === "claims") {
-    add(findings, isObject(semantic?.claimBinding), "ACCEPTED_CLAIM_BINDING", "/contractDraft/semantic/claimBinding", "accepted Claims Topic requires one entity and collection");
+  add(findings, semantic?.assentPolicy === undefined || semantic?.workingMode !== "solo", "SOLO_ASSENT", "/contractDraft/semantic/assentPolicy", "agreement signatories are available only for team or client Topics");
+
+  const provenance = semantic?.fieldProvenance ?? {};
+  const authorityPaths = [
+    [policy?.editors, "/activationPolicy/editors"],
+    [policy?.confirmation, "/activationPolicy/confirmation"],
+    [policy?.dispute?.resolvers, "/activationPolicy/dispute/resolvers"],
+    [semantic?.assentPolicy, "/assentPolicy"],
+  ];
+  for (const [entry, path] of authorityPaths) {
+    if (entry === undefined) continue;
+    const proof = provenance[path];
+    add(findings, isObject(proof) && ["explicit", "contextual"].includes(proof.basis), "POLICY_PROVENANCE", `/contractDraft/semantic/fieldProvenance${path}`, "named authority must come from explicit or accepted context, never owner or creator fallback");
   }
-  if (kind === "question") {
-    add(findings, (semantic?.completion?.acceptanceAuthorityIds?.length ?? 0) > 0, "ACCEPTED_QUESTION_AUTHORITY", "/contractDraft/semantic/completion/acceptanceAuthorityIds", "accepted Question requires completion authority");
+  for (const name of ["effectiveAt", "reviewAt", "expiresAt"]) {
+    if (policy?.lifecycle?.[name] === undefined) continue;
+    const path = `/activationPolicy/lifecycle/${name}`;
+    const proof = provenance[path];
+    add(findings, isObject(proof) && ["explicit", "contextual"].includes(proof.basis), "LIFECYCLE_PROVENANCE", `/contractDraft/semantic/fieldProvenance${path}`, "dates must be supplied or accepted, never invented");
   }
-  if (kind === "discussion") {
-    add(findings, semantic?.temporalMode === "ongoing" || typeof semantic?.completion?.definition === "string", "ACCEPTED_DISCUSSION_CLOSURE", "/contractDraft/semantic/completion", "finite Discussion requires a closure rule");
-  }
-  if (kind === "incident") {
-    add(findings, typeof semantic?.ownerId === "string", "ACCEPTED_INCIDENT_OWNER", "/contractDraft/semantic/ownerId", "accepted Incident requires a response owner");
-    add(findings, typeof semantic?.completion?.definition === "string", "ACCEPTED_INCIDENT_CLOSURE", "/contractDraft/semantic/completion/definition", "accepted Incident requires closure conditions");
-  }
-  add(findings, value.recipeSelection?.reviewState === "draft", "ACCEPTED_RECIPE_SELECTION", "/recipeSelection/reviewState", "recipe instantiation remains reviewable even when a later body is accepted");
 }
 
 function validateCanvas(value, findings) {
@@ -461,7 +483,7 @@ function validateExecution(value, findings) {
     }
   }
   const plan = execution.stateEventPlan;
-  add(findings, plan?.profile === PROFILE && plan?.version === 3, "STATE_PROFILE", "/execution/stateEventPlan", "must publish the v3 profile");
+  add(findings, plan?.profile === PROFILE && plan?.version === 4, "STATE_PROFILE", "/execution/stateEventPlan", "must publish the v4 profile");
   add(findings, plan?.shapeRecordPersisted === false, "EFFECTIVE_SHAPE_RECORD", "/execution/stateEventPlan/shapeRecordPersisted", "must not persist a separate Effective Shape record");
 }
 

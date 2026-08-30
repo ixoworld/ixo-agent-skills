@@ -4,7 +4,7 @@ Topic Recipes are expert-honed, digest-pinned overlays over a Base Recipe. They 
 
 ## Current behavior
 
-The skill has one controlled local catalog: [topic-shape-pins.json](topic-shape-pins.json). It contains the eight Base Recipe plus Kind resolutions and the three seed Topic Recipes published with Topic Protocol `1.0.0-rc.1`.
+The skill has one controlled local catalog: [topic-shape-pins.json](topic-shape-pins.json). It contains the eight Base Recipe plus Kind resolutions and the three seed Topic Recipes published with Topic Protocol `1.0.0-rc.2`.
 
 Every selection produces an editable Draft.
 

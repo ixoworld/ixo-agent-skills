@@ -32,7 +32,7 @@ export function validateRefineChangeSet(value) {
   };
   if (!isObject(value))
     return [finding("TYPE_OBJECT", "", "must be an object")];
-  add(value.version === "2.0", "VERSION", "/version", "must equal 2.0");
+  add(value.version === "3.0", "VERSION", "/version", "must equal 3.0");
   add(
     value.status === "ready-to-stage",
     "STATUS",
@@ -58,10 +58,10 @@ export function validateRefineChangeSet(value) {
     "must identify the existing Topic",
   );
   add(
-    value.profile === "qi.topic-contract-state/v3",
+    value.profile === "qi.topic-contract-state/v4",
     "PROFILE",
     "/profile",
-    "must equal qi.topic-contract-state/v3",
+    "must equal qi.topic-contract-state/v4",
   );
   add(
     typeof value.expectedTopicRevision === "string" &&
@@ -83,6 +83,8 @@ export function validateRefineChangeSet(value) {
     "/expectedShapeDigest",
     "is required",
   );
+  add(DIGEST.test(value.expectedBodyHash ?? ""), "EXPECTED_BODY_HASH", "/expectedBodyHash", "is required");
+  add(DIGEST.test(value.expectedPolicyDigest ?? ""), "EXPECTED_POLICY_DIGEST", "/expectedPolicyDigest", "is required");
   add(
     !Object.hasOwn(value, "target") && !Object.hasOwn(value, "create"),
     "REFINE_TARGET",
@@ -152,6 +154,13 @@ export function validateRefineChangeSet(value) {
         path,
         "answering preserves the existing question statement",
       );
+    } else if (change.op === "replace-activation-policy") {
+      add(isObject(change.value), "ACTIVATION_POLICY", `${path}/value`, "must be a partial activation policy object");
+      if (change.value?.lifecycle !== undefined) {
+        add(change.value.lifecycle?.onExpiry === "pause-consequential", "EXPIRY_BEHAVIOR", `${path}/value/lifecycle/onExpiry`, "must pause consequential progression");
+      }
+    } else if (change.op === "replace-assent-policy") {
+      add(change.value === null || isObject(change.value), "ASSENT_POLICY", `${path}/value`, "must be a signatory policy or null");
     } else {
       findings.push(
         finding("CHANGE_OPERATION", `${path}/op`, "is not supported"),
@@ -175,7 +184,7 @@ export async function main(options = {}) {
   const findings = validateRefineChangeSet(value);
   return {
     validator: "compose-topic-refine-validator",
-    version: "2.0",
+    version: "3.0",
     file,
     ok: findings.length === 0,
     findings,

@@ -4,7 +4,7 @@ description: Compose the Question specialization of a Topic Protocol v1 Draft fo
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "2.0.0"
   parent-skill: compose-topic
   topic-kind: question
 ---
@@ -38,6 +38,10 @@ Capture:
 Do not answer the question in place of composing the Topic unless persistence provides no value.
 
 The first canvas should put the intended answer first, then the research frame, evidence/source plan, open questions, and one next action.
+
+## Smallest setup questions
+
+Ask the primary question, the expected answer or brief, who will review the answer, and who must confirm the setup. The answer reviewer, setup confirmer, researcher, and Topic completion authority may be different people; leave each unresolved unless supplied.
 
 ## Evidence and completion
 
