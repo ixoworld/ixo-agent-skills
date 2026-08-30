@@ -1,0 +1,246 @@
+{
+  "version": 1,
+  "protocolVersion": "1.0.0-rc.1",
+  "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
+  "baseCompositions": {
+    "task": {
+      "baseRecipe": "project",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/project",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/task",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:d29a378becb7b2fe5b6cf04699bc95d79d037a6e7360d14c371cc8806e4bf236"
+        }
+      ],
+      "shapeDigest": "sha256:497a83f43538a5e9e9f1a782cbacd0326be6df6d5969d8b50213fc304dc9fe14"
+    },
+    "agent_task": {
+      "baseRecipe": "flow",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/flow",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/agent_task",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:eafe6fb122cdf433772de7891a35abc7be56750b72d2dce1e317ee981062c5e4"
+        }
+      ],
+      "shapeDigest": "sha256:a4c5c8b3e91f02dbc493723a677a2c037d5355050562ebde39ecbae89fb2f29c"
+    },
+    "proposal": {
+      "baseRecipe": "proposal",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/proposal",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/proposal",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:31e3305990b921243e150f275876326fbcbf248911d7b1d310cbc3667374c603"
+        }
+      ],
+      "shapeDigest": "sha256:8f2a5e5e6324b1a554c8ec6847003796aa16e4d6df7dcdb40c49ff64196faed8"
+    },
+    "evaluation": {
+      "baseRecipe": "evaluation",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/evaluation",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:69414c109e6500aaad8f692fd140fa872d2cb603a770855e872ed6d1189b9a06"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/evaluation",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:d54cbf3f615371d99b27cff3d9e4702cbececba48bf347987cb6a1e20fc76c38"
+        }
+      ],
+      "shapeDigest": "sha256:4c61240c69a2dd71157451cab619fc9ea33db0b735500af29962666bfe215b56"
+    },
+    "claims": {
+      "baseRecipe": "claims",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/claims",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:9bf1b5266a9d3e6c8a68f6d5d70da2642800903f01d42b449f1f20f78d824d69"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/claims",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:3f9d395d9ea16de70c47bae3784d922bae29b7b9c2b5c4ad24b676d5b9287a3e"
+        }
+      ],
+      "shapeDigest": "sha256:ea5e0410be510267cdd18946a4cabd633837abbbf8efaedadc7588aa252e0a10"
+    },
+    "question": {
+      "baseRecipe": "research",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/research",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/question",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:7a0135cfb9f32fdfa3595d0f04328d40bb777dbfdfd91043460ba33857172aaf"
+        }
+      ],
+      "shapeDigest": "sha256:fb9f9a5152f8706a0d2921eb9bfa9fbbcc3e80a31909d585e4812168467eb032"
+    },
+    "discussion": {
+      "baseRecipe": "discussion",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/discussion",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/discussion",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:5ca0ea4ea15e11a94f6a1f14157d1ef1be48dcf111c052d7139579d86d5cf85d"
+        }
+      ],
+      "shapeDigest": "sha256:b153dcdc99904dabb5f7392ea0dd2df47a4f43c0f8b46773b7844045304a2421"
+    },
+    "incident": {
+      "baseRecipe": "incident",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/incident",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/incident",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:0170fcd0de06e1ad1f8cd6f5c163f257e075d12f40b7de08eb14082f3548bf71"
+        }
+      ],
+      "shapeDigest": "sha256:c0d6e30b23fdc8ad97287ce88255af34e984dba3579897e2766d2d8f1125824d"
+    }
+  },
+  "topicRecipes": {
+    "research-brief": {
+      "kind": "question",
+      "baseRecipe": "research",
+      "creates": "draft",
+      "topicRecipeRef": {
+        "id": "https://topic-protocol.ixo.world/recipes/research-brief",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+      },
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/research",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/question",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:7a0135cfb9f32fdfa3595d0f04328d40bb777dbfdfd91043460ba33857172aaf"
+        },
+        {
+          "kind": "topic-recipe",
+          "id": "https://topic-protocol.ixo.world/recipes/research-brief",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:deae09bfdc76592fdc749d1c2d893b972acaca1dcbbeb4677e7cf4b7da8d1878"
+        }
+      ],
+      "shapeDigest": "sha256:f5bdbf1f72e96232868550ebe199b9fda25a7a3fb7461a8ea7b83283e1303fc0"
+    },
+    "agent-delivery": {
+      "kind": "agent_task",
+      "baseRecipe": "flow",
+      "creates": "draft",
+      "topicRecipeRef": {
+        "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:5d92d85cd9a6aeef0d4d0c89588412328ad98ca111f1f58d78dee6c98b2a14a0"
+      },
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/flow",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:b311430326641b9e8661120994392c9bf32e71dd26a2261bc9f8ba7ec5f85196"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/agent_task",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:eafe6fb122cdf433772de7891a35abc7be56750b72d2dce1e317ee981062c5e4"
+        },
+        {
+          "kind": "topic-recipe",
+          "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:5d92d85cd9a6aeef0d4d0c89588412328ad98ca111f1f58d78dee6c98b2a14a0"
+        }
+      ],
+      "shapeDigest": "sha256:322b4925d6dcb53320f428b32d42fb38d86214a2842bcb7b92eb5fbef1d1fe9e"
+    },
+    "verified-work-payment": {
+      "kind": "claims",
+      "baseRecipe": "claims",
+      "creates": "draft",
+      "topicRecipeRef": {
+        "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+      },
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/claims",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:9bf1b5266a9d3e6c8a68f6d5d70da2642800903f01d42b449f1f20f78d824d69"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/claims",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:3f9d395d9ea16de70c47bae3784d922bae29b7b9c2b5c4ad24b676d5b9287a3e"
+        },
+        {
+          "kind": "topic-recipe",
+          "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+        }
+      ],
+      "shapeDigest": "sha256:473803cb09ea3d949d1b2d6127dfa2cebe9a4f6ec912162300346d399accb8a7"
+    }
+  }
+}

@@ -1,177 +1,168 @@
-# Topic Contract profile alignment
+# Topic Protocol v1 composition profile
 
-This skill targets two separately governed layers.
+This reference translates the pinned Topic Protocol release candidate into rules for composition. It does not redefine the protocol.
 
-## Normative Topic Protocol baseline
+## Pinned profile
 
-Topic Protocol `0.8.0` defines the durable Topic identity, relation-free Matrix root, native thread messages, append-only operations and records, deterministic projection, Topic Capsule, room-policy boundary, agent participation, Topic-scoped authority, discovery, VFS references, pinned Kind Profiles, typed Kind resources, and capability-gated Topic Action requests and receipts.
+- package: `@ixo/topic-protocol@1.0.0-rc.1`
+- git source: `db925bece7269a3c11e3081f301c7e7d7dd7bab4`
+- root version: `3`
+- contract body version: `3`
+- Matrix state profile: `qi.topic-contract-state/v3`
+- Matrix event types: unchanged from the protocol
+- legacy policy: v0.8/v2 Topics are unsupported and are never migrated by this skill
 
-The composer must preserve these invariants:
+The root, contract body, and materialized state are version 3. The Effective Shape is resolved deterministically for each Topic from pinned sources; it is not another persisted protocol record.
 
-- stable Topic identity uses `ixo:topic:<UUIDv7>`;
-- a live Topic has one canonical native or adopted Matrix anchor `{ mode, roomId, rootEventId, manifestSource }`;
-- a native root is a relation-free `m.room.message`; an adopted anchor retains an existing thread root and sources its manifest from state;
-- Topic messages are native `m.thread` children of the root;
-- current state is projected from authenticated and authorised append-only operations;
-- accepted records retain source-event provenance;
-- room membership controls confidentiality;
-- Topic capabilities restrict action authority but do not create a private subset inside the room;
-- VFS references do not grant file-byte access;
-- user preferences and provider-private external-session identifiers are not shared Topic state.
+## Contract body v3
 
-## Normative Topic Contract profile
+A materialized body requires:
 
-`qi.topic-contract-state/v2` is pinned to the Topic Protocol `0.8.0` commit:
+- `version: 3`;
+- revision, status, author, and timestamp;
+- one `kindRef`;
+- `workingMode`;
+- `baseRecipe`;
+- optional digest-pinned `topicRecipeRef`;
+- at least one `shapeSources` entry;
+- `shapeDigest`; and
+- optional singular `claimBinding: { entityDid, collectionId }`.
 
-```text
-08339e19bc6cc891b8cad85713a58fd1ec7b0da4
-```
+The composition envelope may keep revision, author, and timestamp `null` until the host resolves them. Its semantic layer must already contain the Kind, Base Recipe, Shape sources, and digest before any write.
 
-The profile defines a Matrix state-event projection:
+The removed v0.8 `recipe` and `agents` fields are invalid in a v3 body. The body also never carries an Action definition, effect contract, evaluation kit, schedule, payment contract, or settlement contract.
 
-```text
-type:      ixo.topic.contract
-state_key: ixo:topic:<UUIDv7>
-```
+## Kind and Base Recipe
 
-Its architectural role is a materialized contract head or pointer. It is not authoritative semantic history and does not replace the root, thread, operations, records, or projection.
-
-The contract body contains:
-
-```text
-version
-revision
-status
-authoredBy
-authoredAt
-workingMode
-kindRef
-kindProfile?
-kindResource?
-recipe
-intent
-outcome
-scope
-constraints
-assumptions
-questions
-risks
-decision?
-plan?
-participants
-roles
-agents
-completion
-attachments?
-```
-
-Draft bodies may omit unresolved semantic fields. Accepted bodies must pass the completeness rules for the standard base kind. Custom kinds inherit one standard base kind and cannot introduce new permissions, automation, schemas, or renderers. Risks are an Impact-only Incident structure; `likelihood` is legacy history and is never copied into v2.
-
-The eight standard Kind-to-recipe mappings are fixed:
-
-```text
-task        -> project
-agent_task  -> flow
-proposal    -> proposal
-evaluation  -> evaluation
-claims      -> claims
-question    -> research
-discussion  -> discussion
-incident    -> incident
-```
-
-Use [topic-kind-templates.md](topic-kind-templates.md) for the canonical draft structures and acceptance fields associated with each mapping.
-
-## Kind Profile boundary
-
-Protocol 0.8 supports an optional exact Kind Profile and typed resource binding alongside a custom `kindRef`. A profile reference contains immutable `id`, `version`, `schema`, and `digest` fields. The resource binding repeats that exact profile reference and adds its namespaced `type`, stable `id`, integer `version`, and validated `value`.
-
-A Kind Profile:
-
-- inherits the standard base Kind and its recipe;
-- may require a typed resource and additional acceptance paths;
-- may declare safe projection and presentation hints;
-- may narrow a verified Action palette; and
-- never grants a capability, changes a Topic lifecycle, executes code, or makes a projection authoritative.
-
-The first-party Job profile is the only bundled profile resolved by the Protocol 0.8 reference implementation. It uses custom ID `org.ixo.job-card`, base Kind `task`, recipe `project`, and a version 1 Job Card resource. Accepted Job contracts require the base Task fields plus a valid pinned Job Card with `jobNumber` and `phase`.
-
-Unknown profiles must be preserved losslessly and validated as their base Kind. The composer must not enable profile-specific acceptance, completion, automation, or privileged actions when it cannot verify the profile and resource schema.
-
-## Topic Action boundary
-
-Protocol 0.8 Kind Profile v2 may reference compatible Action Types from one exact Action manifest. These ordered references shape a client palette; they are not handlers, capability grants, schedules, invocations, or receipts. The host must verify the manifest version and digest, base-Kind compatibility, required Topic ability, request freshness and idempotency before execution.
-
-The composer returns a `contractDraft` rather than a complete Matrix state event because these host-resolved values may not exist yet:
-
-- stable Topic ID;
-- room ID and server-assigned root event ID;
-- exact projected state revision;
-- author and trusted timestamp;
-- canvas document binding;
-- current deterministic projection;
-- publication capability and state-event target.
-
-## Composition-to-contract mapping
-
-| Composition field | Topic Contract field or role |
+| Kind | Base Recipe |
 | --- | --- |
-| `sourceIntent.verbatim` | `semantic.intent.text` and first accepted intent memory record |
-| `contractDraft.envelope` | contract body version, revision, status, author, and timestamp |
-| `contractDraft.semantic` | exact semantic contract body |
-| `topic.rootDraft` | proposed immutable root envelope, completed by the host |
-| `canvas` | BlockNote/Yjs initialization plan; only its binding may enter state |
-| `collaborationSuggestions` | unresolved suggestions; not contract participants or agents |
-| `records` | append-only Topic record proposals |
-| `execution.stateEventPlan` | optional materialized-head publication plan |
-| `protocolBinding` | version, source pin, and authority posture |
+| `task` | `project` |
+| `agent_task` | `flow` |
+| `proposal` | `proposal` |
+| `evaluation` | `evaluation` |
+| `claims` | `claims` |
+| `question` | `research` |
+| `discussion` | `discussion` |
+| `incident` | `incident` |
 
-## Acceptance rules
+A custom Kind label must name one canonical `baseKind`; it does not introduce new permissions, schemas, projection logic, or renderers. A verified Kind Profile and typed resource may still refine that base Kind.
 
-A proposition has one basis:
+## Shape resolution
 
-- `explicit`: directly stated by the user;
-- `contextual`: directly present in accepted supplied Topic context;
-- `inferred`: a reasonable interpretation not accepted by the user;
-- `suggested`: new structure or action proposed by Qi;
-- `retrieved`: obtained from a permitted source.
+Resolve in this order:
 
-Only explicit or directly confirmed contextual propositions may be accepted by composition. Inferred, suggested, and retrieved content remains proposed.
+1. Base Recipe Shape;
+2. optional Topic Recipe Shape;
+3. Kind Shape;
+4. optional Topic-local overlay.
 
-A selected option does not become a final decision unless the contract contains `decisionRecordId` backed by an authorised decision record or operation. An achieved outcome requires `outcomeRecordId` backed by an accepted outcome record.
+Every source has `kind`, immutable `id`, `version`, and SHA-256 `digest`. Sort and digest through the protocol resolver. Copy the resolved source list and Effective Shape digest into both the root and contract proposal.
 
-## Agent identity boundary
+The host persists only:
 
-The Topic Contract profile requires `agentId` and `roleId`. A role suggested by the composer has neither deployed identity nor authority.
+- the Shape digest and pinned sources;
+- the reproducible progress summary;
+- Topic and contract revisions; and
+- durable operations, records, bindings, and receipts.
 
-Therefore:
+If a source cannot be reproduced, the Topic is readable but degraded. Privileged moves are suppressed.
 
-```text
-collaborationSuggestions.agentRoles
-        ↓ host resolves stable identity and policy
-participants + roles + agents
-        ↓ Topic Contract proposal
-agent invocation
-        ↓ separate capability-gated runtime action
-```
+## Progression semantics
 
-Do not invent an `agentId`, convert a role label into an identity, or treat a capability reference as proof that a grant is valid.
+The Shape defines independent axes, transitions, gates, evidence, confirmation, and consequence.
 
-## Disclosure boundary
+Phases:
 
-The profile supports:
+`forming → working → verifying → deciding → effecting → settling → complete`
 
-- `inline`: compact, non-sensitive contract body in state;
-- `reference-only`: hash and encrypted Matrix-message or application-encrypted VFS reference.
+`dormant` is used for archived or redirected Topics.
 
-Use reference-only for confidential or restricted work. The state event never embeds BlockNote/Yjs document content or provider-private session identifiers.
+Conditions, in precedence order:
 
-## Contract lifecycle
+1. `disputed`, `failed`, or `blocked`;
+2. `waiting`;
+3. `needs-input` or `needs-acceptance`;
+4. `on-track`.
 
-Topic Protocol `0.8.0` retains append-only `propose-contract`, `update-contract`, `accept-contract`, and `supersede-contract` operations. The state event exposes separate proposed and effective heads.
+Missing or incompatible Shape/history produces `degraded`.
 
-- this skill emits a proposal, never an implicit acceptance;
-- every proposed change names the exact prior revision, body reference, body hash, and changed semantic paths;
-- acceptance and supersession require separate authorised operations;
-- a projected state event is not itself evidence that terms were accepted; and
-- refine mode must name the exact base revision and rebase or surface conflict when it changes.
+The phase is the earliest incomplete required Shape stage; absent axes are skipped. Only the Shape transition with `completesTopic: true` completes the Topic. Outcome, verification, Action, and settlement axes remain independent.
+
+Waiting and blocking require:
+
+- a source record or operation;
+- an explicit target of kind actor, Flow, resource, or external system; and
+- a reason code.
+
+Never infer the target from `ownerId`.
+
+## Legal transitions and viewer attention
+
+Every transition declares:
+
+- predecessor and target axis/state;
+- command;
+- required ability;
+- actor or role assignment;
+- structured gates;
+- confirmation policy;
+- consequence class;
+- required operation, record, or receipt; and
+- optional Flow/resource handoff.
+
+The Portal may show “Needs you” only when:
+
+1. the transition is legal at the pinned Topic, contract, and Shape revisions;
+2. its gates are satisfied;
+3. it is assigned to the viewer;
+4. Matrix transport permission is verified; and
+5. the protocol/UCAN ability is verified.
+
+Membership, ownership labels, role names, or Action references are not authority.
+
+The private viewer cache key is the tuple `topicRevision + contractRevision + shapeDigest`. The composition skill does not generate viewer attention.
+
+## State tags
+
+Protocol state tags have stable codes, Shape provenance, priority, and tone. They are derived by the projector and must remain separate from user-authored search tags in `body.tags`.
+
+## Claims and evaluation
+
+The Topic contract binds exactly one IXO Entity DID and one claim collection ID. Any suitable IXO Entity may attach the collection and protocol.
+
+Resolution follows:
+
+`entity DID → collection ID → protocol DID → rubric`
+
+The protocol and rubric are read-only resolution evidence, not copied constitutional terms. The collection's entity controller delegates evaluation authorization to the evaluation service and specific evaluation oracle DID/account. A role label in the Topic does not substitute for that delegation.
+
+## Flow, Action, and settlement boundary
+
+Action/effect contracts live in registry Action definitions and their Flow instantiations. UCAN carries `can`, caveats, and delegated authority. UDID references bind Topic progression to evaluation, decision, effect, and settlement contracts through the Flow.
+
+A Topic can retain:
+
+- a Flow binding;
+- context/resource references;
+- UDID references;
+- Action requests;
+- semantic records; and
+- finality-bearing receipts.
+
+If the adapter for an external stage is unavailable, expose the phase and a Flow/resource handoff. Never simulate success.
+
+## Inference policy
+
+The canonical Shapes allow non-effecting inferred facts, summaries, and classifications to auto-accept when the concrete record class is permitted.
+
+The following always remain proposed:
+
+- contract;
+- outcome;
+- authority;
+- Action;
+- claim;
+- evaluation; and
+- settlement.
+
+Writing an allowed inferred record into Matrix Topic state is not an external side effect. Anything that changes an external system, issues an instrument, invokes an Action, transfers value, or settles requires the relevant contract, authority, gates, and confirmation.

@@ -1,229 +1,135 @@
-# Topic Protocol and Portal adapter
+# Topic Protocol v1 and Portal adapter
 
-The composer determines what the Topic should be. The host adapter performs canonical side effects.
+The adapter is the trust boundary between a side-effect-free composition and the real Topic runtime. Use it only for commit or refine.
 
-## Required boundary
+## Host responsibilities
 
-The adapter must use the deployed Topic Protocol runtime and Portal integration rather than reproducing Matrix envelopes, projection, authorization, Yjs persistence, or restart recovery in the skill.
+The host, not the skill:
 
-A production host interface needs capabilities equivalent to:
+- allocates Topic and record IDs;
+- creates or adopts the Matrix root;
+- resolves the Effective Shape with @ixo/topic-protocol 1.0.0-rc.1;
+- creates body references and hashes;
+- appends operations and records;
+- projects v3 Matrix state;
+- verifies Matrix write permission and protocol/UCAN abilities;
+- binds the BlockNote/Yjs document;
+- resolves claim protocol/rubric evidence;
+- binds Flows and UDID references; and
+- executes or observes external Actions and receipts.
 
-```ts
-type CommitContext = {
-  roomId: string;
-  actorId: string;
-  now(): string;
-  createTopic(input: {
-    root: TopicRoot;
-    anchor: TopicAnchor;
-    firstRecord: ProposedRecord;
-    idempotencyKey: string;
-  }): Promise<{
-    topicId: string;
-    anchor: { roomId: string; rootEventId: string };
-    stateRevision: string;
-  }>;
-  assembleCapsule(input: {
-    topicId: string;
-    expectedStateRevision?: string;
-  }): Promise<TopicCapsule>;
-  initializeCanvas(input: {
-    topicId: string;
-    roomId: string;
-    rootEventId: string;
-    compositionId: string;
-    blocks: readonly CompositionBlock[];
-  }): Promise<{ documentId: string; revision: string }>;
-  appendRecord(input: {
-    topicId: string;
-    record: ProposedRecord;
-    idempotencyKey: string;
-  }): Promise<{ eventId: string }>;
-  sendTopicMessage(input: {
-    topicId: string;
-    body: string;
-    idempotencyKey: string;
-  }): Promise<{ eventId: string }>;
-  projectTopic(input: { topicId: string }): Promise<TopicProjection>;
-  proposeContract(input: {
-    topicId: string;
-    previousRevision: string;
-    nextRevision: string;
-    bodyRef: ContractBodyReference;
-    bodyHash: string;
-    changedPaths: readonly string[];
-    idempotencyKey: string;
-  }): Promise<{ operationId: string }>;
-  publishContractHead(input: {
-    topicId: string;
-    eventType: "ixo.topic.contract";
-    stateKey: string;
-    content: TopicContractStateContent;
-    idempotencyKey: string;
-  }): Promise<{ eventId: string }>;
-  authorize(input: {
-    roomId: string;
-    topicId?: string;
-    ability: string;
-  }): Promise<boolean>;
-};
-```
-
-These names are illustrative. Inspect deployed tool schemas before use.
+Reject v0.8/v2 inputs. Do not migrate them.
 
 ## Preflight
 
-Before any write:
+Before a write:
 
-1. validate the composition schema and semantic gates;
-2. verify the pinned protocol/profile compatibility;
-3. verify room audience and E2EE posture;
-4. resolve actor and room;
-5. verify `topic/create` for new Topics or the required write ability for an existing Topic;
-6. compare `expectedStateRevision` when continuing or refining;
-7. check the composition and call idempotency keys;
-8. reject secrets and provider-private session IDs;
-9. retain recovery state only in an approved encrypted store.
+1. validate the composition and source lock;
+2. confirm root/body/state version 3 and profile qi.topic-contract-state/v3;
+3. reproduce the exact Shape sources and digest;
+4. confirm the Kind, Base Recipe, optional Topic Recipe, and Shape agree;
+5. confirm new root and contract status are draft;
+6. verify room/audience and E2EE policy;
+7. verify Matrix write permission;
+8. verify every proposed call's UCAN ability and caveats;
+9. bind all calls to the current Topic revision, contract revision, and Shape digest;
+10. reject secrets, provider-private session IDs, and over-sized inline bodies; and
+11. acquire or verify each idempotency key.
 
-## New Topic transaction
+A missing Shape source makes the Topic degraded and non-executable. A role or owner label cannot repair an authority failure.
 
-Use this order:
+## Create sequence
 
-1. persist a pending composition entry;
-2. generate the stable Topic ID through the canonical runtime;
-3. construct the complete root from `rootDraft` plus host-resolved identity and timestamps;
-4. create or recover a native relation-free root, or retain the supplied root for an adopted anchor, and wait for the server event ID when needed;
-5. write the exact accepted user-intent record as the first native thread child;
-6. initialize the BlockNote/Yjs canvas idempotently;
-7. append remaining proposed records;
-8. send Qi's first Topic message;
-9. project current Topic state;
-10. optionally materialize the Topic Contract head after all required fields are resolved;
-11. clear pending state.
+Use one recoverable transaction identity:
 
-Never thread against a local-echo event ID.
+1. resolve Shape and freeze its pins;
+2. create or recover the relation-free v3 root in Draft status;
+3. append the exact verbatim intent as the first accepted memory record;
+4. store the contract body and append propose-contract;
+5. initialise or bind the canvas;
+6. append proposed questions or assumptions;
+7. project progress with projectTopicProgress;
+8. write the v3 materialized Matrix projection; and
+9. send the first Topic message.
 
-## Materialize the Topic Contract body
+Do not create a second root after an uncertain send. Recover by idempotency key.
 
-The skill returns a partial envelope and exact semantic body. The host resolves the envelope only at the trust boundary:
+The root and body both retain baseRecipe, optional topicRecipeRef, and the Effective Shape digest. The body also retains the pinned source list. Do not persist a separate Effective Shape event.
 
-```ts
-function materializeContractBody(
-  composition: TopicComposition,
-  input: {
-    revision: string;
-    authoredBy: string;
-    authoredAt: string;
-  },
-): TopicContractBody {
-  const draft = composition.contractDraft;
-  if (draft.readiness === "blocked") {
-    throw new Error("Contract draft is blocked");
-  }
-  return {
-    version: 2,
-    revision: input.revision,
-    status: draft.envelope.status,
-    authoredBy: input.authoredBy,
-    authoredAt: input.authoredAt,
-    ...draft.semantic,
-  };
-}
-```
+## Contract mapping
 
-Before materialization, verify:
+Merge the composition envelope and semantic body with version 3, the host revision, Draft status, actor DID, timestamp, and the validated semantic fields.
 
-- the standard base Kind, fixed recipe, and selected draft template agree;
-- an exact Kind Profile and typed resource validate together when present;
-- exact intent fidelity;
-- statement provenance and acceptance rules;
-- selected decisions and achieved outcomes have record IDs;
-- weighted criteria are complete and sum to 1;
-- role assignees and agents resolve to participants;
-- no unresolved suggested role was converted into an agent assignment.
+The semantic body must not contain:
 
-For a supported Kind Profile, run base contract completeness first, then profile-specific resource and acceptance validation. Preserve unknown profiles and resources losslessly, but refuse profile-specific acceptance, completion, automation, or privileged actions when the adapter cannot verify them.
+- recipe;
+- agents;
+- Action or effect definitions;
+- schedules or automation contracts;
+- evaluation-kit contents;
+- claim protocol/rubric resolution;
+- settlement terms;
+- progress, state tags, or viewer attention.
 
-Protocol 0.8 profile v2 Action references must resolve against the exact loaded Action manifest. Validate manifest version and digest, Action type existence, base-Kind compatibility, and declared required Topic ability. A successful validation only makes the Action eligible for presentation; invocation remains a separate authorised Topic Action request that returns an append-only receipt.
+## Claims
 
-## Build the state-event content
+The contract may contain only claimBinding with entityDid and collectionId.
 
-Only after root, canvas, and projection are available, construct:
+The host resolves the entity and collection, then exposes:
 
-```ts
-const content: TopicContractStateContent = {
-  version: 2,
-  profile: "qi.topic-contract-state/v2",
-  schema: TOPIC_CONTRACT_SCHEMA,
-  topicId,
-  anchor,
-  manifest: originalRootManifest,
-  contracts: safeContractHeads,
-  projection: safeProjectionPayload,
-  policy,
-  bindings: {
-    canvas: {
-      provider: "ixo.matrix-crdt",
-      format: "blocknote",
-      collaboration: "yjs",
-      roomId: anchor.roomId,
-      documentId: canvas.documentId,
-      contentEmbedded: false,
-    },
-    context: projectedContext,
-    flows: resolvedFlowBindings,
-  },
-  provenance,
-};
-```
+- protocol DID;
+- rubric ID and optional digest; and
+- resolution provenance.
 
-Validate cross-field invariants before publishing:
+Keep this evidence read-only in the projection. Verify the entity controller's delegation to the evaluation service and oracle before offering an evaluation transition.
 
-```text
-state_key == content.topicId
-manifest.id == content.topicId
-room_id == anchor.roomId
-projection topic, room, and root == identity and anchor
-canvas.roomId == anchor.roomId
-reference-only bodyHash == bodyRef.contentHash
-embedded projection includes rootEventId in basedOnEvents
-```
+## Flow and external stages
 
-The host must additionally authenticate the Matrix sender, verify room power levels and Topic capability, reproduce the projection, verify referenced bytes and hashes, and enforce the event-size budget.
+Flow bindings, UDID references, Action requests, and receipts remain runtime artifacts outside the contract body.
 
-## Disclosure
+For evaluation, decision, effect, or settlement:
 
-- `inline`: only for compact, non-sensitive content below the configured budget.
-- `reference-only`: required for confidential or restricted content and recommended for large contracts.
-- Matrix or VFS references do not imply access authority.
-- Never embed canvas content or provider-private session identifiers.
+- run only a legal Shape transition;
+- verify gates and exact evidence requirements;
+- require the transition's confirmation policy;
+- verify the actor assignment and UCAN ability;
+- append the required operation/record/receipt; and
+- reproject.
 
-## Existing Topic refinement
+If the adapter is unavailable, do not append success evidence. Return a blocked/degraded handoff to the bound Flow or resource.
 
-For `continue` or `refine`:
+## Viewer-specific Now
 
-1. assemble a fresh Topic Capsule;
-2. compare its revision to `topic.expectedStateRevision` and `contractDraft.lifecycle.baseRevision`;
-3. treat accepted state and explicit instructions as authoritative;
-4. derive proposed records, supported Topic operations, and canvas changes;
-5. do not treat a replacement state event as acceptance of semantic changes;
-6. rebase or surface conflict when revision changed;
-7. publish a new materialized head only after authoritative writes and projection complete.
+After protocol progress is projected, call projectTopicNow with the viewer ID, Matrix write permission, verified abilities, and explicit role assignments.
 
-Topic Protocol `0.8.0` records refinement through `update-contract` with previous and next revisions, the validated body reference and hash, and changed semantic paths. Never use a projected state-event replacement as the write operation. Acceptance and supersession remain separate capability-gated operations.
+Cache private viewer facts by the tuple topicRevision + contractRevision + shapeDigest.
 
-## Recovery
+Never persist viewer attention in shared Topic state. Never offer privileged moves for dormant or degraded Topics.
 
-- root send failed before acceptance: retry through canonical runtime recovery;
-- root may have succeeded but anchor is unknown: discover it and refuse duplicate creation;
-- first record failed: retain a recoverable empty Topic;
-- canvas failed: retain Topic and intent record, then retry with the same composition ID;
-- first message failed: retain Topic and record the failure; do not roll back the root;
-- contract-head publication failed: authoritative Topic history remains valid; retry idempotently after reprojection;
-- stale revision: reassemble, recompose, or return conflict.
+## Refine sequence
 
-## Thin-tool warning
+1. verify v3 and exact Topic revision, contract revision, and Shape digest;
+2. apply only the reviewed change set;
+3. preserve stable field and question IDs;
+4. resolve a new Shape if Kind or Topic Recipe changed;
+5. store the successor body;
+6. append update-contract with changed paths and the prior/new hashes;
+7. leave the successor in Draft status; and
+8. reproject.
 
-A tool that accepts only `roomId + title` is insufficient for production composition because it discards kind, context, Overview, first intent record, and recovery semantics.
+accept-contract is a separate legal transition with separate authority.
 
-Prefer a host-local adapter backed by the Topic runtime, or add a policy-gated `topic_composition_commit` surface that accepts the validated composition. It must not invite participants or execute external actions as part of creation.
+## Failure and recovery
+
+Return stable recovery details for partial writes. At minimum retain:
+
+- composition ID;
+- idempotency keys;
+- room/root event IDs if allocated;
+- Topic ID if allocated;
+- last successful stage;
+- Topic and contract revisions;
+- Shape digest; and
+- recoverable body/canvas references.
+
+Never report external success without the exact finality-bearing receipt required by the Shape.

@@ -1,0 +1,323 @@
+{
+  "version": "2.0.0",
+  "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77705",
+  "mode": "preview",
+  "disposition": "create",
+  "sourceIntent": {
+    "verbatim": "Create a topic to verify the completed solar installation claim and pay the installer once approved.",
+    "sourceSurface": "qi-home",
+    "language": "en"
+  },
+  "protocolBinding": {
+    "package": "@ixo/topic-protocol",
+    "topicProtocolVersion": "1.0.0-rc.1",
+    "rootVersion": 3,
+    "contractBodyVersion": 3,
+    "stateVersion": 3,
+    "contractProfile": "qi.topic-contract-state/v3",
+    "profileStatus": "normative",
+    "sourceCommit": "db925bece7269a3c11e3081f301c7e7d7dd7bab4",
+    "packageShasum": "962da70e62f7a705b159edf2b55e03ca443f72d1",
+    "authoritativeHistory": "topic-root+operations+records+projection",
+    "stateEventRole": "materialized-head-only",
+    "legacyPolicy": "v3-only-no-migration"
+  },
+  "routing": {
+    "rationale": "The lifecycle binds a claim collection, verification, decision, external payment Action, and settlement receipt.",
+    "audience": "separate-room-required",
+    "indexCompleteness": "partial",
+    "duplicateDetection": "uncertain"
+  },
+  "interpretation": {
+    "job": "Verify claimed work and observe payment settlement",
+    "subject": "Completed solar installation",
+    "outcome": "The work is evaluated, an authorised decision is recorded, and any payment is executed and settled through a bound Flow.",
+    "value": "Every consequential stage has inspectable authority and finality evidence.",
+    "stakes": "high"
+  },
+  "topic": {
+    "operation": "create",
+    "rootDraft": {
+      "version": 3,
+      "title": "Verify and settle the solar installation claim",
+      "kind": "claims",
+      "status": "draft",
+      "baseRecipe": "claims",
+      "topicRecipeRef": {
+        "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+      },
+      "shapeDigest": "sha256:473803cb09ea3d949d1b2d6127dfa2cebe9a4f6ec912162300346d399accb8a7",
+      "context": [
+        {
+          "type": "ixo.entity",
+          "id": "did:ixo:entity:solar-programme"
+        }
+      ],
+      "overview": {
+        "summary": "Bind the claim, verify evidence, decide, and hand payment and settlement to a Flow.",
+        "nextStep": {
+          "summary": "Review the bound entity, collection, evidence expectation, and authorities."
+        }
+      }
+    },
+    "anchor": {
+      "mode": "native",
+      "manifestSource": "root-event"
+    }
+  },
+  "recipeSelection": {
+    "strategy": "topic-recipe",
+    "baseRecipe": "claims",
+    "topicRecipeCode": "verified-work-payment",
+    "topicRecipeRef": {
+      "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
+      "version": "1.0.0-rc.1",
+      "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+    },
+    "registryLookup": "not-performed",
+    "registryReason": "pinned-catalog-only",
+    "reviewState": "draft",
+    "shapeSources": [
+      {
+        "kind": "base-recipe",
+        "id": "https://topic-protocol.ixo.world/base-recipes/claims",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:9bf1b5266a9d3e6c8a68f6d5d70da2642800903f01d42b449f1f20f78d824d69"
+      },
+      {
+        "kind": "kind",
+        "id": "https://topic-protocol.ixo.world/kinds/claims",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:3f9d395d9ea16de70c47bae3784d922bae29b7b9c2b5c4ad24b676d5b9287a3e"
+      },
+      {
+        "kind": "topic-recipe",
+        "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+      }
+    ],
+    "shapeDigest": "sha256:473803cb09ea3d949d1b2d6127dfa2cebe9a4f6ec912162300346d399accb8a7"
+  },
+  "contractDraft": {
+    "envelope": {
+      "version": 3,
+      "status": "draft",
+      "revision": null,
+      "authoredBy": null,
+      "authoredAt": null
+    },
+    "semantic": {
+      "kindRef": {
+        "source": "standard",
+        "kind": "claims"
+      },
+      "workingMode": "client",
+      "baseRecipe": "claims",
+      "topicRecipeRef": {
+        "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
+        "version": "1.0.0-rc.1",
+        "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+      },
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/claims",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:9bf1b5266a9d3e6c8a68f6d5d70da2642800903f01d42b449f1f20f78d824d69"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/claims",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:3f9d395d9ea16de70c47bae3784d922bae29b7b9c2b5c4ad24b676d5b9287a3e"
+        },
+        {
+          "kind": "topic-recipe",
+          "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
+          "version": "1.0.0-rc.1",
+          "digest": "sha256:ce7401ed4f2d94c536108fd1ff35b79d68be9a3df42edb73800f480a415ce77c"
+        }
+      ],
+      "shapeDigest": "sha256:473803cb09ea3d949d1b2d6127dfa2cebe9a4f6ec912162300346d399accb8a7",
+      "claimBinding": {
+        "entityDid": "did:ixo:entity:solar-programme",
+        "collectionId": "solar-installations-2026"
+      },
+      "intent": {
+        "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77751",
+        "text": "Verify the completed solar installation claim and pay the installer once approved.",
+        "provenance": {
+          "basis": "explicit",
+          "acceptance": "accepted",
+          "sourceEventIds": []
+        }
+      },
+      "outcome": {
+        "statement": {
+          "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77752",
+          "text": "The work is evaluated, an authorised decision is recorded, and any approved payment reaches final settlement through the bound Flow.",
+          "provenance": {
+            "basis": "suggested",
+            "acceptance": "proposed",
+            "sourceEventIds": []
+          }
+        },
+        "status": "proposed",
+        "successCriteria": []
+      },
+      "completion": {
+        "definition": "Verification, decision, final Action and settlement receipts are present, then the authorised Topic completion transition is recorded.",
+        "requiresOutcomeRecord": true
+      },
+      "constraints": [],
+      "assumptions": [],
+      "questions": [],
+      "participants": [],
+      "roles": []
+    },
+    "publication": {
+      "disclosure": "reference-only",
+      "dataClassification": "confidential",
+      "e2eeRequired": true,
+      "maxInlineBytes": 49152,
+      "reason": "Claim and payment evidence should remain referenced from the protected Topic.",
+      "embedsCanvasContent": false,
+      "containsProviderSessionIds": false
+    },
+    "readiness": "requires-host-fields",
+    "unresolvedHostFields": ["revision", "authoredBy", "authoredAt", "flowBinding", "verifiedAuthorities"]
+  },
+  "claimResolutionEvidence": {
+    "entityDid": "did:ixo:entity:solar-programme",
+    "collectionId": "solar-installations-2026",
+    "protocolDid": "did:ixo:protocol:solar-installation-evaluation",
+    "rubric": {
+      "id": "solar-installation-rubric-v1",
+      "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "readOnly": true
+  },
+  "canvas": {
+    "format": "blocknote",
+    "collaboration": "yjs",
+    "contentEmbedded": false,
+    "blocks": [
+      {
+        "id": "outcome",
+        "type": "callout",
+        "semanticRole": "outcome",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": "Verify the claimed work, decide explicitly, and observe payment settlement through a Flow.",
+        "editable": true
+      },
+      {
+        "id": "claim-evidence",
+        "type": "table",
+        "semanticRole": "claim-evidence",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": {
+          "columns": ["Requirement", "Evidence", "Status"],
+          "rows": []
+        },
+        "editable": true
+      },
+      {
+        "id": "next",
+        "type": "checklist",
+        "semanticRole": "next-action",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": ["Review the entity, collection, evaluation evidence, and authority."],
+        "editable": true
+      }
+    ],
+    "focusBlockId": "claim-evidence",
+    "nextActionBlockId": "next"
+  },
+  "collaborationSuggestions": {
+    "humanRoles": [
+      {
+        "roleId": "decision-authority",
+        "role": "Claim decision authority",
+        "purpose": "Review the evaluation and record the authorised decision."
+      }
+    ],
+    "agentRoles": [
+      {
+        "roleId": "evidence-organiser",
+        "role": "Evidence organiser",
+        "purpose": "Structure referenced claim evidence without evaluating or paying.",
+        "output": "A proposed evidence map.",
+        "activation": "on_demand",
+        "requiredAbilities": ["topic/read"],
+        "stopWhen": "The evidence map is ready for the authorised evaluation service."
+      }
+    ]
+  },
+  "firstTurn": {
+    "message": "I structured this as a Verified Work Payment Draft with separate verification, decision, effect, settlement, and Topic completion stages.",
+    "quickActions": [
+      {
+        "id": "review",
+        "label": "Review Draft",
+        "action": "Review the claim binding and terms."
+      },
+      {
+        "id": "open-flow",
+        "label": "Connect Flow",
+        "action": "Open the Flow binding handoff without requesting an Action."
+      }
+    ],
+    "defaultActionId": "review"
+  },
+  "records": [
+    {
+      "localId": "intent",
+      "kind": "memory",
+      "recordClass": "ixo.topic.intent",
+      "basis": "explicit",
+      "accepted": true,
+      "sourceEventIds": [],
+      "content": {
+        "type": "user-intent",
+        "verbatim": "Create a topic to verify the completed solar installation claim and pay the installer once approved."
+      }
+    }
+  ],
+  "execution": {
+    "commitEligible": false,
+    "hostContext": {},
+    "requiredHostFields": ["protectedRoomId", "actorId", "matrixWrite", "verifiedAbilities", "flowBinding"],
+    "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77705:commit",
+    "proposedCalls": [],
+    "externalActions": [],
+    "stateEventPlan": {
+      "enabled": true,
+      "eventType": "ixo.topic.contract",
+      "stateKeySource": "topicId",
+      "profile": "qi.topic-contract-state/v3",
+      "version": 3,
+      "role": "materialized-head-only",
+      "publishAfter": "human-acceptance",
+      "disclosure": "reference-only",
+      "embedsCanvasContent": false,
+      "shapeRecordPersisted": false
+    }
+  },
+  "quality": {
+    "confidence": 0.94,
+    "unresolvedPaths": [
+      "/runtimeBindings/flows",
+      "/runtimeBindings/udidReferences",
+      "/verifiedAuthorities"
+    ],
+    "warnings": [
+      "No evaluation, Action, payment, or settlement success is claimed during composition."
+    ]
+  }
+}

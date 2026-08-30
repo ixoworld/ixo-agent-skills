@@ -1,1 +1,531 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://skills.ixo.earth/schemas/compose-topic/topic-composition.schema.json","title":"Compose Topic output","type":"object","required":["version","compositionId","mode","disposition","sourceIntent","protocolBinding","routing","execution","quality"],"properties":{"version":{"const":"1.3.0"},"compositionId":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F-]{36}$"},"mode":{"enum":["preview","commit","refine"]},"disposition":{"enum":["create","continue","branch","split","clarify","answer-without-topic"]},"sourceIntent":{"type":"object","required":["verbatim"],"properties":{"verbatim":{"type":"string","minLength":1,"maxLength":20000},"sourceEventId":{"type":"string","pattern":"^\\$"},"sourceSurface":{"enum":["qi-home","topic","matrix-message","canvas","external-session"]},"language":{"type":"string","minLength":2,"maxLength":32}},"additionalProperties":false},"protocolBinding":{"type":"object","required":["topicProtocolVersion","contractProfile","profileStatus","sourceCommit","authoritativeHistory","stateEventRole"],"properties":{"topicProtocolVersion":{"const":"0.8.0"},"contractProfile":{"const":"qi.topic-contract-state/v2"},"profileStatus":{"const":"normative"},"sourceCommit":{"const":"08339e19bc6cc891b8cad85713a58fd1ec7b0da4"},"authoritativeHistory":{"const":"topic-root+operations+records+projection"},"stateEventRole":{"const":"materialized-head-only"}},"additionalProperties":false},"routing":{"type":"object","required":["rationale","audience","indexCompleteness","duplicateDetection"],"properties":{"rationale":{"type":"string","minLength":1,"maxLength":2000},"audience":{"enum":["current-room","separate-room-required","unknown"]},"indexCompleteness":{"enum":["complete","partial","unknown"]},"duplicateDetection":{"enum":["matched","no-match","uncertain","not-run"]},"matchedTopicId":{"type":"string","pattern":"^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"},"parentTopicId":{"type":"string","pattern":"^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"},"proposedChildren":{"type":"array","items":{"type":"object","required":["title","outcome","kind","recipe"],"properties":{"title":{"type":"string","minLength":1,"maxLength":280},"outcome":{"type":"string","minLength":1,"maxLength":2000},"kind":{"enum":["task","agent_task","proposal","evaluation","claims","question","discussion","incident"]},"recipe":{"enum":["project","flow","proposal","evaluation","claims","research","discussion","incident"]}},"additionalProperties":false},"maxItems":10}},"additionalProperties":false},"interpretation":{"type":"object","required":["job","subject","outcome","value","stakes"],"properties":{"job":{"type":"string","minLength":1,"maxLength":1000},"subject":{"type":"string","minLength":1,"maxLength":1000},"outcome":{"type":"string","minLength":1,"maxLength":2000},"value":{"type":"string","minLength":1,"maxLength":2000},"stakes":{"enum":["low","medium","high","unknown"]},"timeHorizon":{"type":"string","minLength":1,"maxLength":280}},"additionalProperties":false},"topic":{"type":"object","required":["operation"],"properties":{"operation":{"enum":["create","reuse"]},"topicId":{"type":"string","pattern":"^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"},"expectedStateRevision":{"type":"string","minLength":1,"maxLength":512},"rootDraft":{"type":"object","required":["version","title","kind","status","context","overview"],"properties":{"version":{"const":2},"title":{"type":"string","minLength":1,"maxLength":280},"kind":{"enum":["task","agent_task","proposal","evaluation","claims","question","discussion","incident"]},"status":{"enum":["draft","active"]},"context":{"type":"array","items":{"type":"object","required":["type","id"],"properties":{"type":{"type":"string","minLength":1,"maxLength":128},"id":{"type":"string","minLength":1,"maxLength":1024}},"additionalProperties":false},"maxItems":50,"uniqueItems":true},"overview":{"type":"object","required":["summary","nextStep"],"properties":{"summary":{"type":"string","minLength":1,"maxLength":280},"nextStep":{"type":"object","required":["summary"],"properties":{"summary":{"type":"string","minLength":1,"maxLength":280},"assignee":{"type":"string","minLength":1,"maxLength":512},"dueAt":{"type":"string","format":"date-time"}},"additionalProperties":false}},"additionalProperties":false}},"additionalProperties":false},"anchor":{"type":"object","required":["mode","manifestSource"],"properties":{"mode":{"enum":["native","adopted"]},"roomId":{"type":"string","pattern":"^!"},"rootEventId":{"type":"string","pattern":"^\\$"},"manifestSource":{"enum":["root-event","state-event"]}},"additionalProperties":false,"allOf":[{"if":{"properties":{"mode":{"const":"native"}}},"then":{"properties":{"manifestSource":{"const":"root-event"}}}},{"if":{"properties":{"mode":{"const":"adopted"}}},"then":{"properties":{"manifestSource":{"const":"state-event"}},"required":["roomId","rootEventId"]}}]}},"additionalProperties":false},"contractDraft":{"$ref":"topic-contract-draft.schema.json"},"canvas":{"type":"object","required":["format","collaboration","contentEmbedded","blocks","focusBlockId","nextActionBlockId"],"properties":{"format":{"const":"blocknote"},"collaboration":{"const":"yjs"},"contentEmbedded":{"const":false},"documentId":{"type":"string","minLength":1,"maxLength":512},"blocks":{"type":"array","items":{"type":"object","required":["id","type","semanticRole","basis","visibility","content"],"properties":{"id":{"type":"string","minLength":1,"maxLength":128},"type":{"enum":["heading","paragraph","bullet-list","checklist","table","callout","divider"]},"semanticRole":{"type":"string","minLength":1,"maxLength":128},"basis":{"enum":["explicit","contextual","inferred","suggested","retrieved"]},"visibility":{"enum":["primary","progressive"]},"content":{},"editable":{"type":"boolean"}},"additionalProperties":false},"maxItems":20,"minItems":3},"focusBlockId":{"type":"string","minLength":1,"maxLength":128},"nextActionBlockId":{"type":"string","minLength":1,"maxLength":128}},"additionalProperties":false},"collaborationSuggestions":{"type":"object","required":["humanRoles","agentRoles"],"properties":{"humanRoles":{"type":"array","items":{"type":"object","required":["roleId","role","purpose"],"properties":{"roleId":{"type":"string","minLength":1,"maxLength":128},"role":{"type":"string","minLength":1,"maxLength":280},"purpose":{"type":"string","minLength":1,"maxLength":2000}},"additionalProperties":false},"maxItems":20},"agentRoles":{"type":"array","items":{"type":"object","required":["roleId","role","purpose","output","activation","requiredAbilities","stopWhen"],"properties":{"roleId":{"type":"string","minLength":1,"maxLength":128},"role":{"type":"string","minLength":1,"maxLength":280},"purpose":{"type":"string","minLength":1,"maxLength":2000},"output":{"type":"string","minLength":1,"maxLength":2000},"activation":{"enum":["now","on_demand","on_condition"]},"activationCondition":{"type":"string","minLength":1,"maxLength":2000},"requiredAbilities":{"type":"array","items":{"pattern":"^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$","type":"string"},"maxItems":20,"uniqueItems":true},"stopWhen":{"type":"string","minLength":1,"maxLength":2000}},"additionalProperties":false},"maxItems":20}},"additionalProperties":false},"firstTurn":{"type":"object","required":["message","quickActions","defaultActionId"],"properties":{"message":{"type":"string","minLength":1,"maxLength":4000},"quickActions":{"type":"array","items":{"type":"object","required":["id","label","action"],"properties":{"id":{"type":"string","minLength":1,"maxLength":128},"label":{"type":"string","minLength":1,"maxLength":120},"action":{"type":"string","minLength":1,"maxLength":1000}},"additionalProperties":false},"maxItems":4,"minItems":2},"defaultActionId":{"type":"string","minLength":1,"maxLength":128}},"additionalProperties":false},"records":{"type":"array","items":{"type":"object","required":["localId","kind","basis","accepted","body","sourceEventIds","content"],"properties":{"localId":{"type":"string","minLength":1,"maxLength":128},"kind":{"enum":["fact","decision","assumption","question","task","artifact","outcome","memory","failure"]},"basis":{"enum":["explicit","contextual","inferred","suggested","retrieved"]},"accepted":{"type":"boolean"},"body":{"type":"string","minLength":1,"maxLength":4000},"sourceEventIds":{"type":"array","items":{"type":"string","pattern":"^\\$"},"maxItems":100,"uniqueItems":true},"content":{"type":"object"}},"additionalProperties":false},"maxItems":50},"execution":{"type":"object","required":["commitEligible","hostContext","idempotencyKey","proposedCalls","externalActions","stateEventPlan"],"properties":{"commitEligible":{"type":"boolean"},"hostContext":{"type":"object","required":[],"properties":{"roomId":{"type":"string","pattern":"^!"},"actorId":{"type":"string","minLength":1,"maxLength":512},"expectedStateRevision":{"type":"string","minLength":1,"maxLength":512}},"additionalProperties":false},"requiredHostFields":{"type":"array","items":{"type":"string","minLength":1,"maxLength":128},"maxItems":20,"uniqueItems":true},"idempotencyKey":{"type":"string","minLength":1,"maxLength":512},"proposedCalls":{"type":"array","items":{"type":"object","required":["stage","tool","purpose","sideEffect","confirmation","requiredAbility","idempotencyKey"],"properties":{"stage":{"type":"integer","minimum":1,"maximum":20},"tool":{"type":"string","minLength":1,"maxLength":128},"purpose":{"type":"string","minLength":1,"maxLength":1000},"sideEffect":{"enum":["none","topic-state","canvas-state","thread-message","record","contract-operation","automation-intent"]},"confirmation":{"enum":["none","policy","human"]},"requiredAbility":{"type":"string","pattern":"^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$"},"idempotencyKey":{"type":"string","minLength":1,"maxLength":512}},"additionalProperties":false},"maxItems":20},"externalActions":{"type":"array","maxItems":0},"stateEventPlan":{"type":"object","required":["enabled","eventType","stateKeySource","role","publishAfter","disclosure","embedsCanvasContent"],"properties":{"enabled":{"type":"boolean"},"eventType":{"const":"ixo.topic.contract"},"stateKeySource":{"const":"topicId"},"role":{"const":"materialized-head-only"},"publishAfter":{"enum":["root-and-projection","human-acceptance","never"]},"disclosure":{"enum":["inline","reference-only"]},"embedsCanvasContent":{"const":false}},"additionalProperties":false}},"additionalProperties":false},"quality":{"type":"object","required":["gates","unresolved"],"properties":{"gates":{"type":"object","required":["fidelity","boundedness","usefulness","actionability","provenance","authority","privacy","protocol","continuity"],"properties":{"fidelity":{"type":"boolean"},"boundedness":{"type":"boolean"},"usefulness":{"type":"boolean"},"actionability":{"type":"boolean"},"provenance":{"type":"boolean"},"authority":{"type":"boolean"},"privacy":{"type":"boolean"},"protocol":{"type":"boolean"},"continuity":{"type":"boolean"}},"additionalProperties":false},"unresolved":{"type":"array","items":{"type":"object","required":["code","severity","blocking","message"],"properties":{"code":{"type":"string","pattern":"^[A-Z][A-Z0-9_]{2,63}$"},"severity":{"enum":["info","warning","error"]},"blocking":{"type":"boolean"},"message":{"type":"string","minLength":1,"maxLength":2000}},"additionalProperties":false},"maxItems":50}},"additionalProperties":false},"clarification":{"type":"object","required":["question","options","recommendedOptionId"],"properties":{"question":{"type":"string","minLength":1,"maxLength":2000},"options":{"type":"array","items":{"type":"object","required":["id","label"],"properties":{"id":{"type":"string","minLength":1,"maxLength":128},"label":{"type":"string","minLength":1,"maxLength":500}},"additionalProperties":false},"maxItems":4,"minItems":2},"recommendedOptionId":{"type":"string","minLength":1,"maxLength":128}},"additionalProperties":false},"directResponse":{"type":"string","minLength":1,"maxLength":10000}},"additionalProperties":false,"allOf":[{"if":{"properties":{"disposition":{"enum":["create","continue","branch","split"]}}},"then":{"required":["interpretation","topic","contractDraft","canvas","collaborationSuggestions","firstTurn","records"]}},{"if":{"properties":{"disposition":{"enum":["create","branch","split"]}}},"then":{"properties":{"topic":{"properties":{"operation":{"const":"create"}},"required":["rootDraft"]},"contractDraft":{"properties":{"lifecycle":{"properties":{"kind":{"const":"initial"}}}}}}}},{"if":{"properties":{"disposition":{"const":"continue"}}},"then":{"properties":{"topic":{"properties":{"operation":{"const":"reuse"}},"required":["topicId","expectedStateRevision"]},"contractDraft":{"properties":{"lifecycle":{"properties":{"kind":{"const":"successor-proposal"}},"required":["baseRevision"]}}}}}},{"if":{"properties":{"mode":{"const":"refine"}}},"then":{"properties":{"topic":{"properties":{"operation":{"const":"reuse"}},"required":["topicId","expectedStateRevision"]},"contractDraft":{"properties":{"lifecycle":{"properties":{"kind":{"const":"successor-proposal"}},"required":["baseRevision"]}}}}}},{"if":{"properties":{"disposition":{"const":"clarify"}}},"then":{"required":["clarification"]}},{"if":{"properties":{"disposition":{"const":"answer-without-topic"}}},"then":{"required":["directResponse"]}},{"if":{"properties":{"mode":{"const":"preview"}}},"then":{"properties":{"execution":{"properties":{"commitEligible":{"const":false}}}}}}]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skills.ixo.earth/schemas/compose-topic/topic-composition.schema.json",
+  "title": "Compose Topic Protocol v1 output",
+  "type": "object",
+  "required": [
+    "version",
+    "compositionId",
+    "mode",
+    "disposition",
+    "sourceIntent",
+    "protocolBinding",
+    "routing",
+    "execution",
+    "quality"
+  ],
+  "properties": {
+    "version": { "const": "2.0.0" },
+    "compositionId": {
+      "type": "string",
+      "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "mode": { "enum": ["preview", "commit", "refine"] },
+    "disposition": { "enum": ["create", "continue", "branch", "split", "clarify", "answer-without-topic"] },
+    "sourceIntent": {
+      "type": "object",
+      "required": ["verbatim"],
+      "properties": {
+        "verbatim": { "type": "string", "minLength": 1, "maxLength": 20000 },
+        "sourceEventId": { "type": "string", "pattern": "^\\$" },
+        "sourceSurface": { "enum": ["qi-home", "topic", "matrix-message", "canvas", "external-session"] },
+        "language": { "type": "string", "minLength": 2, "maxLength": 32 }
+      },
+      "additionalProperties": false
+    },
+    "protocolBinding": {
+      "type": "object",
+      "required": [
+        "package",
+        "topicProtocolVersion",
+        "rootVersion",
+        "contractBodyVersion",
+        "stateVersion",
+        "contractProfile",
+        "profileStatus",
+        "sourceCommit",
+        "packageShasum",
+        "authoritativeHistory",
+        "stateEventRole",
+        "legacyPolicy"
+      ],
+      "properties": {
+        "package": { "const": "@ixo/topic-protocol" },
+        "topicProtocolVersion": { "const": "1.0.0-rc.1" },
+        "rootVersion": { "const": 3 },
+        "contractBodyVersion": { "const": 3 },
+        "stateVersion": { "const": 3 },
+        "contractProfile": { "const": "qi.topic-contract-state/v3" },
+        "profileStatus": { "const": "normative" },
+        "sourceCommit": { "const": "db925bece7269a3c11e3081f301c7e7d7dd7bab4" },
+        "packageShasum": { "const": "962da70e62f7a705b159edf2b55e03ca443f72d1" },
+        "authoritativeHistory": { "const": "topic-root+operations+records+projection" },
+        "stateEventRole": { "const": "materialized-head-only" },
+        "legacyPolicy": { "const": "v3-only-no-migration" }
+      },
+      "additionalProperties": false
+    },
+    "routing": {
+      "type": "object",
+      "required": ["rationale", "audience", "indexCompleteness", "duplicateDetection"],
+      "properties": {
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "audience": { "enum": ["current-room", "separate-room-required", "unknown"] },
+        "indexCompleteness": { "enum": ["complete", "partial", "unknown"] },
+        "duplicateDetection": { "enum": ["matched", "no-match", "uncertain", "not-run"] },
+        "matchedTopicId": { "$ref": "#/$defs/topicId" },
+        "parentTopicId": { "$ref": "#/$defs/topicId" },
+        "proposedChildren": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "required": ["title", "outcome", "kind", "baseRecipe"],
+            "properties": {
+              "title": { "type": "string", "minLength": 1, "maxLength": 280 },
+              "outcome": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "kind": { "$ref": "#/$defs/kind" },
+              "baseRecipe": { "$ref": "#/$defs/baseRecipe" },
+              "topicRecipeRef": { "$ref": "#/$defs/topicRecipeRef" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "interpretation": {
+      "type": "object",
+      "required": ["job", "subject", "outcome", "value", "stakes"],
+      "properties": {
+        "job": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "subject": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "outcome": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "value": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "stakes": { "enum": ["low", "medium", "high", "unknown"] },
+        "timeHorizon": { "type": "string", "minLength": 1, "maxLength": 280 }
+      },
+      "additionalProperties": false
+    },
+    "topic": {
+      "type": "object",
+      "required": ["operation"],
+      "properties": {
+        "operation": { "enum": ["create", "reuse"] },
+        "topicId": { "$ref": "#/$defs/topicId" },
+        "observedProfile": { "const": "qi.topic-contract-state/v3" },
+        "expectedTopicRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "expectedContractRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "expectedShapeDigest": { "$ref": "#/$defs/digest" },
+        "rootDraft": {
+          "type": "object",
+          "required": ["version", "title", "kind", "status", "baseRecipe", "shapeDigest", "context", "overview"],
+          "properties": {
+            "version": { "const": 3 },
+            "title": { "type": "string", "minLength": 1, "maxLength": 280 },
+            "kind": { "$ref": "#/$defs/kind" },
+            "status": { "const": "draft" },
+            "baseRecipe": { "$ref": "#/$defs/baseRecipe" },
+            "topicRecipeRef": { "$ref": "#/$defs/topicRecipeRef" },
+            "shapeDigest": { "$ref": "#/$defs/digest" },
+            "context": {
+              "type": "array",
+              "maxItems": 50,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": ["type", "id"],
+                "properties": {
+                  "type": { "type": "string", "minLength": 1, "maxLength": 128 },
+                  "id": { "type": "string", "minLength": 1, "maxLength": 1024 }
+                },
+                "additionalProperties": false
+              }
+            },
+            "overview": {
+              "type": "object",
+              "required": ["summary", "nextStep"],
+              "properties": {
+                "summary": { "type": "string", "minLength": 1, "maxLength": 280 },
+                "nextStep": {
+                  "type": "object",
+                  "required": ["summary"],
+                  "properties": {
+                    "summary": { "type": "string", "minLength": 1, "maxLength": 280 },
+                    "assignee": { "type": "string", "minLength": 1, "maxLength": 512 },
+                    "dueAt": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "anchor": {
+          "type": "object",
+          "required": ["mode", "manifestSource"],
+          "properties": {
+            "mode": { "enum": ["native", "adopted"] },
+            "roomId": { "type": "string", "pattern": "^!" },
+            "rootEventId": { "type": "string", "pattern": "^\\$" },
+            "manifestSource": { "enum": ["root-event", "state-event"] }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "recipeSelection": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "baseRecipe",
+        "registryLookup",
+        "registryReason",
+        "reviewState",
+        "shapeSources",
+        "shapeDigest"
+      ],
+      "properties": {
+        "strategy": { "enum": ["base-recipe", "topic-recipe"] },
+        "baseRecipe": { "$ref": "#/$defs/baseRecipe" },
+        "topicRecipeCode": { "enum": ["research-brief", "agent-delivery", "verified-work-payment"] },
+        "topicRecipeRef": { "$ref": "#/$defs/topicRecipeRef" },
+        "registryLookup": { "const": "not-performed" },
+        "registryReason": { "const": "pinned-catalog-only" },
+        "reviewState": { "const": "draft" },
+        "shapeSources": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/shapeSource" }
+        },
+        "shapeDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "strategy": { "const": "topic-recipe" } }, "required": ["strategy"] },
+          "then": { "required": ["topicRecipeCode", "topicRecipeRef"] }
+        }
+      ]
+    },
+    "contractDraft": { "$ref": "topic-contract-draft.schema.json" },
+    "claimResolutionEvidence": {
+      "type": "object",
+      "required": ["entityDid", "collectionId", "protocolDid", "rubric", "readOnly"],
+      "properties": {
+        "entityDid": { "type": "string", "pattern": "^did:ixo:" },
+        "collectionId": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "protocolDid": { "type": "string", "pattern": "^did:ixo:" },
+        "rubric": {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1, "maxLength": 1024 },
+            "digest": { "$ref": "#/$defs/digest" }
+          },
+          "additionalProperties": false
+        },
+        "readOnly": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "canvas": {
+      "type": "object",
+      "required": ["format", "collaboration", "contentEmbedded", "blocks", "focusBlockId", "nextActionBlockId"],
+      "properties": {
+        "format": { "const": "blocknote" },
+        "collaboration": { "const": "yjs" },
+        "contentEmbedded": { "const": false },
+        "documentId": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "blocks": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "semanticRole", "basis", "visibility", "content"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "type": { "enum": ["heading", "paragraph", "bullet-list", "checklist", "table", "callout", "divider"] },
+              "semanticRole": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "basis": { "enum": ["explicit", "contextual", "inferred", "suggested", "retrieved"] },
+              "visibility": { "enum": ["primary", "progressive"] },
+              "content": {},
+              "editable": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "focusBlockId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "nextActionBlockId": { "type": "string", "minLength": 1, "maxLength": 128 }
+      },
+      "additionalProperties": false
+    },
+    "collaborationSuggestions": {
+      "type": "object",
+      "required": ["humanRoles", "agentRoles"],
+      "properties": {
+        "humanRoles": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["roleId", "role", "purpose"],
+            "properties": {
+              "roleId": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "role": { "type": "string", "minLength": 1, "maxLength": 280 },
+              "purpose": { "type": "string", "minLength": 1, "maxLength": 2000 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "agentRoles": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["roleId", "role", "purpose", "output", "activation", "requiredAbilities", "stopWhen"],
+            "properties": {
+              "roleId": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "role": { "type": "string", "minLength": 1, "maxLength": 280 },
+              "purpose": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "output": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "activation": { "enum": ["now", "on_demand", "on_condition"] },
+              "activationCondition": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "requiredAbilities": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" }
+              },
+              "stopWhen": { "type": "string", "minLength": 1, "maxLength": 2000 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "firstTurn": {
+      "type": "object",
+      "required": ["message", "quickActions", "defaultActionId"],
+      "properties": {
+        "message": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "quickActions": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "action"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+              "action": { "type": "string", "minLength": 1, "maxLength": 1000 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "defaultActionId": { "type": "string", "minLength": 1, "maxLength": 128 }
+      },
+      "additionalProperties": false
+    },
+    "records": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": ["localId", "kind", "basis", "accepted", "sourceEventIds", "content"],
+        "properties": {
+          "localId": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "kind": { "enum": ["fact", "decision", "assumption", "question", "task", "artifact", "outcome", "memory", "failure"] },
+          "recordClass": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "basis": { "enum": ["explicit", "contextual", "inferred", "suggested", "retrieved"] },
+          "accepted": { "type": "boolean" },
+          "sourceEventIds": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": { "type": "string" }
+          },
+          "content": { "type": "object" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "execution": {
+      "type": "object",
+      "required": ["commitEligible", "hostContext", "idempotencyKey", "proposedCalls", "externalActions", "stateEventPlan"],
+      "properties": {
+        "commitEligible": { "type": "boolean" },
+        "hostContext": {
+          "type": "object",
+          "properties": {
+            "roomId": { "type": "string", "pattern": "^!" },
+            "actorId": { "type": "string", "minLength": 1, "maxLength": 512 },
+            "matrixWrite": { "type": "boolean" },
+            "verifiedAbilities": {
+              "type": "array",
+              "maxItems": 100,
+              "uniqueItems": true,
+              "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" }
+            },
+            "expectedTopicRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
+            "expectedContractRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
+            "expectedShapeDigest": { "$ref": "#/$defs/digest" }
+          },
+          "additionalProperties": false
+        },
+        "requiredHostFields": {
+          "type": "array",
+          "maxItems": 50,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+        },
+        "idempotencyKey": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "proposedCalls": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["stage", "tool", "purpose", "sideEffect", "confirmation", "requiredAbility", "idempotencyKey", "boundTo"],
+            "properties": {
+              "stage": { "type": "integer", "minimum": 1, "maximum": 20 },
+              "tool": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "purpose": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "sideEffect": { "enum": ["none", "topic-state", "canvas-state", "record", "thread-message"] },
+              "confirmation": { "enum": ["none", "policy", "human"] },
+              "requiredAbility": { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" },
+              "idempotencyKey": { "type": "string", "minLength": 1, "maxLength": 512 },
+              "boundTo": {
+                "type": "object",
+                "required": ["shapeDigest"],
+                "properties": {
+                  "topicRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
+                  "contractRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
+                  "shapeDigest": { "$ref": "#/$defs/digest" }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "externalActions": { "type": "array", "maxItems": 0 },
+        "stateEventPlan": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "eventType",
+            "stateKeySource",
+            "profile",
+            "version",
+            "role",
+            "publishAfter",
+            "disclosure",
+            "embedsCanvasContent",
+            "shapeRecordPersisted"
+          ],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "eventType": { "const": "ixo.topic.contract" },
+            "stateKeySource": { "const": "topicId" },
+            "profile": { "const": "qi.topic-contract-state/v3" },
+            "version": { "const": 3 },
+            "role": { "const": "materialized-head-only" },
+            "publishAfter": { "enum": ["root-and-projection", "human-acceptance"] },
+            "disclosure": { "enum": ["inline", "reference-only"] },
+            "embedsCanvasContent": { "const": false },
+            "shapeRecordPersisted": { "const": false }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "quality": {
+      "type": "object",
+      "required": ["confidence", "unresolvedPaths", "warnings"],
+      "properties": {
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "unresolvedPaths": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "warnings": {
+          "type": "array",
+          "maxItems": 100,
+          "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        },
+        "blockedReason": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "disposition": { "enum": ["create", "continue", "branch", "split"] }
+        },
+        "required": ["disposition"]
+      },
+      "then": {
+        "required": [
+          "interpretation",
+          "topic",
+          "recipeSelection",
+          "contractDraft",
+          "canvas",
+          "collaborationSuggestions",
+          "firstTurn",
+          "records"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "topicId": {
+      "type": "string",
+      "pattern": "^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "kind": {
+      "enum": ["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
+    },
+    "baseRecipe": {
+      "enum": ["project", "flow", "proposal", "evaluation", "claims", "research", "discussion", "incident"]
+    },
+    "topicRecipeRef": {
+      "type": "object",
+      "required": ["id", "version", "digest"],
+      "properties": {
+        "id": { "type": "string", "format": "uri" },
+        "version": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "shapeSource": {
+      "type": "object",
+      "required": ["kind", "id", "version", "digest"],
+      "properties": {
+        "kind": { "enum": ["base-recipe", "topic-recipe", "kind", "topic"] },
+        "id": { "type": "string", "format": "uri" },
+        "version": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

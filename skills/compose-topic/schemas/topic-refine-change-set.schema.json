@@ -9,20 +9,51 @@
     "changeSetId",
     "editSessionId",
     "topicId",
-    "expectedRevision",
+    "profile",
+    "expectedTopicRevision",
+    "expectedContractRevision",
+    "expectedShapeDigest",
     "changes"
   ],
   "properties": {
-    "version": { "const": "1.0" },
-    "status": { "const": "ready-to-stage" },
-    "changeSetId": { "$ref": "#/$defs/uuidv7" },
-    "editSessionId": { "$ref": "#/$defs/uuidv7" },
+    "version": {
+      "const": "2.0"
+    },
+    "status": {
+      "const": "ready-to-stage"
+    },
+    "changeSetId": {
+      "$ref": "#/$defs/uuidv7"
+    },
+    "editSessionId": {
+      "$ref": "#/$defs/uuidv7"
+    },
     "topicId": {
       "type": "string",
       "pattern": "^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
-    "expectedRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
-    "expectedBodyHash": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "profile": {
+      "const": "qi.topic-contract-state/v3"
+    },
+    "expectedTopicRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "expectedContractRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "expectedShapeDigest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "expectedBodyHash": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
     "changes": {
       "type": "array",
       "minItems": 1,
@@ -31,9 +62,15 @@
         "oneOf": [
           {
             "type": "object",
-            "required": ["op", "path", "value"],
+            "required": [
+              "op",
+              "path",
+              "value"
+            ],
             "properties": {
-              "op": { "const": "set-text" },
+              "op": {
+                "const": "set-text"
+              },
               "path": {
                 "enum": [
                   "/title",
@@ -42,28 +79,57 @@
                   "/completion/definition"
                 ]
               },
-              "value": { "type": "string", "maxLength": 4000 }
+              "value": {
+                "type": "string",
+                "maxLength": 4000
+              }
             },
             "additionalProperties": false
           },
           {
             "type": "object",
-            "required": ["op", "path", "value"],
+            "required": [
+              "op",
+              "path",
+              "value"
+            ],
             "properties": {
-              "op": { "const": "set-date" },
-              "path": { "const": "/outcome/target/value" },
-              "value": { "type": "string", "format": "date" }
+              "op": {
+                "const": "set-date"
+              },
+              "path": {
+                "const": "/outcome/target/value"
+              },
+              "value": {
+                "type": "string",
+                "format": "date"
+              }
             },
             "additionalProperties": false
           },
           {
             "type": "object",
-            "required": ["op", "questionId", "answer", "status"],
+            "required": [
+              "op",
+              "questionId",
+              "answer",
+              "status"
+            ],
             "properties": {
-              "op": { "const": "answer-question" },
-              "questionId": { "$ref": "#/$defs/uuidv7" },
-              "answer": { "type": "string", "minLength": 1, "maxLength": 4000 },
-              "status": { "const": "answered" }
+              "op": {
+                "const": "answer-question"
+              },
+              "questionId": {
+                "$ref": "#/$defs/uuidv7"
+              },
+              "answer": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "status": {
+                "const": "answered"
+              }
             },
             "additionalProperties": false
           }

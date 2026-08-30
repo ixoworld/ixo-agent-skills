@@ -8,6 +8,7 @@ const UUIDV7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const TOPIC =
   /^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
+const DIGEST = /^sha256:[0-9a-f]{64}$/u;
 const TEXT_PATHS = new Set([
   "/title",
   "/intent/text",
@@ -31,7 +32,7 @@ export function validateRefineChangeSet(value) {
   };
   if (!isObject(value))
     return [finding("TYPE_OBJECT", "", "must be an object")];
-  add(value.version === "1.0", "VERSION", "/version", "must equal 1.0");
+  add(value.version === "2.0", "VERSION", "/version", "must equal 2.0");
   add(
     value.status === "ready-to-stage",
     "STATUS",
@@ -57,10 +58,29 @@ export function validateRefineChangeSet(value) {
     "must identify the existing Topic",
   );
   add(
-    typeof value.expectedRevision === "string" &&
-      value.expectedRevision.length > 0,
-    "EXPECTED_REVISION",
-    "/expectedRevision",
+    value.profile === "qi.topic-contract-state/v3",
+    "PROFILE",
+    "/profile",
+    "must equal qi.topic-contract-state/v3",
+  );
+  add(
+    typeof value.expectedTopicRevision === "string" &&
+      value.expectedTopicRevision.length > 0,
+    "EXPECTED_TOPIC_REVISION",
+    "/expectedTopicRevision",
+    "is required",
+  );
+  add(
+    typeof value.expectedContractRevision === "string" &&
+      value.expectedContractRevision.length > 0,
+    "EXPECTED_CONTRACT_REVISION",
+    "/expectedContractRevision",
+    "is required",
+  );
+  add(
+    DIGEST.test(value.expectedShapeDigest ?? ""),
+    "EXPECTED_SHAPE_DIGEST",
+    "/expectedShapeDigest",
     "is required",
   );
   add(
@@ -155,7 +175,7 @@ export async function main(options = {}) {
   const findings = validateRefineChangeSet(value);
   return {
     validator: "compose-topic-refine-validator",
-    version: "1.0",
+    version: "2.0",
     file,
     ok: findings.length === 0,
     findings,
