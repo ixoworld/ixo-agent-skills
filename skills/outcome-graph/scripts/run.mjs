@@ -513,9 +513,25 @@ function reviewPacketPath(workflowId, packetRef) {
   return join(runDir(workflowId), "review-packets", `${readable}-${sha256(String(packetRef)).slice(0, 16)}.md`);
 }
 
+function missingRunMessage(workflowId) {
+  return (
+    `no run '${workflowId}' — use 'init --workflow ${workflowId}' for a fresh run, ` +
+    `or 'restore --workflow ${workflowId} --checkpoint <file>' for a governed checkpoint`
+  );
+}
+
+function missingManifestMessage(workflowId) {
+  return (
+    `run '${workflowId}' has no manifest.json and cannot be resumed; ` +
+    "restore a governed checkpoint into a clean sandbox, or initialize a fresh run with a new workflow id"
+  );
+}
+
 function loadManifest(workflowId) {
-  const path = join(runDir(workflowId), "manifest.json");
-  if (!existsSync(path)) die(`run '${workflowId}' has no manifest.json`);
+  const dir = runDir(workflowId);
+  if (!existsSync(dir)) die(missingRunMessage(workflowId));
+  const path = join(dir, "manifest.json");
+  if (!existsSync(path)) die(missingManifestMessage(workflowId));
   const manifest = readJson(path);
   if (manifest.schema !== "outcome.manifest-pointer.v1") die("manifest.json has the wrong schema");
   return { path, manifest };
@@ -660,8 +676,16 @@ function reconcileRunIntegrity(workflowId, { repair = false } = {}) {
   return { manifest, commit };
 }
 
-function acquireManifestLock(workflowId) {
-  const path = join(runDir(workflowId), ".manifest-locks");
+function acquireManifestLock(workflowId, { allowUninitialized = false } = {}) {
+  const dir = runDir(workflowId);
+  if (!existsSync(dir)) {
+    if (!allowUninitialized) die(missingRunMessage(workflowId));
+    mkdirSync(dir, { recursive: true });
+  }
+  if (!allowUninitialized && !existsSync(join(dir, "manifest.json"))) {
+    die(missingManifestMessage(workflowId));
+  }
+  const path = join(dir, ".manifest-locks");
   mkdirSync(path, { recursive: true });
   const token = `${Date.now()}-${process.pid}-${randomUUID()}`;
   const ownerPath = join(path, `${token}.json`);
@@ -1428,7 +1452,9 @@ async function cmdInit(argv) {
   const a = args(argv);
   const workflowId = a.workflow ?? die("--workflow is required");
   const dir = runDir(workflowId);
-  if (existsSync(join(dir, "state.json"))) die(`run '${workflowId}' already exists`);
+  if (existsSync(join(dir, "state.json")) || existsSync(join(dir, "manifest.json"))) {
+    die(`run '${workflowId}' already exists`);
+  }
 
   const brief = a.brief ? readJson(resolve(a.brief)) : null;
   if (brief && (brief.schema !== "outcome.run-brief.v1" || brief.workflow_id !== workflowId || !brief.brief_id)) {
@@ -1504,7 +1530,7 @@ async function cmdInit(argv) {
   mkdirSync(join(dir, "tasks"), { recursive: true });
   mkdirSync(join(dir, "work"), { recursive: true });
   mkdirSync(join(dir, "review-packets"), { recursive: true });
-  const releaseLock = acquireManifestLock(workflowId);
+  const releaseLock = acquireManifestLock(workflowId, { allowUninitialized: true });
   try {
     if (existsSync(join(dir, "state.json")) || existsSync(join(dir, "manifest.json"))) {
       die(`run '${workflowId}' already exists`);
