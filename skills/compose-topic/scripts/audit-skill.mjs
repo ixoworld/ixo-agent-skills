@@ -14,6 +14,9 @@ import { validateFile } from "./validate-composition.mjs";
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SKILL_ROOT = resolve(SCRIPT_DIR, "..");
 const SUBSKILLS = [
+  "compose-topic-project",
+  "compose-project-software-build",
+  "compose-project-blueprint-design",
   "compose-topic-task",
   "compose-topic-agent-task",
   "compose-topic-proposal",
@@ -55,8 +58,8 @@ const EXPECTED_FILES = [
   "tests/audit-skill.test.mjs",
   ...SUBSKILLS.map((name) => `subskills/${name}/SKILL.md`),
 ];
-const EXPECTED_SOURCE_COMMIT = "0407c6e7e3f77091260a08d586441e5323a0227f";
-const EXPECTED_PACKAGE_SHASUM = "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f";
+const EXPECTED_SOURCE_COMMIT = "4c70b462110635e43ba125740768cbc9e10e1bb0";
+const EXPECTED_PACKAGE_SHASUM = "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf";
 const ACTUAL_SECRET_PATTERNS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
   /\bsk-[A-Za-z0-9_-]{32,}\b/u,
@@ -213,7 +216,7 @@ async function auditSourceLock(findings) {
   const lock = JSON.parse(await readFile(lockPath, "utf8"));
   if (lock.skill !== "compose-topic") findings.push(finding("LOCK_SKILL", "references/source-lock.json", "skill must equal compose-topic"));
   if (lock.version !== 5) findings.push(finding("LOCK_VERSION", "references/source-lock.json", "source lock must use version 5"));
-  if (lock.topicProtocol?.version !== "1.0.0-rc.2") findings.push(finding("LOCK_PROTOCOL", "references/source-lock.json", "Topic Protocol must be pinned to 1.0.0-rc.2"));
+  if (lock.topicProtocol?.version !== "1.0.0-rc.3") findings.push(finding("LOCK_PROTOCOL", "references/source-lock.json", "Topic Protocol must be pinned to 1.0.0-rc.3"));
   if (lock.topicProtocol?.normativeBaseCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_BASE_COMMIT", "references/source-lock.json", `normative commit must equal ${EXPECTED_SOURCE_COMMIT}`));
   if (lock.topicProtocol?.contractProfile?.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_COMMIT", "references/source-lock.json", `source commit must equal ${EXPECTED_SOURCE_COMMIT}`));
   if (lock.topicProtocol?.contractProfile?.status !== "normative") findings.push(finding("LOCK_STATUS", "references/source-lock.json", "contract profile must be normative"));
@@ -242,14 +245,14 @@ async function auditShapePins(findings) {
   const path = "references/topic-shape-pins.json";
   const pins = JSON.parse(await readFile(join(SKILL_ROOT, path), "utf8"));
   if (pins.version !== 2) findings.push(finding("PIN_VERSION", path, "must use catalog version 2"));
-  if (pins.protocolVersion !== "1.0.0-rc.2") findings.push(finding("PIN_PROTOCOL", path, "must pin Topic Protocol 1.0.0-rc.2"));
+  if (pins.protocolVersion !== "1.0.0-rc.3") findings.push(finding("PIN_PROTOCOL", path, "must pin Topic Protocol 1.0.0-rc.3"));
   if (pins.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("PIN_COMMIT", path, "must pin the published git head"));
-  const expectedKinds = ["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"];
-  const expectedRecipes = ["research-brief", "agent-delivery", "verified-work-payment"];
+  const expectedKinds = ["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"];
+  const expectedRecipes = ["research-brief", "agent-delivery", "verified-work-payment", "software-build", "blueprint-design"];
   const kinds = Object.keys(pins.baseCompositions ?? {}).sort();
   const recipes = Object.keys(pins.topicRecipes ?? {}).sort();
-  if (kinds.join() !== [...expectedKinds].sort().join()) findings.push(finding("PIN_KINDS", path, "must contain exactly the eight canonical Kind resolutions"));
-  if (recipes.join() !== [...expectedRecipes].sort().join()) findings.push(finding("PIN_RECIPES", path, "must contain exactly the three seed Topic Recipes"));
+  if (kinds.join() !== [...expectedKinds].sort().join()) findings.push(finding("PIN_KINDS", path, "must contain exactly the nine canonical Kind resolutions"));
+  if (recipes.join() !== [...expectedRecipes].sort().join()) findings.push(finding("PIN_RECIPES", path, "must contain exactly the five seed Topic Recipes"));
   for (const [code, recipe] of Object.entries(pins.topicRecipes ?? {})) {
     if (recipe.creates !== "draft") findings.push(finding("PIN_RECIPE_DRAFT", path, `${code} must create a Draft`));
   }
@@ -271,13 +274,13 @@ async function auditExamples(findings) {
 
 async function auditEvals(findings) {
   const evals = JSON.parse(await readFile(join(SKILL_ROOT, "evals/evals.json"), "utf8"));
-  if (evals.version !== "3.0.0") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.0.0"));
+  if (evals.version !== "3.1.0") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.1.0"));
   if (evals.skill !== "compose-topic") findings.push(finding("EVAL_SKILL", "evals/evals.json", "must equal compose-topic"));
   const cases = evals.cases ?? [];
   if (cases.length < 36) findings.push(finding("EVAL_COVERAGE", "evals/evals.json", "must include all Kinds, recipes, Shapes, Portal progression, authority, inference, and security cases"));
   const ids = cases.map((item) => item.id);
   if (new Set(ids).size !== ids.length) findings.push(finding("EVAL_DUPLICATE", "evals/evals.json", "case IDs must be unique"));
-  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "legacy-v08", "legacy-v3", "adopt-existing-thread", "custom-kind", "partial-draft", "partial-activation-policy", "owner-authority-fallback", "confirmation-not-assent", "expiry-non-invention", "dispute-authority", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question", "kind-task", "kind-agent-task", "kind-proposal", "kind-evaluation", "kind-claims", "kind-question", "kind-discussion", "kind-incident", "kind-job-profile", "recipe-research-brief", "recipe-agent-delivery", "recipe-verified-work-payment", "recipe-marketplace-future", "shape-digest-mismatch", "claim-singular-binding", "flow-action-boundary", "viewer-authority", "inference-boundary"];
+  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "legacy-v08", "legacy-v3", "adopt-existing-thread", "custom-kind", "partial-draft", "partial-activation-policy", "owner-authority-fallback", "confirmation-not-assent", "expiry-non-invention", "dispute-authority", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question", "kind-project", "kind-task", "kind-agent-task", "kind-proposal", "kind-evaluation", "kind-claims", "kind-question", "kind-discussion", "kind-incident", "kind-job-profile", "recipe-software-build", "recipe-blueprint-design", "recipe-research-brief", "recipe-agent-delivery", "recipe-verified-work-payment", "recipe-marketplace-future", "project-lead-authority", "project-child-boundary", "project-close-boundary", "shape-digest-mismatch", "claim-singular-binding", "flow-action-boundary", "viewer-authority", "inference-boundary"];
   for (const id of required) if (!ids.includes(id)) findings.push(finding("EVAL_REQUIRED", "evals/evals.json", `missing security or protocol case: ${id}`));
 }
 
@@ -321,7 +324,7 @@ export async function main(options = {}) {
   findings.sort((left, right) => left.path.localeCompare(right.path) || left.code.localeCompare(right.code));
   return {
     auditor: "compose-topic-skill-audit",
-    version: "3.0.0",
+    version: "3.1.0",
     root: options.root ?? SKILL_ROOT,
     ok: findings.length === 0,
     findingCount: findings.length,

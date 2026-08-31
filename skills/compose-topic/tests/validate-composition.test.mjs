@@ -27,6 +27,35 @@ function codes(value) {
   return new Set(validateComposition(value).map((item) => item.code));
 }
 
+function acceptProjectAuthority(value, name) {
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance[`/project/${name}`] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: [],
+  };
+}
+
+function selectTopicRecipe(value, code, pin) {
+  value.recipeSelection = {
+    strategy: "topic-recipe",
+    baseRecipe: pin.baseRecipe,
+    topicRecipeCode: code,
+    topicRecipeRef: pin.topicRecipeRef,
+    registryLookup: "not-performed",
+    registryReason: "pinned-catalog-only",
+    reviewState: "draft",
+    shapeSources: pin.shapeSources,
+    shapeDigest: pin.shapeDigest,
+  };
+  value.topic.rootDraft.topicRecipeRef = pin.topicRecipeRef;
+  value.topic.rootDraft.shapeDigest = pin.shapeDigest;
+  value.contractDraft.semantic.topicRecipeRef = pin.topicRecipeRef;
+  value.contractDraft.semantic.shapeSources = pin.shapeSources;
+  value.contractDraft.semantic.shapeDigest = pin.shapeDigest;
+  for (const call of value.execution.proposedCalls) call.boundTo.shapeDigest = pin.shapeDigest;
+}
+
 test("all bundled v4 examples pass", async () => {
   for (const name of EXAMPLES) {
     const report = await validateFile(join(ROOT, "examples", name));
@@ -257,6 +286,7 @@ test("continue and refine require v4 plus Topic, contract, and Shape pins", asyn
 
 test("all canonical Kinds require their focused Draft structures", async () => {
   const required = {
+    project: ["outcome", "project", "completion"],
     task: ["outcome", "plan", "completion"],
     agent_task: ["outcome", "plan", "completion"],
     proposal: ["outcome", "decision", "completion"],
@@ -297,7 +327,7 @@ test("all canonical Kinds require their focused Draft structures", async () => {
   }
 });
 
-test("risks are Incident-only and never use likelihood", async () => {
+test("risks are Project- and Incident-only and never use likelihood", async () => {
   const value = await example();
   value.contractDraft.semantic.risks = [{
     id: "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77999",
@@ -306,8 +336,124 @@ test("risks are Incident-only and never use likelihood", async () => {
     status: "open",
   }];
   const result = codes(value);
-  assert(result.has("RISKS_INCIDENT_ONLY"));
+  assert(result.has("RISKS_KIND_BOUNDARY"));
   assert(result.has("LEGACY_LIKELIHOOD"));
+});
+
+test("Project Drafts keep missing lead and closer choices visible", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
+    ({ code }) => !["setup.project-lead", "setup.project-closer"].includes(code),
+  );
+  const result = codes(value);
+  assert(result.has("PROJECT_LEAD_OBLIGATION"));
+  assert(result.has("PROJECT_CLOSER_OBLIGATION"));
+});
+
+test("Project children use the reviewed non-Project Kind palette", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.childObligations = [{
+    obligationId: "work-1",
+    title: "Nested project",
+    kind: "project",
+    status: "unmet",
+  }];
+  assert(codes(value).has("PROJECT_CHILD_KIND"));
+});
+
+test("Project milestones and child Kinds materialize only after review", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.milestones = [{ id: "release", name: "Release readiness" }];
+  value.contractDraft.semantic.project.childObligations = [{ id: "verify", title: "Verify the release", kind: "task" }];
+  assert(codes(value).has("PROJECT_MILESTONE_PROVENANCE"));
+  assert(codes(value).has("PROJECT_CHILD_KIND_PROVENANCE"));
+
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance["/project/milestones/0"] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: [],
+  };
+  value.contractDraft.semantic.fieldProvenance["/project/childObligations/0/kind"] = {
+    basis: "contextual",
+    acceptance: "accepted",
+    sourceEventIds: ["$child-review"],
+  };
+  assert.equal(codes(value).has("PROJECT_MILESTONE_PROVENANCE"), false);
+  assert.equal(codes(value).has("PROJECT_CHILD_KIND_PROVENANCE"), false);
+});
+
+test("Blueprint method manifests require an accepted immutable reference", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.methodManifestRef = {
+    id: "https://methods.ixo.world/design-yoma/v1",
+    version: "1.0.0",
+    digest: `sha256:${"a".repeat(64)}`,
+  };
+  assert(codes(value).has("PROJECT_METHOD_MANIFEST_PROVENANCE"));
+
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance["/project/methodManifestRef"] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: ["$method-manifest"],
+  };
+  assert.equal(codes(value).has("PROJECT_METHOD_MANIFEST_PROVENANCE"), false);
+});
+
+test("Project lead assignment does not imply setup confirmation or closure authority", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.lead = { kind: "actor", id: "did:ixo:lead" };
+  acceptProjectAuthority(value, "lead");
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
+    ({ code }) => code !== "setup.project-lead",
+  );
+  const result = codes(value);
+  assert.equal(result.has("PROJECT_LEAD_OBLIGATION"), false);
+  assert(value.contractDraft.setupObligations.some(({ code }) => code === "setup.confirmation-policy"));
+  assert(value.contractDraft.setupObligations.some(({ code }) => code === "setup.project-closer"));
+});
+
+test("Project closer is explicit and independent from generic completion authority", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.closer = { kind: "actor", id: "did:ixo:closer" };
+  acceptProjectAuthority(value, "closer");
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
+    ({ code }) => code !== "setup.project-closer",
+  );
+  value.contractDraft.semantic.completion.acceptanceAuthorityIds = ["did:ixo:someone-else"];
+  const result = codes(value);
+  assert.equal(result.has("PROJECT_CLOSER_OBLIGATION"), false);
+  delete value.contractDraft.semantic.project.closer;
+  assert(codes(value).has("PROJECT_CLOSER_OBLIGATION"));
+});
+
+test("Project authorities require valid subjects and accepted field provenance", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
+    ({ code }) => !["setup.project-lead", "setup.project-closer"].includes(code),
+  );
+  value.contractDraft.semantic.project.lead = {};
+  value.contractDraft.semantic.project.closer = { kind: "actor", id: "did:ixo:closer" };
+  assert(codes(value).has("PROJECT_LEAD_OBLIGATION"));
+  assert(codes(value).has("PROJECT_CLOSER_OBLIGATION"));
+
+  value.contractDraft.semantic.project.lead = { kind: "role", id: "project-lead" };
+  acceptProjectAuthority(value, "lead");
+  acceptProjectAuthority(value, "closer");
+  assert.equal(codes(value).has("PROJECT_LEAD_OBLIGATION"), false);
+  assert.equal(codes(value).has("PROJECT_CLOSER_OBLIGATION"), false);
+});
+
+test("Project recipes use their exact digest-pinned Effective Shapes", async () => {
+  const catalog = await pins();
+  for (const code of ["software-build", "blueprint-design"]) {
+    const value = await example("team-project.example.json");
+    const pin = catalog.topicRecipes[code];
+    selectTopicRecipe(value, code, pin);
+    const report = validateComposition(value);
+    assert.deepEqual(report, [], `${code}: ${JSON.stringify(report, null, 2)}`);
+  }
 });
 
 test("secret-like material is rejected", async () => {
@@ -326,6 +472,7 @@ test("contract schema exposes v4 Shape and singular claim fields without agents"
   assert.equal(semantic.shapeSources.type, "array");
   assert.equal(semantic.claimBinding.$ref, "#/$defs/claimBinding");
   assert.equal(semantic.activationPolicy.$ref, "#/$defs/activationPolicy");
+  assert.equal(semantic.project.$ref, "#/$defs/projectPlan");
   assert.equal(semantic.assentPolicy.$ref, "#/$defs/assentPolicy");
   assert.equal(schema.properties.setupObligations.type, "array");
   assert.equal(semantic.agents, undefined);

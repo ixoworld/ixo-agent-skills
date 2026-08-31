@@ -15,7 +15,7 @@
     "quality"
   ],
   "properties": {
-    "version": { "const": "3.0.0" },
+    "version": { "const": "3.1.0" },
     "compositionId": {
       "type": "string",
       "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
@@ -51,14 +51,14 @@
       ],
       "properties": {
         "package": { "const": "@ixo/topic-protocol" },
-        "topicProtocolVersion": { "const": "1.0.0-rc.2" },
+        "topicProtocolVersion": { "const": "1.0.0-rc.3" },
         "rootVersion": { "const": 4 },
         "contractBodyVersion": { "const": 4 },
         "stateVersion": { "const": 4 },
         "contractProfile": { "const": "qi.topic-contract-state/v4" },
         "profileStatus": { "const": "normative" },
-        "sourceCommit": { "const": "0407c6e7e3f77091260a08d586441e5323a0227f" },
-        "packageShasum": { "const": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f" },
+        "sourceCommit": { "const": "4c70b462110635e43ba125740768cbc9e10e1bb0" },
+        "packageShasum": { "const": "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf" },
         "authoritativeHistory": { "const": "topic-root+operations+records+projection" },
         "stateEventRole": { "const": "materialized-head-only" },
         "legacyPolicy": { "const": "v4-only-no-migration" }
@@ -191,7 +191,7 @@
       "properties": {
         "strategy": { "enum": ["base-recipe", "topic-recipe"] },
         "baseRecipe": { "$ref": "#/$defs/baseRecipe" },
-        "topicRecipeCode": { "enum": ["research-brief", "agent-delivery", "verified-work-payment"] },
+        "topicRecipeCode": { "enum": ["research-brief", "agent-delivery", "verified-work-payment", "software-build", "blueprint-design"] },
         "topicRecipeRef": { "$ref": "#/$defs/topicRecipeRef" },
         "registryLookup": { "const": "not-performed" },
         "registryReason": { "const": "pinned-catalog-only" },
@@ -501,7 +501,7 @@
       "pattern": "^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
     "kind": {
-      "enum": ["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
+      "enum": ["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
     },
     "baseRecipe": {
       "enum": ["project", "flow", "proposal", "evaluation", "claims", "research", "discussion", "incident"]

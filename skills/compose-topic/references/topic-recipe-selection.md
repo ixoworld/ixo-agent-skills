@@ -4,7 +4,7 @@ Topic Recipes are expert-honed, digest-pinned overlays over a Base Recipe. They 
 
 ## Current behavior
 
-The skill has one controlled local catalog: [topic-shape-pins.json](topic-shape-pins.json). It contains the eight Base Recipe plus Kind resolutions and the three seed Topic Recipes published with Topic Protocol `1.0.0-rc.2`.
+The skill has one controlled local catalog: [topic-shape-pins.json](topic-shape-pins.json). It contains the nine Base Recipe plus Kind resolutions and the five seed Topic Recipes published with Topic Protocol `1.0.0-rc.3`.
 
 Every selection produces an editable Draft.
 
@@ -13,10 +13,14 @@ Every selection produces an editable Draft.
 | `research-brief` | `question` | `research` | the Topic will frame a question, research it, verify sources, and explicitly close the brief |
 | `agent-delivery` | `agent_task` | `flow` | the Topic commissions bounded agent work, reviews delivery, and may explicitly confirm an external Action through a Flow |
 | `verified-work-payment` | `claims` | `claims` | the Topic binds one entity/collection, verifies work, records a decision, executes through a Flow, and observes settlement finality |
+| `software-build` | `project` | `project` | the Project coordinates reviewed software implementation, verification, release, and operational-readiness work |
+| `blueprint-design` | `project` | `project` | the Project produces an independently reviewed and explicitly accepted, decision-complete blueprint |
 
 If none matches exactly, select only the Kind's Base Recipe.
 
 Do not interpret “similar” as a verified match. Do not invent a recipe ID or digest. Do not change the Kind merely to make a preferred recipe fit.
+
+Project Recipes configure only eligible suggestions, evidence presentation, and entry-points. They grant no authority, create no milestone or child Topic, and invoke no coding application or Design POD.
 
 ## Output requirements
 

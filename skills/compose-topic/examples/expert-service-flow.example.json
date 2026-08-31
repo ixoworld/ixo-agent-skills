@@ -1,5 +1,5 @@
 {
-  "version": "3.0.0",
+  "version": "3.1.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77703",
   "mode": "preview",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.2",
+    "topicProtocolVersion": "1.0.0-rc.3",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
-    "packageShasum": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f",
+    "sourceCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0",
+    "packageShasum": "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -45,10 +45,10 @@
       "baseRecipe": "flow",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-        "version": "1.0.0-rc.2",
-        "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
+        "version": "1.0.0-rc.3",
+        "digest": "sha256:44b431fe10da12336880fcf3f51dc4822d9114c267fe109ae86aff3b348038a0"
       },
-      "shapeDigest": "sha256:64460773d23c216956240f432420dd4aada8d880251e183c4f5141d6bbc67aff",
+      "shapeDigest": "sha256:61e77556537df8436ea8bfad45ae0ec47970696bb7ba56dc42a07db786151cbb",
       "context": [],
       "overview": {
         "summary": "Capture a bounded expert method, review its delivery, and keep execution in a Flow.",
@@ -68,8 +68,8 @@
     "topicRecipeCode": "agent-delivery",
     "topicRecipeRef": {
       "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-      "version": "1.0.0-rc.2",
-      "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
+      "version": "1.0.0-rc.3",
+      "digest": "sha256:44b431fe10da12336880fcf3f51dc4822d9114c267fe109ae86aff3b348038a0"
     },
     "registryLookup": "not-performed",
     "registryReason": "pinned-catalog-only",
@@ -78,23 +78,23 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/flow",
-        "version": "1.0.0-rc.2",
+        "version": "1.0.0-rc.3",
         "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/agent_task",
-        "version": "1.0.0-rc.2",
+        "version": "1.0.0-rc.3",
         "digest": "sha256:fc14c140eb2849d1c5e424fa4449f5c39264a288cefc309ccdff8615c99724d2"
       },
       {
         "kind": "topic-recipe",
         "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-        "version": "1.0.0-rc.2",
-        "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
+        "version": "1.0.0-rc.3",
+        "digest": "sha256:44b431fe10da12336880fcf3f51dc4822d9114c267fe109ae86aff3b348038a0"
       }
     ],
-    "shapeDigest": "sha256:64460773d23c216956240f432420dd4aada8d880251e183c4f5141d6bbc67aff"
+    "shapeDigest": "sha256:61e77556537df8436ea8bfad45ae0ec47970696bb7ba56dc42a07db786151cbb"
   },
   "contractDraft": {
     "envelope": {
@@ -112,30 +112,30 @@
       "baseRecipe": "flow",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-        "version": "1.0.0-rc.2",
-        "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
+        "version": "1.0.0-rc.3",
+        "digest": "sha256:44b431fe10da12336880fcf3f51dc4822d9114c267fe109ae86aff3b348038a0"
       },
       "shapeSources": [
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/flow",
-          "version": "1.0.0-rc.2",
+          "version": "1.0.0-rc.3",
           "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/agent_task",
-          "version": "1.0.0-rc.2",
+          "version": "1.0.0-rc.3",
           "digest": "sha256:fc14c140eb2849d1c5e424fa4449f5c39264a288cefc309ccdff8615c99724d2"
         },
         {
           "kind": "topic-recipe",
           "id": "https://topic-protocol.ixo.world/recipes/agent-delivery",
-          "version": "1.0.0-rc.2",
-          "digest": "sha256:fc646487e42ae88984b644449a90fe5b30769380d73b391cd44f46926f406e5e"
+          "version": "1.0.0-rc.3",
+          "digest": "sha256:44b431fe10da12336880fcf3f51dc4822d9114c267fe109ae86aff3b348038a0"
         }
       ],
-      "shapeDigest": "sha256:64460773d23c216956240f432420dd4aada8d880251e183c4f5141d6bbc67aff",
+      "shapeDigest": "sha256:61e77556537df8436ea8bfad45ae0ec47970696bb7ba56dc42a07db786151cbb",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77731",
         "text": "Capture the grant assessor's method as a controlled agent delivery workflow.",

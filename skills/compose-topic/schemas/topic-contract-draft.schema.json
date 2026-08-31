@@ -65,7 +65,7 @@
                   "properties": {
                     "type": { "const": "icon" },
                     "name": {
-                      "enum": ["task", "agent", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
+                      "enum": ["project", "task", "agent", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
                     }
                   },
                   "additionalProperties": false
@@ -93,6 +93,7 @@
           "additionalProperties": false
         },
         "ownerId": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "project": { "$ref": "#/$defs/projectPlan" },
         "scope": {
           "type": "object",
           "properties": {
@@ -233,11 +234,15 @@
       "type": "string",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
+    "topicId": {
+      "type": "string",
+      "pattern": "^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
     "baseRecipe": {
       "enum": ["project", "flow", "proposal", "evaluation", "claims", "research", "discussion", "incident"]
     },
     "kind": {
-      "enum": ["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
+      "enum": ["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
     },
     "kindRef": {
       "oneOf": [
@@ -290,6 +295,47 @@
       "properties": {
         "entityDid": { "type": "string", "pattern": "^did:ixo:" },
         "collectionId": { "type": "string", "minLength": 1, "maxLength": 512 }
+      },
+      "additionalProperties": false
+    },
+    "projectPlan": {
+      "type": "object",
+      "required": ["version"],
+      "properties": {
+        "version": { "const": 1 },
+        "lead": { "$ref": "#/$defs/subject" },
+        "closer": { "$ref": "#/$defs/subject" },
+        "milestones": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "name": { "type": "string", "minLength": 1, "maxLength": 500 },
+              "evidenceRequired": { "type": "array", "maxItems": 20, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+            },
+            "additionalProperties": false
+          }
+        },
+        "childObligations": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "required": ["id", "title"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "title": { "type": "string", "minLength": 1, "maxLength": 500 },
+              "kind": { "enum": ["task", "agent_task", "proposal", "evaluation", "claims", "incident", "question", "discussion"] },
+              "topicId": { "$ref": "#/$defs/topicId" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "currentBlockingChildObligationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "methodManifestRef": { "$ref": "#/$defs/topicRecipeRef" }
       },
       "additionalProperties": false
     },

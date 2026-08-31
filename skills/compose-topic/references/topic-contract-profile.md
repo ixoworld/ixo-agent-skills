@@ -4,8 +4,8 @@ This reference translates the pinned Topic Protocol release candidate into rules
 
 ## Pinned profile
 
-- package: `@ixo/topic-protocol@1.0.0-rc.2`
-- git source: `0407c6e7e3f77091260a08d586441e5323a0227f`
+- package: `@ixo/topic-protocol@1.0.0-rc.3`
+- git source: `4c70b462110635e43ba125740768cbc9e10e1bb0`
 - root version: `4`
 - contract body version: `4`
 - Matrix state profile: `qi.topic-contract-state/v4`
@@ -45,7 +45,7 @@ The activation policy keeps authority choices explicit:
 - `lifecycle`: optional effective, review, and expiry times with fixed `onExpiry: pause-consequential`; and
 - `dispute`: explicit resolvers and an optional Flow/resource process.
 
-A Draft may omit any of these choices. It cannot become effective until all required content and policy fields resolve, confirmation subjects resolve to actors, the required revision-bound confirmations exist, optional assent is satisfied, and time gates pass.
+A Draft may omit any of these choices. It cannot become effective until Kind-required content and activation fields resolve, confirmation subjects resolve to actors, the required revision-bound confirmations exist, optional configured assent is satisfied, and configured time gates pass. Lifecycle timing and dispute authority are optional; an open dispute without a resolver projects a blocking resolver-assignment obligation.
 
 Authorship is provenance only. Creator, owner, membership, role labels, and completion authority never grant setup confirmation. Confirmation permits progression and must never be called agreement. Optional assent is separate and is the only basis for signatory or agreement language.
 
@@ -57,6 +57,7 @@ An open dispute suppresses consequential moves. Resolution requires its own auth
 
 | Kind | Base Recipe |
 | --- | --- |
+| `project` | `project` |
 | `task` | `project` |
 | `agent_task` | `flow` |
 | `proposal` | `proposal` |

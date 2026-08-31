@@ -1,5 +1,5 @@
 {
-  "version": "3.0.0",
+  "version": "3.1.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702",
   "mode": "commit",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.2",
+    "topicProtocolVersion": "1.0.0-rc.3",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
-    "packageShasum": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f",
+    "sourceCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0",
+    "packageShasum": "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -40,10 +40,10 @@
     "rootDraft": {
       "version": 4,
       "title": "Launch the new onboarding experience",
-      "kind": "task",
+      "kind": "project",
       "status": "draft",
       "baseRecipe": "project",
-      "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72",
+      "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7",
       "context": [
         {
           "type": "ixo.domain",
@@ -53,8 +53,7 @@
       "overview": {
         "summary": "Coordinate the reviewed scope, milestones, owner, and readiness for onboarding launch.",
         "nextStep": {
-          "summary": "Choose who can update this setup.",
-          "assignee": "did:ixo:shaun"
+          "summary": "Assign the Project lead so setup can be reviewed."
         }
       }
     },
@@ -73,17 +72,17 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/project",
-        "version": "1.0.0-rc.2",
+        "version": "1.0.0-rc.3",
         "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
       },
       {
         "kind": "kind",
-        "id": "https://topic-protocol.ixo.world/kinds/task",
-        "version": "1.0.0-rc.2",
-        "digest": "sha256:70fd94bfd73b2cccd65e841fda1dd90d6692ab1a53028d825ab4aabe30f31b25"
+        "id": "https://topic-protocol.ixo.world/kinds/project",
+        "version": "1.0.0-rc.3",
+        "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
       }
     ],
-    "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72"
+    "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
   },
   "contractDraft": {
     "envelope": {
@@ -95,7 +94,7 @@
     "semantic": {
       "kindRef": {
         "source": "standard",
-        "kind": "task"
+        "kind": "project"
       },
       "workingMode": "team",
       "baseRecipe": "project",
@@ -103,17 +102,17 @@
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/project",
-          "version": "1.0.0-rc.2",
+          "version": "1.0.0-rc.3",
           "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
         },
         {
           "kind": "kind",
-          "id": "https://topic-protocol.ixo.world/kinds/task",
-          "version": "1.0.0-rc.2",
-          "digest": "sha256:70fd94bfd73b2cccd65e841fda1dd90d6692ab1a53028d825ab4aabe30f31b25"
+          "id": "https://topic-protocol.ixo.world/kinds/project",
+          "version": "1.0.0-rc.3",
+          "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
         }
       ],
-      "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72",
+      "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7",
       "timezone": "Asia/Singapore",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77721",
@@ -137,21 +136,11 @@
         "status": "proposed",
         "successCriteria": []
       },
-      "ownerId": "did:ixo:shaun",
-      "plan": {
-        "milestones": [
-          {
-            "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77723",
-            "title": "Confirm minimum launch scope",
-            "status": "pending"
-          }
-        ]
+      "project": {
+        "version": 1
       },
       "completion": {
         "definition": "The reviewed release is live and the authorised completion transition is recorded.",
-        "acceptanceAuthorityIds": [
-          "did:ixo:shaun"
-        ],
         "requiresOutcomeRecord": true
       },
       "scope": {
@@ -163,11 +152,7 @@
       "questions": [],
       "participants": [],
       "roles": [],
-      "activationPolicy": {
-        "lifecycle": {
-          "onExpiry": "pause-consequential"
-        }
-      }
+      "activationPolicy": {}
     },
     "publication": {
       "disclosure": "inline",
@@ -204,13 +189,22 @@
         "unlocks": "The named confirmer or confirmers can review this exact setup revision."
       },
       {
-        "code": "setup.dispute-resolvers",
-        "path": "/activationPolicy/dispute/resolvers",
-        "prompt": "Choose who can resolve a setup dispute.",
-        "purpose": "A dispute needs an explicitly authorized resolver or governed process.",
+        "code": "setup.project-lead",
+        "path": "/project/lead",
+        "prompt": "Who will lead this Project?",
+        "purpose": "The lead coordinates the plan and current blocker without inheriting any other authority.",
         "responsibility": "unassigned",
-        "priority": 630,
-        "unlocks": "Disputes can be handled without inventing authority."
+        "priority": 400,
+        "unlocks": "The Project setup can be reviewed and confirmed."
+      },
+      {
+        "code": "setup.project-closer",
+        "path": "/project/closer",
+        "prompt": "Who may close this Project by accepting remaining risk?",
+        "purpose": "Project closure requires independent, explicit acceptance authority.",
+        "responsibility": "unassigned",
+        "priority": 650,
+        "unlocks": "The Project may enter closing after its work is ready."
       }
     ]
   },
@@ -265,7 +259,7 @@
     "agentRoles": []
   },
   "firstTurn": {
-    "message": "I created a Task Draft with the launch outcome, first milestone, and explicit completion boundary.",
+    "message": "I created a Project Draft with the launch outcome and left its lead, closer, and setup authority visibly unresolved.",
     "quickActions": [
       {
         "id": "review",
@@ -321,7 +315,7 @@
         "requiredAbility": "topic/create",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:topic-create",
         "boundTo": {
-          "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72"
+          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
         }
       },
       {
@@ -333,7 +327,7 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:canvas",
         "boundTo": {
-          "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72"
+          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
         }
       },
       {
@@ -345,7 +339,7 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:projection",
         "boundTo": {
-          "shapeDigest": "sha256:75c4044ba6bb214dc5e5833e107ad550d2af29e12efcc1c857b0d0e844d65a72"
+          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
         }
       }
     ],
@@ -369,7 +363,8 @@
       "/contractDraft/envelope/revision",
       "/contractDraft/semantic/activationPolicy/editors",
       "/contractDraft/semantic/activationPolicy/confirmation",
-      "/contractDraft/semantic/activationPolicy/dispute/resolvers"
+      "/contractDraft/semantic/project/lead",
+      "/contractDraft/semantic/project/closer"
     ],
     "warnings": [
       "The host must still allocate Topic identity and publish only the Draft projection."
