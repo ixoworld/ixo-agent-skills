@@ -5,7 +5,7 @@ This reference translates the pinned Topic Protocol release candidate into rules
 ## Pinned profile
 
 - package: `@ixo/topic-protocol@1.0.0-rc.3`
-- git source: `4c70b462110635e43ba125740768cbc9e10e1bb0`
+- git source: `482139c37eed86387a7ff2609a8672c4216e28f4`
 - root version: `4`
 - contract body version: `4`
 - Matrix state profile: `qi.topic-contract-state/v4`
