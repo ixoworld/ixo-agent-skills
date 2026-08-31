@@ -3,19 +3,19 @@
   "skill": "compose-topic",
   "topicProtocol": {
     "repository": "https://github.com/ixoworld/topic-protocol",
-    "version": "1.0.0-rc.2",
-    "normativeBaseCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
+    "version": "1.0.0-rc.3",
+    "normativeBaseCommit": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e",
     "package": {
       "name": "@ixo/topic-protocol",
-      "version": "1.0.0-rc.2",
-      "gitHead": "0407c6e7e3f77091260a08d586441e5323a0227f",
-      "shasum": "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f",
-      "integrity": "sha512-5sIJLV9ARobosp+T5PROFQ/S0Z2S1Ybo+soFxtnHJJdMRVK8w3XqDX2LYcObyuCxguzDAFppsU8NNgs7MOhmHQ=="
+      "version": "1.0.0-rc.3",
+      "gitHead": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e",
+      "shasum": "d1fe45cf9bd461ca69b7fcaf074dd5dc3879ad6e",
+      "integrity": "sha512-ZD7GvacMXzoKBz0osNKU//I2CmJ0aTta6ZJJGmUj+rKP/CEO2HvmBNhLqjD/+eqF2H8NDxCXzpGGAEcfX29jVw=="
     },
     "contractProfile": {
       "profile": "qi.topic-contract-state/v4",
       "status": "normative",
-      "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f",
+      "sourceCommit": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e",
       "rootVersion": 4,
       "bodyVersion": 4,
       "stateVersion": 4,
@@ -27,15 +27,23 @@
     "sourceFiles": [
       {
         "path": "protocol-manifest.json",
-        "blobSha": "0be72092e65b9eba5a753f31ea542f1e581bf119"
+        "blobSha": "beb7a4088ab1a7daefcdd35a908bdf01543b1880"
       },
       {
         "path": "schemas/topic-root.schema.json",
-        "blobSha": "1f6fbf0885bd76cb4412047c53acd2d4d74a5848"
+        "blobSha": "d0e70781758bdeeffcb802987ff73cf24dd14932"
       },
       {
         "path": "schemas/topic-contract-body.schema.json",
-        "blobSha": "f2314e40e4e5492cd9d54a6c68e113b2d3b95b95"
+        "blobSha": "ebe817d773f775cad6537653608f080e80a0ad14"
+      },
+      {
+        "path": "schemas/project-plan.schema.json",
+        "blobSha": "d19277711fc45238840451b404b0ceadfab98ad1"
+      },
+      {
+        "path": "schemas/project-projection.schema.json",
+        "blobSha": "e9c4073c498a16a4669ef967a059f984ea207eda"
       },
       {
         "path": "schemas/topic-contract-state.schema.json",
@@ -47,7 +55,7 @@
       },
       {
         "path": "schemas/topic-recipe.schema.json",
-        "blobSha": "598b581a0f7c1928d0c83a1fbc958d67e2cd05c3"
+        "blobSha": "8e49ec9bab1444e3bf73c5a29d6f1e9e0347d734"
       },
       {
         "path": "schemas/topic-flow-binding.schema.json",
@@ -63,15 +71,23 @@
       },
       {
         "path": "src/contracts/topic-contract.ts",
-        "blobSha": "b8a729a82e5f8533d7572482e5c8d16ba3f00717"
+        "blobSha": "ea14c95c797dd003267819fb020b4d45ce7c4f6b"
       },
       {
         "path": "src/projector/types.ts",
-        "blobSha": "07e5d5d3d4965e1a42d9ad43e59b103f5b69eea1"
+        "blobSha": "a9bb676841aa24827bd0447af01dd7057e099100"
+      },
+      {
+        "path": "src/projects/types.ts",
+        "blobSha": "c433067b26f00ed86d742e3d160c58668665bddf"
+      },
+      {
+        "path": "src/projects/project.ts",
+        "blobSha": "9d49519d602cc4f59a2a26f657ef7c1b89543bb4"
       },
       {
         "path": "src/shapes/types.ts",
-        "blobSha": "0d489d942fa94db7843926f37956db7ad559a75a"
+        "blobSha": "123b5c6428ca08b55ef4f8daae260330cecf02bc"
       },
       {
         "path": "src/shapes/state.ts",
@@ -79,15 +95,15 @@
       },
       {
         "path": "src/shapes/resolver.ts",
-        "blobSha": "4bcab6b060fcc69d1c486a2f2ce9a03b47c6fbcb"
+        "blobSha": "0820b45cf43409dc024b3955fa8c07bb2b57a9fd"
       },
       {
         "path": "src/shapes/recipes.ts",
-        "blobSha": "a7097f5049604712851680376259b783ee9648ed"
+        "blobSha": "39c657f5303a08efe029804563c89caedb273d33"
       },
       {
         "path": "src/shapes/progress.ts",
-        "blobSha": "53966c95c058e395513c70f66d37f60ad5ec281d"
+        "blobSha": "3b6f1e42d3ff193d4fdb2b63baf1d53996f52fee"
       },
       {
         "path": "src/shapes/now.ts",
@@ -99,23 +115,35 @@
       },
       {
         "path": "recipes/registry.json",
-        "blobSha": "b26ec8c1ffa0c2885bf8e8c1b88b4fadb5c676fa"
+        "blobSha": "142d611829289243802e6716f716f8f8149efff4"
       },
       {
         "path": "recipes/research-brief.json",
-        "blobSha": "800cd16cd56bec686a710e60d39e859b87e24759"
+        "blobSha": "890a527f9c74779e0ba41d96c86c5f7b7a749b75"
       },
       {
         "path": "recipes/agent-delivery.json",
-        "blobSha": "095c09598ee319ef46bcbb78af1c5e8da4b61bd7"
+        "blobSha": "d02ade2fa79910075758250b83fe755bc57faa80"
       },
       {
         "path": "recipes/verified-work-payment.json",
-        "blobSha": "8cdcb6c66ad139339dd77180e6db6609c0819169"
+        "blobSha": "9133c2c0bed46dea0866b13dd60f8d750805d23a"
+      },
+      {
+        "path": "recipes/software-build.json",
+        "blobSha": "494a8af3e4d13289945649ac40371e94657eb21a"
+      },
+      {
+        "path": "recipes/blueprint-design.json",
+        "blobSha": "79cde0c2ee3039177707c7eb3fd4dbc2be0c7674"
       },
       {
         "path": "docs/topic-shape-framework.md",
-        "blobSha": "943df286f84caa2c0eb0a0e4d631df75cf402ef0"
+        "blobSha": "797d2da573761578b8ccf09d91c2802e2938e5b4"
+      },
+      {
+        "path": "docs/protocol/13-project-topics-and-recipes.md",
+        "blobSha": "917243114d0e6f92ffc65249da9edc26268a062a"
       },
       {
         "path": "schemas/topic-kind-profile.schema.json",
@@ -135,15 +163,15 @@
       },
       {
         "path": "schemas/topic-operation.schema.json",
-        "blobSha": "fe1e32401a8d98ec8dc432b3a21840d340957bfe"
+        "blobSha": "70525fa8dc5079248999fb241f1223b682609922"
       },
       {
         "path": "src/projector/payload.ts",
-        "blobSha": "d1d9ed55d4a4bfea769ee88eb973a80b8affab6c"
+        "blobSha": "ce30dc9b35b1045a412cbf697f9f04d16f2e1d90"
       },
       {
         "path": "src/projector/state.ts",
-        "blobSha": "eada1f24b0dfafec6dc54d620caa582b50858cc8"
+        "blobSha": "4c713e11439366865d0425bb5d817ffbc573da81"
       }
     ],
     "kindProfiles": {
@@ -152,7 +180,7 @@
         "version": "1.0.0",
         "schema": "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
         "digest": "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5",
-        "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f"
+        "sourceCommit": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e"
       }
     },
     "topicRecipes": {
@@ -160,7 +188,9 @@
       "codes": [
         "research-brief",
         "agent-delivery",
-        "verified-work-payment"
+        "verified-work-payment",
+        "software-build",
+        "blueprint-design"
       ],
       "creates": "draft",
       "marketplaceLookup": "not-performed"
@@ -168,34 +198,43 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "459f2def5b6219c8eb744b27bb7732e44dcdda1383c7fdea5c30dc25ae1aa963"
+      "sha256": "82295baef831cd437d191f466691d621363f03fe53e44e119aafc904f6e69362"
     },
     "schemas/topic-contract-draft.schema.json": {
-      "sha256": "4f058b30cf095ffbbf4d664c13843ab2ed2df6ae130d0bd09d52499e35ae9479"
+      "sha256": "70a2337cbf50e8db401b47fd07166e44e41594d6b1717abf441ddd788fff7e53"
     },
     "schemas/topic-refine-change-set.schema.json": {
       "sha256": "c09b669324dc4de72b9a0d19b5f9be6017f86017f75cebbd47ef7d069c5c1763"
     },
     "references/topic-contract-profile.md": {
-      "sha256": "ad049b22a92cd17ae408ef8802e8876683be5b7005b050b82a3df6875c644256"
+      "sha256": "4cf33c74100a1b260909f4551b2ccd68d28ec2d0b850729121ac55bf8ae4012c"
     },
     "references/topic-recipe-selection.md": {
-      "sha256": "5a05183fcda3fc2c90b666f064e9d74f57ceeef37c3feca4b81e0cd0644e39d2"
+      "sha256": "225c17adcc1262d9732313739a00e55f7462b7c3594cb861cb7b8e71cbbe2f65"
     },
     "references/topic-shape-pins.json": {
-      "sha256": "a500ef67d6cd5bbcd5216815a48e9a7884ac3648c3e2b8b57f625943d769945e"
+      "sha256": "bfef0e6c4c63a7d38bb1aec41405ebabbfebe6583b96d98c5ff7b739c3f1fc2c"
     },
     "references/topic-kind-templates.md": {
-      "sha256": "c055d09d21db1e8c470cfec217fa7815fe5afe6e8359712abf47e4130b623a51"
+      "sha256": "88ce88c3666e3d259a1e5eba84fec60a8504e17bebb3a4ac4bc7505d9a85d5cc"
     },
     "SKILL.md": {
-      "sha256": "d62fabf488de9f7785f330acc8d8ffcaefae962ac83dd0b9d56f4a6bf586eb46"
+      "sha256": "b0eca716ea08be572fe29bb4b2780ba9277e3224661bf7161dc089471a07994a"
     },
     "AUDIT.md": {
-      "sha256": "a385fdc67c27656f786af5758474054428c02a8fc72705bc3cb8ebcf5975f09f"
+      "sha256": "863ecc637190af9a62b8b6b7c46b13ef956baf9a5120725f035d9f50fdd07322"
     },
     "evals/evals.json": {
-      "sha256": "c79af0ce980fbac188261f2308acf2bd2c7038bd55f8e2788dd3a7d05ab58bfd"
+      "sha256": "7ab10b71fd7d96fd8d4bcb0f3a06adcfee17e375e436ba065201903dae47780e"
+    },
+    "subskills/compose-topic-project/SKILL.md": {
+      "sha256": "bf1752b606a7ce299596832bdae308c25479a56e8c221603309a11fbda7b4cfe"
+    },
+    "subskills/compose-project-software-build/SKILL.md": {
+      "sha256": "c323743451e139027181998dfc4fcc394a3733642ad3527db22a935ff860f7f6"
+    },
+    "subskills/compose-project-blueprint-design/SKILL.md": {
+      "sha256": "42fce4fb8304e05e9ca662eec74a0c2d335899b5b0cdb4f1314ab1b9d5bcaea3"
     },
     "subskills/compose-topic-agent-task/SKILL.md": {
       "sha256": "09e9517347bac8168525a37e053b42fab4d6c5409be321519a2e356990f8ab71"

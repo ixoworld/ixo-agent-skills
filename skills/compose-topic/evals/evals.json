@@ -1,11 +1,11 @@
 {
-  "version": "3.0.0",
+  "version": "3.1.0",
   "skill": "compose-topic",
   "protocol": {
-    "topicProtocolVersion": "1.0.0-rc.2",
+    "topicProtocolVersion": "1.0.0-rc.3",
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "0407c6e7e3f77091260a08d586441e5323a0227f"
+    "sourceCommit": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e"
   },
   "cases": [
     {
@@ -726,6 +726,83 @@
         "Retain the supplied Flow process without inventing a resolver.",
         "Keep setup.dispute-resolvers visible and do not imply that dispute resolution confirms setup or completes the Topic."
       ]
+    },
+    {
+      "id": "kind-project",
+      "input": "Create a Project to deliver a new multi-stage onboarding experience.",
+      "expected": {
+        "kind": "project",
+        "status": "draft"
+      },
+      "must": [
+        "Select the persisted Project Kind and the project Base Recipe.",
+        "Ask what exists when the Project is done and who will lead it; do not route this nested outcome to Task."
+      ]
+    },
+    {
+      "id": "recipe-software-build",
+      "input": "Set up a software project to implement and release the new claims application.",
+      "expected": {
+        "kind": "project",
+        "topicRecipeCode": "software-build",
+        "status": "draft"
+      },
+      "must": [
+        "Use the digest-pinned Software Build recipe only after it is selected or confirmed.",
+        "Suggest implementation, verification, release, and operational-readiness patterns without creating repositories, milestones, agents, deployments, or child Topics."
+      ]
+    },
+    {
+      "id": "recipe-blueprint-design",
+      "input": "Use the Yoma Design POD to produce the accepted blueprint for a protocol Deed.",
+      "expected": {
+        "kind": "project",
+        "topicRecipeCode": "blueprint-design",
+        "status": "draft"
+      },
+      "must": [
+        "Use the digest-pinned Blueprint Design recipe and preserve the authoritative design-yoma/v1 method boundary when bound.",
+        "Treat the accepted blueprint as the Project outcome, never as an effective Deed, deployed service, or operational proof."
+      ]
+    },
+    {
+      "id": "project-lead-authority",
+      "input": "I created this Project, so make me its lead, setup confirmer, closer, and dispute resolver.",
+      "context": "Creation is known but no explicit authority selections or capability proofs are supplied.",
+      "expected": {
+        "kind": "project",
+        "status": "draft"
+      },
+      "must": [
+        "Do not derive lead, confirmation, closure, or dispute authority from creation, ownership, or room membership.",
+        "Keep each unresolved authority visible; assigning a lead only makes setup eligible for review and does not start work."
+      ]
+    },
+    {
+      "id": "project-child-boundary",
+      "input": "Break this Project into implementation, review, and rollout work.",
+      "context": "The work items are named but their child Kinds, owners, dates, and Topic IDs are not supplied.",
+      "expected": {
+        "kind": "project",
+        "status": "draft"
+      },
+      "must": [
+        "Record the items as unmet child obligations or ask which allowed child Kind each should use.",
+        "Do not auto-create child Topics or nest a Project as a child; child completion cannot close the Project."
+      ]
+    },
+    {
+      "id": "project-close-boundary",
+      "input": "Linear says every issue is done, so close the Project.",
+      "context": "No closer acceptance record is supplied.",
+      "expected": {
+        "kind": "project",
+        "status": "draft"
+      },
+      "must": [
+        "Treat external completion only as handoff_ready and never as Project completion.",
+        "Require the assigned closer to explicitly accept remaining risk in a revision-, digest-, actor-, authority-, and evidence-bound acceptance record."
+      ]
     }
   ],
   "globalAssertions": [
@@ -742,13 +819,15 @@
     "No secret, provider-private session ID, or private reasoning trace is returned.",
     "Custom kinds inherit one standard base kind.",
     "Thread is never emitted as a persisted kind.",
-    "Risks are emitted only for Incidents and never include likelihood.",
+    "Risks are emitted only for Incidents and Projects and never include likelihood.",
     "Drafts leave unresolved fields omitted rather than fabricating defaults.",
     "Every composition exposes a partial activationPolicy and structured obligations for unresolved setup authority.",
     "Authorship, ownership, membership, and completion authority never silently become setup confirmation, assent, or dispute authority.",
     "Setup confirmation is never described as mutual agreement without an explicit assentPolicy.",
     "Existing Topic refinement stages a revision-bound change set and never falls back to creation.",
     "Every composed Topic selects one canonical Kind and its fixed Base Recipe.",
+    "Project Recipe references configure eligible behavior only; they grant no authority, create no children, and invoke no application.",
+    "Project lead assignment, setup confirmation, child progress, closure acceptance, dispute authority, assent, and time gates remain distinct.",
     "Kind-specific draft structures are initialised without fabricating unresolved values.",
     "A profiled Kind emits exact kindRef, kindProfile, and kindResource references together.",
     "The Effective Shape sources and digest are resolved before writing and no separate Shape record is persisted.",

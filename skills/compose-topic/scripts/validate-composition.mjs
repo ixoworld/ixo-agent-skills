@@ -24,13 +24,14 @@ const ABILITY = /^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/u;
 const TOPIC = /^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const ENTRY = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
-const COMMIT = "0407c6e7e3f77091260a08d586441e5323a0227f";
-const PACKAGE_SHASUM = "2e35955b3c5b374e023b8d317e1f3a14c0ffe72f";
-const PROTOCOL_VERSION = "1.0.0-rc.2";
-const COMPOSITION_VERSION = "3.0.0";
+const COMMIT = "39e488c59fe06869fb8a6b1be44fd1c5fe44505e";
+const PACKAGE_SHASUM = "d1fe45cf9bd461ca69b7fcaf074dd5dc3879ad6e";
+const PROTOCOL_VERSION = "1.0.0-rc.3";
+const COMPOSITION_VERSION = "3.1.0";
 const PROFILE = "qi.topic-contract-state/v4";
-const KINDS = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
+const KINDS = new Set(["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
 const RECIPE_BY_KIND = {
+  project: "project",
   task: "project",
   agent_task: "flow",
   proposal: "proposal",
@@ -41,6 +42,7 @@ const RECIPE_BY_KIND = {
   incident: "incident",
 };
 const KIND_FIELDS = {
+  project: ["outcome", "project", "completion"],
   task: ["outcome", "plan", "completion"],
   agent_task: ["outcome", "plan", "completion"],
   proposal: ["outcome", "decision", "completion"],
@@ -286,8 +288,8 @@ function validateContract(value, findings) {
   for (const field of KIND_FIELDS[kind] ?? []) {
     add(findings, Object.hasOwn(semantic ?? {}, field), "KIND_TEMPLATE_FIELD", `/contractDraft/semantic/${field}`, `${kind} Draft must initialise this structure`);
   }
-  if (kind !== "incident" && Array.isArray(semantic?.risks) && semantic.risks.length > 0) {
-    findings.push(finding("RISKS_INCIDENT_ONLY", "/contractDraft/semantic/risks", "risks are an Incident-only structure"));
+  if (!new Set(["incident", "project"]).has(kind) && Array.isArray(semantic?.risks) && semantic.risks.length > 0) {
+    findings.push(finding("RISKS_KIND_BOUNDARY", "/contractDraft/semantic/risks", "risks are available only for Incident and Project Drafts"));
   }
   for (const [index, risk] of (semantic?.risks ?? []).entries()) {
     add(findings, !Object.hasOwn(risk, "likelihood"), "LEGACY_LIKELIHOOD", `/contractDraft/semantic/risks/${index}`, "v4 uses Impact-only risk");
@@ -329,6 +331,7 @@ function validateContract(value, findings) {
     add(findings, value.claimResolutionEvidence.readOnly === true, "CLAIM_RESOLUTION_READ_ONLY", "/claimResolutionEvidence/readOnly", "resolution evidence is read-only");
   }
   validateSetupPolicy(draft, semantic, findings);
+  validateProject(draft, semantic, kind, findings);
   const publication = draft.publication;
   if (["confidential", "restricted"].includes(publication?.dataClassification)) {
     add(findings, publication.disclosure === "reference-only", "SENSITIVE_INLINE", "/contractDraft/publication/disclosure", "sensitive contracts must be reference-only");
@@ -346,8 +349,6 @@ function validateSetupPolicy(draft, semantic, findings) {
   const expectedMissing = [
     [!(policy?.editors?.length > 0), "setup.editors"],
     [!isObject(policy?.confirmation), "setup.confirmation-policy"],
-    [!isObject(policy?.lifecycle), "setup.lifecycle-policy"],
-    [!(policy?.dispute?.resolvers?.length > 0), "setup.dispute-resolvers"],
   ];
   for (const [missing, code] of expectedMissing) {
     add(findings, !missing || obligationCodes.has(code), "MISSING_SETUP_OBLIGATION", "/contractDraft/setupObligations", `${code} must remain visible while unresolved`);
@@ -388,6 +389,20 @@ function validateSetupPolicy(draft, semantic, findings) {
     const path = `/activationPolicy/lifecycle/${name}`;
     const proof = provenance[path];
     add(findings, isObject(proof) && ["explicit", "contextual"].includes(proof.basis), "LIFECYCLE_PROVENANCE", `/contractDraft/semantic/fieldProvenance${path}`, "dates must be supplied or accepted, never invented");
+  }
+}
+
+function validateProject(draft, semantic, kind, findings) {
+  if (kind !== "project") return;
+  const project = semantic?.project;
+  add(findings, isObject(project) && project.version === 1, "PROJECT_PLAN", "/contractDraft/semantic/project", "Project Drafts require a version 1 Project plan");
+  const obligationCodes = new Set((draft.setupObligations ?? []).map((item) => item?.code));
+  add(findings, isObject(semantic?.outcome?.statement) || obligationCodes.has("setup.result"), "PROJECT_OUTCOME_OBLIGATION", "/contractDraft/setupObligations", "a missing Project outcome must remain visible");
+  add(findings, isObject(project?.lead) || obligationCodes.has("setup.project-lead"), "PROJECT_LEAD_OBLIGATION", "/contractDraft/setupObligations", "a missing Project lead must remain visible");
+  add(findings, (semantic?.completion?.acceptanceAuthorityIds?.length ?? 0) > 0 || obligationCodes.has("setup.project-closer"), "PROJECT_CLOSER_OBLIGATION", "/contractDraft/setupObligations", "a missing Project closer must remain visible without being defaulted");
+  const allowedChildren = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "incident", "question", "discussion"]);
+  for (const [index, child] of (project?.childObligations ?? []).entries()) {
+    add(findings, child.kind === undefined || allowedChildren.has(child.kind), "PROJECT_CHILD_KIND", `/contractDraft/semantic/project/childObligations/${index}/kind`, "must be an allowed non-Project child Kind");
   }
 }
 

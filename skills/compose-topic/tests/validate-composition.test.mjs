@@ -27,6 +27,26 @@ function codes(value) {
   return new Set(validateComposition(value).map((item) => item.code));
 }
 
+function selectTopicRecipe(value, code, pin) {
+  value.recipeSelection = {
+    strategy: "topic-recipe",
+    baseRecipe: pin.baseRecipe,
+    topicRecipeCode: code,
+    topicRecipeRef: pin.topicRecipeRef,
+    registryLookup: "not-performed",
+    registryReason: "pinned-catalog-only",
+    reviewState: "draft",
+    shapeSources: pin.shapeSources,
+    shapeDigest: pin.shapeDigest,
+  };
+  value.topic.rootDraft.topicRecipeRef = pin.topicRecipeRef;
+  value.topic.rootDraft.shapeDigest = pin.shapeDigest;
+  value.contractDraft.semantic.topicRecipeRef = pin.topicRecipeRef;
+  value.contractDraft.semantic.shapeSources = pin.shapeSources;
+  value.contractDraft.semantic.shapeDigest = pin.shapeDigest;
+  for (const call of value.execution.proposedCalls) call.boundTo.shapeDigest = pin.shapeDigest;
+}
+
 test("all bundled v4 examples pass", async () => {
   for (const name of EXAMPLES) {
     const report = await validateFile(join(ROOT, "examples", name));
@@ -257,6 +277,7 @@ test("continue and refine require v4 plus Topic, contract, and Shape pins", asyn
 
 test("all canonical Kinds require their focused Draft structures", async () => {
   const required = {
+    project: ["outcome", "project", "completion"],
     task: ["outcome", "plan", "completion"],
     agent_task: ["outcome", "plan", "completion"],
     proposal: ["outcome", "decision", "completion"],
@@ -297,7 +318,7 @@ test("all canonical Kinds require their focused Draft structures", async () => {
   }
 });
 
-test("risks are Incident-only and never use likelihood", async () => {
+test("risks are Project- and Incident-only and never use likelihood", async () => {
   const value = await example();
   value.contractDraft.semantic.risks = [{
     id: "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77999",
@@ -306,8 +327,52 @@ test("risks are Incident-only and never use likelihood", async () => {
     status: "open",
   }];
   const result = codes(value);
-  assert(result.has("RISKS_INCIDENT_ONLY"));
+  assert(result.has("RISKS_KIND_BOUNDARY"));
   assert(result.has("LEGACY_LIKELIHOOD"));
+});
+
+test("Project Drafts keep missing lead and closer choices visible", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
+    ({ code }) => !["setup.project-lead", "setup.project-closer"].includes(code),
+  );
+  const result = codes(value);
+  assert(result.has("PROJECT_LEAD_OBLIGATION"));
+  assert(result.has("PROJECT_CLOSER_OBLIGATION"));
+});
+
+test("Project children use the reviewed non-Project Kind palette", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.childObligations = [{
+    obligationId: "work-1",
+    title: "Nested project",
+    kind: "project",
+    status: "unmet",
+  }];
+  assert(codes(value).has("PROJECT_CHILD_KIND"));
+});
+
+test("Project lead assignment does not imply setup confirmation or closure authority", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.lead = { kind: "actor", id: "did:ixo:lead" };
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
+    ({ code }) => code !== "setup.project-lead",
+  );
+  const result = codes(value);
+  assert.equal(result.has("PROJECT_LEAD_OBLIGATION"), false);
+  assert(value.contractDraft.setupObligations.some(({ code }) => code === "setup.confirmation-policy"));
+  assert(value.contractDraft.setupObligations.some(({ code }) => code === "setup.project-closer"));
+});
+
+test("Project recipes use their exact digest-pinned Effective Shapes", async () => {
+  const catalog = await pins();
+  for (const code of ["software-build", "blueprint-design"]) {
+    const value = await example("team-project.example.json");
+    const pin = catalog.topicRecipes[code];
+    selectTopicRecipe(value, code, pin);
+    const report = validateComposition(value);
+    assert.deepEqual(report, [], `${code}: ${JSON.stringify(report, null, 2)}`);
+  }
 });
 
 test("secret-like material is rejected", async () => {
@@ -326,6 +391,7 @@ test("contract schema exposes v4 Shape and singular claim fields without agents"
   assert.equal(semantic.shapeSources.type, "array");
   assert.equal(semantic.claimBinding.$ref, "#/$defs/claimBinding");
   assert.equal(semantic.activationPolicy.$ref, "#/$defs/activationPolicy");
+  assert.equal(semantic.project.$ref, "#/$defs/projectPlan");
   assert.equal(semantic.assentPolicy.$ref, "#/$defs/assentPolicy");
   assert.equal(schema.properties.setupObligations.type, "array");
   assert.equal(semantic.agents, undefined);

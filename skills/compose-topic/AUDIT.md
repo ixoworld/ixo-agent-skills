@@ -1,10 +1,10 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.0.0`
-Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.2`
+Audit target: `compose-topic` `3.1.0`
+Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.3`
 Topic Contract profile: `qi.topic-contract-state/v4`
-Pinned protocol commit: `0407c6e7e3f77091260a08d586441e5323a0227f`
-Published package shasum: `2e35955b3c5b374e023b8d317e1f3a14c0ffe72f`
+Pinned protocol commit: `39e488c59fe06869fb8a6b1be44fd1c5fe44505e`
+Published package shasum: `d1fe45cf9bd461ca69b7fcaf074dd5dc3879ad6e`
 
 ## Review scope
 
@@ -13,8 +13,8 @@ The audit covers:
 - root/body/state version 4 and all legacy-version exclusion;
 - canonical Kind to Base Recipe mapping;
 - Effective Shape resolution and digest pins;
-- three Draft-producing seed Topic Recipes;
-- eight progressively loaded Kind sub-skills;
+- five Draft-producing seed Topic Recipes;
+- nine progressively loaded Kind sub-skills, plus focused Software Build and Blueprint Design routes;
 - singular claim binding and read-only protocol/rubric resolution;
 - Flow, Action, UDID, evaluation, effect, and settlement boundaries;
 - Matrix plus UCAN authority requirements;
@@ -38,13 +38,19 @@ Resolution: v4 uses `baseRecipe`, optional digest-pinned `topicRecipeRef`, `shap
 
 Finding: one large reference held all Kind rules, increasing reader load and encouraging generic composition.
 
-Resolution: the root is a shared router and each of the eight canonical Kinds has a focused sub-skill. The selected sub-skill defines its required structures, progression boundaries, evidence posture, and Portal handoff.
+Resolution: the root is a shared router and each of the nine canonical Kinds has a focused sub-skill. Project may additionally load Software Build or Blueprint Design guidance after the user selects that Project Type. The selected sub-skill defines its required structures, progression boundaries, evidence posture, and Portal handoff.
 
 ### Topic Recipe and Base Recipe were conflated
 
 Finding: “recipe” meant the fixed Kind recipe and offered no governed path for expert-honed Topic Recipes.
 
-Resolution: Base Recipe is reserved for the canonical Kind model. The skill pins the three published seed Topic Recipes, verifies their Base Recipe and digest, and keeps every instantiation a Draft. Marketplace lookup is explicitly not performed until a verified registry and useful library exist.
+Resolution: Base Recipe is reserved for the canonical Kind model. The skill pins the five published seed Topic Recipes, verifies their Base Recipe and digest, and keeps every instantiation a Draft. Marketplace lookup is explicitly not performed until a verified registry and useful library exist.
+
+### Project coordination could collapse distinct authorities
+
+Finding: treating the Project lead as a generic owner could silently make that person the setup confirmer, child-work owner, closer, or dispute resolver. External issue completion could also be mistaken for Project completion.
+
+Resolution: Project has an explicit lead subject whose authority is limited to plan coordination and blocker identification. Lead assignment, setup confirmation, optional assent and time gates, child progress, dispute resolution, and closer acceptance remain separate. Project Recipes only configure eligible suggestions. Closing requires the named closer's revision-, digest-, actor-, authority-, evidence-, and remaining-risk-bound acceptance record; child, Action, evaluation, settlement, and tracker states never substitute for it.
 
 ### Shape state was not reproducible
 
@@ -98,13 +104,13 @@ Resolution: Shape-permitted non-effecting fact, summary, and classification reco
 
 The package includes:
 
-- five valid v4 examples, including all three seed Topic Recipes and explicit unresolved setup obligations;
+- five valid v4 examples, including the Generic Project path, three established seed Topic Recipes, and explicit unresolved setup obligations;
 - negative tests for v3 and older Topics, Shape pins, policy provenance, owner fallback, assent, expiry, thresholds, claims, Action/effect leakage, authority, inference, decisions, outcomes, secrets, canvas bounds, and refinement pins;
 - package audit for root and nested skill frontmatter, links, source locks, local digests, schemas, examples, eval coverage, scripts, and secret patterns; and
-- behavioral evals covering all eight Kinds, three seed recipes, future Marketplace posture, Portal viewer authority, legacy exclusion, and Flow/Action boundaries.
+- behavioral evals covering all nine Kinds, five seed recipes, Project lead/child/close boundaries, future Marketplace posture, Portal viewer authority, legacy exclusion, and Flow/Action boundaries.
 
 ## Residual limits
 
 The skill cannot prove deployed Matrix, E2EE, VFS, UCAN, Entity/claim resolution, Flow execution, evaluation, payment, settlement, or receipt finality. The host must validate those boundaries and reproject current state.
 
-The recipe Marketplace lookup is intentionally not implemented. The local catalog is sufficient only for the eight Base Recipe compositions and three seed Topic Recipes pinned to the release candidate.
+The recipe Marketplace lookup is intentionally not implemented. The local catalog is sufficient only for the nine Base Recipe compositions and five seed Topic Recipes pinned to the release candidate.

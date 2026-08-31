@@ -1,12 +1,12 @@
 ---
 name: compose-topic
-description: "Compose, route, validate, and safely stage a Topic Protocol v1 Draft from a person's intent. Use when creating or refining a Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Topic; selecting a Base Recipe or pinned Topic Recipe; resolving the Effective Topic Shape; proposing explicit setup editors, confirmation, lifecycle, dispute, and optional assent policies; preparing Portal-compatible setup, canvas, claim, or Flow handoffs; or producing an idempotent Matrix host plan."
+description: "Compose, route, validate, and safely stage a Topic Protocol v1 Draft from a person's intent. Use when creating or refining a Project, Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Topic; selecting a Base Recipe or pinned Topic Recipe; resolving the Effective Topic Shape; proposing explicit setup editors, confirmation, lifecycle, dispute, and optional assent policies; preparing Portal-compatible setup, canvas, claim, or Flow handoffs; or producing an idempotent Matrix host plan."
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.0.0"
+  version: "3.1.0"
   category: collaboration
-  topic-protocol: "1.0.0-rc.2"
+  topic-protocol: "1.0.0-rc.3"
   topic-contract-profile: qi.topic-contract-state/v4
   profile-status: normative
 ---
@@ -26,6 +26,7 @@ Before composing:
 3. Read [references/topic-recipe-selection.md](references/topic-recipe-selection.md).
 4. Select one canonical Kind and then read exactly its sub-skill:
 
+   - [Project](subskills/compose-topic-project/SKILL.md)
    - [Task](subskills/compose-topic-task/SKILL.md)
    - [Agent Task](subskills/compose-topic-agent-task/SKILL.md)
    - [Proposal](subskills/compose-topic-proposal/SKILL.md)
@@ -68,7 +69,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 5. Never invent identity, authority, assignment, deadline, budget, evidence, acceptance, capability, Shape source, recipe match, claim resolution, Action success, or settlement finality.
 6. Every new Topic starts as a user-reviewable `draft`, including a blank Base Recipe and every Topic Recipe.
 7. `baseRecipe` is the canonical Kind recipe. Never emit the removed v0.8 `recipe` field.
-8. A Topic Recipe is optional and digest-pinned. Use only the three entries in the bundled pinned catalog unless the host supplies a verified registry adapter.
+8. A Topic Recipe is optional and digest-pinned. Use only the five entries in the bundled pinned catalog unless the host supplies a verified registry adapter.
 9. Resolve the Effective Shape before any write. Copy its `sources` and `digest` into the root Draft and contract proposal; do not hand-calculate or improvise them.
 10. Do not place agents, Action definitions, effect contracts, evaluation kits, schedules, or settlement contracts in the Topic Contract body.
 11. Agent execution and external effects belong to registry Actions and Flow instances. A Topic carries only bindings, UDID references, operations, records, and receipts through the host runtime.
@@ -82,13 +83,16 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 19. Authorship is provenance, not authority. Creator, owner, membership, and completion authority never silently become setup editors, confirmers, signatories, or dispute resolvers.
 20. Never invent a confirmer, signatory, expiry, effective or review date, dispute resolver, or dispute process. Keep each unresolved decision visible as a structured setup obligation.
 21. Setup confirmation permits Topic progression only. It is not assent, outcome approval, Action confirmation, legal agreement, or Topic completion.
+22. A Project lead coordinates the plan and current blocker. Never treat the lead as a child-work owner, setup confirmer, milestone accepter, closer, or dispute resolver.
+23. Project Recipes may suggest milestones, child Kinds, and application entry-points. They never create a child, choose an actor, grant authority, invoke an application, create a repository, or deploy software.
+24. A linked child can satisfy only its Project obligation. Child completion, Action success, evaluation, settlement, and external tracker completion never close a Project.
 
 ## Workflow
 
 ### 1. Pin and preflight
 
 - Run `node scripts/audit-skill.mjs --json` when scripts are available.
-- Use composition version `3.0.0`, Topic Protocol `1.0.0-rc.2`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.1.0`, Topic Protocol `1.0.0-rc.3`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Inventory real host capabilities. Do not assume a named tool exists.
 - Scan for secrets and excessive sensitive data.
 
@@ -106,6 +110,7 @@ Use the job the Topic must do:
 
 | Job | Kind | Base Recipe |
 | --- | --- | --- |
+| coordinate multi-stage work whose progress is derived from milestones and linked child Topics | `project` | `project` |
 | coordinate or deliver human work | `task` | `project` |
 | commission bounded agent work | `agent_task` | `flow` |
 | draft something for approval | `proposal` | `proposal` |
@@ -115,7 +120,9 @@ Use the job the Topic must do:
 | deliberate without a formed plan or decision | `discussion` | `discussion` |
 | contain and resolve an urgent failure | `incident` | `incident` |
 
-Read the matching sub-skill before producing Kind-specific fields. Custom labels must extend exactly one canonical base Kind. `Thread` is a virtual Portal presentation and is never persisted as a Kind.
+Read the matching sub-skill before producing Kind-specific fields. For a Project, then read [Software Build](subskills/compose-project-software-build/SKILL.md) or [Blueprint Design](subskills/compose-project-blueprint-design/SKILL.md) only when that Project Type is selected. Custom labels must extend exactly one canonical base Kind. `Thread` is a virtual Portal presentation and is never persisted as a Kind.
+
+For a Project, ask only the smallest unresolved questions: what exists when it is done; who leads it; the optional first named milestone; who may close it by accepting remaining risk; and, only when useful, who resolves a contested outcome. Outcome is required for a useful Draft. Lead is required for effectiveness. Closer is required only to enter closing. Never default any of them from creator, owner, room membership, or another authority.
 
 ### 4. Select the recipe source
 
@@ -124,6 +131,8 @@ Always begin with the Kind's Base Recipe. Select a seed Topic Recipe only when t
 - `research-brief` for a `question`;
 - `agent-delivery` for an `agent_task`;
 - `verified-work-payment` for `claims` with verification, decision, effect, and settlement.
+- `software-build` for a `project` coordinating reviewed software delivery;
+- `blueprint-design` for a `project` whose boundary is an independently reviewed, accepted blueprint.
 
 Do not search a Marketplace yet. Record `registryLookup: not-performed` and `registryReason: pinned-catalog-only`. A future registry adapter may add suggestions, but it must return digest-verifiable recipe references and cannot auto-select one without review.
 
@@ -153,7 +162,7 @@ Keep four decisions separate:
 - `activationPolicy.dispute`: who may resolve a dispute and the optional Flow/resource process; and
 - optional `assentPolicy`: who must record mutual agreement, only when signatories are explicitly requested.
 
-`activationPolicy.lifecycle.onExpiry` is always `pause-consequential`. Omit `effectiveAt`, `reviewAt`, and `expiresAt` unless supplied. A Draft may remain incomplete; it cannot become effective until editors, confirmation subjects, lifecycle policy, dispute resolvers, actor resolution, confirmations, optional assent, and time gates are satisfied.
+`activationPolicy.lifecycle.onExpiry` is always `pause-consequential` when lifecycle timing is configured. Omit `effectiveAt`, `reviewAt`, and `expiresAt` unless supplied. A Draft may remain incomplete. Effectiveness requires the Kind's activation fields, resolved editors and confirmation subjects, revision-bound confirmation, optional configured assent, and configured time gates. Lifecycle timing and dispute authority are optional until configured; if a dispute occurs without a resolver, assignment of one becomes a visible blocking obligation.
 
 Do not emit `confirm-setup`, `record-assent`, withdrawal, dispute, or resolution operations. The host may offer them only after replay, revision binding, body and policy digest checks, Matrix permission, verified ability, and trusted-time validation.
 

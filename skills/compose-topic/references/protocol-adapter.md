@@ -8,7 +8,7 @@ The host, not the skill:
 
 - allocates Topic and record IDs;
 - creates or adopts the Matrix root;
-- resolves the Effective Shape with @ixo/topic-protocol 1.0.0-rc.2;
+- resolves the Effective Shape with @ixo/topic-protocol 1.0.0-rc.3;
 - creates body references and hashes;
 - computes the activation-policy digest;
 - appends operations and records;
