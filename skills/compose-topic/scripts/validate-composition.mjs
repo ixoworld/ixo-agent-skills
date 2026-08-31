@@ -88,6 +88,10 @@ const SECRETS = [
 ];
 
 const isObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+const isSubject = (value) => isObject(value)
+  && ["actor", "role"].includes(value.kind)
+  && typeof value.id === "string"
+  && value.id.length > 0;
 const unique = (values) => new Set(values).size === values.length;
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const finding = (code, path, message, severity = "error") => ({ code, severity, path, message });
@@ -395,11 +399,19 @@ function validateSetupPolicy(draft, semantic, findings) {
 function validateProject(draft, semantic, kind, findings) {
   if (kind !== "project") return;
   const project = semantic?.project;
+  const provenance = semantic?.fieldProvenance ?? {};
   add(findings, isObject(project) && project.version === 1, "PROJECT_PLAN", "/contractDraft/semantic/project", "Project Drafts require a version 1 Project plan");
   const obligationCodes = new Set((draft.setupObligations ?? []).map((item) => item?.code));
   add(findings, isObject(semantic?.outcome?.statement) || obligationCodes.has("setup.result"), "PROJECT_OUTCOME_OBLIGATION", "/contractDraft/setupObligations", "a missing Project outcome must remain visible");
-  add(findings, isObject(project?.lead) || obligationCodes.has("setup.project-lead"), "PROJECT_LEAD_OBLIGATION", "/contractDraft/setupObligations", "a missing Project lead must remain visible");
-  add(findings, isObject(project?.closer) || obligationCodes.has("setup.project-closer"), "PROJECT_CLOSER_OBLIGATION", "/contractDraft/setupObligations", "a missing Project closer must remain visible without being defaulted");
+  const acceptedAuthority = (name) => {
+    const proof = provenance[`/project/${name}`];
+    return isSubject(project?.[name])
+      && isObject(proof)
+      && ACCEPTABLE_ACCEPTED_BASIS.has(proof.basis)
+      && proof.acceptance === "accepted";
+  };
+  add(findings, acceptedAuthority("lead") || obligationCodes.has("setup.project-lead"), "PROJECT_LEAD_OBLIGATION", "/contractDraft/setupObligations", "a missing, invalid, or unaccepted Project lead must remain visible");
+  add(findings, acceptedAuthority("closer") || obligationCodes.has("setup.project-closer"), "PROJECT_CLOSER_OBLIGATION", "/contractDraft/setupObligations", "a missing, invalid, or unaccepted Project closer must remain visible without being defaulted");
   const allowedChildren = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "incident", "question", "discussion"]);
   for (const [index, child] of (project?.childObligations ?? []).entries()) {
     add(findings, child.kind === undefined || allowedChildren.has(child.kind), "PROJECT_CHILD_KIND", `/contractDraft/semantic/project/childObligations/${index}/kind`, "must be an allowed non-Project child Kind");

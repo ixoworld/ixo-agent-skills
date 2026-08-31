@@ -27,6 +27,15 @@ function codes(value) {
   return new Set(validateComposition(value).map((item) => item.code));
 }
 
+function acceptProjectAuthority(value, name) {
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance[`/project/${name}`] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: [],
+  };
+}
+
 function selectTopicRecipe(value, code, pin) {
   value.recipeSelection = {
     strategy: "topic-recipe",
@@ -355,6 +364,7 @@ test("Project children use the reviewed non-Project Kind palette", async () => {
 test("Project lead assignment does not imply setup confirmation or closure authority", async () => {
   const value = await example("team-project.example.json");
   value.contractDraft.semantic.project.lead = { kind: "actor", id: "did:ixo:lead" };
+  acceptProjectAuthority(value, "lead");
   value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
     ({ code }) => code !== "setup.project-lead",
   );
@@ -367,6 +377,7 @@ test("Project lead assignment does not imply setup confirmation or closure autho
 test("Project closer is explicit and independent from generic completion authority", async () => {
   const value = await example("team-project.example.json");
   value.contractDraft.semantic.project.closer = { kind: "actor", id: "did:ixo:closer" };
+  acceptProjectAuthority(value, "closer");
   value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
     ({ code }) => code !== "setup.project-closer",
   );
@@ -375,6 +386,23 @@ test("Project closer is explicit and independent from generic completion authori
   assert.equal(result.has("PROJECT_CLOSER_OBLIGATION"), false);
   delete value.contractDraft.semantic.project.closer;
   assert(codes(value).has("PROJECT_CLOSER_OBLIGATION"));
+});
+
+test("Project authorities require valid subjects and accepted field provenance", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
+    ({ code }) => !["setup.project-lead", "setup.project-closer"].includes(code),
+  );
+  value.contractDraft.semantic.project.lead = {};
+  value.contractDraft.semantic.project.closer = { kind: "actor", id: "did:ixo:closer" };
+  assert(codes(value).has("PROJECT_LEAD_OBLIGATION"));
+  assert(codes(value).has("PROJECT_CLOSER_OBLIGATION"));
+
+  value.contractDraft.semantic.project.lead = { kind: "role", id: "project-lead" };
+  acceptProjectAuthority(value, "lead");
+  acceptProjectAuthority(value, "closer");
+  assert.equal(codes(value).has("PROJECT_LEAD_OBLIGATION"), false);
+  assert.equal(codes(value).has("PROJECT_CLOSER_OBLIGATION"), false);
 });
 
 test("Project recipes use their exact digest-pinned Effective Shapes", async () => {
