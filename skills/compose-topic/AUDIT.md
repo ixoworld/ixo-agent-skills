@@ -3,8 +3,10 @@
 Audit target: `compose-topic` `3.1.0`
 Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.3`
 Topic Contract profile: `qi.topic-contract-state/v4`
-Pinned protocol commit: `4c70b462110635e43ba125740768cbc9e10e1bb0`
-Published package shasum: `d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf`
+Pinned protocol commit: `482139c37eed86387a7ff2609a8672c4216e28f4`
+Published package git head: `81f62ef47f7a54b6237deb9fe8e12435f71122c6`
+Published package shasum: `74bd726618060b507243ae5c6fa2493a8948f755`
+Published package integrity: `sha512-lH/CeNSEb5hopumtphP0iGmtYtUD9e1uQiDQSOn/0D7nOi4FN0ipiD0oxbHqecNL/1lBlL9HtPEqnWYW1VgRIA==`
 
 ## Review scope
 

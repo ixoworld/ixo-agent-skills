@@ -58,8 +58,10 @@ const EXPECTED_FILES = [
   "tests/audit-skill.test.mjs",
   ...SUBSKILLS.map((name) => `subskills/${name}/SKILL.md`),
 ];
-const EXPECTED_SOURCE_COMMIT = "4c70b462110635e43ba125740768cbc9e10e1bb0";
-const EXPECTED_PACKAGE_SHASUM = "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf";
+const EXPECTED_SOURCE_COMMIT = "482139c37eed86387a7ff2609a8672c4216e28f4";
+const EXPECTED_PACKAGE_GIT_HEAD = "81f62ef47f7a54b6237deb9fe8e12435f71122c6";
+const EXPECTED_PACKAGE_SHASUM = "74bd726618060b507243ae5c6fa2493a8948f755";
+const EXPECTED_PACKAGE_INTEGRITY = "sha512-lH/CeNSEb5hopumtphP0iGmtYtUD9e1uQiDQSOn/0D7nOi4FN0ipiD0oxbHqecNL/1lBlL9HtPEqnWYW1VgRIA==";
 const ACTUAL_SECRET_PATTERNS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
   /\bsk-[A-Za-z0-9_-]{32,}\b/u,
@@ -222,7 +224,9 @@ async function auditSourceLock(findings) {
   if (lock.topicProtocol?.contractProfile?.status !== "normative") findings.push(finding("LOCK_STATUS", "references/source-lock.json", "contract profile must be normative"));
   if (lock.topicProtocol?.contractProfile?.profile !== "qi.topic-contract-state/v4") findings.push(finding("LOCK_PROFILE", "references/source-lock.json", "contract profile must be qi.topic-contract-state/v4"));
   if (lock.topicProtocol?.contractProfile?.rootVersion !== 4 || lock.topicProtocol?.contractProfile?.bodyVersion !== 4 || lock.topicProtocol?.contractProfile?.stateVersion !== 4) findings.push(finding("LOCK_V4", "references/source-lock.json", "root, body, and state must use version 4"));
+  if (lock.topicProtocol?.package?.gitHead !== EXPECTED_PACKAGE_GIT_HEAD) findings.push(finding("LOCK_PACKAGE_GIT_HEAD", "references/source-lock.json", "published package git head mismatch"));
   if (lock.topicProtocol?.package?.shasum !== EXPECTED_PACKAGE_SHASUM) findings.push(finding("LOCK_PACKAGE_SHASUM", "references/source-lock.json", "published package shasum mismatch"));
+  if (lock.topicProtocol?.package?.integrity !== EXPECTED_PACKAGE_INTEGRITY) findings.push(finding("LOCK_PACKAGE_INTEGRITY", "references/source-lock.json", "published package integrity mismatch"));
   const sources = lock.topicProtocol?.sourceFiles ?? [];
   if (sources.length < 20) findings.push(finding("LOCK_SOURCE_COUNT", "references/source-lock.json", "must pin v4 contracts, Shape resolution/projection, and all seed Topic Recipes"));
   const sourcePaths = sources.map((item) => item.path);
@@ -246,7 +250,7 @@ async function auditShapePins(findings) {
   const pins = JSON.parse(await readFile(join(SKILL_ROOT, path), "utf8"));
   if (pins.version !== 2) findings.push(finding("PIN_VERSION", path, "must use catalog version 2"));
   if (pins.protocolVersion !== "1.0.0-rc.3") findings.push(finding("PIN_PROTOCOL", path, "must pin Topic Protocol 1.0.0-rc.3"));
-  if (pins.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("PIN_COMMIT", path, "must pin the published git head"));
+  if (pins.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("PIN_COMMIT", path, "must pin the normative protocol source head"));
   const expectedKinds = ["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"];
   const expectedRecipes = ["research-brief", "agent-delivery", "verified-work-payment", "software-build", "blueprint-design"];
   const kinds = Object.keys(pins.baseCompositions ?? {}).sort();

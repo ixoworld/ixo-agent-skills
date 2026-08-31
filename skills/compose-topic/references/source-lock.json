@@ -4,18 +4,18 @@
   "topicProtocol": {
     "repository": "https://github.com/ixoworld/topic-protocol",
     "version": "1.0.0-rc.3",
-    "normativeBaseCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0",
+    "normativeBaseCommit": "482139c37eed86387a7ff2609a8672c4216e28f4",
     "package": {
       "name": "@ixo/topic-protocol",
       "version": "1.0.0-rc.3",
-      "gitHead": "4c70b462110635e43ba125740768cbc9e10e1bb0",
-      "shasum": "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf",
-      "integrity": "sha512-uejNnag+rMvKc2R6r+kNoHXS8NlUVhw9dNjjRSq+m7A5XorGhX6LlD2wVLkc2Zc0/yKKh0luq6vMxse96ldqFg=="
+      "gitHead": "81f62ef47f7a54b6237deb9fe8e12435f71122c6",
+      "shasum": "74bd726618060b507243ae5c6fa2493a8948f755",
+      "integrity": "sha512-lH/CeNSEb5hopumtphP0iGmtYtUD9e1uQiDQSOn/0D7nOi4FN0ipiD0oxbHqecNL/1lBlL9HtPEqnWYW1VgRIA=="
     },
     "contractProfile": {
       "profile": "qi.topic-contract-state/v4",
       "status": "normative",
-      "sourceCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0",
+      "sourceCommit": "482139c37eed86387a7ff2609a8672c4216e28f4",
       "rootVersion": 4,
       "bodyVersion": 4,
       "stateVersion": 4,
@@ -39,11 +39,11 @@
       },
       {
         "path": "schemas/project-plan.schema.json",
-        "blobSha": "794e944112dd63a70fb8236b02660a132183251a"
+        "blobSha": "a9f000d6287e409f1e2335fc9039da1757b19609"
       },
       {
         "path": "schemas/project-projection.schema.json",
-        "blobSha": "8e6a4b0d05306bc92470444973203f6197be8c9c"
+        "blobSha": "8f5f3a5d4fc113c7415ca6c5b523fae7da3cf496"
       },
       {
         "path": "schemas/topic-contract-state.schema.json",
@@ -74,8 +74,16 @@
         "blobSha": "ea14c95c797dd003267819fb020b4d45ce7c4f6b"
       },
       {
+        "path": "src/contracts/validator.ts",
+        "blobSha": "828dbb3a53742aa8cd74426fe7b88d16be5cc8ab"
+      },
+      {
+        "path": "src/projector/project.ts",
+        "blobSha": "25d9eb417433c758c9ed78736f36f0b61eaebfe5"
+      },
+      {
         "path": "src/projector/types.ts",
-        "blobSha": "a9bb676841aa24827bd0447af01dd7057e099100"
+        "blobSha": "668dbeea87278365d247c793d25ac794462f5003"
       },
       {
         "path": "src/projects/types.ts",
@@ -83,7 +91,7 @@
       },
       {
         "path": "src/projects/project.ts",
-        "blobSha": "54491160139da23c4801d71cbdf40f3bda398c61"
+        "blobSha": "021e59e7753867d7bdd1cc4cac49cb5736231939"
       },
       {
         "path": "src/shapes/types.ts",
@@ -103,7 +111,7 @@
       },
       {
         "path": "src/shapes/progress.ts",
-        "blobSha": "3b6f1e42d3ff193d4fdb2b63baf1d53996f52fee"
+        "blobSha": "74c7693bcc933c4528e1951cb30325344599d1b5"
       },
       {
         "path": "src/shapes/now.ts",
@@ -143,7 +151,7 @@
       },
       {
         "path": "docs/protocol/13-project-topics-and-recipes.md",
-        "blobSha": "324b3763cfcdb7f5226c3de7bca727a0177e9f92"
+        "blobSha": "173345e2c448554682620c989bfcb36075608f45"
       },
       {
         "path": "schemas/topic-kind-profile.schema.json",
@@ -171,7 +179,7 @@
       },
       {
         "path": "src/projector/state.ts",
-        "blobSha": "4c713e11439366865d0425bb5d817ffbc573da81"
+        "blobSha": "d7d67c97f74aa6876b6f909ed7b5546a1fc1e151"
       }
     ],
     "kindProfiles": {
@@ -180,7 +188,7 @@
         "version": "1.0.0",
         "schema": "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
         "digest": "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5",
-        "sourceCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0"
+        "sourceCommit": "482139c37eed86387a7ff2609a8672c4216e28f4"
       }
     },
     "topicRecipes": {
@@ -198,7 +206,7 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "4dbdf6bddddae199f7ec8b56f26cfdd3389ce1e53eeb72ee44298279e355ab5e"
+      "sha256": "558dc2170d17748e5f5ea4fbb1cce2db9b7f45a220b7e1758d4d2e0ebcd33642"
     },
     "schemas/topic-contract-draft.schema.json": {
       "sha256": "0b89342554188170964d28cf50e634517cab3c7ff0775776a40d17bf4d0d4c83"
@@ -207,13 +215,13 @@
       "sha256": "c09b669324dc4de72b9a0d19b5f9be6017f86017f75cebbd47ef7d069c5c1763"
     },
     "references/topic-contract-profile.md": {
-      "sha256": "0e57aeb031ecc3a12403a335393a10d42eacd786761205cdf43bb51b5b7cdfb4"
+      "sha256": "dfe903c7e53d6456623a647451b4adfe46bb3d248eea4952e7ecaea692bd229f"
     },
     "references/topic-recipe-selection.md": {
       "sha256": "225c17adcc1262d9732313739a00e55f7462b7c3594cb861cb7b8e71cbbe2f65"
     },
     "references/topic-shape-pins.json": {
-      "sha256": "f97f9c0e36213401ce9ad8c631c6b587828186fb7a5d3cf80fce99f643a7dd1e"
+      "sha256": "3a414a545749135b13736734cebfac326a6284294a822910a7bbde0fdf07bc0b"
     },
     "references/topic-kind-templates.md": {
       "sha256": "88ce88c3666e3d259a1e5eba84fec60a8504e17bebb3a4ac4bc7505d9a85d5cc"
@@ -222,10 +230,10 @@
       "sha256": "b0eca716ea08be572fe29bb4b2780ba9277e3224661bf7161dc089471a07994a"
     },
     "AUDIT.md": {
-      "sha256": "b897df1a8d9081e3140e8812885d27d46f9fab370284045cfeace33a0bd6cce6"
+      "sha256": "bbf380f9716b9cf1104366bc1a5b26fd9e26215a24f6642b11310f31ea749d9a"
     },
     "evals/evals.json": {
-      "sha256": "de0d9954e0cc111741ef5039edca8685bc0dec84d3807ea321122aa09c87ed66"
+      "sha256": "7593ee6ad425d2387c4e19f96abbf52c79454cfc688f161c602cf76a35a93392"
     },
     "subskills/compose-topic-project/SKILL.md": {
       "sha256": "a5e6e6a58dc9c8c2ea066e38bd13dff8ec2b9e2a58f6c52cb05c75770e838464"
