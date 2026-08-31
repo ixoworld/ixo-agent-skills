@@ -23,7 +23,7 @@ secrets:
   user: []
 metadata:
   author: ixo
-  version: "1.2.3"
+  version: "1.2.4"
   category: impact-evaluation
 ---
 
@@ -118,6 +118,12 @@ alternative causes, and look for evidence that can distinguish the story from re
 Persist the operational detail as `outcome.run-brief.v1` (`schemas/run-brief.schema.json`) and pass
 it to `run.mjs init --brief`. Do not recite its fields to the user. If time, cost, scope, or
 authority is unknown, say so only when it affects a decision. Never invent an estimate.
+
+Decide whether the request is for a fresh run or a resume before reading workflow state. For a
+fresh run, create the run brief and call `run.mjs init` directly. Do not probe a new workflow ID
+with `state` or `reconcile` before `init`. For a resume, restore or reconcile the governed run as
+described below. A missing-run response means there is no committed workflow to resume; it is not
+evidence that an initialized run lost its manifest.
 
 If the user supplies only a source, begin a diagnostic run through validation and say that no
 issuance is implied. Infer the likely domain and candidate outcomes from the source, mark them
