@@ -24,8 +24,8 @@ const ABILITY = /^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/u;
 const TOPIC = /^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const ENTRY = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
-const COMMIT = "39778bff024c22d5d33cf6f9b1a8641273466a3a";
-const PACKAGE_SHASUM = "cfc939c790aca685421eb37493e4926b399dbdb4";
+const COMMIT = "4c70b462110635e43ba125740768cbc9e10e1bb0";
+const PACKAGE_SHASUM = "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf";
 const PROTOCOL_VERSION = "1.0.0-rc.3";
 const COMPOSITION_VERSION = "3.1.0";
 const PROFILE = "qi.topic-contract-state/v4";
@@ -399,7 +399,7 @@ function validateProject(draft, semantic, kind, findings) {
   const obligationCodes = new Set((draft.setupObligations ?? []).map((item) => item?.code));
   add(findings, isObject(semantic?.outcome?.statement) || obligationCodes.has("setup.result"), "PROJECT_OUTCOME_OBLIGATION", "/contractDraft/setupObligations", "a missing Project outcome must remain visible");
   add(findings, isObject(project?.lead) || obligationCodes.has("setup.project-lead"), "PROJECT_LEAD_OBLIGATION", "/contractDraft/setupObligations", "a missing Project lead must remain visible");
-  add(findings, (semantic?.completion?.acceptanceAuthorityIds?.length ?? 0) > 0 || obligationCodes.has("setup.project-closer"), "PROJECT_CLOSER_OBLIGATION", "/contractDraft/setupObligations", "a missing Project closer must remain visible without being defaulted");
+  add(findings, isObject(project?.closer) || obligationCodes.has("setup.project-closer"), "PROJECT_CLOSER_OBLIGATION", "/contractDraft/setupObligations", "a missing Project closer must remain visible without being defaulted");
   const allowedChildren = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "incident", "question", "discussion"]);
   for (const [index, child] of (project?.childObligations ?? []).entries()) {
     add(findings, child.kind === undefined || allowedChildren.has(child.kind), "PROJECT_CHILD_KIND", `/contractDraft/semantic/project/childObligations/${index}/kind`, "must be an allowed non-Project child Kind");

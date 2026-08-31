@@ -364,6 +364,19 @@ test("Project lead assignment does not imply setup confirmation or closure autho
   assert(value.contractDraft.setupObligations.some(({ code }) => code === "setup.project-closer"));
 });
 
+test("Project closer is explicit and independent from generic completion authority", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.closer = { kind: "actor", id: "did:ixo:closer" };
+  value.contractDraft.setupObligations = value.contractDraft.setupObligations.filter(
+    ({ code }) => code !== "setup.project-closer",
+  );
+  value.contractDraft.semantic.completion.acceptanceAuthorityIds = ["did:ixo:someone-else"];
+  const result = codes(value);
+  assert.equal(result.has("PROJECT_CLOSER_OBLIGATION"), false);
+  delete value.contractDraft.semantic.project.closer;
+  assert(codes(value).has("PROJECT_CLOSER_OBLIGATION"));
+});
+
 test("Project recipes use their exact digest-pinned Effective Shapes", async () => {
   const catalog = await pins();
   for (const code of ["software-build", "blueprint-design"]) {

@@ -304,6 +304,7 @@
       "properties": {
         "version": { "const": 1 },
         "lead": { "$ref": "#/$defs/subject" },
+        "closer": { "$ref": "#/$defs/subject" },
         "milestones": {
           "type": "array",
           "maxItems": 100,

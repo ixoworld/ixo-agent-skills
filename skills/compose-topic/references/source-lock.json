@@ -4,18 +4,18 @@
   "topicProtocol": {
     "repository": "https://github.com/ixoworld/topic-protocol",
     "version": "1.0.0-rc.3",
-    "normativeBaseCommit": "39778bff024c22d5d33cf6f9b1a8641273466a3a",
+    "normativeBaseCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0",
     "package": {
       "name": "@ixo/topic-protocol",
       "version": "1.0.0-rc.3",
-      "gitHead": "39778bff024c22d5d33cf6f9b1a8641273466a3a",
-      "shasum": "cfc939c790aca685421eb37493e4926b399dbdb4",
-      "integrity": "sha512-dGXoZOTvRlJTYPJEuATcsqvxX18mQwbYQg7EM/RNwuBi1o2jGmWyDal9jQk/L6ZXtwBCf+ji68+s/VMbm0knPQ=="
+      "gitHead": "4c70b462110635e43ba125740768cbc9e10e1bb0",
+      "shasum": "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf",
+      "integrity": "sha512-uejNnag+rMvKc2R6r+kNoHXS8NlUVhw9dNjjRSq+m7A5XorGhX6LlD2wVLkc2Zc0/yKKh0luq6vMxse96ldqFg=="
     },
     "contractProfile": {
       "profile": "qi.topic-contract-state/v4",
       "status": "normative",
-      "sourceCommit": "39778bff024c22d5d33cf6f9b1a8641273466a3a",
+      "sourceCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0",
       "rootVersion": 4,
       "bodyVersion": 4,
       "stateVersion": 4,
@@ -39,11 +39,11 @@
       },
       {
         "path": "schemas/project-plan.schema.json",
-        "blobSha": "0e22648c4667f7d0abe9d882a50024146518c429"
+        "blobSha": "794e944112dd63a70fb8236b02660a132183251a"
       },
       {
         "path": "schemas/project-projection.schema.json",
-        "blobSha": "e9c4073c498a16a4669ef967a059f984ea207eda"
+        "blobSha": "8e6a4b0d05306bc92470444973203f6197be8c9c"
       },
       {
         "path": "schemas/topic-contract-state.schema.json",
@@ -79,11 +79,11 @@
       },
       {
         "path": "src/projects/types.ts",
-        "blobSha": "184ae807c2da039fe993d0ca3c1e522b8c4d4290"
+        "blobSha": "a0682598d0bd4d387001170881ddc5aeeae4f4c1"
       },
       {
         "path": "src/projects/project.ts",
-        "blobSha": "9d49519d602cc4f59a2a26f657ef7c1b89543bb4"
+        "blobSha": "54491160139da23c4801d71cbdf40f3bda398c61"
       },
       {
         "path": "src/shapes/types.ts",
@@ -143,7 +143,7 @@
       },
       {
         "path": "docs/protocol/13-project-topics-and-recipes.md",
-        "blobSha": "0fcf7211b856d32829ab83f24fe09f955e83ad13"
+        "blobSha": "324b3763cfcdb7f5226c3de7bca727a0177e9f92"
       },
       {
         "path": "schemas/topic-kind-profile.schema.json",
@@ -180,7 +180,7 @@
         "version": "1.0.0",
         "schema": "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
         "digest": "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5",
-        "sourceCommit": "39778bff024c22d5d33cf6f9b1a8641273466a3a"
+        "sourceCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0"
       }
     },
     "topicRecipes": {
@@ -198,22 +198,22 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "f320cf63df8159e5bccad40880eb4c402ca7646505935913e5e5fed683e9685b"
+      "sha256": "4dbdf6bddddae199f7ec8b56f26cfdd3389ce1e53eeb72ee44298279e355ab5e"
     },
     "schemas/topic-contract-draft.schema.json": {
-      "sha256": "70a2337cbf50e8db401b47fd07166e44e41594d6b1717abf441ddd788fff7e53"
+      "sha256": "0b89342554188170964d28cf50e634517cab3c7ff0775776a40d17bf4d0d4c83"
     },
     "schemas/topic-refine-change-set.schema.json": {
       "sha256": "c09b669324dc4de72b9a0d19b5f9be6017f86017f75cebbd47ef7d069c5c1763"
     },
     "references/topic-contract-profile.md": {
-      "sha256": "00e130ed6ff071ffb573a435cdf5c03d038ec0e7a48a744a6d14020aad3df1c1"
+      "sha256": "0e57aeb031ecc3a12403a335393a10d42eacd786761205cdf43bb51b5b7cdfb4"
     },
     "references/topic-recipe-selection.md": {
       "sha256": "225c17adcc1262d9732313739a00e55f7462b7c3594cb861cb7b8e71cbbe2f65"
     },
     "references/topic-shape-pins.json": {
-      "sha256": "f4e836b0f1ad3dafdf3bb86408294e6b6eb874cf23aca361da4419fbfec76ad3"
+      "sha256": "f97f9c0e36213401ce9ad8c631c6b587828186fb7a5d3cf80fce99f643a7dd1e"
     },
     "references/topic-kind-templates.md": {
       "sha256": "88ce88c3666e3d259a1e5eba84fec60a8504e17bebb3a4ac4bc7505d9a85d5cc"
@@ -222,13 +222,13 @@
       "sha256": "b0eca716ea08be572fe29bb4b2780ba9277e3224661bf7161dc089471a07994a"
     },
     "AUDIT.md": {
-      "sha256": "f240600caa594e1653f606851f71b327b284fddc320dd4585af1b46fa4e29d4d"
+      "sha256": "b897df1a8d9081e3140e8812885d27d46f9fab370284045cfeace33a0bd6cce6"
     },
     "evals/evals.json": {
-      "sha256": "67a430bfc43fa019707bc66ea7f1aaab330fdb1ec309b96e5ae6200f153783e8"
+      "sha256": "de0d9954e0cc111741ef5039edca8685bc0dec84d3807ea321122aa09c87ed66"
     },
     "subskills/compose-topic-project/SKILL.md": {
-      "sha256": "bf1752b606a7ce299596832bdae308c25479a56e8c221603309a11fbda7b4cfe"
+      "sha256": "bc2ae40d5d1ecc46e4e97d6d11c6e2b011e510aa324b33fca10ddc6c2d188d53"
     },
     "subskills/compose-project-software-build/SKILL.md": {
       "sha256": "c323743451e139027181998dfc4fcc394a3733642ad3527db22a935ff860f7f6"

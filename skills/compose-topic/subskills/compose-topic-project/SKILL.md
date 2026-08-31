@@ -65,7 +65,7 @@ is different.
 
 ## Closing
 
-The closer is independent authority in `completion.acceptanceAuthorityIds`.
+The closer is an independent subject in `project.closer`.
 Closing requires explicit remaining-risk acceptance bound to the effective
 contract revision and digest, Shape digest, activation-policy digest, actor,
 ability, authority proof, and recipe-required evidence.

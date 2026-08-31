@@ -5,7 +5,7 @@
     "topicProtocolVersion": "1.0.0-rc.3",
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "39778bff024c22d5d33cf6f9b1a8641273466a3a"
+    "sourceCommit": "4c70b462110635e43ba125740768cbc9e10e1bb0"
   },
   "cases": [
     {

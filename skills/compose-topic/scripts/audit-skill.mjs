@@ -58,8 +58,8 @@ const EXPECTED_FILES = [
   "tests/audit-skill.test.mjs",
   ...SUBSKILLS.map((name) => `subskills/${name}/SKILL.md`),
 ];
-const EXPECTED_SOURCE_COMMIT = "39778bff024c22d5d33cf6f9b1a8641273466a3a";
-const EXPECTED_PACKAGE_SHASUM = "cfc939c790aca685421eb37493e4926b399dbdb4";
+const EXPECTED_SOURCE_COMMIT = "4c70b462110635e43ba125740768cbc9e10e1bb0";
+const EXPECTED_PACKAGE_SHASUM = "d9d24440ed890ff0560cd9c1231a6e4a6f6e8ddf";
 const ACTUAL_SECRET_PATTERNS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
   /\bsk-[A-Za-z0-9_-]{32,}\b/u,
