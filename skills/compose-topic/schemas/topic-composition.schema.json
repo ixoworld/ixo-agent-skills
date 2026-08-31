@@ -57,8 +57,8 @@
         "stateVersion": { "const": 4 },
         "contractProfile": { "const": "qi.topic-contract-state/v4" },
         "profileStatus": { "const": "normative" },
-        "sourceCommit": { "const": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e" },
-        "packageShasum": { "const": "d1fe45cf9bd461ca69b7fcaf074dd5dc3879ad6e" },
+        "sourceCommit": { "const": "39778bff024c22d5d33cf6f9b1a8641273466a3a" },
+        "packageShasum": { "const": "cfc939c790aca685421eb37493e4926b399dbdb4" },
         "authoritativeHistory": { "const": "topic-root+operations+records+projection" },
         "stateEventRole": { "const": "materialized-head-only" },
         "legacyPolicy": { "const": "v4-only-no-migration" }

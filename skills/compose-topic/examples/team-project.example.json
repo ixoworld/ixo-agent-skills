@@ -16,8 +16,8 @@
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e",
-    "packageShasum": "d1fe45cf9bd461ca69b7fcaf074dd5dc3879ad6e",
+    "sourceCommit": "39778bff024c22d5d33cf6f9b1a8641273466a3a",
+    "packageShasum": "cfc939c790aca685421eb37493e4926b399dbdb4",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -43,7 +43,7 @@
       "kind": "project",
       "status": "draft",
       "baseRecipe": "project",
-      "shapeDigest": "sha256:153c83a75c5289ee567a0798108f9582f80d8a6e689bffbb18446de80c559fcd",
+      "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7",
       "context": [
         {
           "type": "ixo.domain",
@@ -79,10 +79,10 @@
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/project",
         "version": "1.0.0-rc.3",
-        "digest": "sha256:6a2c9c89c57e938c3505dd7442b4aaf264625d5eb2b830156c2510a2be3af3a2"
+        "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
       }
     ],
-    "shapeDigest": "sha256:153c83a75c5289ee567a0798108f9582f80d8a6e689bffbb18446de80c559fcd"
+    "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
   },
   "contractDraft": {
     "envelope": {
@@ -109,10 +109,10 @@
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/project",
           "version": "1.0.0-rc.3",
-          "digest": "sha256:6a2c9c89c57e938c3505dd7442b4aaf264625d5eb2b830156c2510a2be3af3a2"
+          "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
         }
       ],
-      "shapeDigest": "sha256:153c83a75c5289ee567a0798108f9582f80d8a6e689bffbb18446de80c559fcd",
+      "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7",
       "timezone": "Asia/Singapore",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77721",
@@ -315,7 +315,7 @@
         "requiredAbility": "topic/create",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:topic-create",
         "boundTo": {
-          "shapeDigest": "sha256:153c83a75c5289ee567a0798108f9582f80d8a6e689bffbb18446de80c559fcd"
+          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
         }
       },
       {
@@ -327,7 +327,7 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:canvas",
         "boundTo": {
-          "shapeDigest": "sha256:153c83a75c5289ee567a0798108f9582f80d8a6e689bffbb18446de80c559fcd"
+          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
         }
       },
       {
@@ -339,7 +339,7 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:projection",
         "boundTo": {
-          "shapeDigest": "sha256:153c83a75c5289ee567a0798108f9582f80d8a6e689bffbb18446de80c559fcd"
+          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
         }
       }
     ],

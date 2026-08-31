@@ -16,8 +16,8 @@
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e",
-    "packageShasum": "d1fe45cf9bd461ca69b7fcaf074dd5dc3879ad6e",
+    "sourceCommit": "39778bff024c22d5d33cf6f9b1a8641273466a3a",
+    "packageShasum": "cfc939c790aca685421eb37493e4926b399dbdb4",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"

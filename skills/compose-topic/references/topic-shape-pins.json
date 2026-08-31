@@ -1,7 +1,7 @@
 {
   "version": 2,
   "protocolVersion": "1.0.0-rc.3",
-  "sourceCommit": "39e488c59fe06869fb8a6b1be44fd1c5fe44505e",
+  "sourceCommit": "39778bff024c22d5d33cf6f9b1a8641273466a3a",
   "baseCompositions": {
     "project": {
       "baseRecipe": "project",
@@ -16,10 +16,10 @@
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/project",
           "version": "1.0.0-rc.3",
-          "digest": "sha256:6a2c9c89c57e938c3505dd7442b4aaf264625d5eb2b830156c2510a2be3af3a2"
+          "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
         }
       ],
-      "shapeDigest": "sha256:153c83a75c5289ee567a0798108f9582f80d8a6e689bffbb18446de80c559fcd"
+      "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
     },
     "task": {
       "baseRecipe": "project",
@@ -271,10 +271,10 @@
       },
       "shapeSources": [
         { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/project", "version": "1.0.0-rc.3", "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58" },
-        { "kind": "kind", "id": "https://topic-protocol.ixo.world/kinds/project", "version": "1.0.0-rc.3", "digest": "sha256:6a2c9c89c57e938c3505dd7442b4aaf264625d5eb2b830156c2510a2be3af3a2" },
+        { "kind": "kind", "id": "https://topic-protocol.ixo.world/kinds/project", "version": "1.0.0-rc.3", "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389" },
         { "kind": "topic-recipe", "id": "https://topic-protocol.ixo.world/recipes/software-build", "version": "1.0.0-rc.3", "digest": "sha256:fd8cb41290b9886b4686ca2b8240d6d5a4ed947649a47d2b9983d4215ab5d370" }
       ],
-      "shapeDigest": "sha256:d846a1da37a6d644e1d296b2afed445b8e1ee420232ee903e2c5ca200ee2fb05"
+      "shapeDigest": "sha256:bbda9c6351df79a7a7710d0bc9910e22f54f2396d408aca7f9dbb1f4e7bda915"
     },
     "blueprint-design": {
       "kind": "project",
@@ -287,10 +287,10 @@
       },
       "shapeSources": [
         { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/project", "version": "1.0.0-rc.3", "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58" },
-        { "kind": "kind", "id": "https://topic-protocol.ixo.world/kinds/project", "version": "1.0.0-rc.3", "digest": "sha256:6a2c9c89c57e938c3505dd7442b4aaf264625d5eb2b830156c2510a2be3af3a2" },
+        { "kind": "kind", "id": "https://topic-protocol.ixo.world/kinds/project", "version": "1.0.0-rc.3", "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389" },
         { "kind": "topic-recipe", "id": "https://topic-protocol.ixo.world/recipes/blueprint-design", "version": "1.0.0-rc.3", "digest": "sha256:f0673d33d6c7e29fa4211a511520be181158e840fe673f942a202b9bf2e20cdf" }
       ],
-      "shapeDigest": "sha256:6e3e9934081a4bed38ce894d4cd8bae707ebffa2a55833a3d163b4503d022f91"
+      "shapeDigest": "sha256:9cd0c7ad6bac773b84b7ada77ae56d0a4ab543b94be5909c4452514a1610d35a"
     }
   }
 }
