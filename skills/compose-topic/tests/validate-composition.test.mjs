@@ -361,6 +361,46 @@ test("Project children use the reviewed non-Project Kind palette", async () => {
   assert(codes(value).has("PROJECT_CHILD_KIND"));
 });
 
+test("Project milestones and child Kinds materialize only after review", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.milestones = [{ id: "release", name: "Release readiness" }];
+  value.contractDraft.semantic.project.childObligations = [{ id: "verify", title: "Verify the release", kind: "task" }];
+  assert(codes(value).has("PROJECT_MILESTONE_PROVENANCE"));
+  assert(codes(value).has("PROJECT_CHILD_KIND_PROVENANCE"));
+
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance["/project/milestones/0"] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: [],
+  };
+  value.contractDraft.semantic.fieldProvenance["/project/childObligations/0/kind"] = {
+    basis: "contextual",
+    acceptance: "accepted",
+    sourceEventIds: ["$child-review"],
+  };
+  assert.equal(codes(value).has("PROJECT_MILESTONE_PROVENANCE"), false);
+  assert.equal(codes(value).has("PROJECT_CHILD_KIND_PROVENANCE"), false);
+});
+
+test("Blueprint method manifests require an accepted immutable reference", async () => {
+  const value = await example("team-project.example.json");
+  value.contractDraft.semantic.project.methodManifestRef = {
+    id: "https://methods.ixo.world/design-yoma/v1",
+    version: "1.0.0",
+    digest: `sha256:${"a".repeat(64)}`,
+  };
+  assert(codes(value).has("PROJECT_METHOD_MANIFEST_PROVENANCE"));
+
+  value.contractDraft.semantic.fieldProvenance ??= {};
+  value.contractDraft.semantic.fieldProvenance["/project/methodManifestRef"] = {
+    basis: "explicit",
+    acceptance: "accepted",
+    sourceEventIds: ["$method-manifest"],
+  };
+  assert.equal(codes(value).has("PROJECT_METHOD_MANIFEST_PROVENANCE"), false);
+});
+
 test("Project lead assignment does not imply setup confirmation or closure authority", async () => {
   const value = await example("team-project.example.json");
   value.contractDraft.semantic.project.lead = { kind: "actor", id: "did:ixo:lead" };

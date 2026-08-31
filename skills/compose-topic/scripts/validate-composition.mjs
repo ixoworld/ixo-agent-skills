@@ -403,19 +403,29 @@ function validateProject(draft, semantic, kind, findings) {
   add(findings, isObject(project) && project.version === 1, "PROJECT_PLAN", "/contractDraft/semantic/project", "Project Drafts require a version 1 Project plan");
   const obligationCodes = new Set((draft.setupObligations ?? []).map((item) => item?.code));
   add(findings, isObject(semantic?.outcome?.statement) || obligationCodes.has("setup.result"), "PROJECT_OUTCOME_OBLIGATION", "/contractDraft/setupObligations", "a missing Project outcome must remain visible");
-  const acceptedAuthority = (name) => {
-    const proof = provenance[`/project/${name}`];
-    return isSubject(project?.[name])
-      && isObject(proof)
+  const acceptedField = (path) => {
+    const proof = provenance[path];
+    return isObject(proof)
       && ACCEPTABLE_ACCEPTED_BASIS.has(proof.basis)
       && proof.acceptance === "accepted";
   };
+  const acceptedAuthority = (name) => {
+    return isSubject(project?.[name])
+      && acceptedField(`/project/${name}`);
+  };
   add(findings, acceptedAuthority("lead") || obligationCodes.has("setup.project-lead"), "PROJECT_LEAD_OBLIGATION", "/contractDraft/setupObligations", "a missing, invalid, or unaccepted Project lead must remain visible");
   add(findings, acceptedAuthority("closer") || obligationCodes.has("setup.project-closer"), "PROJECT_CLOSER_OBLIGATION", "/contractDraft/setupObligations", "a missing, invalid, or unaccepted Project closer must remain visible without being defaulted");
+  for (const [index] of (project?.milestones ?? []).entries()) {
+    const path = `/project/milestones/${index}`;
+    add(findings, acceptedField(path), "PROJECT_MILESTONE_PROVENANCE", `/contractDraft/semantic/fieldProvenance${path}`, "materialized Project milestones require explicit or contextual accepted provenance");
+  }
   const allowedChildren = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "incident", "question", "discussion"]);
   for (const [index, child] of (project?.childObligations ?? []).entries()) {
     add(findings, child.kind === undefined || allowedChildren.has(child.kind), "PROJECT_CHILD_KIND", `/contractDraft/semantic/project/childObligations/${index}/kind`, "must be an allowed non-Project child Kind");
+    const path = `/project/childObligations/${index}/kind`;
+    add(findings, child.kind === undefined || acceptedField(path), "PROJECT_CHILD_KIND_PROVENANCE", `/contractDraft/semantic/fieldProvenance${path}`, "a selected Project child Kind requires explicit or contextual accepted provenance");
   }
+  add(findings, project?.methodManifestRef === undefined || acceptedField("/project/methodManifestRef"), "PROJECT_METHOD_MANIFEST_PROVENANCE", "/contractDraft/semantic/fieldProvenance/project/methodManifestRef", "a method manifest binding requires an immutable supplied or verified reference with accepted provenance");
 }
 
 function validateCanvas(value, findings) {

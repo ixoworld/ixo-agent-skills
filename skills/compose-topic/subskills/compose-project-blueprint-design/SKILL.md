@@ -20,6 +20,8 @@ review. Checkpoints are suggestions until the person accepts them; they are not
 automatically milestones or child Topics.
 
 Bind a method manifest only from an immutable supplied or verified reference.
+Record explicit or contextual accepted field provenance at
+`/project/methodManifestRef`; otherwise leave the binding unset.
 When the binding is `design-yoma/v1`, preserve its five governed phase
 commitments and evidence boundaries. Do not rewrite or collapse them into a
 generic checklist.

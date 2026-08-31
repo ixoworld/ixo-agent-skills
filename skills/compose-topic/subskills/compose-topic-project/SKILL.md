@@ -44,7 +44,10 @@ larger related Project uses an explicit relation and separate lifecycle.
 
 Milestone suggestions are proposed recipe provenance and require acceptance.
 Do not turn a heading, checklist item, issue, repository, or tracker project
-into a milestone or Topic without review.
+into a milestone or Topic without review. A materialized milestone records
+explicit or contextual accepted field provenance at
+`/project/milestones/{index}`. A selected child Kind records the same at
+`/project/childObligations/{index}/kind`.
 
 ## Lifecycle and Now
 
