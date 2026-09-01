@@ -1,5 +1,5 @@
 {
-  "version": "3.1.0",
+  "version": "3.2.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77701",
   "mode": "preview",
   "disposition": "create",
@@ -26,7 +26,18 @@
     "rationale": "The work requires durable criteria, evidence, and an explicit decision boundary.",
     "audience": "unknown",
     "indexCompleteness": "unknown",
-    "duplicateDetection": "not-run"
+    "duplicateDetection": "not-run",
+    "kindInference": {
+      "status": "selected",
+      "selectedKind": "evaluation",
+      "confidence": "high",
+      "rationale": "The intended work compares evidence against criteria before a human judgment."
+    },
+    "roomResolution": {
+      "target": "unspecified",
+      "status": "unresolved",
+      "evidence": []
+    }
   },
   "interpretation": {
     "job": "Evaluate two delivery routes",
@@ -351,6 +362,7 @@
     ],
     "warnings": [
       "Decision authority is unresolved and no legal decision move is claimed."
-    ]
+    ],
+    "blockers": []
   }
 }

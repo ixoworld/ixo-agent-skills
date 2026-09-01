@@ -1,5 +1,5 @@
 {
-  "version": "3.1.0",
+  "version": "3.2.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77704",
   "mode": "preview",
   "disposition": "create",
@@ -26,7 +26,18 @@
     "rationale": "The intent is a bounded research question whose answer should be verified and retained.",
     "audience": "unknown",
     "indexCompleteness": "unknown",
-    "duplicateDetection": "not-run"
+    "duplicateDetection": "not-run",
+    "kindInference": {
+      "status": "selected",
+      "selectedKind": "question",
+      "confidence": "high",
+      "rationale": "The intended outcome is an evidence-backed answer to a bounded question."
+    },
+    "roomResolution": {
+      "target": "unspecified",
+      "status": "unresolved",
+      "evidence": []
+    }
   },
   "interpretation": {
     "job": "Research and verify a bounded question",
@@ -368,6 +379,7 @@
     ],
     "warnings": [
       "No source claims are treated as verified until the Shape's verification evidence exists."
-    ]
+    ],
+    "blockers": []
   }
 }

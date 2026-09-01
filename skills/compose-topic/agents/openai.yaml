@@ -1,4 +1,4 @@
 interface:
   display_name: "Compose Topic"
   short_description: "Compose reviewable Topic Protocol v1 Drafts"
-  default_prompt: "Use $compose-topic to choose the right Topic Kind, resolve its pinned Shape, and produce a Portal-ready v4 Draft with explicit setup choices and concrete remaining obligations."
+  default_prompt: "Use $compose-topic to infer the best Topic Kind, resolve the exact Matrix room without conflating it with a Domain, resolve the pinned Shape, and produce a Portal-ready v4 Draft with explicit setup choices and concrete remaining obligations."

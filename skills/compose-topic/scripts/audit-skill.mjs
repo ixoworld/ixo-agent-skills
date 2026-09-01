@@ -35,6 +35,7 @@ const EXPECTED_FILES = [
   "schemas/topic-refine-change-set.schema.json",
   "references/canvas-recipes.md",
   "references/protocol-adapter.md",
+  "references/room-resolution.md",
   "references/refine-existing-topic.md",
   "references/topic-contract-profile.md",
   "references/topic-kind-templates.md",
@@ -278,13 +279,13 @@ async function auditExamples(findings) {
 
 async function auditEvals(findings) {
   const evals = JSON.parse(await readFile(join(SKILL_ROOT, "evals/evals.json"), "utf8"));
-  if (evals.version !== "3.1.0") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.1.0"));
+  if (evals.version !== "3.2.0") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.2.0"));
   if (evals.skill !== "compose-topic") findings.push(finding("EVAL_SKILL", "evals/evals.json", "must equal compose-topic"));
   const cases = evals.cases ?? [];
   if (cases.length < 36) findings.push(finding("EVAL_COVERAGE", "evals/evals.json", "must include all Kinds, recipes, Shapes, Portal progression, authority, inference, and security cases"));
   const ids = cases.map((item) => item.id);
   if (new Set(ids).size !== ids.length) findings.push(finding("EVAL_DUPLICATE", "evals/evals.json", "case IDs must be unique"));
-  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "legacy-v08", "legacy-v3", "adopt-existing-thread", "custom-kind", "partial-draft", "partial-activation-policy", "owner-authority-fallback", "confirmation-not-assent", "expiry-non-invention", "dispute-authority", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question", "kind-project", "kind-task", "kind-agent-task", "kind-proposal", "kind-evaluation", "kind-claims", "kind-question", "kind-discussion", "kind-incident", "kind-job-profile", "recipe-software-build", "recipe-blueprint-design", "recipe-research-brief", "recipe-agent-delivery", "recipe-verified-work-payment", "recipe-marketplace-future", "project-lead-authority", "project-child-boundary", "project-close-boundary", "shape-digest-mismatch", "claim-singular-binding", "flow-action-boundary", "viewer-authority", "inference-boundary"];
+  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "legacy-v08", "legacy-v3", "adopt-existing-thread", "custom-kind", "partial-draft", "partial-activation-policy", "owner-authority-fallback", "confirmation-not-assent", "expiry-non-invention", "dispute-authority", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question", "kind-project", "kind-task", "kind-agent-task", "kind-proposal", "kind-evaluation", "kind-claims", "kind-question", "kind-discussion", "kind-incident", "kind-job-profile", "governance-policy-proposal", "ambiguous-policy-kind", "named-domain-is-not-room", "ambiguous-joined-room", "create-domain-conversation-room", "verified-room-and-kind-handoff", "recipe-software-build", "recipe-blueprint-design", "recipe-research-brief", "recipe-agent-delivery", "recipe-verified-work-payment", "recipe-marketplace-future", "project-lead-authority", "project-child-boundary", "project-close-boundary", "shape-digest-mismatch", "claim-singular-binding", "flow-action-boundary", "viewer-authority", "inference-boundary"];
   for (const id of required) if (!ids.includes(id)) findings.push(finding("EVAL_REQUIRED", "evals/evals.json", `missing security or protocol case: ${id}`));
 }
 
@@ -328,7 +329,7 @@ export async function main(options = {}) {
   findings.sort((left, right) => left.path.localeCompare(right.path) || left.code.localeCompare(right.code));
   return {
     auditor: "compose-topic-skill-audit",
-    version: "3.1.0",
+    version: "3.2.0",
     root: options.root ?? SKILL_ROOT,
     ok: findings.length === 0,
     findingCount: findings.length,

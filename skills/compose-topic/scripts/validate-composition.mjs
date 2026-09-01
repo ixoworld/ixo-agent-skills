@@ -3,6 +3,7 @@
 
 import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { isIP } from "node:net";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,15 +22,37 @@ const NEVER_AUTO_ACCEPT_RECORD_CLASSES = new Set([
   "ixo.settlement",
 ]);
 const ABILITY = /^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/u;
+const ROOM_ID_PARTS = /^!([^:\s]+):(.+)$/u;
+const HOSTNAME = /^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)(?:\.(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?))*$/u;
 const TOPIC = /^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const ENTRY = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
 const COMMIT = "482139c37eed86387a7ff2609a8672c4216e28f4";
 const PACKAGE_SHASUM = "74bd726618060b507243ae5c6fa2493a8948f755";
 const PROTOCOL_VERSION = "1.0.0-rc.3";
-const COMPOSITION_VERSION = "3.1.0";
+const COMPOSITION_VERSION = "3.2.0";
 const PROFILE = "qi.topic-contract-state/v4";
 const KINDS = new Set(["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
+const ROOM_EVIDENCE = new Set(["current-context", "user-supplied-room-id", "list-rooms", "entity-lookup", "entity-profile", "domain-room-graph", "user-choice", "room-creation-result"]);
+const DIRECT_ROOM_EVIDENCE = new Set(["current-context", "user-supplied-room-id", "list-rooms", "domain-room-graph", "user-choice", "room-creation-result"]);
+const ROOM_BLOCKED_CODES = new Set(["BLOCKED_CONFIDENTIALITY_BOUNDARY", "BLOCKED_ROOM_UNRESOLVED", "BLOCKED_ROOM_CREATION_UNAVAILABLE"]);
+const FAILURE_CODES = new Set([
+  "BLOCKED_SPEC_UNAVAILABLE",
+  "BLOCKED_SHAPE_SOURCE_UNAVAILABLE",
+  "BLOCKED_RECIPE_UNVERIFIED",
+  "BLOCKED_KIND_PROFILE_UNAVAILABLE",
+  "BLOCKED_KIND_HANDOFF_UNAVAILABLE",
+  "BLOCKED_CONFIDENTIALITY_BOUNDARY",
+  "BLOCKED_ROOM_UNRESOLVED",
+  "BLOCKED_ROOM_CREATION_UNAVAILABLE",
+  "BLOCKED_HOST_CAPABILITY",
+  "BLOCKED_AUTHORITY",
+  "BLOCKED_STALE_REVISION",
+  "BLOCKED_LEGACY_TOPIC",
+  "BLOCKED_SECRET_DETECTED",
+  "PARTIAL_ROOT_CREATED",
+  "PARTIAL_CANVAS",
+]);
 const RECIPE_BY_KIND = {
   project: "project",
   task: "project",
@@ -95,6 +118,31 @@ const isSubject = (value) => isObject(value)
 const unique = (values) => new Set(values).size === values.length;
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const finding = (code, path, message, severity = "error") => ({ code, severity, path, message });
+const blockerList = (value) => Array.isArray(value?.quality?.blockers) ? value.quality.blockers : [];
+const hasBlocker = (value, code) => blockerList(value).some((item) => isObject(item) && item.code === code);
+
+function validPort(value) {
+  if (value === undefined) return true;
+  if (!/^[0-9]{1,5}$/u.test(value)) return false;
+  const port = Number(value);
+  return port >= 1 && port <= 65535;
+}
+
+function validServerName(value) {
+  if (value.startsWith("[")) {
+    const match = /^\[([^\]]+)\](?::([0-9]+))?$/u.exec(value);
+    return match !== null && isIP(match[1]) === 6 && validPort(match[2]);
+  }
+  const match = /^([^:]+)(?::([0-9]+))?$/u.exec(value);
+  if (match === null || !validPort(match[2])) return false;
+  return isIP(match[1]) === 4 || HOSTNAME.test(match[1]);
+}
+
+function isRoomId(value) {
+  if (typeof value !== "string") return false;
+  const match = ROOM_ID_PARTS.exec(value);
+  return match !== null && validServerName(match[2]);
+}
 
 function add(findings, condition, code, path, message, severity = "error") {
   if (!condition) findings.push(finding(code, path, message, severity));
@@ -229,6 +277,78 @@ function validateDisposition(value, findings) {
   }
   if (value.disposition === "split") {
     add(findings, (value.routing?.proposedChildren?.length ?? 0) > 0, "SPLIT_CHILDREN", "/routing/proposedChildren", "must propose at least one child");
+  }
+}
+
+function validateRouting(value, findings) {
+  const routing = value.routing;
+  if (!requireObject(findings, routing, "/routing", ["rationale", "audience", "indexCompleteness", "duplicateDetection", "kindInference", "roomResolution"])) return;
+
+  const inference = routing.kindInference;
+  if (requireObject(findings, inference, "/routing/kindInference", ["status", "confidence", "rationale"])) {
+    if (WORK.has(value.disposition)) {
+      const contractKind = baseKind(value.contractDraft?.semantic?.kindRef);
+      add(findings, inference.status === "selected", "KIND_INFERENCE_STATUS", "/routing/kindInference/status", "a Topic disposition requires one selected best-guess Kind");
+      add(findings, KINDS.has(inference.selectedKind), "KIND_INFERENCE_SELECTED", "/routing/kindInference/selectedKind", "must select one canonical Kind");
+      add(findings, inference.selectedKind === contractKind, "KIND_INFERENCE_MISMATCH", "/routing/kindInference/selectedKind", "must match the contract Kind");
+    }
+    if (inference.status === "needs-user-choice") {
+      const alternatives = Array.isArray(inference.alternatives) ? inference.alternatives : [];
+      add(findings, alternatives.length >= 2, "KIND_INFERENCE_CHOICES", "/routing/kindInference/alternatives", "must offer at least two concrete Kind choices");
+      const validAlternatives = alternatives.filter((item) => isObject(item) && KINDS.has(item.kind) && typeof item.when === "string" && item.when.length > 0);
+      add(findings, validAlternatives.length === alternatives.length, "KIND_INFERENCE_ALTERNATIVE", "/routing/kindInference/alternatives", "every choice requires a canonical Kind and a concrete condition");
+      add(findings, unique(validAlternatives.map((item) => item.kind)), "KIND_INFERENCE_DUPLICATE", "/routing/kindInference/alternatives", "Kind choices must be distinct");
+      add(findings, validAlternatives.filter((item) => item.recommended === true).length === 1, "KIND_INFERENCE_RECOMMENDED", "/routing/kindInference/alternatives", "exactly one Kind choice must be recommended");
+    }
+  }
+
+  const room = routing.roomResolution;
+  if (!requireObject(findings, room, "/routing/roomResolution", ["target", "status", "evidence"])) return;
+  const evidenceValues = Array.isArray(room.evidence) ? room.evidence : [];
+  add(findings, Array.isArray(room.evidence), "ROOM_RESOLUTION_EVIDENCE_TYPE", "/routing/roomResolution/evidence", "must be an array");
+  add(findings, evidenceValues.every((item) => ROOM_EVIDENCE.has(item)), "ROOM_RESOLUTION_EVIDENCE_VALUE", "/routing/roomResolution/evidence", "contains an unsupported evidence label");
+  const evidence = new Set(evidenceValues);
+  if (room.status === "resolved") {
+    add(findings, isRoomId(room.roomId), "ROOM_RESOLUTION_ID", "/routing/roomResolution/roomId", "a resolved room requires one Matrix room ID");
+    add(findings, [...evidence].some((item) => DIRECT_ROOM_EVIDENCE.has(item)), "ROOM_RESOLUTION_EVIDENCE", "/routing/roomResolution/evidence", "entity lookup or profile evidence alone cannot resolve a Matrix room");
+  }
+  if (room.status === "needs-user-choice") {
+    const candidates = Array.isArray(room.candidates) ? room.candidates : [];
+    add(findings, candidates.length >= 2, "ROOM_RESOLUTION_CHOICES", "/routing/roomResolution/candidates", "must show at least two verified room or Domain candidates");
+    const validCandidates = candidates.filter((item) => isObject(item)
+      && typeof item.label === "string"
+      && item.label.length > 0
+      && ((item.type === "room" && isRoomId(item.roomId))
+        || (item.type === "domain" && /^did:ixo:.+/u.test(item.domainDid ?? ""))));
+    add(findings, validCandidates.length === candidates.length, "ROOM_RESOLUTION_CANDIDATE", "/routing/roomResolution/candidates", "every candidate requires its verified room ID or Domain DID");
+    const identities = validCandidates.map((item) => item.type === "room" ? `room:${item.roomId}` : `domain:${item.domainDid}`);
+    add(findings, unique(identities), "ROOM_RESOLUTION_DUPLICATE", "/routing/roomResolution/candidates", "candidate identities must be distinct");
+  }
+  if (room.status === "new-room-required") {
+    add(findings, room.target === "new-room-under-domain", "NEW_ROOM_TARGET", "/routing/roomResolution/target", "a new Domain room must be an explicit routing target");
+    add(findings, /^did:ixo:.+/u.test(room.domainDid ?? ""), "NEW_ROOM_DOMAIN", "/routing/roomResolution/domainDid", "a new room requires the resolved parent Domain DID");
+    add(findings, isObject(room.newRoomProposal), "NEW_ROOM_PROPOSAL", "/routing/roomResolution/newRoomProposal", "must preserve the proposed room and parent Domain for confirmation");
+    add(findings, room.newRoomProposal?.confirmationRequired === true, "NEW_ROOM_CONFIRMATION", "/routing/roomResolution/newRoomProposal/confirmationRequired", "room creation requires explicit confirmation");
+    add(findings, room.newRoomProposal?.parentDomainDid === room.domainDid, "NEW_ROOM_DOMAIN_MATCH", "/routing/roomResolution/newRoomProposal/parentDomainDid", "must match the resolved parent Domain DID");
+    add(findings, ["domain-default", "specified", "unresolved"].includes(room.newRoomProposal?.audience), "NEW_ROOM_AUDIENCE", "/routing/roomResolution/newRoomProposal/audience", "must preserve the resolved or unresolved audience policy");
+    add(findings, typeof room.newRoomProposal?.e2eeRequired === "boolean", "NEW_ROOM_E2EE", "/routing/roomResolution/newRoomProposal/e2eeRequired", "must preserve the E2EE decision");
+    add(findings, ["domain-default", "enabled", "disabled", "unresolved"].includes(room.newRoomProposal?.federation), "NEW_ROOM_FEDERATION", "/routing/roomResolution/newRoomProposal/federation", "must preserve the resolved or unresolved federation policy");
+    add(findings, ["verified", "unverified", "denied"].includes(room.newRoomProposal?.roomCreatePermission), "NEW_ROOM_PERMISSION", "/routing/roomResolution/newRoomProposal/roomCreatePermission", "must preserve room-creation permission state");
+  }
+  if (room.status === "blocked") {
+    add(findings, ROOM_BLOCKED_CODES.has(room.blockedCode), "ROOM_BLOCKED_CODE", "/routing/roomResolution/blockedCode", "a blocked room resolution requires one actionable room failure code");
+    add(findings, value.execution?.commitEligible === false, "ROOM_BLOCKS_COMMIT", "/execution/commitEligible", "a blocked room cannot be commit eligible");
+    add(findings, hasBlocker(value, room.blockedCode), "ROOM_BLOCKED_CODE_MATCH", "/quality/blockers", "must include the room-resolution failure code");
+  }
+  if (room.status === "unresolved" && ["named-room", "named-domain"].includes(room.target)) {
+    add(findings, room.blockedCode === "BLOCKED_ROOM_UNRESOLVED", "ROOM_UNRESOLVED_CODE", "/routing/roomResolution/blockedCode", "a named room or Domain that remains unresolved requires BLOCKED_ROOM_UNRESOLVED");
+    add(findings, value.execution?.commitEligible === false, "ROOM_BLOCKS_COMMIT", "/execution/commitEligible", "an unresolved named room cannot be commit eligible");
+    add(findings, hasBlocker(value, "BLOCKED_ROOM_UNRESOLVED"), "ROOM_BLOCKED_CODE_MATCH", "/quality/blockers", "must expose the unresolved-room failure in the composition result");
+  }
+  if (room.status === "not-found") {
+    add(findings, room.blockedCode === "BLOCKED_ROOM_UNRESOLVED", "ROOM_NOT_FOUND_CODE", "/routing/roomResolution/blockedCode", "a room that was not found requires BLOCKED_ROOM_UNRESOLVED");
+    add(findings, value.execution?.commitEligible === false, "ROOM_BLOCKS_COMMIT", "/execution/commitEligible", "a room that was not found cannot be commit eligible");
+    add(findings, hasBlocker(value, "BLOCKED_ROOM_UNRESOLVED"), "ROOM_BLOCKED_CODE_MATCH", "/quality/blockers", "must expose the room-not-found failure in the composition result");
   }
 }
 
@@ -497,12 +617,19 @@ function validateExecution(value, findings) {
   if (value.mode === "preview") {
     add(findings, execution.commitEligible === false, "PREVIEW_COMMIT", "/execution/commitEligible", "preview cannot commit");
   }
+  if (execution.hostContext?.kindPreservingCreate === false) {
+    add(findings, execution.commitEligible === false, "KIND_HANDOFF_BLOCKS_COMMIT", "/execution/commitEligible", "a host that drops Kind cannot be commit eligible");
+    add(findings, hasBlocker(value, "BLOCKED_KIND_HANDOFF_UNAVAILABLE"), "KIND_HANDOFF_BLOCKED_CODE", "/quality/blockers", "must expose the Kind-handoff capability gap");
+  }
   const calls = execution.proposedCalls ?? [];
   if (execution.commitEligible) {
     add(findings, value.mode === "commit", "COMMIT_MODE", "/execution/commitEligible", "requires commit mode");
-    add(findings, execution.hostContext?.roomId?.startsWith("!"), "COMMIT_ROOM", "/execution/hostContext/roomId", "is required");
+    add(findings, isRoomId(execution.hostContext?.roomId), "COMMIT_ROOM", "/execution/hostContext/roomId", "requires a valid Matrix room ID");
+    add(findings, value.routing?.roomResolution?.status === "resolved", "COMMIT_ROOM_RESOLUTION", "/routing/roomResolution/status", "commit requires a directly resolved Matrix room");
+    add(findings, execution.hostContext?.roomId === value.routing?.roomResolution?.roomId, "COMMIT_ROOM_MATCH", "/execution/hostContext/roomId", "must match the resolved routing room");
     add(findings, typeof execution.hostContext?.actorId === "string", "COMMIT_ACTOR", "/execution/hostContext/actorId", "is required");
     add(findings, execution.hostContext?.matrixWrite === true, "MATRIX_WRITE", "/execution/hostContext/matrixWrite", "verified Matrix write permission is required");
+    add(findings, execution.hostContext?.kindPreservingCreate === true, "COMMIT_KIND_HANDOFF", "/execution/hostContext/kindPreservingCreate", "commit requires a host path that preserves the selected Kind");
     const abilities = new Set(execution.hostContext?.verifiedAbilities ?? []);
     for (const [index, call] of calls.entries()) {
       add(findings, abilities.has(call.requiredAbility), "VERIFIED_ABILITY", `/execution/proposedCalls/${index}/requiredAbility`, "required ability is not verified");
@@ -522,6 +649,22 @@ function validateExecution(value, findings) {
   const plan = execution.stateEventPlan;
   add(findings, plan?.profile === PROFILE && plan?.version === 4, "STATE_PROFILE", "/execution/stateEventPlan", "must publish the v4 profile");
   add(findings, plan?.shapeRecordPersisted === false, "EFFECTIVE_SHAPE_RECORD", "/execution/stateEventPlan/shapeRecordPersisted", "must not persist a separate Effective Shape record");
+}
+
+function validateQuality(value, findings) {
+  const quality = value.quality;
+  if (!requireObject(findings, quality, "/quality", ["confidence", "unresolvedPaths", "warnings", "blockers"])) return;
+  const blockers = Array.isArray(quality.blockers) ? quality.blockers : [];
+  add(findings, Array.isArray(quality.blockers), "BLOCKERS_TYPE", "/quality/blockers", "must be an array");
+  if (blockers.length > 0) {
+    add(findings, value.execution?.commitEligible === false, "BLOCKERS_BLOCK_COMMIT", "/execution/commitEligible", "a composition with active blockers cannot be commit eligible");
+  }
+  const validBlockers = blockers.filter((item) => isObject(item)
+    && FAILURE_CODES.has(item.code)
+    && typeof item.reason === "string"
+    && item.reason.length > 0);
+  add(findings, validBlockers.length === blockers.length, "BLOCKER", "/quality/blockers", "every blocker requires a supported code and a reason");
+  add(findings, unique(validBlockers.map((item) => item.code)), "DUPLICATE_BLOCKER", "/quality/blockers", "blocker codes must be distinct");
 }
 
 function validateSensitive(value, findings) {
@@ -553,6 +696,7 @@ export function validateComposition(value) {
   if (!isObject(value)) return findings;
   validateProtocolBinding(value, findings);
   validateDisposition(value, findings);
+  validateRouting(value, findings);
   if (WORK.has(value.disposition)) {
     validateRecipe(value, findings);
     validateContract(value, findings);
@@ -562,6 +706,7 @@ export function validateComposition(value) {
     validateFirstTurn(value, findings);
   }
   validateExecution(value, findings);
+  validateQuality(value, findings);
   validateSensitive(value, findings);
   return findings;
 }
