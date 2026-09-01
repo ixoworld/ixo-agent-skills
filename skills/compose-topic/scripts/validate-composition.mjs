@@ -11,6 +11,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SHAPE_PINS = JSON.parse(readFileSync(join(ROOT, "references", "topic-shape-pins.json"), "utf8"));
 const COMPOSITION_SCHEMA = JSON.parse(readFileSync(join(ROOT, "schemas", "topic-composition.schema.json"), "utf8"));
 const ROOM_SCHEMA = COMPOSITION_SCHEMA.properties.routing.properties.roomResolution;
+const DOMAIN_DID = new RegExp(COMPOSITION_SCHEMA.$defs.ixoEntityDid.pattern, "u");
 const WORK = new Set(["create", "continue", "branch", "split"]);
 const ACCEPTABLE_ACCEPTED_BASIS = new Set(["explicit", "contextual"]);
 const AUTO_ACCEPT_RECORD_CLASSES = new Set(["ixo.topic.fact", "ixo.topic.summary", "ixo.topic.classification"]);
@@ -318,7 +319,7 @@ function validateRouting(value, findings) {
     add(findings, isRoomId(room.roomId), "ROOM_RESOLUTION_ID", "/routing/roomResolution/roomId", "a resolved room requires one Matrix room ID");
     add(findings, [...evidence].some((item) => DIRECT_ROOM_EVIDENCE.has(item)), "ROOM_RESOLUTION_EVIDENCE", "/routing/roomResolution/evidence", "entity lookup or profile evidence alone cannot resolve a Matrix room");
     if (["named-domain", "new-room-under-domain"].includes(room.target)) {
-      add(findings, /^did:ixo:.+/u.test(room.domainDid ?? ""), "ROOM_DOMAIN_ID", "/routing/roomResolution/domainDid", "a resolved Domain-targeted room requires its verified IXO Entity DID");
+      add(findings, DOMAIN_DID.test(room.domainDid ?? ""), "ROOM_DOMAIN_ID", "/routing/roomResolution/domainDid", "a resolved Domain-targeted room requires its verified IXO Entity DID");
     }
     if (room.target === "named-domain") {
       add(findings, evidence.has("domain-room-graph"), "ROOM_DOMAIN_RELATIONSHIP", "/routing/roomResolution/evidence", "a resolved named Domain requires verified Domain-to-room relationship evidence");
@@ -334,14 +335,14 @@ function validateRouting(value, findings) {
       && typeof item.label === "string"
       && item.label.length > 0
       && ((item.type === "room" && isRoomId(item.roomId))
-        || (item.type === "domain" && /^did:ixo:.+/u.test(item.domainDid ?? ""))));
+        || (item.type === "domain" && DOMAIN_DID.test(item.domainDid ?? ""))));
     add(findings, validCandidates.length === candidates.length, "ROOM_RESOLUTION_CANDIDATE", "/routing/roomResolution/candidates", "every candidate requires its verified room ID or Domain DID");
     const identities = validCandidates.map((item) => item.type === "room" ? `room:${item.roomId}` : `domain:${item.domainDid}`);
     add(findings, unique(identities), "ROOM_RESOLUTION_DUPLICATE", "/routing/roomResolution/candidates", "candidate identities must be distinct");
   }
   if (room.status === "new-room-required") {
     add(findings, room.target === "new-room-under-domain", "NEW_ROOM_TARGET", "/routing/roomResolution/target", "a new Domain room must be an explicit routing target");
-    add(findings, /^did:ixo:.+/u.test(room.domainDid ?? ""), "NEW_ROOM_DOMAIN", "/routing/roomResolution/domainDid", "a new room requires the resolved parent Domain DID");
+    add(findings, DOMAIN_DID.test(room.domainDid ?? ""), "NEW_ROOM_DOMAIN", "/routing/roomResolution/domainDid", "a new room requires the resolved parent Domain DID");
     add(findings, isObject(room.newRoomProposal), "NEW_ROOM_PROPOSAL", "/routing/roomResolution/newRoomProposal", "must preserve the proposed room and parent Domain for confirmation");
     add(findings, typeof room.newRoomProposal?.name === "string" && room.newRoomProposal.name.trim().length > 0, "NEW_ROOM_NAME", "/routing/roomResolution/newRoomProposal/name", "a new room proposal requires a non-blank name");
     add(findings, room.newRoomProposal?.confirmationRequired === true, "NEW_ROOM_CONFIRMATION", "/routing/roomResolution/newRoomProposal/confirmationRequired", "room creation requires explicit confirmation");

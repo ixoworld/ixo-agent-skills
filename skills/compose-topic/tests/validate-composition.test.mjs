@@ -329,6 +329,9 @@ test("a resolved named Domain requires its DID and verified Domain-to-room relat
   assert(unresolved.has("ROOM_DOMAIN_ID"));
   assert(unresolved.has("ROOM_DOMAIN_RELATIONSHIP"));
 
+  value.routing.roomResolution.domainDid = "did:ixo:";
+  assert(codes(value).has("ROOM_DOMAIN_ID"));
+
   value.routing.roomResolution.domainDid = "did:ixo:entity:yoma";
   value.routing.roomResolution.evidence.push("domain-room-graph");
   const resolved = codes(value);
@@ -940,6 +943,13 @@ test("composition schema can represent generic and room-specific failure codes",
   assert(newDomainRoomResolvedRule.then.required.includes("domainDid"));
   assert.equal(newDomainRoomResolvedRule.then.properties.evidence.contains.const, "room-creation-result");
   assert.equal(room.properties.newRoomProposal.properties.name.pattern, "\\S");
+  assert.equal(room.properties.domainDid.$ref, "#/$defs/ixoEntityDid");
+  assert.equal(room.properties.candidates.items.properties.domainDid.$ref, "#/$defs/ixoEntityDid");
+  assert.equal(room.properties.newRoomProposal.properties.parentDomainDid.$ref, "#/$defs/ixoEntityDid");
+  const entityDid = new RegExp(schema.$defs.ixoEntityDid.pattern, "u");
+  assert(entityDid.test("did:ixo:entity:yoma"));
+  assert(!entityDid.test("did:ixo:"));
+  assert(!entityDid.test("did:ixo:   "));
   assert(schema.allOf.some((entry) => entry.if?.properties?.quality?.properties?.blockers?.minItems === 1
     && entry.then?.properties?.execution?.properties?.commitEligible?.const === false));
   assert(schema.allOf.some((entry) => entry.if?.properties?.routing?.properties?.roomResolution?.properties?.status?.enum?.includes("new-room-required")

@@ -130,7 +130,7 @@
             "requestedLabel": { "type": "string", "minLength": 1, "maxLength": 512 },
             "roomId": { "$ref": "#/$defs/matrixRoomId" },
             "roomName": { "type": "string", "minLength": 1, "maxLength": 512 },
-            "domainDid": { "type": "string", "pattern": "^did:ixo:" },
+            "domainDid": { "$ref": "#/$defs/ixoEntityDid" },
             "evidence": {
               "type": "array",
               "maxItems": 8,
@@ -158,7 +158,7 @@
                   "type": { "enum": ["room", "domain"] },
                   "label": { "type": "string", "minLength": 1, "maxLength": 512 },
                   "roomId": { "$ref": "#/$defs/matrixRoomId" },
-                  "domainDid": { "type": "string", "pattern": "^did:ixo:" },
+                  "domainDid": { "$ref": "#/$defs/ixoEntityDid" },
                   "memberCount": { "type": "integer", "minimum": 0 }
                 },
                 "additionalProperties": false,
@@ -179,7 +179,7 @@
               "required": ["name", "parentDomainDid", "audience", "e2eeRequired", "federation", "roomCreatePermission", "confirmationRequired"],
               "properties": {
                 "name": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S" },
-                "parentDomainDid": { "type": "string", "pattern": "^did:ixo:" },
+                "parentDomainDid": { "$ref": "#/$defs/ixoEntityDid" },
                 "audience": { "enum": ["domain-default", "specified", "unresolved"] },
                 "e2eeRequired": { "type": "boolean" },
                 "federation": { "enum": ["domain-default", "enabled", "disabled", "unresolved"] },
@@ -920,6 +920,10 @@
         "reason": { "type": "string", "minLength": 1, "maxLength": 2000 }
       },
       "additionalProperties": false
+    },
+    "ixoEntityDid": {
+      "type": "string",
+      "pattern": "^did:ixo:\\S+$"
     },
     "matrixRoomId": {
       "type": "string",

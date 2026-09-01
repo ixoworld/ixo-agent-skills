@@ -206,7 +206,7 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "372c4ac9ab39ba31f17233447822ecd87f40924d2815e2e83bfafdfd4429b467"
+      "sha256": "e29961768a25022ebf0e3d4d4c1823243e8f78a61427d57e37fce38cc64ba1a1"
     },
     "schemas/topic-contract-draft.schema.json": {
       "sha256": "0b89342554188170964d28cf50e634517cab3c7ff0775776a40d17bf4d0d4c83"
