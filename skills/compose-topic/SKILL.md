@@ -4,7 +4,7 @@ description: "Compose, route, validate, and safely stage a Topic Protocol v1 Dra
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.2.0"
+  version: "3.2.1"
   category: collaboration
   topic-protocol: "1.0.0-rc.3"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -95,7 +95,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 ### 1. Pin and preflight
 
 - Run `node scripts/audit-skill.mjs --json` when scripts are available.
-- Use composition version `3.2.0`, Topic Protocol `1.0.0-rc.3`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.2.1`, Topic Protocol `1.0.0-rc.3`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Inventory real host capabilities. Do not assume a named tool exists.
 - Scan for secrets and excessive sensitive data.
 
@@ -114,7 +114,9 @@ Resolve the intended audience and one exact Matrix room independently from entit
 - Use the supplied current `roomId` only when the person clearly means “here” and its audience is appropriate.
 - When the person names a room, inspect joined conversation rooms and prefer an exact normalized name match. If several rooms remain plausible, show the candidates with their names and `!roomId` values and ask the person to choose.
 - When the person names a Domain, resolve the entity with bookmark-first ambiguity handling, then use an explicit Domain-to-room relationship supplied by the host. Entity profile data alone does not prove which room belongs to the Domain.
+- Record a resolved `named-domain` target only with both its verified `domainDid` and `domain-room-graph` evidence for the selected `!roomId`; otherwise keep the room unresolved or represent the explicit room choice as `named-room` or `current-room`.
 - If no joined room is verified, offer a concise choice between suitable existing rooms and creating a new conversation room under the resolved Domain. Room creation is a separate confirmed side effect; it must return a real `!roomId` before Topic creation can continue.
+- Preserve the verified parent `domainDid` and `room-creation-result` evidence when a `new-room-under-domain` target becomes resolved; another current or joined room is not a valid substitute.
 - Never substitute `create_page_room` or `create_template_room`; those allocate document/template rooms, not Topic-capable conversation rooms.
 
 Record the result in `routing.roomResolution`. Keep `execution.commitEligible: false` until the room is resolved, Matrix write permission is verified, and the host can preserve the selected Kind.

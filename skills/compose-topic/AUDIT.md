@@ -1,6 +1,6 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.2.0`
+Audit target: `compose-topic` `3.2.1`
 Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.3`
 Topic Contract profile: `qi.topic-contract-state/v4`
 Pinned protocol commit: `482139c37eed86387a7ff2609a8672c4216e28f4`
@@ -42,7 +42,13 @@ Resolution: composition now records `routing.kindInference`, selects from outcom
 
 Finding: resolving a named Domain to a DID could be treated as evidence for an unrelated or guessed Matrix room, especially when the entity profile lookup timed out.
 
-Resolution: composition now records `routing.roomResolution`. Direct room evidence is required for commit, entity evidence alone is rejected, ambiguous joined rooms use a named picker, and a new Domain room requires a separate confirmed conversation-room capability. Page and template room tools are explicitly incompatible.
+Resolution: composition now records `routing.roomResolution`. Direct room evidence is required for commit, entity evidence alone is rejected, and a resolved `named-domain` target requires both its verified `domainDid` and explicit `domain-room-graph` evidence. A resolved `new-room-under-domain` target likewise retains its parent `domainDid` and verified `room-creation-result`, so another current room cannot be substituted. Ambiguous joined rooms use a named picker, and a new Domain room requires a separate confirmed conversation-room capability. Page and template room tools are explicitly incompatible.
+
+### Room-routing schema and semantic validation diverged
+
+Finding: the JSON Schema constrained room targets, statuses, and new-room names, but direct semantic-validator callers could still pass unsupported target/status values or omit a meaningful proposed room name.
+
+Resolution: the semantic validator now enforces the same target and status enums, rejects missing or whitespace-only room names, and has regression coverage for all three cases. The schema also rejects whitespace-only names and enforces the named-Domain relationship invariant.
 
 ### v0.8 body fields survived composition
 
