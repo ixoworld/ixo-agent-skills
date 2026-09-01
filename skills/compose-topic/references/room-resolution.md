@@ -20,7 +20,7 @@ Never derive a room ID from a DID, a similar-looking room name, an entity profil
 3. If an explicit `!roomId` is supplied, verify joined membership, Topic management permission, and audience suitability.
 4. If a room name is supplied, list joined Topic-capable conversation rooms. Compare an exact normalized name first, then bounded partial matches. One verified match resolves the room; several plausible matches require a user picker with both name and `!roomId`.
 5. If the label is also or instead an entity name, resolve it separately. Rank bookmarked candidates first. A single entity match may establish `domainDid`; multiple matches require a user choice. Profile lookup may confirm the entity type, but it still does not resolve a room.
-6. Map a verified Domain to rooms only through host-supplied Domain/space membership metadata. If that relationship is unavailable, show suitable joined room candidates or offer to create a new conversation room under the Domain.
+6. Map a verified Domain to rooms only through host-supplied Domain/space membership metadata. A resolved `named-domain` target must preserve both its verified `domainDid` and `domain-room-graph` evidence for the selected `!roomId`. If that relationship is unavailable, show suitable joined room candidates or offer to create a new conversation room under the Domain.
 7. Call the Topic proposal or host adapter only after `routing.roomResolution.status` is `resolved` with one real `!roomId`.
 
 Do not loop on a failed entity-profile request. Retry once only when the host marks the failure transient. Otherwise preserve the entity candidate, keep the room unresolved, and move to a concise user choice or a useful preview.

@@ -15,7 +15,7 @@
     "quality"
   ],
   "properties": {
-    "version": { "const": "3.2.0" },
+    "version": { "const": "3.2.1" },
     "compositionId": {
       "type": "string",
       "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
@@ -178,7 +178,7 @@
               "type": "object",
               "required": ["name", "parentDomainDid", "audience", "e2eeRequired", "federation", "roomCreatePermission", "confirmationRequired"],
               "properties": {
-                "name": { "type": "string", "minLength": 1, "maxLength": 512 },
+                "name": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S" },
                 "parentDomainDid": { "type": "string", "pattern": "^did:ixo:" },
                 "audience": { "enum": ["domain-default", "specified", "unresolved"] },
                 "e2eeRequired": { "type": "boolean" },
@@ -210,6 +210,42 @@
                   }
                 },
                 "required": ["roomId"]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "target": { "const": "named-domain" },
+                  "status": { "const": "resolved" }
+                },
+                "required": ["target", "status"]
+              },
+              "then": {
+                "properties": {
+                  "evidence": {
+                    "contains": { "const": "domain-room-graph" },
+                    "minContains": 1
+                  }
+                },
+                "required": ["domainDid"]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "target": { "const": "new-room-under-domain" },
+                  "status": { "const": "resolved" }
+                },
+                "required": ["target", "status"]
+              },
+              "then": {
+                "properties": {
+                  "evidence": {
+                    "contains": { "const": "room-creation-result" },
+                    "minContains": 1
+                  }
+                },
+                "required": ["domainDid"]
               }
             },
             {

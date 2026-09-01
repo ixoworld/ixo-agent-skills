@@ -315,6 +315,60 @@ test("a resolved room requires direct Matrix room evidence", async () => {
   assert(codes(value).has("ROOM_RESOLUTION_EVIDENCE"));
 });
 
+test("a resolved named Domain requires its DID and verified Domain-to-room relationship", async () => {
+  const value = await example("team-project.example.json");
+  value.routing.roomResolution = {
+    target: "named-domain",
+    status: "resolved",
+    requestedLabel: "Yoma Design Studio SC",
+    roomId: value.execution.hostContext.roomId,
+    evidence: ["current-context"],
+  };
+
+  const unresolved = codes(value);
+  assert(unresolved.has("ROOM_DOMAIN_ID"));
+  assert(unresolved.has("ROOM_DOMAIN_RELATIONSHIP"));
+
+  value.routing.roomResolution.domainDid = "did:ixo:entity:yoma";
+  value.routing.roomResolution.evidence.push("domain-room-graph");
+  const resolved = codes(value);
+  assert(!resolved.has("ROOM_DOMAIN_ID"));
+  assert(!resolved.has("ROOM_DOMAIN_RELATIONSHIP"));
+});
+
+test("a newly created Domain room resolves only from its bound creation result", async () => {
+  const value = await example("team-project.example.json");
+  value.routing.roomResolution = {
+    target: "new-room-under-domain",
+    status: "resolved",
+    roomId: value.execution.hostContext.roomId,
+    evidence: ["current-context"],
+  };
+
+  const unrelated = codes(value);
+  assert(unrelated.has("ROOM_DOMAIN_ID"));
+  assert(unrelated.has("NEW_ROOM_RESOLUTION_EVIDENCE"));
+
+  value.routing.roomResolution.domainDid = "did:ixo:entity:yoma";
+  value.routing.roomResolution.evidence = ["room-creation-result"];
+  const resolved = codes(value);
+  assert(!resolved.has("ROOM_DOMAIN_ID"));
+  assert(!resolved.has("NEW_ROOM_RESOLUTION_EVIDENCE"));
+});
+
+test("room routing target and status must use supported values", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "somewhere",
+    status: "maybe",
+    evidence: [],
+  };
+
+  const result = codes(value);
+  assert(result.has("ROOM_RESOLUTION_TARGET"));
+  assert(result.has("ROOM_RESOLUTION_STATUS"));
+});
+
 test("malformed room evidence produces findings instead of throwing", async () => {
   for (const evidence of [{ source: "list-rooms" }, "list-rooms"]) {
     const value = await example("team-project.example.json");
@@ -432,6 +486,30 @@ test("a new room proposal must remain bound to the resolved parent Domain", asyn
     },
   };
   assert(codes(value).has("NEW_ROOM_DOMAIN_MATCH"));
+});
+
+test("a new room proposal requires a non-blank name", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "new-room-under-domain",
+    status: "new-room-required",
+    domainDid: "did:ixo:entity:resolved",
+    evidence: ["entity-lookup"],
+    newRoomProposal: {
+      parentDomainDid: "did:ixo:entity:resolved",
+      audience: "domain-default",
+      e2eeRequired: true,
+      federation: "domain-default",
+      roomCreatePermission: "verified",
+      confirmationRequired: true,
+    },
+  };
+
+  assert(codes(value).has("NEW_ROOM_NAME"));
+  value.routing.roomResolution.newRoomProposal.name = "   ";
+  assert(codes(value).has("NEW_ROOM_NAME"));
+  value.routing.roomResolution.newRoomProposal.name = "Governance Studio";
+  assert(!codes(value).has("NEW_ROOM_NAME"));
 });
 
 test("a new room proposal preserves audience, encryption, federation, and permission decisions", async () => {
@@ -853,6 +931,15 @@ test("composition schema can represent generic and room-specific failure codes",
   assert(room.allOf.some((entry) => entry.then?.required?.includes("blockedCode")));
   const resolvedRule = room.allOf.find((entry) => entry.if?.properties?.status?.const === "resolved");
   assert(resolvedRule.then.properties.evidence.contains.enum.includes("list-rooms"));
+  const namedDomainResolvedRule = room.allOf.find((entry) => entry.if?.properties?.target?.const === "named-domain"
+    && entry.if?.properties?.status?.const === "resolved");
+  assert(namedDomainResolvedRule.then.required.includes("domainDid"));
+  assert.equal(namedDomainResolvedRule.then.properties.evidence.contains.const, "domain-room-graph");
+  const newDomainRoomResolvedRule = room.allOf.find((entry) => entry.if?.properties?.target?.const === "new-room-under-domain"
+    && entry.if?.properties?.status?.const === "resolved");
+  assert(newDomainRoomResolvedRule.then.required.includes("domainDid"));
+  assert.equal(newDomainRoomResolvedRule.then.properties.evidence.contains.const, "room-creation-result");
+  assert.equal(room.properties.newRoomProposal.properties.name.pattern, "\\S");
   assert(schema.allOf.some((entry) => entry.if?.properties?.quality?.properties?.blockers?.minItems === 1
     && entry.then?.properties?.execution?.properties?.commitEligible?.const === false));
   assert(schema.allOf.some((entry) => entry.if?.properties?.routing?.properties?.roomResolution?.properties?.status?.enum?.includes("new-room-required")
