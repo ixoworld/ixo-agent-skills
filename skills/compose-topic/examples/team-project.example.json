@@ -1,5 +1,5 @@
 {
-  "version": "3.1.0",
+  "version": "3.2.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702",
   "mode": "commit",
   "disposition": "create",
@@ -26,7 +26,20 @@
     "rationale": "The launch is a durable, multi-step team outcome with coordinated work and explicit completion.",
     "audience": "current-room",
     "indexCompleteness": "complete",
-    "duplicateDetection": "no-match"
+    "duplicateDetection": "no-match",
+    "kindInference": {
+      "status": "selected",
+      "selectedKind": "project",
+      "confidence": "high",
+      "rationale": "The intended outcome requires coordinated milestones and linked work across a multi-stage launch."
+    },
+    "roomResolution": {
+      "target": "current-room",
+      "status": "resolved",
+      "roomId": "!product-team:matrix.ixo.world",
+      "roomName": "Product team",
+      "evidence": ["current-context"]
+    }
   },
   "interpretation": {
     "job": "Coordinate a product launch",
@@ -294,6 +307,7 @@
       "roomId": "!product-team:matrix.ixo.world",
       "actorId": "did:ixo:shaun",
       "matrixWrite": true,
+      "kindPreservingCreate": true,
       "verifiedAbilities": [
         "topic/create",
         "topic/write"
@@ -368,6 +382,7 @@
     ],
     "warnings": [
       "The host must still allocate Topic identity and publish only the Draft projection."
-    ]
+    ],
+    "blockers": []
   }
 }

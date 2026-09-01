@@ -1,6 +1,6 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.1.0`
+Audit target: `compose-topic` `3.2.0`
 Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.3`
 Topic Contract profile: `qi.topic-contract-state/v4`
 Pinned protocol commit: `482139c37eed86387a7ff2609a8672c4216e28f4`
@@ -14,6 +14,8 @@ The audit covers:
 
 - root/body/state version 4 and all legacy-version exclusion;
 - canonical Kind to Base Recipe mapping;
+- outcome-led Kind inference, explicit ambiguity handling, and no Discussion fallback;
+- Matrix room resolution kept separate from Domain/entity lookup and new-room creation;
 - Effective Shape resolution and digest pins;
 - five Draft-producing seed Topic Recipes;
 - nine progressively loaded Kind sub-skills, plus focused Software Build and Blueprint Design routes;
@@ -29,6 +31,18 @@ The audit covers:
 - schemas, examples, scripts, tests, and behavioral eval coverage.
 
 ## Material findings and resolutions
+
+### Ambiguous intent fell through to Discussion
+
+Finding: a thin host path could leave Kind unstated, causing a governance approval or other structured job to open as a default Discussion.
+
+Resolution: composition now records `routing.kindInference`, selects from outcome, deliverable, lifecycle, and decision signals, and treats Discussion as an explicit open-ended deliberation mode only. Material ambiguity produces one focused question with two to four Kind-shaped choices; commit requires a Kind-preserving host path.
+
+### Entity resolution was mistaken for Matrix room resolution
+
+Finding: resolving a named Domain to a DID could be treated as evidence for an unrelated or guessed Matrix room, especially when the entity profile lookup timed out.
+
+Resolution: composition now records `routing.roomResolution`. Direct room evidence is required for commit, entity evidence alone is rejected, ambiguous joined rooms use a named picker, and a new Domain room requires a separate confirmed conversation-room capability. Page and template room tools are explicitly incompatible.
 
 ### v0.8 body fields survived composition
 

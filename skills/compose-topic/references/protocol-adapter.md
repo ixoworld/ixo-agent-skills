@@ -26,18 +26,25 @@ Reject v0.8/v2 inputs. Do not migrate them.
 Before a write:
 
 1. validate the composition and source lock;
-2. confirm root/body/state version 4 and profile qi.topic-contract-state/v4;
-3. reproduce the exact Shape sources and digest;
-4. confirm the Kind, Base Recipe, optional Topic Recipe, and Shape agree;
-5. confirm the new root is Draft and the immutable body has no lifecycle status;
-6. verify room/audience and E2EE policy;
-7. verify Matrix write permission;
-8. verify every proposed call's UCAN ability and caveats;
-9. bind all calls to the current Topic revision, contract revision, body hash, policy digest, and Shape digest;
-10. reject secrets, provider-private session IDs, and over-sized inline bodies; and
-11. acquire or verify each idempotency key.
+2. require `routing.roomResolution.status: resolved`, one verified `!roomId`, and direct room evidence as defined in [room-resolution.md](room-resolution.md);
+3. confirm that `execution.hostContext.roomId` is the same resolved room and that a Domain DID was not substituted for it;
+4. confirm root/body/state version 4 and profile qi.topic-contract-state/v4;
+5. reproduce the exact Shape sources and digest;
+6. confirm the inferred Kind, root Kind, contract Kind, Base Recipe, optional Topic Recipe, and Shape agree;
+7. verify that the host creation path preserves that Kind instead of opening a default Discussion;
+8. confirm the new root is Draft and the immutable body has no lifecycle status;
+9. verify room/audience and E2EE policy;
+10. verify Matrix write permission;
+11. verify every proposed call's UCAN ability and caveats;
+12. bind all calls to the current Topic revision, contract revision, body hash, policy digest, and Shape digest;
+13. reject secrets, provider-private session IDs, and over-sized inline bodies; and
+14. acquire or verify each idempotency key.
 
 A missing Shape source makes the Topic degraded and non-executable. A role or owner label cannot repair an authority failure.
+
+A resolved Domain is not a resolved room. If the person requests a new conversation room, create and verify it through a separate explicitly confirmed host capability before beginning this Topic create sequence. Page/template room creators are incompatible. If the host cannot carry the selected Kind or return one verified room ID, keep the Draft in preview and return the corresponding blocked state.
+
+`routing.roomResolution.evidence` records how composition selected the room; it is not an authorization token or a host attestation. Before every write, the host must independently verify the exact room ID, joined membership, audience suitability, Topic-management permission, actor, and freshness. Never authorize a Matrix write from caller-supplied evidence labels or from a successful composition-validation result alone.
 
 ## Create sequence
 
@@ -109,7 +116,7 @@ Cache private viewer facts by the tuple topicRevision + contractRevision + shape
 
 Never persist viewer attention in shared Topic state. Never offer privileged moves for dormant or degraded Topics.
 
-Pass each structured obligation through to Portal presentation. Keep the primary blocker visible even when another actor owns it. Offer only authorized actions and wait for the durable operation plus refreshed projection before announcing completion.
+Pass each structured obligation through to Portal presentation. Keep every active blocker available and the primary blocker visible even when another actor owns it. Offer only authorized actions and wait for the durable operation plus refreshed projection before announcing completion.
 
 ## Confirmation, assent, time, and disputes
 

@@ -1,5 +1,5 @@
 {
-  "version": "3.1.0",
+  "version": "3.2.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77703",
   "mode": "preview",
   "disposition": "create",
@@ -26,7 +26,18 @@
     "rationale": "The primary job is bounded agent delivery with review and a Flow handoff.",
     "audience": "separate-room-required",
     "indexCompleteness": "unknown",
-    "duplicateDetection": "not-run"
+    "duplicateDetection": "not-run",
+    "kindInference": {
+      "status": "selected",
+      "selectedKind": "agent_task",
+      "confidence": "high",
+      "rationale": "The Topic commissions bounded agent work with an explicit delivery and stop condition."
+    },
+    "roomResolution": {
+      "target": "unspecified",
+      "status": "unresolved",
+      "evidence": []
+    }
   },
   "interpretation": {
     "job": "Commission a controlled agent delivery",
@@ -371,6 +382,7 @@
     ],
     "warnings": [
       "No Flow or agent identity has been fabricated, and no external Action is planned."
-    ]
+    ],
+    "blockers": []
   }
 }

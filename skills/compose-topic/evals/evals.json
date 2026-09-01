@@ -1,5 +1,5 @@
 {
-  "version": "3.1.0",
+  "version": "3.2.0",
   "skill": "compose-topic",
   "protocol": {
     "topicProtocolVersion": "1.0.0-rc.3",
@@ -29,6 +29,34 @@
       "must": [
         "Explicit creation intent overrides the triviality test.",
         "Keep recommendation separate from final human decision."
+      ]
+    },
+    {
+      "id": "governance-policy-proposal",
+      "input": "Create a Topic to put the Cooperative Membership policy forward for approval as a Yoma LVC governance decision.",
+      "expected": {
+        "disposition": "create",
+        "kind": "proposal",
+        "baseRecipe": "proposal",
+        "kindConfidence": "high"
+      },
+      "must": [
+        "Infer Proposal from the approval-bound policy artifact and governance lifecycle.",
+        "Do not default to Discussion merely because the subject is governance.",
+        "Do not fabricate approval, an approver, or a decision record."
+      ]
+    },
+    {
+      "id": "ambiguous-policy-kind",
+      "input": "Create a Topic about our Cooperative Membership policy.",
+      "expected": {
+        "disposition": "clarify",
+        "kindChoices": ["proposal", "evaluation", "discussion"]
+      },
+      "must": [
+        "Ask one focused question distinguishing drafting for approval, assessing for a decision, and open-ended deliberation.",
+        "Put the best-supported recommended choice first without silently instantiating it.",
+        "Do not use Discussion as the uncertainty fallback."
       ]
     },
     {
@@ -94,6 +122,67 @@
         "Ask one confidentiality-boundary question.",
         "Do not infer sensitive traits.",
         "Do not record a dismissal decision."
+      ]
+    },
+    {
+      "id": "named-domain-is-not-room",
+      "input": "Create the Cooperative Membership policy Topic in Yoma Design Studio SC.",
+      "context": "list_rooms has no exact room-name match. findEntity returns one bookmarked Domain DID. getEntityProfileDomain times out, and no Domain-to-room relationship is supplied.",
+      "expected": {
+        "kind": "proposal",
+        "roomStatus": "unresolved",
+        "commitEligible": false,
+        "blockedCode": "BLOCKED_ROOM_UNRESOLVED"
+      },
+      "must": [
+        "Keep the Domain DID as entity context only and never pass it as roomId.",
+        "Do not guess a joined room from a DID-shaped name or a similar label.",
+        "Offer verified joined-room candidates or a new conversation room under the resolved Domain."
+      ]
+    },
+    {
+      "id": "ambiguous-joined-room",
+      "input": "Create this Topic in Design Studio.",
+      "context": "list_rooms returns two Topic-capable joined rooms whose names contain Design Studio.",
+      "expected": {
+        "disposition": "clarify",
+        "roomStatus": "needs-user-choice"
+      },
+      "must": [
+        "Show both room names and room IDs in one bounded picker.",
+        "Do not call propose_topic until the person selects one room.",
+        "Do not choose by member count, ordering, or partial-name similarity."
+      ]
+    },
+    {
+      "id": "create-domain-conversation-room",
+      "input": "Create a new Cooperative Governance room under Yoma Design Studio SC, then draft the policy Topic there.",
+      "context": "findEntity resolves one verified Domain DID, but the host exposes create_page_room and create_template_room only; no conversation-room creation tool is available.",
+      "expected": {
+        "roomStatus": "blocked",
+        "commitEligible": false,
+        "blockedCode": "BLOCKED_ROOM_CREATION_UNAVAILABLE"
+      },
+      "must": [
+        "Preserve the useful Proposal preview and the verified parent Domain DID.",
+        "Do not use a page or template room as a conversation room.",
+        "Explain the missing host capability and do not claim either room or Topic was created."
+      ]
+    },
+    {
+      "id": "verified-room-and-kind-handoff",
+      "input": "Create the approved Proposal Draft in the selected governance room.",
+      "context": "The person selected !governance:example.org from list_rooms, Matrix write permission is verified, and the host adapter preserves Proposal Kind and its Shape pins.",
+      "expected": {
+        "kind": "proposal",
+        "roomStatus": "resolved",
+        "roomId": "!governance:example.org",
+        "commitEligible": true
+      },
+      "must": [
+        "Pass the verified room ID rather than the room name or Domain DID.",
+        "Preserve Proposal through the editor or host adapter.",
+        "Do not silently open a default Discussion Draft."
       ]
     },
     {

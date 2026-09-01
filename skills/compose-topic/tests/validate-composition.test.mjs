@@ -256,6 +256,370 @@ test("commit requires verified Matrix write and every protocol ability", async (
   assert(result.has("VERIFIED_ABILITY"));
 });
 
+test("best-guess Kind inference must match the contract Kind", async () => {
+  const value = await example();
+  value.routing.kindInference.selectedKind = "discussion";
+  assert(codes(value).has("KIND_INFERENCE_MISMATCH"));
+});
+
+test("a Topic disposition requires a selected canonical Kind", async () => {
+  const value = await example();
+  value.routing.kindInference = {
+    status: "needs-user-choice",
+    confidence: "low",
+    rationale: "Proposal and evaluation remain equally plausible.",
+    alternatives: [
+      { kind: "proposal", when: "Draft a policy for approval." },
+      { kind: "evaluation", when: "Compare evidence before deciding." },
+    ],
+  };
+  const result = codes(value);
+  assert(result.has("KIND_INFERENCE_STATUS"));
+  assert(result.has("KIND_INFERENCE_SELECTED"));
+});
+
+test("a clarification requires at least two concrete Kind choices", async () => {
+  const value = await example();
+  value.disposition = "clarify";
+  value.routing.kindInference = {
+    status: "needs-user-choice",
+    confidence: "low",
+    rationale: "The intended coordination job is ambiguous.",
+    alternatives: [{ kind: "proposal", when: "Draft something for approval." }],
+  };
+  assert(codes(value).has("KIND_INFERENCE_CHOICES"));
+});
+
+test("Kind clarification choices must be well formed, distinct, and recommend exactly one option", async () => {
+  const value = await example();
+  value.disposition = "clarify";
+  value.routing.kindInference = {
+    status: "needs-user-choice",
+    confidence: "low",
+    rationale: "The intended coordination job is ambiguous.",
+    alternatives: [
+      { kind: "proposal", when: "Draft something for approval." },
+      { kind: "proposal", when: "Draft the same thing again." },
+      null,
+    ],
+  };
+  const result = codes(value);
+  assert(result.has("KIND_INFERENCE_ALTERNATIVE"));
+  assert(result.has("KIND_INFERENCE_DUPLICATE"));
+  assert(result.has("KIND_INFERENCE_RECOMMENDED"));
+});
+
+test("a resolved room requires direct Matrix room evidence", async () => {
+  const value = await example("team-project.example.json");
+  value.routing.roomResolution.evidence = ["entity-lookup", "entity-profile"];
+  assert(codes(value).has("ROOM_RESOLUTION_EVIDENCE"));
+});
+
+test("malformed room evidence produces findings instead of throwing", async () => {
+  for (const evidence of [{ source: "list-rooms" }, "list-rooms"]) {
+    const value = await example("team-project.example.json");
+    value.routing.roomResolution.evidence = evidence;
+    const result = codes(value);
+    assert(result.has("ROOM_RESOLUTION_EVIDENCE_TYPE"));
+    assert(result.has("ROOM_RESOLUTION_EVIDENCE"));
+  }
+});
+
+test("a resolved room requires a valid Matrix room ID", async () => {
+  for (const roomId of ["did:ixo:entity:not-a-room", "!x", "!x::", "!x:@", "!x:https://evil", "!x:\\evil", "!x:[:::]", "!x:[....]", "!x:[1:2:3:]", "!x:[1:2:3:4:5:6:7]", "!x:example.org:65536"]) {
+    const value = await example("team-project.example.json");
+    value.routing.roomResolution.roomId = roomId;
+    assert(codes(value).has("ROOM_RESOLUTION_ID"), roomId);
+  }
+});
+
+test("a valid bracketed IPv6 Matrix homeserver is accepted", async () => {
+  for (const roomId of ["!governance:[2001:db8::1]:8448", "!governance:[::ffff:127.0.0.1]", "!governance:[::]", "!governance:[::]:8448"]) {
+    const value = await example("team-project.example.json");
+    value.routing.roomResolution.roomId = roomId;
+    value.execution.hostContext.roomId = roomId;
+    const result = codes(value);
+    assert(!result.has("ROOM_RESOLUTION_ID"), roomId);
+    assert(!result.has("COMMIT_ROOM"), roomId);
+    assert(!result.has("COMMIT_ROOM_MATCH"), roomId);
+  }
+});
+
+test("ambiguous room or Domain resolution must preserve a real candidate picker", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "named-room",
+    status: "needs-user-choice",
+    evidence: ["list-rooms"],
+    candidates: [{ type: "room", label: "Design Studio", roomId: "!one:example.org" }],
+  };
+  assert(codes(value).has("ROOM_RESOLUTION_CHOICES"));
+});
+
+test("a verified multi-room picker is valid while clarification is pending", async () => {
+  const value = await example();
+  value.disposition = "clarify";
+  value.routing.roomResolution = {
+    target: "named-room",
+    status: "needs-user-choice",
+    evidence: ["list-rooms"],
+    candidates: [
+      { type: "room", label: "Design Studio", roomId: "!one:example.org" },
+      { type: "room", label: "Design Studio Archive", roomId: "!two:example.org" },
+    ],
+  };
+  assert(!codes(value).has("ROOM_RESOLUTION_CHOICES"));
+});
+
+test("room and Domain picker candidates must be well formed and distinct", async () => {
+  const value = await example();
+  value.disposition = "clarify";
+  value.routing.roomResolution = {
+    target: "named-room",
+    status: "needs-user-choice",
+    evidence: ["list-rooms"],
+    candidates: [
+      { type: "room", label: "Design Studio", roomId: "!same:example.org" },
+      { type: "room", label: "Design Studio duplicate", roomId: "!same:example.org" },
+      null,
+    ],
+  };
+  const result = codes(value);
+  assert(result.has("ROOM_RESOLUTION_CANDIDATE"));
+  assert(result.has("ROOM_RESOLUTION_DUPLICATE"));
+});
+
+test("a new Domain conversation room requires its target, proposal, and confirmation", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "named-domain",
+    status: "new-room-required",
+    domainDid: "did:ixo:entity:example",
+    evidence: ["entity-lookup"],
+    newRoomProposal: {
+      name: "Governance Studio",
+      parentDomainDid: "did:ixo:entity:example",
+      audience: "domain-default",
+      e2eeRequired: true,
+      federation: "domain-default",
+      roomCreatePermission: "verified",
+      confirmationRequired: false,
+    },
+  };
+  const result = codes(value);
+  assert(result.has("NEW_ROOM_TARGET"));
+  assert(result.has("NEW_ROOM_CONFIRMATION"));
+
+  delete value.routing.roomResolution.newRoomProposal;
+  assert(codes(value).has("NEW_ROOM_PROPOSAL"));
+});
+
+test("a new room proposal must remain bound to the resolved parent Domain", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "new-room-under-domain",
+    status: "new-room-required",
+    domainDid: "did:ixo:entity:resolved",
+    evidence: ["entity-lookup"],
+    newRoomProposal: {
+      name: "Governance Studio",
+      parentDomainDid: "did:ixo:entity:different",
+      audience: "domain-default",
+      e2eeRequired: true,
+      federation: "domain-default",
+      roomCreatePermission: "verified",
+      confirmationRequired: true,
+    },
+  };
+  assert(codes(value).has("NEW_ROOM_DOMAIN_MATCH"));
+});
+
+test("a new room proposal preserves audience, encryption, federation, and permission decisions", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "new-room-under-domain",
+    status: "new-room-required",
+    domainDid: "did:ixo:entity:resolved",
+    evidence: ["entity-lookup"],
+    newRoomProposal: {
+      name: "Governance Studio",
+      parentDomainDid: "did:ixo:entity:resolved",
+      confirmationRequired: true,
+    },
+  };
+  const missing = codes(value);
+  assert(missing.has("NEW_ROOM_AUDIENCE"));
+  assert(missing.has("NEW_ROOM_E2EE"));
+  assert(missing.has("NEW_ROOM_FEDERATION"));
+  assert(missing.has("NEW_ROOM_PERMISSION"));
+
+  Object.assign(value.routing.roomResolution.newRoomProposal, {
+    audience: "specified",
+    e2eeRequired: true,
+    federation: "disabled",
+    roomCreatePermission: "verified",
+  });
+  const resolved = codes(value);
+  assert(!resolved.has("NEW_ROOM_AUDIENCE"));
+  assert(!resolved.has("NEW_ROOM_E2EE"));
+  assert(!resolved.has("NEW_ROOM_FEDERATION"));
+  assert(!resolved.has("NEW_ROOM_PERMISSION"));
+});
+
+test("a blocked room resolution requires an actionable room failure code", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "named-domain",
+    status: "blocked",
+    evidence: ["entity-lookup"],
+  };
+  const result = codes(value);
+  assert(result.has("ROOM_BLOCKED_CODE"));
+
+  value.routing.roomResolution.blockedCode = "BLOCKED_ROOM_CREATION_UNAVAILABLE";
+  value.quality.blockers = [{
+    code: "BLOCKED_ROOM_UNRESOLVED",
+    reason: "The room remains unresolved.",
+  }];
+  assert(codes(value).has("ROOM_BLOCKED_CODE_MATCH"));
+
+  value.quality.blockers = [{
+    code: "BLOCKED_ROOM_CREATION_UNAVAILABLE",
+    reason: "No authorized conversation-room creation capability is available.",
+  }];
+  const resolved = codes(value);
+  assert(!resolved.has("ROOM_BLOCKED_CODE"));
+  assert(!resolved.has("ROOM_BLOCKED_CODE_MATCH"));
+});
+
+test("an unresolved named Domain exposes the room failure and cannot commit", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "named-domain",
+    status: "unresolved",
+    domainDid: "did:ixo:entity:governance",
+    evidence: ["entity-lookup"],
+  };
+  const result = codes(value);
+  assert(result.has("ROOM_UNRESOLVED_CODE"));
+  assert(result.has("ROOM_BLOCKED_CODE_MATCH"));
+
+  value.routing.roomResolution.blockedCode = "BLOCKED_ROOM_UNRESOLVED";
+  value.quality.blockers = [{
+    code: "BLOCKED_ROOM_UNRESOLVED",
+    reason: "The Domain is resolved, but no verified Matrix room is mapped to it.",
+  }];
+  const resolved = codes(value);
+  assert(!resolved.has("ROOM_UNRESOLVED_CODE"));
+  assert(!resolved.has("ROOM_BLOCKED_CODE_MATCH"));
+});
+
+test("a room that was not found fails closed with an actionable blocker", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "named-room",
+    status: "not-found",
+    requestedLabel: "Governance Studio",
+    evidence: ["list-rooms"],
+  };
+  const missing = codes(value);
+  assert(missing.has("ROOM_NOT_FOUND_CODE"));
+  assert(missing.has("ROOM_BLOCKED_CODE_MATCH"));
+
+  value.routing.roomResolution.blockedCode = "BLOCKED_ROOM_UNRESOLVED";
+  value.quality.blockers = [{
+    code: "BLOCKED_ROOM_UNRESOLVED",
+    reason: "No joined Topic-capable room matched the requested label.",
+  }];
+  const resolved = codes(value);
+  assert(!resolved.has("ROOM_NOT_FOUND_CODE"));
+  assert(!resolved.has("ROOM_BLOCKED_CODE_MATCH"));
+});
+
+test("commit requires the resolved room and a Kind-preserving host path", async () => {
+  const value = await example("team-project.example.json");
+  value.routing.roomResolution.status = "unresolved";
+  value.execution.hostContext.kindPreservingCreate = false;
+  const result = codes(value);
+  assert(result.has("COMMIT_ROOM_RESOLUTION"));
+  assert(result.has("COMMIT_KIND_HANDOFF"));
+});
+
+test("commit host room must match the resolved routing room", async () => {
+  const value = await example("team-project.example.json");
+  value.execution.hostContext.roomId = "!different:example.org";
+  assert(codes(value).has("COMMIT_ROOM_MATCH"));
+});
+
+test("commit rejects a room ID without a homeserver", async () => {
+  const value = await example("team-project.example.json");
+  value.execution.hostContext.roomId = "!x";
+  assert(codes(value).has("COMMIT_ROOM"));
+});
+
+test("a host known to drop Kind requires a structured non-commit failure", async () => {
+  const value = await example();
+  value.execution.hostContext.kindPreservingCreate = false;
+  assert(codes(value).has("KIND_HANDOFF_BLOCKED_CODE"));
+
+  value.quality.blockers = [{
+    code: "BLOCKED_KIND_HANDOFF_UNAVAILABLE",
+    reason: "The available Topic tool omits Kind and would default to Discussion.",
+  }];
+  const resolved = codes(value);
+  assert(!resolved.has("KIND_HANDOFF_BLOCKS_COMMIT"));
+  assert(!resolved.has("KIND_HANDOFF_BLOCKED_CODE"));
+});
+
+test("simultaneous room and Kind failures preserve both blockers", async () => {
+  const value = await example();
+  value.routing.roomResolution = {
+    target: "named-domain",
+    status: "unresolved",
+    domainDid: "did:ixo:entity:governance",
+    evidence: ["entity-lookup"],
+    blockedCode: "BLOCKED_ROOM_UNRESOLVED",
+  };
+  value.execution.hostContext.kindPreservingCreate = false;
+  value.quality.blockers = [
+    {
+      code: "BLOCKED_ROOM_UNRESOLVED",
+      reason: "No verified Matrix room is mapped to the selected Domain.",
+    },
+    {
+      code: "BLOCKED_KIND_HANDOFF_UNAVAILABLE",
+      reason: "The available Topic tool cannot preserve the selected Kind.",
+    },
+  ];
+  const result = codes(value);
+  assert(!result.has("ROOM_BLOCKED_CODE_MATCH"));
+  assert(!result.has("KIND_HANDOFF_BLOCKED_CODE"));
+});
+
+test("structured blockers require a supported distinct code and a reason", async () => {
+  const value = await example();
+  value.quality.blockers = [
+    { code: "BLOCKED_UNKNOWN", reason: "" },
+    { code: "BLOCKED_ROOM_UNRESOLVED", reason: "First reason." },
+    { code: "BLOCKED_ROOM_UNRESOLVED", reason: "Second reason." },
+  ];
+  const result = codes(value);
+  assert(result.has("BLOCKER"));
+  assert(result.has("DUPLICATE_BLOCKER"));
+});
+
+test("any active blocker makes the composition non-committable", async () => {
+  const value = await example("team-project.example.json");
+  value.quality.blockers = [{
+    code: "BLOCKED_AUTHORITY",
+    reason: "The required write authority has not been verified.",
+  }];
+  assert(codes(value).has("BLOCKERS_BLOCK_COMMIT"));
+
+  value.execution.commitEligible = false;
+  assert(!codes(value).has("BLOCKERS_BLOCK_COMMIT"));
+});
+
 test("host calls are bound to the Effective Shape digest", async () => {
   const value = await example("team-project.example.json");
   value.execution.proposedCalls[0].boundTo.shapeDigest = `sha256:${"0".repeat(64)}`;
@@ -477,6 +841,28 @@ test("contract schema exposes v4 Shape and singular claim fields without agents"
   assert.equal(schema.properties.setupObligations.type, "array");
   assert.equal(semantic.agents, undefined);
   assert.equal(semantic.recipe, undefined);
+});
+
+test("composition schema can represent generic and room-specific failure codes", async () => {
+  const schema = JSON.parse(await readFile(join(ROOT, "schemas/topic-composition.schema.json"), "utf8"));
+  assert.equal(schema.properties.quality.properties.blockers.items.$ref, "#/$defs/blocker");
+  assert.equal(schema.$defs.blocker.properties.code.$ref, "#/$defs/failureCode");
+  assert(schema.$defs.failureCode.enum.includes("BLOCKED_KIND_HANDOFF_UNAVAILABLE"));
+  assert(schema.$defs.failureCode.enum.includes("BLOCKED_ROOM_CREATION_UNAVAILABLE"));
+  const room = schema.properties.routing.properties.roomResolution;
+  assert(room.allOf.some((entry) => entry.then?.required?.includes("blockedCode")));
+  const resolvedRule = room.allOf.find((entry) => entry.if?.properties?.status?.const === "resolved");
+  assert(resolvedRule.then.properties.evidence.contains.enum.includes("list-rooms"));
+  assert(schema.allOf.some((entry) => entry.if?.properties?.quality?.properties?.blockers?.minItems === 1
+    && entry.then?.properties?.execution?.properties?.commitEligible?.const === false));
+  assert(schema.allOf.some((entry) => entry.if?.properties?.routing?.properties?.roomResolution?.properties?.status?.enum?.includes("new-room-required")
+    && entry.then?.properties?.execution?.properties?.commitEligible?.const === false));
+  const roomId = new RegExp(schema.$defs.matrixRoomId.pattern, "u");
+  assert(roomId.test("!governance:[2001:db8::1]:8448"));
+  assert(roomId.test("!governance:[::ffff:127.0.0.1]"));
+  assert(roomId.test("!governance:[::]"));
+  assert(!roomId.test("!x:[....]"));
+  assert(!roomId.test("!x:example.org:65536"));
 });
 
 test("keeps every unresolved setup authority choice visible as an obligation", async () => {

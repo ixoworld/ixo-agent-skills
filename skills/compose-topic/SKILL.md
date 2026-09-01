@@ -1,10 +1,10 @@
 ---
 name: compose-topic
-description: "Compose, route, validate, and safely stage a Topic Protocol v1 Draft from a person's intent. Use when creating or refining a Project, Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Topic; selecting a Base Recipe or pinned Topic Recipe; resolving the Effective Topic Shape; proposing explicit setup editors, confirmation, lifecycle, dispute, and optional assent policies; preparing Portal-compatible setup, canvas, claim, or Flow handoffs; or producing an idempotent Matrix host plan."
+description: "Compose, route, validate, and safely stage a Topic Protocol v1 Draft from a person's intent. Use when inferring the best-fit Project, Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Kind; resolving an exact Matrix room separately from a named Domain; selecting a Base Recipe or pinned Topic Recipe; resolving the Effective Topic Shape; proposing explicit setup, lifecycle, dispute, and assent policies; preparing Portal-compatible canvas, claim, or Flow handoffs; or producing an idempotent Matrix host plan."
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.1.0"
+  version: "3.2.0"
   category: collaboration
   topic-protocol: "1.0.0-rc.3"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -24,7 +24,8 @@ Before composing:
 1. Read [references/source-lock.json](references/source-lock.json).
 2. Read [references/topic-contract-profile.md](references/topic-contract-profile.md).
 3. Read [references/topic-recipe-selection.md](references/topic-recipe-selection.md).
-4. Select one canonical Kind and then read exactly its sub-skill:
+4. Read [references/room-resolution.md](references/room-resolution.md) when an exact current `roomId` is not supplied, the person names a room or Domain, or they may want a new room.
+5. Select one canonical Kind and then read exactly its sub-skill:
 
    - [Project](subskills/compose-topic-project/SKILL.md)
    - [Task](subskills/compose-topic-task/SKILL.md)
@@ -86,13 +87,15 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 22. A Project lead coordinates the plan and current blocker. Never treat the lead as a child-work owner, setup confirmer, milestone accepter, closer, or dispute resolver.
 23. Project Recipes may suggest milestones, child Kinds, and application entry-points. They never create a child, choose an actor, grant authority, invoke an application, create a repository, or deploy software.
 24. A linked child can satisfy only its Project obligation. Child completion, Action success, evaluation, settlement, and external tracker completion never close a Project.
+25. A Domain or Entity DID identifies context, not a Matrix room. Never pass a DID where a `!roomId` is required or claim that an entity lookup resolved a room.
+26. Never let a thin creation tool silently replace the selected Kind with `discussion`. Commit requires a host path that preserves the inferred Kind, Base Recipe, and Shape pins.
 
 ## Workflow
 
 ### 1. Pin and preflight
 
 - Run `node scripts/audit-skill.mjs --json` when scripts are available.
-- Use composition version `3.1.0`, Topic Protocol `1.0.0-rc.3`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.2.0`, Topic Protocol `1.0.0-rc.3`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Inventory real host capabilities. Do not assume a named tool exists.
 - Scan for secrets and excessive sensitive data.
 
@@ -104,7 +107,19 @@ Choose one disposition: `create`, `continue`, `branch`, `split`, `clarify`, or `
 
 Separate Topics when audience confidentiality, outcome, lifecycle, or authority differs. For `split`, compose only the first useful Topic and propose bounded children.
 
-### 3. Select one Kind
+### 3. Resolve the workspace boundary
+
+Resolve the intended audience and one exact Matrix room independently from entity context. A named Domain, organisation, or Entity DID is not a room selection.
+
+- Use the supplied current `roomId` only when the person clearly means “here” and its audience is appropriate.
+- When the person names a room, inspect joined conversation rooms and prefer an exact normalized name match. If several rooms remain plausible, show the candidates with their names and `!roomId` values and ask the person to choose.
+- When the person names a Domain, resolve the entity with bookmark-first ambiguity handling, then use an explicit Domain-to-room relationship supplied by the host. Entity profile data alone does not prove which room belongs to the Domain.
+- If no joined room is verified, offer a concise choice between suitable existing rooms and creating a new conversation room under the resolved Domain. Room creation is a separate confirmed side effect; it must return a real `!roomId` before Topic creation can continue.
+- Never substitute `create_page_room` or `create_template_room`; those allocate document/template rooms, not Topic-capable conversation rooms.
+
+Record the result in `routing.roomResolution`. Keep `execution.commitEligible: false` until the room is resolved, Matrix write permission is verified, and the host can preserve the selected Kind.
+
+### 4. Select one Kind
 
 Use the job the Topic must do:
 
@@ -117,14 +132,23 @@ Use the job the Topic must do:
 | assess evidence or choose by criteria | `evaluation` | `evaluation` |
 | organise claim evidence and evaluation binding | `claims` | `claims` |
 | investigate and answer | `question` | `research` |
-| deliberate without a formed plan or decision | `discussion` | `discussion` |
+| deliberately exchange views or align without a formed plan, decision, answer, approval, or deliverable | `discussion` | `discussion` |
 | contain and resolve an urgent failure | `incident` | `incident` |
+
+Infer the coordination job from the intended changed state, deliverable, lifecycle, and decision boundary together; do not classify from one verb or a generic noun such as “policy”, “governance”, or “topic”. A policy being drafted and put forward for approval is normally a `proposal`; comparing evidence or options before a judgment is an `evaluation`; implementing an already chosen policy is a `task` or `project` according to scope. `discussion` is never the fallback for uncertainty.
+
+Record the best guess and concise basis in `routing.kindInference`. When one Kind clearly dominates, select it even if some Draft fields remain unknown. When two or more Kinds would produce materially different starting structures and none dominates, either:
+
+- return `clarify` with one focused question and 2–4 concrete Kind-shaped choices, marking the recommended choice; or
+- provide a useful preview with the recommended Kind and visible alternatives when no write will occur.
+
+Do not instantiate until the selected Kind can reach the editor or host adapter without being discarded. If the only available creation tool omits Kind and would open a default Discussion, return `BLOCKED_KIND_HANDOFF_UNAVAILABLE` for commit while still showing the composed Draft.
 
 Read the matching sub-skill before producing Kind-specific fields. For a Project, then read [Software Build](subskills/compose-project-software-build/SKILL.md) or [Blueprint Design](subskills/compose-project-blueprint-design/SKILL.md) only when that Project Type is selected. Custom labels must extend exactly one canonical base Kind. `Thread` is a virtual Portal presentation and is never persisted as a Kind.
 
 For a Project, ask only the smallest unresolved questions: what exists when it is done; who leads it; the optional first named milestone; who may close it by accepting remaining risk; and, only when useful, who resolves a contested outcome. Outcome is required for a useful Draft. Lead is required for effectiveness. Closer is required only to enter closing. Never default any of them from creator, owner, room membership, or another authority.
 
-### 4. Select the recipe source
+### 5. Select the recipe source
 
 Always begin with the Kind's Base Recipe. Select a seed Topic Recipe only when the intent exactly matches its declared use case and base:
 
@@ -138,7 +162,7 @@ Do not search a Marketplace yet. Record `registryLookup: not-performed` and `reg
 
 Resolve the Effective Shape with the pinned protocol resolver. If the runtime cannot do so, use an exact entry from [references/topic-shape-pins.json](references/topic-shape-pins.json). If neither is available, emit `BLOCKED_SHAPE_SOURCE_UNAVAILABLE`; do not write.
 
-### 5. Compose an honest Draft
+### 6. Compose an honest Draft
 
 For a new Topic:
 
@@ -153,7 +177,7 @@ For a new Topic:
 
 For an existing Topic, require v4 plus the exact Topic revision, effective contract revision, proposed revision, body hash, policy digest, and Shape digest required by the operation. Editing creates a new proposed immutable body. It invalidates confirmations for that proposal but leaves the previous effective revision in force until its replacement becomes effective.
 
-### 6. Compose setup and authority explicitly
+### 7. Compose setup and authority explicitly
 
 Keep four decisions separate:
 
@@ -166,13 +190,13 @@ Keep four decisions separate:
 
 Do not emit `confirm-setup`, `record-assent`, withdrawal, dispute, or resolution operations. The host may offer them only after replay, revision binding, body and policy digest checks, Matrix permission, verified ability, and trusted-time validation.
 
-### 7. Preserve inference and consequence boundaries
+### 8. Preserve inference and consequence boundaries
 
 Only non-effecting inferred facts, summaries, and classifications may auto-accept, and only when the Effective Shape permits their record class. Contract, outcome, authority, Action, claim, evaluation, and settlement suggestions always remain proposed.
 
 Writing an allowed inferred record to shared Matrix Topic state is not itself an external effect. Invoking a Flow, issuing a credential, executing a transaction, publishing, paying, or settling is an external effect and requires its Action/Flow contract, authority, gates, and confirmation.
 
-### 8. Compose the Portal handoff
+### 9. Compose the Portal handoff
 
 The Portal owns the viewer-specific “Now” card. Do not author arbitrary lifecycle labels, status pills, “Needs you” copy, or hard-coded next actions.
 
@@ -188,16 +212,16 @@ The host must:
 
 Composition may suggest human-friendly first-turn copy and canvas blocks. It may not claim that any transition is legal or assigned to the viewer.
 
-### 9. Plan host calls safely
+### 10. Plan host calls safely
 
 - `execution.externalActions` is always empty.
 - Every proposed call has a unique idempotency key derived from `compositionId`.
-- Commit eligibility requires the room, actor, Matrix write permission, and every call's verified ability.
+- Commit eligibility requires a resolved room with direct room evidence, the actor, Matrix write permission, a Kind-preserving draft path, and every call's verified ability.
 - Create the root, accepted verbatim intent memory, canvas, proposed records, and v4 materialized projection through the host adapter.
 - Never issue credentials, invoke Actions, spend funds, or settle value during composition.
 - Never retry an uncertain root send by creating another root; recover using the same idempotency key.
 
-### 10. Validate
+### 11. Validate
 
 Run:
 
@@ -212,7 +236,7 @@ Also validate each nested sub-skill with the repository validator. Do not call t
 
 ## Clarification rule
 
-Ask at most one question before producing a useful preview, and only when confidentiality, Topic boundaries, irreversible scope, attribution to another person, or a required Shape source cannot be resolved safely. Otherwise compose immediately and label uncertainty.
+Ask at most one question before producing a useful preview. Ask when confidentiality, room identity, Topic boundaries, irreversible scope, attribution to another person, a required Shape source, or a genuinely ambiguous Kind would materially change the Draft. Prefer one compact picker that offers the best-supported choice first. Otherwise compose immediately, state the inferred Kind, and expose alternatives without defaulting to Discussion.
 
 ## Failure states
 
@@ -220,7 +244,10 @@ Ask at most one question before producing a useful preview, and only when confid
 - `BLOCKED_SHAPE_SOURCE_UNAVAILABLE`: a pinned Shape or recipe cannot be reproduced.
 - `BLOCKED_RECIPE_UNVERIFIED`: an unpinned Topic Recipe was requested.
 - `BLOCKED_KIND_PROFILE_UNAVAILABLE`: a requested Kind Profile or resource cannot be verified.
+- `BLOCKED_KIND_HANDOFF_UNAVAILABLE`: the host cannot preserve the selected Kind and would silently default the Draft.
 - `BLOCKED_CONFIDENTIALITY_BOUNDARY`: no suitable Matrix room can be resolved.
+- `BLOCKED_ROOM_UNRESOLVED`: a named Domain or room has not been mapped to one verified `!roomId`.
+- `BLOCKED_ROOM_CREATION_UNAVAILABLE`: the person chose a new Domain conversation room but no authorized conversation-room creation tool is available.
 - `BLOCKED_AUTHORITY`: Matrix write permission or required verified ability is absent.
 - `BLOCKED_STALE_REVISION`: Topic revision, contract revision, or Shape digest changed.
 - `BLOCKED_LEGACY_TOPIC`: the target does not use root/body/state version 4.
@@ -228,9 +255,11 @@ Ask at most one question before producing a useful preview, and only when confid
 - `PARTIAL_ROOT_CREATED`: the root exists but a later idempotent stage failed.
 - `PARTIAL_CANVAS`: the Topic and intent record exist but canvas initialisation failed.
 
+Preserve every active failure in `quality.blockers` as a distinct `{ code, reason }` entry. A room-resolution failure and a Kind-handoff failure can coexist; never overwrite one with the other.
+
 ## Machine output
 
-When structured output is requested, return only a valid `TopicComposition`. Do not wrap JSON in prose or expose private reasoning.
+When structured output is requested, return only a valid `TopicComposition`. Include `routing.kindInference`, `routing.roomResolution`, and `quality.blockers`; do not wrap JSON in prose or expose private reasoning.
 
 For interactive preview, render a calm Draft:
 
