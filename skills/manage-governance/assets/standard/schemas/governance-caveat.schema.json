@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ixo:governance:schema:governance-caveat:0.2.0",
+  "title": "Critical nb.gov application caveat",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "resolutionCid",
+    "proposalCid",
+    "decision",
+    "flow",
+    "grant",
+    "effective",
+    "authority",
+    "conditions"
+  ],
+  "properties": {
+    "profile": {
+      "const": "ixo-governance/0.2"
+    },
+    "resolutionCid": {
+      "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/cid"
+    },
+    "proposalCid": {
+      "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/cid"
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "coreAddress",
+        "proposalModuleAddress",
+        "proposalId"
+      ],
+      "properties": {
+        "chainId": {
+          "type": "string",
+          "pattern": "^[^\\s<>]+$"
+        },
+        "coreAddress": {
+          "type": "string",
+          "pattern": "^[^\\s<>]+$"
+        },
+        "proposalModuleAddress": {
+          "type": "string",
+          "pattern": "^[^\\s<>]+$"
+        },
+        "proposalId": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        }
+      }
+    },
+    "flow": {
+      "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/flow"
+    },
+    "grant": {
+      "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/grant"
+    },
+    "effective": {
+      "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/effective"
+    },
+    "authority": {
+      "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/authority"
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/condition"
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    }
+  }
+}
