@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ixo:governance:schema:decision-binding:0.2.0",
+  "title": "Unverified decision references; not approval evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resolutionCid",
+    "proposalCid",
+    "decision"
+  ],
+  "properties": {
+    "resolutionCid": {
+      "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/cid"
+    },
+    "proposalCid": {
+      "$ref": "urn:ixo:governance:schema:resolution:0.2.0#/$defs/cid"
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "coreAddress",
+        "proposalModuleAddress",
+        "proposalId"
+      ],
+      "properties": {
+        "chainId": {
+          "type": "string",
+          "pattern": "^[^\\s<>]+$"
+        },
+        "coreAddress": {
+          "type": "string",
+          "pattern": "^[^\\s<>]+$"
+        },
+        "proposalModuleAddress": {
+          "type": "string",
+          "pattern": "^[^\\s<>]+$"
+        },
+        "proposalId": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        }
+      }
+    }
+  }
+}

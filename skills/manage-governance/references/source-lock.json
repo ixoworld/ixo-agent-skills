@@ -1,0 +1,281 @@
+{
+  "skill": "manage-governance",
+  "skillVersion": "0.1.0",
+  "governanceProfile": "ixo-governance/0.2",
+  "inspectedAt": "2026-09-08",
+  "status": "Source observations only; runtime discovery and deployment checks still required",
+  "integrationSources": [
+    {
+      "repository": "https://github.com/ixoworld/qiforge",
+      "commit": "1edf5582a3d55ffb6754089c7925dd4c36b7bc56",
+      "files": [
+        {
+          "path": "packages/oracle-runtime/src/plugins/skills/skills.plugin.ts",
+          "sha256": "1c6b3b93f190be7d1ebbf2aefbfdf90ce51fedbbb1e7f7352641741c5618222d",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/qiforge/blob/1edf5582a3d55ffb6754089c7925dd4c36b7bc56/packages/oracle-runtime/src/plugins/skills/skills.plugin.ts"
+        },
+        {
+          "path": "packages/oracle-runtime/src/plugins/skills/skills-tools.ts",
+          "sha256": "5387a63db7f04d1592a018bb09859a61e8419e3c34f79d3d90c8fe9b3232f38a",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/qiforge/blob/1edf5582a3d55ffb6754089c7925dd4c36b7bc56/packages/oracle-runtime/src/plugins/skills/skills-tools.ts"
+        },
+        {
+          "path": "packages/oracle-runtime/src/plugins/sandbox/sandbox.plugin.ts",
+          "sha256": "3ea9c93a1853641e63683f1dceee83fc7a93f2db6cffc8ddd198207da2376607",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/qiforge/blob/1edf5582a3d55ffb6754089c7925dd4c36b7bc56/packages/oracle-runtime/src/plugins/sandbox/sandbox.plugin.ts"
+        },
+        {
+          "path": "packages/oracle-runtime/src/plugins/portal/portal.plugin.ts",
+          "sha256": "10621f2a16270eb3a6864fc5519fbf15acb997966ba593a32f03536f44f6ee3a",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/qiforge/blob/1edf5582a3d55ffb6754089c7925dd4c36b7bc56/packages/oracle-runtime/src/plugins/portal/portal.plugin.ts"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/ixoworld/ixo-portal",
+      "commit": "0056a4f0db33e3ab8547c5e561e49f6ddeca562a",
+      "files": [
+        {
+          "path": "lib/companion-tools/topicTools.ts",
+          "sha256": "c5b288590915d5e074c771f361f3000d61f39cf1e8b3263d1511b17e2ec6a1bc",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/0056a4f0db33e3ab8547c5e561e49f6ddeca562a/lib/companion-tools/topicTools.ts"
+        },
+        {
+          "path": "lib/companion-tools/openSurveyTools.ts",
+          "sha256": "c265493975e9af5d55450c1420031dc20366e41795bf1ff5c30fb3196c514f99",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/0056a4f0db33e3ab8547c5e561e49f6ddeca562a/lib/companion-tools/openSurveyTools.ts"
+        },
+        {
+          "path": "lib/claims/vfsClaimMedia.ts",
+          "sha256": "e1154d802d7caa6d06484d55b669414216aa843949f0167d490ab30350b4b60d",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/0056a4f0db33e3ab8547c5e561e49f6ddeca562a/lib/claims/vfsClaimMedia.ts"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/ixoworld/ai-skills",
+      "commit": "acfbd09f46faabe976494781814bad09d683fe05",
+      "files": [
+        {
+          "path": "src/schemas/capsule.ts",
+          "sha256": "4ad327c9559be4fa657c6ac01f5c1c1a2ef6f29993a86491fc71073287ab03fc",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ai-skills/blob/acfbd09f46faabe976494781814bad09d683fe05/src/schemas/capsule.ts"
+        },
+        {
+          "path": "src/utils/tar.ts",
+          "sha256": "835d2fdcc05e24d03193ee7bb4ebe4d7d740d01b1dd562aa7fe471e9d6c2e7b4",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ai-skills/blob/acfbd09f46faabe976494781814bad09d683fe05/src/utils/tar.ts"
+        },
+        {
+          "path": "src/utils/cid.ts",
+          "sha256": "90e75c0e7ee3fdfaf596a4a6c32d8bc061a0f4c798ce8fdf4931e01266e78a39",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ai-skills/blob/acfbd09f46faabe976494781814bad09d683fe05/src/utils/cid.ts"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/ixoworld/ixo-portal",
+      "branch": "feature/daodao-v271-upgrade",
+      "commit": "86797e5a81bffc4b001580eb12f86275de464de3",
+      "role": "DAO DAO compatibility source, not runtime deployment attestation",
+      "sdkVersion": "3.1.0",
+      "files": [
+        {
+          "path": "lib/daodao/contractVersions.ts",
+          "sha256": "1ab833b32d4e6790bb077dbbc1ac7939917b2cefc1b0364fa23d7740ca00825e",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/contractVersions.ts"
+        },
+        {
+          "path": "lib/daodao/resolveDaoVersion.ts",
+          "sha256": "e11a2fb9e80bb0e4d058902b93a32eef5afbecbfba42168cb69df3945cd019e4",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/resolveDaoVersion.ts"
+        },
+        {
+          "path": "lib/daodao/daoContractAddresses.ts",
+          "sha256": "b0d6f961d951fff513ce877f354f6687accd0b9d5543200d364e1cb9a83118b9",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/daoContractAddresses.ts"
+        },
+        {
+          "path": "lib/daodao/shapes.ts",
+          "sha256": "68b6d3bc3fc64f1efa664db692842c9573f41450868b04c4f1040e3f1f544a0c",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/shapes.ts"
+        },
+        {
+          "path": "lib/daodao/autoVote.ts",
+          "sha256": "b417b9af637e95765ffaab78111763f66e252eeeba5d587a060f64850f7333dc",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/autoVote.ts"
+        },
+        {
+          "path": "lib/daodao/approval.ts",
+          "sha256": "172cec2219dcf3997fc7d5381426066a858ae0ff6f3a21f9d0256ec2dcb6c2e8",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/approval.ts"
+        },
+        {
+          "path": "lib/daodao/delegation.ts",
+          "sha256": "98e909fcb97d63b90eb5d755f381451afe2afee4edf126122d57fad4dfddd0ee",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/delegation.ts"
+        },
+        {
+          "path": "lib/daodao/governanceConfig.ts",
+          "sha256": "bdc32d66a36dbdba6b5715e1155af784847405523188599c6df16494e3f0273a",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/governanceConfig.ts"
+        },
+        {
+          "path": "lib/daodao/planDaoUpgrade.ts",
+          "sha256": "ea5f512359629fd3c6fe4a2bde835e693a0da2b64764014e7a6292210d4950d9",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/planDaoUpgrade.ts"
+        },
+        {
+          "path": "lib/daodao/buildDaoUpgradeMessages.ts",
+          "sha256": "334f691510abb3f6ee33fffaa04d557bbd86e60ba808e0283281824d82a0900c",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/daodao/buildDaoUpgradeMessages.ts"
+        },
+        {
+          "path": "lib/blocknote/handlers.ts",
+          "sha256": "187efd6b9aa0faf35ab36eae89a42ce1b39c286fe0a0190adb49cdfc668e30c7",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/blocknote/handlers.ts"
+        },
+        {
+          "path": "lib/blocknote/transformActionsToMsgs.ts",
+          "sha256": "8dc2e04b314ec850007c677641f6b5db0e8e0de9b38c7469bfbf458630e02a10",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/lib/blocknote/transformActionsToMsgs.ts"
+        },
+        {
+          "path": "packages/editor/src/core/lib/actionRegistry/actions/governance/approval.ts",
+          "sha256": "dd81e345c31d36db836b5bd68a88bddc4ec83de309650dc797af7a8b25188036",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/packages/editor/src/core/lib/actionRegistry/actions/governance/approval.ts"
+        },
+        {
+          "path": "packages/editor/src/core/lib/actionRegistry/actions/governance/daoUnpause.ts",
+          "sha256": "1f0ad6136679cdcca899340ed027b2a12450bfef1c9708f980875008167262c2",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/packages/editor/src/core/lib/actionRegistry/actions/governance/daoUnpause.ts"
+        },
+        {
+          "path": "packages/editor/src/mantine/blocks/proposal/proposalStatus.ts",
+          "sha256": "f2fdd43c078b8b5605dcf54643e2242a3b08d9e5289608fd8a7aa45ed132128a",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/packages/editor/src/mantine/blocks/proposal/proposalStatus.ts"
+        },
+        {
+          "path": "packages/editor/docs/action-types/daodao-v271-compatibility.md",
+          "sha256": "867654289c70bd308a7854eadd0ef686b713ada24765d261f16aef62d7a65a95",
+          "matchesCommit": true,
+          "sourceUrl": "https://github.com/ixoworld/ixo-portal/blob/86797e5a81bffc4b001580eb12f86275de464de3/packages/editor/docs/action-types/daodao-v271-compatibility.md"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/DA0-DA0/dao-contracts",
+      "tag": "v2.7.1",
+      "commit": "92c44e593e6a0677a437e028514ce207efbd4d66",
+      "files": [
+        {
+          "path": "contracts/proposal/dao-proposal-multiple/src/contract.rs",
+          "sha256": "93bf0f82edd27071052039b4db8befdfb2dcbf06dc79e27966adb1c80a84f165",
+          "sourceUrl": "https://github.com/DA0-DA0/dao-contracts/blob/92c44e593e6a0677a437e028514ce207efbd4d66/contracts/proposal/dao-proposal-multiple/src/contract.rs"
+        },
+        {
+          "path": "contracts/proposal/dao-proposal-multiple/src/proposal.rs",
+          "sha256": "a2df0040d63fd95e2a73944e76203037d876b98665f74c30e45f582e248863f1",
+          "sourceUrl": "https://github.com/DA0-DA0/dao-contracts/blob/92c44e593e6a0677a437e028514ce207efbd4d66/contracts/proposal/dao-proposal-multiple/src/proposal.rs"
+        },
+        {
+          "path": "packages/dao-voting/src/status.rs",
+          "sha256": "8f7335b0ead33433648ce518f4502237f2330fb256227214d67d9c8be71ad464",
+          "sourceUrl": "https://github.com/DA0-DA0/dao-contracts/blob/92c44e593e6a0677a437e028514ce207efbd4d66/packages/dao-voting/src/status.rs"
+        },
+        {
+          "path": "packages/dao-voting/src/veto.rs",
+          "sha256": "bed200144fce554ea5fafe927c74e205592d40b5df8994c2a00010ab3829c745",
+          "sourceUrl": "https://github.com/DA0-DA0/dao-contracts/blob/92c44e593e6a0677a437e028514ce207efbd4d66/packages/dao-voting/src/veto.rs"
+        }
+      ]
+    }
+  ],
+  "standardFiles": [
+    {
+      "source": "LICENSE",
+      "bundled": "assets/standard/LICENSE",
+      "sha256": "fff5f26186c9146196d849154c80b48826b30a92f5994769934d416a14c58689"
+    },
+    {
+      "source": "specs/GRS-001-governed-flow-authorisation.md",
+      "bundled": "assets/standard/specs/GRS-001-governed-flow-authorisation.md",
+      "sha256": "952983b6cd1efa25561b4e2051986934092fd840b5b41f63047c44827a81cfb5"
+    },
+    {
+      "source": "specs/GRS-002-daodao-module-compatibility.md",
+      "bundled": "assets/standard/specs/GRS-002-daodao-module-compatibility.md",
+      "sha256": "2199c8dcbb6cd6a0a979d9eb9ef2cffe78f84563913df10b1d0a4a733b31f4bf"
+    },
+    {
+      "source": "schemas/resolution.schema.json",
+      "bundled": "assets/standard/schemas/resolution.schema.json",
+      "sha256": "7b61f282ef91b714bb01c4d0c10267e8f0d84bc0085a0766555fbe74347dd36e"
+    },
+    {
+      "source": "schemas/decision-binding.schema.json",
+      "bundled": "assets/standard/schemas/decision-binding.schema.json",
+      "sha256": "34f9ec3c1ca3dac9858a952e4f8d0be691636e1a28545f0966a4fbc7154035a3"
+    },
+    {
+      "source": "schemas/governance-caveat.schema.json",
+      "bundled": "assets/standard/schemas/governance-caveat.schema.json",
+      "sha256": "7c8ecda226f9f1427b4de2de7f974f9dabcc4c6be9606daf4fe177974508dbba"
+    },
+    {
+      "source": "templates/proposal-template.md",
+      "bundled": "assets/standard/templates/proposal-template.md",
+      "sha256": "c3d7c80791775b99cf3312fa9fd04cc9187ed2f30327e1f70a94706a0fcef921"
+    },
+    {
+      "source": "templates/annex-templates.md",
+      "bundled": "assets/standard/templates/annex-templates.md",
+      "sha256": "1742be0a8ef63de0e4d92f906870596cd3a0624eeb7705575a6f47cee07b44c9"
+    },
+    {
+      "source": "templates/submission-outcome-template.md",
+      "bundled": "assets/standard/templates/submission-outcome-template.md",
+      "sha256": "18ca2ba9530bf6ede1ff836a69182db00d4f9c3642736887c38f99710c78516f"
+    },
+    {
+      "source": "guides/proposal-publication.md",
+      "bundled": "assets/standard/guides/proposal-publication.md",
+      "sha256": "9466ef742aa4bedabd925ed5634546e21f53eccd9b27c5a59f21fcfd26f15921"
+    },
+    {
+      "source": "guides/compatibility.md",
+      "bundled": "assets/standard/guides/compatibility.md",
+      "sha256": "96679ed60d4bab0bbfa390dfafe0d32c44c26f191c0a7a302bb16137733c9867"
+    },
+    {
+      "source": "guides/conformance.md",
+      "bundled": "assets/standard/guides/conformance.md",
+      "sha256": "cffb705abbbca15e7b20353984e567208e5d330dea22551b438c42b54d56adda"
+    }
+  ]
+}
