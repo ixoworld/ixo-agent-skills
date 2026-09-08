@@ -8,6 +8,8 @@ Start a working Draft even if authority or budget is unresolved. Use a stable pr
 
 Resolve where work belongs. Prefer an existing matching Topic. Use a Proposal Topic for preparing something for approval, an Evaluation Topic for comparing evidence, and Claims work for later assertions. Follow the current Topic contract through its host; do not invent a new Topic Kind or treat Topic setup assent as DAO approval. Private intent must not silently become shared room content.
 
+For “fund the developers with a USDC 5,000 grant”, retain that amount, denomination and named beneficiary as the requested decision. The governing group, legal recipient/account, token network and denomination/address, funding source, authorised actor, conditions and decision rules remain unknown until sourced. Proposed objectives are suggestions, not explicit user requirements. Do not turn the Domain DID into a signatory, invent a one-signatory threshold, or substitute a Topic assent policy for the governing mandate. An honest inline governance Draft is useful even when a full Topic handoff cannot yet be staged.
+
 ## Build the seven-section core
 
 Use the bundled template, aiming for about two pages before annexes:

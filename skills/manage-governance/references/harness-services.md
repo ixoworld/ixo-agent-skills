@@ -24,6 +24,27 @@ The skill is instructions consumed by the oracle. Its sandbox files have no dire
 
 ## Service-specific boundaries
 
+### Topic drafts and visible UI
+
+Read the operation's actual result before describing its outcome. Tool invocation, transport completion, a step labelled complete, and an agent's own narration do not establish success. If a wrapper returns a JSON string, inspect its decoded result; an error string or schema rejection remains a failure even if the wrapper completed normally. Never repeat a tool result's instruction to announce success when its evidence or the user's observation contradicts it.
+
+Use the strongest state actually supported:
+
+| Evidence | What can be reported |
+| --- | --- |
+| Search metadata only | Skill found; instructions not yet loaded/read |
+| Schema rejection, `success: false`, or tool error | Staging failed; preserve a local Draft and address the reported incompatibility |
+| Store update or optimistic `draft-opened-for-review` / `composition-staged-for-review` response | Portal reports that opening/staging was requested; visibility is unconfirmed without a renderer acknowledgement, current UI observation, or user confirmation |
+| Matching editor visibly rendered or acknowledged by the renderer for this operation/target | Topic Draft available for review; report its actual surface and controls, not an invented room card |
+| Host creation receipt and matching Topic read-back | Topic created; no DAO proposal submission or vote is implied |
+| Verified chain submission and matching proposal read-back | Governance proposal submitted, with the exact chain/module/proposal binding |
+
+In inspected Portal source, `propose_topic` calls `openTopicModal` and immediately returns `draft-opened-for-review`; it does not await a rendered editor. The room names the destination, not proof of a card posted into its timeline. A tool's optimistic note is insufficient to say “you should now see it”, especially after the user reports no draft. Acknowledge the discrepancy, retract the unsupported claim, preserve the draft in the conversation and inspect declared editor/status/read-back capabilities. If none can confirm rendering, identify the host UI handoff as unresolved. Do not repeatedly stage or switch to a legacy tool merely to obtain a success label; reconcile any existing edit session first and do not bypass validation, revision, or duplicate checks.
+
+Use only current schemas and verified protocol/recipe/Shape bindings. Load the available `compose-topic` instructions when composing its full handoff. Do not fill required hashes with zeroes, use the empty-content hash as a Shape digest, invent profile IDs, label an unreviewed recipe vetted, or set duplicate overrides without the required user choice. A schema error is diagnostic evidence, not permission to fabricate values until validation passes. If the declared path cannot represent an incomplete proposal honestly, retain an inline Draft and name the missing binding.
+
+Topic Create, accepting a suggestion, and Topic setup assent concern coordination. They do not submit a DAO DAO proposal, cast a vote, approve a grant, or authorise a payment. Only describe a button and its effect when the current host contract or UI establishes them; do not invent an “Accept Draft” voting step.
+
 VFS publication requires both integrity and availability. Read the upload response, compare retrieved bytes, retain namespace/access context, and check representative eligible-voter retrieval through an authorised test or attestation. Do not impersonate voters. A CID or shareable-looking URL is not permission.
 
 Claim bodies and attachments use the collection's currently supported protected transport. Inspected Portal source includes a VFS claims evidence lane `/.claims/<collectionId>` under the owning entity, with collection-scoped authorisation, and recognises existing claims-bot media references. Do not move claim bodies or evidence to ordinary `/governance` storage just to get a CID. Use the declared claims adapter to choose the correct transport, retaining namespace and access requirements. Do not add Cellnode fallback. Do not assume a source feature is deployed in the current oracle.
