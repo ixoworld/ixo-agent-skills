@@ -1,5 +1,5 @@
 {
-  "version": "3.2.1",
+  "version": "3.3.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77704",
   "mode": "preview",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.3",
+    "topicProtocolVersion": "1.0.0-rc.4",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "482139c37eed86387a7ff2609a8672c4216e28f4",
-    "packageShasum": "74bd726618060b507243ae5c6fa2493a8948f755",
+    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
+    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -56,10 +56,10 @@
       "baseRecipe": "research",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:589cc7c3ccc530d09b5671f04e39245ea69f87fcb13dbaece11f14f86ae6f636"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
       },
-      "shapeDigest": "sha256:8259fde8fb17c82980aa437a5a677b72e490e6115a218c9f49dfda28345a6c63",
+      "shapeDigest": "sha256:d586f6c131e1b748fcc3eba6dfabba23cbd22059d579e0b9a8c75d6578a56d26",
       "context": [],
       "overview": {
         "summary": "Research accessible measurement methods, costs, constraints, and evidence quality.",
@@ -79,8 +79,8 @@
     "topicRecipeCode": "research-brief",
     "topicRecipeRef": {
       "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-      "version": "1.0.0-rc.3",
-      "digest": "sha256:589cc7c3ccc530d09b5671f04e39245ea69f87fcb13dbaece11f14f86ae6f636"
+      "version": "1.0.0-rc.4",
+      "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
     },
     "registryLookup": "not-performed",
     "registryReason": "pinned-catalog-only",
@@ -89,23 +89,23 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/research",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:eb13629d2118b223ab03ddcc52fc6fd94e70c646552de0a2cce01f2615e06075"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/question",
-        "version": "1.0.0-rc.3",
+        "version": "1.0.0-rc.4",
         "digest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b"
       },
       {
         "kind": "topic-recipe",
         "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:589cc7c3ccc530d09b5671f04e39245ea69f87fcb13dbaece11f14f86ae6f636"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
       }
     ],
-    "shapeDigest": "sha256:8259fde8fb17c82980aa437a5a677b72e490e6115a218c9f49dfda28345a6c63"
+    "shapeDigest": "sha256:d586f6c131e1b748fcc3eba6dfabba23cbd22059d579e0b9a8c75d6578a56d26"
   },
   "contractDraft": {
     "envelope": {
@@ -123,30 +123,30 @@
       "baseRecipe": "research",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:589cc7c3ccc530d09b5671f04e39245ea69f87fcb13dbaece11f14f86ae6f636"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
       },
       "shapeSources": [
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/research",
-          "version": "1.0.0-rc.3",
-          "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
+          "version": "1.0.0-rc.4",
+          "digest": "sha256:eb13629d2118b223ab03ddcc52fc6fd94e70c646552de0a2cce01f2615e06075"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/question",
-          "version": "1.0.0-rc.3",
+          "version": "1.0.0-rc.4",
           "digest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b"
         },
         {
           "kind": "topic-recipe",
           "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-          "version": "1.0.0-rc.3",
-          "digest": "sha256:589cc7c3ccc530d09b5671f04e39245ea69f87fcb13dbaece11f14f86ae6f636"
+          "version": "1.0.0-rc.4",
+          "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
         }
       ],
-      "shapeDigest": "sha256:8259fde8fb17c82980aa437a5a677b72e490e6115a218c9f49dfda28345a6c63",
+      "shapeDigest": "sha256:d586f6c131e1b748fcc3eba6dfabba23cbd22059d579e0b9a8c75d6578a56d26",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77741",
         "text": "Research whether smallholder farmers can access affordable soil carbon measurement in Kenya.",

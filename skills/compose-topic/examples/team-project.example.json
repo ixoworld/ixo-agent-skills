@@ -1,5 +1,5 @@
 {
-  "version": "3.2.1",
+  "version": "3.3.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702",
   "mode": "commit",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.3",
+    "topicProtocolVersion": "1.0.0-rc.4",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "482139c37eed86387a7ff2609a8672c4216e28f4",
-    "packageShasum": "74bd726618060b507243ae5c6fa2493a8948f755",
+    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
+    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -38,7 +38,9 @@
       "status": "resolved",
       "roomId": "!product-team:matrix.ixo.world",
       "roomName": "Product team",
-      "evidence": ["current-context"]
+      "evidence": [
+        "current-context"
+      ]
     }
   },
   "interpretation": {
@@ -56,7 +58,7 @@
       "kind": "project",
       "status": "draft",
       "baseRecipe": "project",
-      "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7",
+      "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1",
       "context": [
         {
           "type": "ixo.domain",
@@ -85,17 +87,17 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/project",
-        "version": "1.0.0-rc.3",
+        "version": "1.0.0-rc.4",
         "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/project",
-        "version": "1.0.0-rc.3",
+        "version": "1.0.0-rc.4",
         "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
       }
     ],
-    "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
+    "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1"
   },
   "contractDraft": {
     "envelope": {
@@ -115,17 +117,17 @@
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/project",
-          "version": "1.0.0-rc.3",
+          "version": "1.0.0-rc.4",
           "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/project",
-          "version": "1.0.0-rc.3",
+          "version": "1.0.0-rc.4",
           "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
         }
       ],
-      "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7",
+      "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1",
       "timezone": "Asia/Singapore",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77721",
@@ -329,7 +331,7 @@
         "requiredAbility": "topic/create",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:topic-create",
         "boundTo": {
-          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
+          "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1"
         }
       },
       {
@@ -341,7 +343,7 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:canvas",
         "boundTo": {
-          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
+          "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1"
         }
       },
       {
@@ -353,7 +355,7 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:projection",
         "boundTo": {
-          "shapeDigest": "sha256:721e12fd31eba32a485e84b6ac0fc6784bb36b868bde1a2fffe7b37d7867f5a7"
+          "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1"
         }
       }
     ],

@@ -48,3 +48,7 @@ The evaluation kit is the governed IXO protocol entity containing constitutional
 When a claim collection is involved, bind one `entityDid` and one `collectionId`. Resolve protocol DID and rubric as read-only evidence. The entity controller's delegation to the evaluation service and oracle is the authorization source; a Topic role is not.
 
 If the evaluation adapter is unavailable, expose the verification phase and navigate to the linked Flow/resource rather than inventing an evaluation result.
+
+## rc.4 lifecycle contract
+
+The standard Evaluation Shape includes an executable verification transition. After work submission, require an accepted `ixo.evaluation` record with status `verified` and independently verified `claim/evaluate` authority. A reviewer label alone does not grant that capability. Failure leaves the verification obligation open.

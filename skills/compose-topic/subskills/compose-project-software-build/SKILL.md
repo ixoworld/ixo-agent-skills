@@ -27,3 +27,7 @@ Repository, release, deployment, and production actions retain their own
 authority and confirmation gates. Software completion and external issue
 completion can make a child obligation or handoff ready; neither closes the
 Project.
+
+## rc.4 lifecycle contract
+
+The seed recipe provides user-defined milestones and accepted delivery evidence. It does not automatically create a repository, enforce CI, or verify deployment. Configure and verify those bindings explicitly.

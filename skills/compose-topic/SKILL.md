@@ -1,12 +1,12 @@
 ---
 name: compose-topic
-description: "Compose, route, validate, and safely stage a Topic Protocol v1 Draft from a person's intent. Use when inferring the best-fit Project, Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Kind; resolving an exact Matrix room separately from a named Domain; selecting a Base Recipe or pinned Topic Recipe; resolving the Effective Topic Shape; proposing explicit setup, lifecycle, dispute, and assent policies; preparing Portal-compatible canvas, claim, or Flow handoffs; or producing an idempotent Matrix host plan."
+description: "Compose, route, validate, and safely stage a Topic Protocol Draft from a person's intent. Use when inferring the best-fit Project, Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Kind; resolving an exact Matrix room separately from a named Domain; selecting a Base Recipe or pinned Topic Recipe; resolving the Effective Topic Shape; proposing explicit setup, lifecycle, dispute, and assent policies; preparing Portal-compatible canvas, claim, or Flow handoffs; or producing an idempotent Matrix host plan."
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.2.1"
+  version: "3.3.0"
   category: collaboration
-  topic-protocol: "1.0.0-rc.3"
+  topic-protocol: "1.0.0-rc.4"
   topic-contract-profile: qi.topic-contract-state/v4
   profile-status: normative
 ---
@@ -18,6 +18,8 @@ Turn a person's intention into the smallest useful Topic Draft that people and a
 The skill composes; the Topic Protocol resolves and projects; the Portal presents and commits. Do not duplicate those responsibilities.
 
 For ordinary conversation in an existing shared Topic, discover `facilitate-topic` when it is available. Do not re-run creation or demand a structured refinement for every reply. Return to this skill when there is a concrete new Topic or revision proposal to compose.
+
+This package targets an unpublished rc.4 candidate. Validate the bundled artifact and source lock before staging a composition. Preserve existing rc.3 Topic pins during refinement.
 
 ## Load the controlled model
 
@@ -45,7 +47,7 @@ The pinned release candidate is the authority. Do not silently substitute a reme
 
 ## Output contract
 
-Return a `TopicComposition` conforming to [schemas/topic-composition.schema.json](schemas/topic-composition.schema.json). For a field-level edit to an existing Topic, return a `TopicRefineChangeSet` conforming to [schemas/topic-refine-change-set.schema.json](schemas/topic-refine-change-set.schema.json).
+Return a `TopicComposition` conforming to [schemas/topic-composition.schema.json](schemas/topic-composition.schema.json). For a fully bound field-level edit to an existing Topic, return a `TopicRefineChangeSet` conforming to [schemas/topic-refine-change-set.schema.json](schemas/topic-refine-change-set.schema.json). When host bindings or review obligations remain unresolved, return the non-executable `TopicRefinePreview` described below.
 
 The output separates:
 
@@ -97,7 +99,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 ### 1. Pin and preflight
 
 - Run `node scripts/audit-skill.mjs --json` when scripts are available.
-- Use composition version `3.2.1`, Topic Protocol `1.0.0-rc.3`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.3.0`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Inventory real host capabilities. Do not assume a named tool exists.
 - Scan for secrets and excessive sensitive data.
 
@@ -269,7 +271,7 @@ Preserve every active failure in `quality.blockers` as a distinct `{ code, reaso
 
 ## Machine output
 
-When structured output is requested, return only a valid `TopicComposition`. Include `routing.kindInference`, `routing.roomResolution`, and `quality.blockers`; do not wrap JSON in prose or expose private reasoning.
+For a new Topic, structured output is a valid `TopicComposition` with `routing.kindInference`, `routing.roomResolution`, and `quality.blockers`. For an existing Topic, return a `TopicRefineChangeSet` only after all current host bindings are verified. Otherwise return a `TopicRefinePreview` matching [schemas/topic-refine-preview.schema.json](schemas/topic-refine-preview.schema.json). A preview is private, non-executable, and must never be submitted to the staging API. Do not wrap JSON in prose or expose private reasoning.
 
 For interactive preview, render a calm Draft:
 

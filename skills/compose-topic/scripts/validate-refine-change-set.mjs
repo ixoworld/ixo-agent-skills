@@ -97,7 +97,7 @@ export function validateRefineChangeSet(value) {
     "/changes",
     "must contain at least one semantic change",
   );
-  for (const [index, change] of (value.changes ?? []).entries()) {
+  for (const [index, change] of (Array.isArray(value.changes) ? value.changes : []).entries()) {
     const path = `/changes/${index}`;
     if (!isObject(change)) {
       findings.push(finding("CHANGE_OBJECT", path, "must be an object"));
