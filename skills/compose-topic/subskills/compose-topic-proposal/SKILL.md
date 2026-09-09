@@ -46,3 +46,7 @@ Ask what will be proposed, who is responsible for producing it, who must confirm
 The Base Recipe supports forming and working. If the use case needs formal verification, decision, effect, or settlement axes, use a verified Topic Recipe or Shape overlay supplied by the host; do not invent one.
 
 Approval of an external Action must be handled by the linked Flow/Action contract, not by embedding effect terms in the Topic body.
+
+## rc.4 lifecycle contract
+
+After submitted work, record the governance decision through `topic.record-decision` and `topic/record-decision`. The accepted `ixo.topic.proposal-decision` evidence has status `recorded`. Preserve rejection or deferral in the result. This completes the decision-recording axis without fabricating approval, execution, payment, or Topic completion.

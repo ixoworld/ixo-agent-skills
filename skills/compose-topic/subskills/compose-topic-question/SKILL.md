@@ -48,3 +48,7 @@ Ask the primary question, the expected answer or brief, who will review the answ
 A summary is not verified merely because an agent produced it. Preserve citations and provenance. When `research-brief` is selected, verification must be represented by the Shape's accepted evaluation/evidence record.
 
 An answered question or verified brief still requires the Shape's Topic completion transition.
+
+## rc.4 lifecycle contract
+
+After work submission, `topic.record-verification` requires an accepted `ixo.topic.answer-acceptance` record with status `accepted` from the assigned completion authority using `topic/accept-answer`. The `research-brief` recipe first requires source verification through `ixo.evaluation` with status `verified`. Both axes must finish before explicit Topic completion.

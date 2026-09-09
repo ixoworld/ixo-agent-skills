@@ -30,3 +30,7 @@ A completed Yoma blueprint is a Project artifact. It is not an effective Deed,
 deployed service, production action, or operational proof. Blueprint close
 requires independent-review evidence plus the closer's explicit acceptance of
 remaining risk.
+
+## rc.4 lifecycle contract
+
+The seed recipe pins a design method and requires independent-review evidence at close. It does not implement the complete Design POD workflow merely because its label says Blueprint Design.

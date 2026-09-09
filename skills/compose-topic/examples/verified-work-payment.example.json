@@ -1,5 +1,5 @@
 {
-  "version": "3.2.1",
+  "version": "3.3.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77705",
   "mode": "preview",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.3",
+    "topicProtocolVersion": "1.0.0-rc.4",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "482139c37eed86387a7ff2609a8672c4216e28f4",
-    "packageShasum": "74bd726618060b507243ae5c6fa2493a8948f755",
+    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
+    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -56,10 +56,10 @@
       "baseRecipe": "claims",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:39e4821728caef116b639be135c04aae8cd462d730b7bc4881fc3970a48c2841"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:b4544db76e0628bea78377f73408e355529cd63e5065221918597b63eaeec777"
       },
-      "shapeDigest": "sha256:a5b55b12a1c6f1957b68ab14df71a5e019e5163851996ed813a7c16b2c52b46c",
+      "shapeDigest": "sha256:30c8de2f5a9a9215018fee6ee09ce1e03328af9f3e6a0a1f44acf74de4b75d7c",
       "context": [
         {
           "type": "ixo.entity",
@@ -84,8 +84,8 @@
     "topicRecipeCode": "verified-work-payment",
     "topicRecipeRef": {
       "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-      "version": "1.0.0-rc.3",
-      "digest": "sha256:39e4821728caef116b639be135c04aae8cd462d730b7bc4881fc3970a48c2841"
+      "version": "1.0.0-rc.4",
+      "digest": "sha256:b4544db76e0628bea78377f73408e355529cd63e5065221918597b63eaeec777"
     },
     "registryLookup": "not-performed",
     "registryReason": "pinned-catalog-only",
@@ -94,23 +94,23 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/claims",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:b996ae37785fe3c54eaaca026d32c241e7977cb29266f37cc933f0576326b8de"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:79fc99b1a85fea39e0a17e62b173aba49c986047218eeafaa681001d9adb389e"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/claims",
-        "version": "1.0.0-rc.3",
+        "version": "1.0.0-rc.4",
         "digest": "sha256:604309d70c2d762551dc9c11572bf095c8879f255dcff0d78adb4f1b13815f47"
       },
       {
         "kind": "topic-recipe",
         "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:39e4821728caef116b639be135c04aae8cd462d730b7bc4881fc3970a48c2841"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:b4544db76e0628bea78377f73408e355529cd63e5065221918597b63eaeec777"
       }
     ],
-    "shapeDigest": "sha256:a5b55b12a1c6f1957b68ab14df71a5e019e5163851996ed813a7c16b2c52b46c"
+    "shapeDigest": "sha256:30c8de2f5a9a9215018fee6ee09ce1e03328af9f3e6a0a1f44acf74de4b75d7c"
   },
   "contractDraft": {
     "envelope": {
@@ -128,30 +128,30 @@
       "baseRecipe": "claims",
       "topicRecipeRef": {
         "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:39e4821728caef116b639be135c04aae8cd462d730b7bc4881fc3970a48c2841"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:b4544db76e0628bea78377f73408e355529cd63e5065221918597b63eaeec777"
       },
       "shapeSources": [
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/claims",
-          "version": "1.0.0-rc.3",
-          "digest": "sha256:b996ae37785fe3c54eaaca026d32c241e7977cb29266f37cc933f0576326b8de"
+          "version": "1.0.0-rc.4",
+          "digest": "sha256:79fc99b1a85fea39e0a17e62b173aba49c986047218eeafaa681001d9adb389e"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/claims",
-          "version": "1.0.0-rc.3",
+          "version": "1.0.0-rc.4",
           "digest": "sha256:604309d70c2d762551dc9c11572bf095c8879f255dcff0d78adb4f1b13815f47"
         },
         {
           "kind": "topic-recipe",
           "id": "https://topic-protocol.ixo.world/recipes/verified-work-payment",
-          "version": "1.0.0-rc.3",
-          "digest": "sha256:39e4821728caef116b639be135c04aae8cd462d730b7bc4881fc3970a48c2841"
+          "version": "1.0.0-rc.4",
+          "digest": "sha256:b4544db76e0628bea78377f73408e355529cd63e5065221918597b63eaeec777"
         }
       ],
-      "shapeDigest": "sha256:a5b55b12a1c6f1957b68ab14df71a5e019e5163851996ed813a7c16b2c52b46c",
+      "shapeDigest": "sha256:30c8de2f5a9a9215018fee6ee09ce1e03328af9f3e6a0a1f44acf74de4b75d7c",
       "claimBinding": {
         "entityDid": "did:ixo:entity:solar-programme",
         "collectionId": "solar-installations-2026"

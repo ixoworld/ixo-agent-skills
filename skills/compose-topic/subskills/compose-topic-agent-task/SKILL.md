@@ -60,3 +60,7 @@ If the Flow adapter is unavailable, present the `effecting` stage and a Flow han
 ## Portal handoff
 
 The Portal derives the Now phase and legal moves from the resolved Shape. Suggested agent activation is never a viewer-assigned legal transition. Do not use room membership or an agent label as authority.
+
+## rc.4 lifecycle contract
+
+Verify that a matching executable Flow or agent binding is available before describing agent execution as ready. The base Kind does not itself run an agent. `agent-delivery` adds verification, decision, external Action, and successful-receipt obligations. A failed receipt enables a reviewed retry with a new request identity.

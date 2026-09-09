@@ -37,3 +37,11 @@ Changing Kind or Topic Recipe requires resolving a new Effective Shape and diges
 Changing effective setup creates a new proposed immutable revision and invalidates confirmations for that proposal. The previous effective head remains in force until the replacement is explicitly confirmed and becomes effective.
 
 Do not persist the private edit-session ID, personal-agent session data, viewer attention, or cache facts into shared Matrix state.
+
+## Preserve an existing release
+
+Keep the existing Shape sources and digest during refinement, including rc.3 pins. The bundled [rc.3 Shape pins](topic-shape-pins-rc3.json) provide compatibility references. Opening an editor does not upgrade the protocol release. An explicit upgrade proposes a new setup with rc.4 pins and explains new obligations. It requires fresh confirmation and assent, and it resets revision-bound work and Project progress.
+
+## Incomplete refinement preview
+
+When the current body, revision pins, edit-session ID, reviewer, or authority is unresolved, return `TopicRefinePreview` instead of inventing a ready-to-stage change set. Retain verbatim source intent, explicitly proposed changes, assumptions, and every unresolved obligation. A preview does not stage an edit. After the host reads the complete current body, merge text while preserving existing requirements, resolve assignments explicitly, recheck all heads, and then construct the normal bound change set. Owner does not imply answer reviewer.

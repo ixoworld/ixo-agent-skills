@@ -83,3 +83,7 @@ when a matching Project Type is selected:
 
 - [Software Build](../compose-project-software-build/SKILL.md)
 - [Blueprint Design](../compose-project-blueprint-design/SKILL.md)
+
+## rc.4 lifecycle contract
+
+Project milestones, child links, waivers, and blockers are runtime progress. Review them against the authenticated projection. Linking a child does not prove completion. Close review and remaining-risk acceptance are separate steps. A new setup revision resets the checklist and earlier close acceptance.
