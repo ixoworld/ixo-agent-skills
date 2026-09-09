@@ -8,7 +8,7 @@ The host, not the skill:
 
 - allocates Topic and record IDs;
 - creates or adopts the Matrix root;
-- resolves the Effective Shape with @ixo/topic-protocol 1.0.0-rc.3;
+- resolves the Effective Shape with @ixo/topic-protocol 1.0.0-rc.4;
 - creates body references and hashes;
 - computes the activation-policy digest;
 - appends operations and records;
@@ -68,7 +68,7 @@ The root and body both retain baseRecipe, optional topicRecipeRef, and the Effec
 
 Merge the composition envelope and semantic body with version 4, the host revision, actor DID, timestamp, and the validated semantic fields. Do not add lifecycle status to the body. Proposal, effective, and superseded state belongs to contract heads and replayed operations.
 
-Retain the partial activation policy exactly as reviewed. Missing editors, confirmation subjects, lifecycle policy, or dispute resolvers remain obligations and prevent effectiveness. Do not repair them from creator, owner, completion authority, membership, or role labels.
+Retain the partial activation policy exactly as reviewed. Missing editors or unresolved confirmation subjects prevent effectiveness. Lifecycle scheduling and dispute policy are optional. Once configured, their gates apply; an open dispute without a resolvable resolver is blocked. Do not repair them from creator, owner, completion authority, membership, or role labels.
 
 The semantic body must not contain:
 
@@ -151,3 +151,17 @@ Return stable recovery details for partial writes. At minimum retain:
 - recoverable body/canvas references.
 
 Never report external success without the exact finality-bearing receipt required by the Shape.
+
+## rc.4 evidence admission
+
+Use `topicSetupFieldState` for present fields and field values. Use `applyTopicShapeEvidence` after authenticating the selected operation, its semantic record, its actor, and its capability. Every source must carry the current contract revision, body hash, policy digest, and a reference to verified authority proof. Store the authenticated pre-event context for replay. A current dispute or disabled host command must not rewrite past admitted evidence.
+
+Accepted finality does not mean success. Verification needs status `verified`; Claims decisions need `approved`; Action receipts need `succeeded`; settlement receipts need `confirmed`. Answer acceptance needs `accepted`. A proposal decision uses status `recorded` and keeps approved, rejected, or deferred as its substantive result. Failed evaluations remain open for correction. Retrying a failed Action requires an explicit new request and its usual confirmation.
+
+Read the host's supported commands before suggesting an executable recipe. Preserve unavailable obligations visibly. The current Portal candidate has no complete settlement write-back adapter, so it must not offer `verified-work-payment` as an executable recipe. Do not fill this gap with a success-shaped receipt or an unrelated Flow link.
+
+This skill pins an unpublished rc.4 candidate. The source lock includes the actual source commit, tarball bytes, and measured hashes. Do not claim npm publication or replace its provenance with invented registry metadata.
+
+### Portal candidate child completion
+
+Portal can check a linked child's completion from an immutable v4 state event in the same room. It replays the child's authenticated history at that snapshot and records the exact child revision, Shape digest, and source event. A linked child, a cached complete badge, or a user's unsupported assertion is insufficient. Cross-room child evidence requires an explicit sharing mechanism and remains unavailable in this candidate. A later child setup change does not rewrite the earlier completion observation; perform a new check when reviewing the current child.

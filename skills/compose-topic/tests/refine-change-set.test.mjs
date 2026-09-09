@@ -70,3 +70,8 @@ test("accepts a revision-bound activation policy replacement", () => {
   }];
   assert.deepEqual(validateRefineChangeSet(value), []);
 });
+
+test("an incomplete preview can never pass the staging validator", () => {
+  assert(codes({ version: "3.0", status: "preview", topicId: null, sourceIntent: "Improve the answer review", proposedChanges: ["Merge clearer review criteria after loading the body"], assumptions: [], blockers: [{code: "BODY_UNAVAILABLE", reason: "Read the existing body first"}] }).has("STATUS"));
+  assert(codes({...valid(), changes: {}}).has("CHANGES"));
+});

@@ -1,5 +1,5 @@
 {
-  "version": "3.2.1",
+  "version": "3.3.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77701",
   "mode": "preview",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.3",
+    "topicProtocolVersion": "1.0.0-rc.4",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "482139c37eed86387a7ff2609a8672c4216e28f4",
-    "packageShasum": "74bd726618060b507243ae5c6fa2493a8948f755",
+    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
+    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -54,7 +54,7 @@
       "kind": "evaluation",
       "status": "draft",
       "baseRecipe": "evaluation",
-      "shapeDigest": "sha256:4c75d75c6bc6253cc9d2dc35b1c140bd76d1408fa497081f50889d43726b1bae",
+      "shapeDigest": "sha256:80ce4e6216d20710f713ab4057cf2b6ad62b93fb67fc59690e2d993c9948c338",
       "context": [],
       "overview": {
         "summary": "Compare build and partner routes against reviewable criteria and evidence.",
@@ -78,17 +78,17 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/evaluation",
-        "version": "1.0.0-rc.3",
-        "digest": "sha256:d0e5970c8ec05395bec91d50c4462119442cf964ccc8b4c92b6898b6581c4001"
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:b9d28c66ffeca042fd2106570fced2df2f4439a65af901b61324011ee8935e7e"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/evaluation",
-        "version": "1.0.0-rc.3",
+        "version": "1.0.0-rc.4",
         "digest": "sha256:4663d2456abe432a946c17e7b8b15c5450853769d9d1ee8c4b7f9a761e3a7fc4"
       }
     ],
-    "shapeDigest": "sha256:4c75d75c6bc6253cc9d2dc35b1c140bd76d1408fa497081f50889d43726b1bae"
+    "shapeDigest": "sha256:80ce4e6216d20710f713ab4057cf2b6ad62b93fb67fc59690e2d993c9948c338"
   },
   "contractDraft": {
     "envelope": {
@@ -108,17 +108,17 @@
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/evaluation",
-          "version": "1.0.0-rc.3",
-          "digest": "sha256:d0e5970c8ec05395bec91d50c4462119442cf964ccc8b4c92b6898b6581c4001"
+          "version": "1.0.0-rc.4",
+          "digest": "sha256:b9d28c66ffeca042fd2106570fced2df2f4439a65af901b61324011ee8935e7e"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/evaluation",
-          "version": "1.0.0-rc.3",
+          "version": "1.0.0-rc.4",
           "digest": "sha256:4663d2456abe432a946c17e7b8b15c5450853769d9d1ee8c4b7f9a761e3a7fc4"
         }
       ],
-      "shapeDigest": "sha256:4c75d75c6bc6253cc9d2dc35b1c140bd76d1408fa497081f50889d43726b1bae",
+      "shapeDigest": "sha256:80ce4e6216d20710f713ab4057cf2b6ad62b93fb67fc59690e2d993c9948c338",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77711",
         "text": "Decide whether to build analytics internally or partner with a specialist.",

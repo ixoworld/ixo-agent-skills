@@ -15,7 +15,7 @@
     "quality"
   ],
   "properties": {
-    "version": { "const": "3.2.1" },
+    "version": { "const": "3.3.0" },
     "compositionId": {
       "type": "string",
       "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
@@ -51,14 +51,14 @@
       ],
       "properties": {
         "package": { "const": "@ixo/topic-protocol" },
-        "topicProtocolVersion": { "const": "1.0.0-rc.3" },
+        "topicProtocolVersion": { "const": "1.0.0-rc.4" },
         "rootVersion": { "const": 4 },
         "contractBodyVersion": { "const": 4 },
         "stateVersion": { "const": 4 },
         "contractProfile": { "const": "qi.topic-contract-state/v4" },
         "profileStatus": { "const": "normative" },
-        "sourceCommit": { "const": "482139c37eed86387a7ff2609a8672c4216e28f4" },
-        "packageShasum": { "const": "74bd726618060b507243ae5c6fa2493a8948f755" },
+        "sourceCommit": { "const": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d" },
+        "packageShasum": { "const": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a" },
         "authoritativeHistory": { "const": "topic-root+operations+records+projection" },
         "stateEventRole": { "const": "materialized-head-only" },
         "legacyPolicy": { "const": "v4-only-no-migration" }
