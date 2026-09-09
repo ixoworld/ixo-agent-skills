@@ -527,6 +527,7 @@
       "required": ["message", "quickActions", "defaultActionId"],
       "properties": {
         "message": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "suggestedReply": { "type": "string", "minLength": 1, "maxLength": 2000, "pattern": "\\S", "description": "Optional proposed answer to the opening question, reviewed before sharing and accepted into an editable local draft before Send. Omit when unsupported by the host or when answering would invent a commitment or acceptance." },
         "quickActions": {
           "type": "array",
           "minItems": 2,

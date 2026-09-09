@@ -27,6 +27,22 @@ function codes(value) {
   return new Set(validateComposition(value).map((item) => item.code));
 }
 
+test("opening reply is optional and preserves proposed text", async () => {
+  const value = await example();
+  assert.deepEqual(validateComposition(value), []);
+  value.firstTurn.suggestedReply = "Compare the options against the criteria we listed.";
+  assert.deepEqual(validateComposition(value), []);
+  assert.equal(value.firstTurn.suggestedReply, "Compare the options against the criteria we listed.");
+});
+
+test("opening replies reject blank, non-text and oversized values", async () => {
+  for (const reply of ["", "   ", 123, { text: "Answer" }, "x".repeat(2001)]) {
+    const value = await example();
+    value.firstTurn.suggestedReply = reply;
+    assert.ok(codes(value).has("SUGGESTED_REPLY"));
+  }
+});
+
 function acceptProjectAuthority(value, name) {
   value.contractDraft.semantic.fieldProvenance ??= {};
   value.contractDraft.semantic.fieldProvenance[`/project/${name}`] = {

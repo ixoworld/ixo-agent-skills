@@ -206,7 +206,7 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "e29961768a25022ebf0e3d4d4c1823243e8f78a61427d57e37fce38cc64ba1a1"
+      "sha256": "9ebf8c0c333e4f64c641da6880ec4afb280e3c422e880005db3e2137c0d69da4"
     },
     "schemas/topic-contract-draft.schema.json": {
       "sha256": "0b89342554188170964d28cf50e634517cab3c7ff0775776a40d17bf4d0d4c83"
@@ -230,13 +230,13 @@
       "sha256": "66edc78a4707dc5d18d0229c794b0d6650be21b17c4f3f4a29c58e8d329125a2"
     },
     "SKILL.md": {
-      "sha256": "7598eab483701e1e7f3ee41fa3bb6216a82e9c122c5b695b9ec9aa31df531b33"
+      "sha256": "1d91daaf0e48adb198e70b098fa11579100d29897e3594168cdb0318368ac3bd"
     },
     "AUDIT.md": {
       "sha256": "3fe2e9cef9c92d0022aeeca18aa0b37a342502eb8667e410a9f1b4f71c4539ea"
     },
     "evals/evals.json": {
-      "sha256": "add007d035fdc7a3e63bebae0f9535c559e4562b9ff879d9103036d4d689510b"
+      "sha256": "c00919ae30b08e7e306c484043948b3bb193e2eabc1e1cbe4a68f3d0aa28fa9a"
     },
     "subskills/compose-topic-project/SKILL.md": {
       "sha256": "a5e6e6a58dc9c8c2ea066e38bd13dff8ec2b9e2a58f6c52cb05c75770e838464"

@@ -620,6 +620,9 @@ function validateRecords(value, findings) {
 function validateFirstTurn(value, findings) {
   const first = value.firstTurn;
   if (!isObject(first)) return;
+  if (first.suggestedReply !== undefined) {
+    add(findings, typeof first.suggestedReply === "string" && first.suggestedReply.trim().length > 0 && first.suggestedReply.length <= 2000, "SUGGESTED_REPLY", "/firstTurn/suggestedReply", "must be a nonblank string of at most 2000 characters");
+  }
   const actions = first.quickActions ?? [];
   const ids = actions.map((action) => action.id);
   add(findings, actions.length >= 2 && actions.length <= 4, "QUICK_ACTION_COUNT", "/firstTurn/quickActions", "must contain 2 to 4 actions");
