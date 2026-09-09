@@ -33,7 +33,7 @@ const DIGEST = /^sha256:[0-9a-f]{64}$/u;
 const COMMIT = "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d";
 const PACKAGE_SHASUM = "b2d9b88b01c4fc3a16586845c96c369de0a96b9a";
 const PROTOCOL_VERSION = "1.0.0-rc.4";
-const COMPOSITION_VERSION = "3.3.0";
+const COMPOSITION_VERSION = "3.3.1";
 const PROFILE = "qi.topic-contract-state/v4";
 const KINDS = new Set(["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
 const ROOM_TARGETS = new Set(ROOM_SCHEMA.properties.target.enum);
@@ -620,6 +620,9 @@ function validateRecords(value, findings) {
 function validateFirstTurn(value, findings) {
   const first = value.firstTurn;
   if (!isObject(first)) return;
+  if (first.suggestedReply !== undefined) {
+    add(findings, typeof first.suggestedReply === "string" && first.suggestedReply.trim().length > 0 && first.suggestedReply.length <= 2000, "SUGGESTED_REPLY", "/firstTurn/suggestedReply", "must be a nonblank string of at most 2000 characters");
+  }
   const actions = first.quickActions ?? [];
   const ids = actions.map((action) => action.id);
   add(findings, actions.length >= 2 && actions.length <= 4, "QUICK_ACTION_COUNT", "/firstTurn/quickActions", "must contain 2 to 4 actions");

@@ -4,7 +4,7 @@ description: "Compose, route, validate, and safely stage a Topic Protocol Draft 
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.3.0"
+  version: "3.3.1"
   category: collaboration
   topic-protocol: "1.0.0-rc.4"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -16,6 +16,8 @@ metadata:
 Turn a person's intention into the smallest useful Topic Draft that people and agents can review, govern, progress, and complete together.
 
 The skill composes; the Topic Protocol resolves and projects; the Portal presents and commits. Do not duplicate those responsibilities.
+
+For ordinary conversation in an existing shared Topic, discover `facilitate-topic` when it is available. Do not re-run creation or demand a structured refinement for every reply. Return to this skill when there is a concrete new Topic or revision proposal to compose.
 
 This package targets an unpublished rc.4 candidate. Validate the bundled artifact and source lock before staging a composition. Preserve existing rc.3 Topic pins during refinement.
 
@@ -97,7 +99,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 ### 1. Pin and preflight
 
 - Run `node scripts/audit-skill.mjs --json` when scripts are available.
-- Use composition version `3.3.0`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.3.1`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Inventory real host capabilities. Do not assume a named tool exists.
 - Scan for secrets and excessive sensitive data.
 
@@ -204,6 +206,8 @@ Writing an allowed inferred record to shared Matrix Topic state is not itself an
 
 The Portal owns the viewer-specific “Now” card. Do not author arbitrary lifecycle labels, status pills, “Needs you” copy, or hard-coded next actions.
 
+Read the active `stage_topic_composition` tool schema before staging. Its reviewable creation subset can be narrower than the protocol's full contract schema. Generic examples are protocol examples, not guaranteed Portal inputs. Never remove meaningful policy, criteria or role data just to pass validation: prepare a partial Draft with the unresolved decision explicit, or report the missing host capability when that information is necessary to the requested result. Do not claim that a rejected composition was staged.
+
 The host must:
 
 - project progress with `projectTopicProgress` from the Effective Shape and durable history;
@@ -214,7 +218,11 @@ The host must:
 - show unavailable evaluation, decision, effect, or settlement adapters as honest Flow/resource handoffs rather than simulated success;
 - show a legacy Topic as unsupported without migration writes.
 
-Composition may suggest human-friendly first-turn copy and canvas blocks. It may not claim that any transition is legal or assigned to the viewer.
+Make `firstTurn.message` the next useful contribution to the shared conversation: ask one question that advances the work, or briefly state the proposed next step when the intent already answers it. Read the title and supplied context first. Do not repeat an informative title as its description or make recipe and governance choices prerequisites for discussing a Draft. Keep structured setup obligations available in the handoff for Details.
+
+When the host's handoff schema supports `firstTurn.suggestedReply`, optionally propose one concise, editable answer to that question. Use supplied shared context or an explicitly proposed option; omit the field when a responsible answer needs the person's judgment or would invent a commitment, owner, amount, deadline, or acceptance. Quick-action labels are controls, not suggested answers. Never copy private Companion material into a shared suggestion without authorization to share it.
+
+The host shows the opening message and suggested reply for review before sharing them. Tab or Use suggestion accepts the reply into the person's local draft; only Send publishes their answer. Neither action confirms Topic setup or accepts a contract. A reviewed opening message does not establish an active facilitator: do not promise follow-up responses unless the host reports a shared Topic agent binding. Composition may also suggest canvas blocks; it may not claim that any transition is legal or assigned to the viewer.
 
 ### 10. Plan host calls safely
 
@@ -269,12 +277,8 @@ For interactive preview, render a calm Draft:
 
 ```text
 [Title]  [Kind]
-[One-sentence intended outcome]
+[Authored purpose or useful context, if it adds to the title]
+[One useful opening question or proposed next step]
 
-Draft setup
-• [first useful structure]
-• [second useful structure]
-• [unresolved setup decision, named plainly]
-
-[Review Draft]  [Adjust]
+[Share topic]  [Edit details]
 ```

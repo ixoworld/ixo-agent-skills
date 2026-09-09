@@ -1,5 +1,5 @@
 {
-  "version": "3.3.0",
+  "version": "3.3.1",
   "skill": "compose-topic",
   "protocol": {
     "topicProtocolVersion": "1.0.0-rc.4",
@@ -51,7 +51,11 @@
       "input": "Create a Topic about our Cooperative Membership policy.",
       "expected": {
         "disposition": "clarify",
-        "kindChoices": ["proposal", "evaluation", "discussion"]
+        "kindChoices": [
+          "proposal",
+          "evaluation",
+          "discussion"
+        ]
       },
       "must": [
         "Ask one focused question distinguishing drafting for approval, assessing for a decision, and open-ended deliberation.",
@@ -891,6 +895,43 @@
       "must": [
         "Treat external completion only as handoff_ready and never as Project completion.",
         "Require the assigned closer to explicitly accept remaining risk in a revision-, digest-, actor-, authority-, and evidence-bound acceptance record."
+      ]
+    },
+    {
+      "id": "conversation-first-draft",
+      "input": "Create a Support Topic: incentivise developers to fix critical bugs within 24 hours. The current room is verified. The Portal supports firstTurn.suggestedReply.",
+      "expected": {
+        "disposition": "create"
+      },
+      "must": [
+        "Preserve the supplied 24-hour intent and infer the Kind from the work, without asking for recipe or setup permissions before drafting.",
+        "Do not ask what this should achieve when the supplied intent already answers that question.",
+        "Ask at most one useful next question or state a proposed next step. Omit a description that only repeats the title.",
+        "Keep any proposed answer unaccepted; do not invent funding, an assignee or authority."
+      ]
+    },
+    {
+      "id": "suggested-reply-personal-judgment",
+      "input": "Create a Topic to decide whether our team should accept the proposed supplier terms. No acceptance decision has been made. The Portal supports firstTurn.suggestedReply.",
+      "expected": {
+        "disposition": "create"
+      },
+      "must": [
+        "Do not propose an answer saying that the team accepts the terms.",
+        "Omit suggestedReply if answering the next question requires the user to supply missing judgment.",
+        "Tab or Send must not be presented as setup confirmation, contract acceptance or assent."
+      ]
+    },
+    {
+      "id": "shared-reply-private-boundary",
+      "input": "Draft a shared Support Topic about bug response. My private Companion notes contain a colleague performance assessment; I have not approved sharing it. No shared agent binding is available.",
+      "expected": {
+        "disposition": "create"
+      },
+      "must": [
+        "Do not copy the private assessment into firstTurn, suggestedReply, context or records.",
+        "Do not promise that an agent will answer in the room without a shared Topic agent binding.",
+        "Keep discussion in the shared Topic and private Companion help distinct."
       ]
     }
   ],

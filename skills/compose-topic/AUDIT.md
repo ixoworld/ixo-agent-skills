@@ -1,12 +1,12 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.3.0`
+Audit target: `compose-topic` `3.3.1`
 Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.4`
 Topic Contract profile: `qi.topic-contract-state/v4`
 Pinned protocol commit: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
-Published package git head: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
-Published package shasum: `b2d9b88b01c4fc3a16586845c96c369de0a96b9a`
-Published package integrity: `sha512-jyZ1JauOXLyn06MOyAVv4nFYCWiIOVobbjmRYHM0ws3xyuvpR8Xd2niAZOt+MzE26ik/svjsR6zhidB4LwTriA==`
+Candidate package source commit: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
+Candidate package shasum: `b2d9b88b01c4fc3a16586845c96c369de0a96b9a`
+Candidate package integrity: `sha512-jyZ1JauOXLyn06MOyAVv4nFYCWiIOVobbjmRYHM0ws3xyuvpR8Xd2niAZOt+MzE26ik/svjsR6zhidB4LwTriA==`
 
 ## Review scope
 
