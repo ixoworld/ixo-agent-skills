@@ -4,7 +4,7 @@ description: "Compose, route, validate, and safely stage a Topic Protocol Draft 
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.3.0"
+  version: "3.3.1"
   category: collaboration
   topic-protocol: "1.0.0-rc.4"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -99,7 +99,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 ### 1. Pin and preflight
 
 - Run `node scripts/audit-skill.mjs --json` when scripts are available.
-- Use composition version `3.3.0`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.3.1`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Inventory real host capabilities. Do not assume a named tool exists.
 - Scan for secrets and excessive sensitive data.
 
