@@ -23,6 +23,8 @@ Reject v0.8/v2 inputs. Do not migrate them.
 
 ## Preflight
 
+These checks govern host writes. They do not require the agent to call each underlying operation. `stage_topic_composition` only opens a reviewable Draft and may fill an unresolved current-room destination from the Portal selection. The host still verifies that destination before staging and rechecks authority before any write. After the correlated staging/render receipt, stop and await the person. Do not execute the create sequence to complete a staging request.
+
 Before a write:
 
 1. validate the composition and source lock;

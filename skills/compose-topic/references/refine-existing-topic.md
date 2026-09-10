@@ -2,6 +2,8 @@
 
 Refinement changes a v4 Topic in place. It never creates a replacement Topic unless the person explicitly chooses to branch.
 
+For `requestMode: continue`, answer or ask the supplied missing detail before entering this sequence. Conversation alone does not request a revision. For `requestMode: refine`, retain unsaved draft edits across any `read_topic` refresh; that read supplies current bindings and persisted context, not permission to discard the draft.
+
 ## Preconditions
 
 Require:
@@ -26,7 +28,7 @@ If any version is legacy, return `BLOCKED_LEGACY_TOPIC`. If a revision or digest
 3. Preserve unchanged IDs and provenance.
 4. Mark generated changes `suggested/proposed`.
 5. Produce a `TopicRefineChangeSet`.
-6. Let the person accept, edit, or reject.
+6. Stop after the correlated staging receipt and let the person accept, edit, or reject. Do not poll or restage while waiting.
 7. Revalidate against the current revisions and Shape digest.
 8. Stage `update-contract`; setup confirmation remains a separate authorised transition.
 

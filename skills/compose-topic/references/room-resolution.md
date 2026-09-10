@@ -1,6 +1,6 @@
 # Matrix room and Domain resolution
 
-Use this reference when the host has not supplied one exact current `roomId`, the person names a room or Domain, or they may want a new room.
+Use this reference for destination discovery or a requested new room. A Portal-selected current room follows the Portal conversation path in [SKILL.md](../SKILL.md); naming that same room in the prompt does not require discovery.
 
 ## Keep identifiers separate
 
@@ -21,7 +21,7 @@ Never derive a room ID from a DID, a similar-looking room name, an entity profil
 4. If a room name is supplied, list joined Topic-capable conversation rooms. Compare an exact normalized name first, then bounded partial matches. One verified match resolves the room; several plausible matches require a user picker with both name and `!roomId`.
 5. If the label is also or instead an entity name, resolve it separately. Rank bookmarked candidates first. A single entity match may establish `domainDid`; multiple matches require a user choice. Profile lookup may confirm the entity type, but it still does not resolve a room.
 6. Map a verified Domain to rooms only through host-supplied Domain/space membership metadata. A resolved `named-domain` target must preserve both its verified `domainDid` and `domain-room-graph` evidence for the selected `!roomId`. If that relationship is unavailable, show suitable joined room candidates or offer to create a new conversation room under the Domain.
-7. Call the Topic proposal or host adapter only after `routing.roomResolution.status` is `resolved` with one real `!roomId`.
+7. A Topic write requires `routing.roomResolution.status: resolved` with one verified `!roomId`. The Portal staging tool may accept an unresolved `current-room` handoff when it explicitly supplies and verifies the selected destination itself. Staging only opens a reviewable Draft.
 
 Do not loop on a failed entity-profile request. Retry once only when the host marks the failure transient. Otherwise preserve the entity candidate, keep the room unresolved, and move to a concise user choice or a useful preview.
 

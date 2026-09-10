@@ -15,7 +15,7 @@
     "quality"
   ],
   "properties": {
-    "version": { "const": "3.3.1" },
+    "version": { "const": "3.3.2" },
     "compositionId": {
       "type": "string",
       "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
