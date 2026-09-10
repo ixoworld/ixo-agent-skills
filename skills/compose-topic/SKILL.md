@@ -1,10 +1,10 @@
 ---
 name: compose-topic
-description: "Compose, route, validate, and safely stage a Topic Protocol Draft from a person's intent. Use when inferring the best-fit Project, Task, Agent Task, Proposal, Evaluation, Claims, Question, Discussion, or Incident Kind; resolving an exact Matrix room separately from a named Domain; selecting a Base Recipe or pinned Topic Recipe; resolving the Effective Topic Shape; proposing explicit setup, lifecycle, dispute, and assent policies; preparing Portal-compatible canvas, claim, or Flow handoffs; or producing an idempotent Matrix host plan."
+description: "Compose or refine a reviewable Topic Protocol v4 Draft from a person's intent. Use for new Topic requests and concrete setup changes in Portal. For ordinary conversation in an existing Topic, address the next question without restarting composition."
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.3.1"
+  version: "3.3.2"
   category: collaboration
   topic-protocol: "1.0.0-rc.4"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -17,31 +17,48 @@ Turn a person's intention into the smallest useful Topic Draft that people and a
 
 The skill composes; the Topic Protocol resolves and projects; the Portal presents and commits. Do not duplicate those responsibilities.
 
-For ordinary conversation in an existing shared Topic, discover `facilitate-topic` when it is available. Do not re-run creation or demand a structured refinement for every reply. Return to this skill when there is a concrete new Topic or revision proposal to compose.
+For ordinary conversation in an existing Topic, answer or ask the next useful question. Do not restart composition for every reply. Use `facilitate-topic` only when already supplied by a bound shared Topic runtime. A private Personal Agent conversation does not establish that binding. Do not search for or delegate to another skill during a Portal composition turn.
 
-This package targets an unpublished rc.4 candidate. Validate the bundled artifact and source lock before staging a composition. Preserve existing rc.3 Topic pins during refinement.
+This package targets an unpublished rc.4 candidate. The skill publisher validates the bundled artifact and source lock at release time; the host verifies the exact protocol pins when staging. Preserve existing rc.3 Topic pins during refinement.
+
+## Portal conversation path
+
+Use `requestMode` to choose the work before loading references. The Portal's `mode` describes the output format; `requestMode: continue` is conversation, not an instruction to stage an edit.
+
+- `create` or `clone`: preserve the captured source intent, select one Kind, compose one useful Draft, and call `stage_topic_composition` once when the host supplies a captured creation request. For a clone with an edit session, use `stage_topic_changes` to preserve the existing template draft and Kind instead. A clone supplies a template, not approval to copy assignments or authority. Ask one question first only when the clarification rule requires it.
+- `continue`: address the supplied missing detail first. If the question is already clear, ask it without reading or staging anything. Otherwise call `read_topic` once for the supplied Topic ID. Do not recreate the Topic or stage changes until the person supplies a concrete change.
+- `refine`: preserve the supplied unsaved draft. Use the current edit session and revision bindings; call `read_topic` only for missing or stale bindings. Merge the requested changes with the unsaved draft rather than replacing it with the persisted body. Stage through `stage_topic_changes` using its actual schema.
+
+When the person chose a room in the Portal and the active staging tool supports host completion, use `routing.roomResolution: { target: "current-room", status: "unresolved", evidence: [] }` and omit `destinationEvidenceToken`. Keep `execution.commitEligible: false`, `contractDraft.readiness: requires-host-fields`, and the unresolved host fields explicit. Do not add a room blocker solely for this supported host completion. Preserve genuine permission, confidentiality, Shape, or other blockers. The host verifies and fills the destination before opening the Draft; this is not authorization to write Matrix state.
+
+Do not rediscover that room with `findEntity`, `getEntityProfileDomain`, or `resolve_domain_topic_rooms`. If the active host requires a token, call `list_topic_destinations` once with the exact supplied `roomId`. A different destination or a requested new room follows [room-resolution.md](references/room-resolution.md).
+
+Treat tool definitions already in context as the capability inventory. Load this pinned skill once and reuse references already loaded in the conversation. Do not run repository audits, tests, dependency installs, or registry discovery while helping someone compose a Topic.
+
+After staging, return control to the person. Report the editor as open only when the host supplies the request-correlated render receipt. A pending approval, missing receipt, timeout, duplicate choice, or unresolved question is a stopping point, not a reason to poll or stage again.
+
+For an actionable validation error, make at most one targeted repair and retry with changed input. A stale revision permits one fresh `read_topic` and one rebased proposal; an expired destination token permits one exact-room lookup and one retry. Never repeat an unchanged failed call or remove meaningful content to pass validation. If the repair fails, explain the remaining issue and stop. Resume only on new user input or a host-delivered result. Never retry an uncertain write as a new operation.
 
 ## Load the controlled model
 
-Before composing:
+For creation or a concrete revision proposal, load only missing context:
 
-1. Read [references/source-lock.json](references/source-lock.json).
-2. Read [references/topic-contract-profile.md](references/topic-contract-profile.md).
-3. Read [references/topic-recipe-selection.md](references/topic-recipe-selection.md).
-4. Read [references/room-resolution.md](references/room-resolution.md) when an exact current `roomId` is not supplied, the person names a room or Domain, or they may want a new room.
-5. Select one canonical Kind and then read exactly its sub-skill:
+- [source-lock.json](references/source-lock.json) for exact release provenance and [topic-shape-pins.json](references/topic-shape-pins.json) for the selected Kind's exact pins. Prefer these bundled pins when the host does not expose a resolver; do not search for protocol source code.
+- [topic-contract-profile.md](references/topic-contract-profile.md) for the contract fields being composed.
+- [topic-recipe-selection.md](references/topic-recipe-selection.md) only when considering a specialist recipe; otherwise use the Kind's Base Recipe.
+- Exactly the selected Kind's sub-skill:
 
-   - [Project](subskills/compose-topic-project/SKILL.md)
-   - [Task](subskills/compose-topic-task/SKILL.md)
-   - [Agent Task](subskills/compose-topic-agent-task/SKILL.md)
-   - [Proposal](subskills/compose-topic-proposal/SKILL.md)
-   - [Evaluation](subskills/compose-topic-evaluation/SKILL.md)
-   - [Claims](subskills/compose-topic-claims/SKILL.md)
-   - [Question](subskills/compose-topic-question/SKILL.md)
-   - [Discussion](subskills/compose-topic-discussion/SKILL.md)
-   - [Incident](subskills/compose-topic-incident/SKILL.md)
+  - [Project](subskills/compose-topic-project/SKILL.md)
+  - [Task](subskills/compose-topic-task/SKILL.md)
+  - [Agent Task](subskills/compose-topic-agent-task/SKILL.md)
+  - [Proposal](subskills/compose-topic-proposal/SKILL.md)
+  - [Evaluation](subskills/compose-topic-evaluation/SKILL.md)
+  - [Claims](subskills/compose-topic-claims/SKILL.md)
+  - [Question](subskills/compose-topic-question/SKILL.md)
+  - [Discussion](subskills/compose-topic-discussion/SKILL.md)
+  - [Incident](subskills/compose-topic-incident/SKILL.md)
 
-Load [references/canvas-recipes.md](references/canvas-recipes.md) when producing canvas blocks. Load [references/protocol-adapter.md](references/protocol-adapter.md) only for `commit` or `refine`. Load [references/refine-existing-topic.md](references/refine-existing-topic.md) for an existing v4 Topic. Load [references/security-review.md](references/security-review.md) for sensitive, consequential, agentic, Action-bearing, evaluation, claim, or settlement work.
+Load [canvas-recipes.md](references/canvas-recipes.md) only for requested canvas blocks, [protocol-adapter.md](references/protocol-adapter.md) for a commit plan, [refine-existing-topic.md](references/refine-existing-topic.md) for a concrete existing-Topic edit, and [security-review.md](references/security-review.md) when the proposed work introduces sensitive data or consequential effects. Ordinary continuation does not require these composition references.
 
 The pinned release candidate is the authority. Do not silently substitute a remembered version, a mutable branch, a legacy v0.8 shape, or an unverified Marketplace recipe.
 
@@ -98,9 +115,9 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 
 ### 1. Pin and preflight
 
-- Run `node scripts/audit-skill.mjs --json` when scripts are available.
-- Use composition version `3.3.1`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
-- Inventory real host capabilities. Do not assume a named tool exists.
+- Use the verified bundled release and host-provided tool schemas; release validation belongs to maintainers.
+- Use composition version `3.3.2`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use only tools supplied for this turn. Do not call discovery tools to inventory them.
 - Scan for secrets and excessive sensitive data.
 
 ### 2. Decide whether this deserves a Topic
@@ -115,7 +132,7 @@ Separate Topics when audience confidentiality, outcome, lifecycle, or authority 
 
 Resolve the intended audience and one exact Matrix room independently from entity context. A named Domain, organisation, or Entity DID is not a room selection.
 
-- Use the supplied current `roomId` only when the person clearly means “here” and its audience is appropriate.
+- Follow the Portal conversation path first when the host supplies the room the person selected. Otherwise use a supplied current `roomId` when the person means "here" and its audience is appropriate.
 - When the person names a room, inspect joined conversation rooms and prefer an exact normalized name match. If several rooms remain plausible, show the candidates with their names and `!roomId` values and ask the person to choose.
 - When the person names a Domain, resolve the entity with bookmark-first ambiguity handling, then use an explicit Domain-to-room relationship supplied by the host. Entity profile data alone does not prove which room belongs to the Domain.
 - Record a resolved `named-domain` target only with both its verified `domainDid` and `domain-room-graph` evidence for the selected `!roomId`; otherwise keep the room unresolved or represent the explicit room choice as `named-room` or `current-room`.
@@ -150,7 +167,7 @@ Record the best guess and concise basis in `routing.kindInference`. When one Kin
 
 Do not instantiate until the selected Kind can reach the editor or host adapter without being discarded. If the only available creation tool omits Kind and would open a default Discussion, return `BLOCKED_KIND_HANDOFF_UNAVAILABLE` for commit while still showing the composed Draft.
 
-Read the matching sub-skill before producing Kind-specific fields. For a Project, then read [Software Build](subskills/compose-project-software-build/SKILL.md) or [Blueprint Design](subskills/compose-project-blueprint-design/SKILL.md) only when that Project Type is selected. Custom labels must extend exactly one canonical base Kind. `Thread` is a virtual Portal presentation and is never persisted as a Kind.
+Read the matching sub-skill before producing Kind-specific fields. Its setup questions are a menu for later turns, not a checklist to complete before showing a Draft. Ask at most one useful question at a time. For a Project, then read [Software Build](subskills/compose-project-software-build/SKILL.md) or [Blueprint Design](subskills/compose-project-blueprint-design/SKILL.md) only when that Project Type is selected. Custom labels must extend exactly one canonical base Kind. `Thread` is a virtual Portal presentation and is never persisted as a Kind.
 
 For a Project, ask only the smallest unresolved questions: what exists when it is done; who leads it; the optional first named milestone; who may close it by accepting remaining risk; and, only when useful, who resolves a contested outcome. Outcome is required for a useful Draft. Lead is required for effectiveness. Closer is required only to enter closing. Never default any of them from creator, owner, room membership, or another authority.
 
@@ -206,7 +223,7 @@ Writing an allowed inferred record to shared Matrix Topic state is not itself an
 
 The Portal owns the viewer-specific “Now” card. Do not author arbitrary lifecycle labels, status pills, “Needs you” copy, or hard-coded next actions.
 
-Read the active `stage_topic_composition` tool schema before staging. Its reviewable creation subset can be narrower than the protocol's full contract schema. Generic examples are protocol examples, not guaranteed Portal inputs. Never remove meaningful policy, criteria or role data just to pass validation: prepare a partial Draft with the unresolved decision explicit, or report the missing host capability when that information is necessary to the requested result. Do not claim that a rejected composition was staged.
+Use the active `stage_topic_composition` tool schema already in context; do not fetch it again. Its reviewable creation subset can be narrower than the protocol's full contract schema. Generic examples are protocol examples, not guaranteed Portal inputs. Never remove meaningful policy, criteria or role data just to pass validation: prepare a partial Draft with the unresolved decision explicit, or report the missing host capability when that information is necessary to the requested result. Do not claim that a rejected composition was staged.
 
 The host must:
 
@@ -233,18 +250,9 @@ The host shows the opening message and suggested reply for review before sharing
 - Never issue credentials, invoke Actions, spend funds, or settle value during composition.
 - Never retry an uncertain root send by creating another root; recover using the same idempotency key.
 
-### 11. Validate
+### 11. Validate the handoff and stop
 
-Run:
-
-```bash
-npm test --prefix scripts
-npm run audit --prefix scripts
-npm run validate --prefix scripts
-./scripts/validate-skill.sh skills/compose-topic
-```
-
-Also validate each nested sub-skill with the repository validator. Do not call the skill production-ready while any source-lock, example, schema, test, or sub-skill check fails.
+Check the composition against the active host schema and let the staging tool perform protocol and permission validation. Apply the Portal conversation path's bounded recovery rules. A staged Draft awaits the person's review; it is not a created Topic or accepted setup.
 
 ## Clarification rule
 
@@ -282,3 +290,16 @@ For interactive preview, render a calm Draft:
 
 [Share topic]  [Edit details]
 ```
+
+## Maintainer release checks
+
+Run these only when changing or publishing the skill, never during a Topic conversation. From the repository root:
+
+```bash
+npm test --prefix skills/compose-topic/scripts
+npm run audit --prefix skills/compose-topic/scripts
+npm run validate --prefix skills/compose-topic/scripts
+./scripts/validate-skill.sh skills/compose-topic
+```
+
+Validate each nested sub-skill with the repository validator. Run `node skills/compose-topic/scripts/validate-execution-trace.mjs trace.json` on a normalized, redacted PA turn trace to check repeated calls and stopping behaviour. The trace format and live evaluation scenarios are in [evals/portal-execution.md](evals/portal-execution.md). Fixture tests validate the checker; they do not establish live model compliance. Do not call the release production-ready while any source-lock, schema, example, test, or sub-skill check fails, or while live behaviour remains unverified.

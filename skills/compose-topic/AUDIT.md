@@ -1,6 +1,6 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.3.1`
+Audit target: `compose-topic` `3.3.2`
 Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.4`
 Topic Contract profile: `qi.topic-contract-state/v4`
 Pinned protocol commit: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
@@ -29,6 +29,10 @@ The audit covers:
 - provenance, disclosure, revision, idempotency, and secret controls;
 - Portal-compatible Draft creation and refinement;
 - schemas, examples, scripts, tests, and behavioral eval coverage.
+
+## 3.3.2 conversation execution
+
+Portal-selected destinations can be completed by the host at staging time. Creation, continuation, and unsaved refinement now have separate instructions; release audits are outside the interactive workflow. Recovery allows one targeted repair and stops on a pending user decision or staged result. `tests/execution-trace.test.mjs` checks the normalized trace validator against passing and failing fixtures. Live PA compliance, latency, and payload measurements remain unverified until the scenarios in `evals/portal-execution.md` are run with authenticated accounts.
 
 ## Material findings and resolutions
 

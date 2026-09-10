@@ -58,6 +58,9 @@ const EXPECTED_FILES = [
   "tests/validate-composition.test.mjs",
   "tests/refine-change-set.test.mjs",
   "tests/audit-skill.test.mjs",
+  "tests/execution-trace.test.mjs",
+  "scripts/validate-execution-trace.mjs",
+  "evals/portal-execution.md",
   ...SUBSKILLS.map((name) => `subskills/${name}/SKILL.md`),
 ];
 const EXPECTED_SOURCE_COMMIT = "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d";
@@ -286,7 +289,7 @@ async function auditExamples(findings) {
 
 async function auditEvals(findings) {
   const evals = JSON.parse(await readFile(join(SKILL_ROOT, "evals/evals.json"), "utf8"));
-  if (evals.version !== "3.3.1") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.3.1"));
+  if (evals.version !== "3.3.2") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.3.2"));
   if (evals.skill !== "compose-topic") findings.push(finding("EVAL_SKILL", "evals/evals.json", "must equal compose-topic"));
   const cases = evals.cases ?? [];
   if (cases.length < 36) findings.push(finding("EVAL_COVERAGE", "evals/evals.json", "must include all Kinds, recipes, Shapes, Portal progression, authority, inference, and security cases"));
@@ -297,7 +300,7 @@ async function auditEvals(findings) {
 }
 
 async function auditScripts(findings) {
-  for (const name of ["validate-composition.mjs", "validate-refine-change-set.mjs", "audit-skill.mjs"]) {
+  for (const name of ["validate-composition.mjs", "validate-refine-change-set.mjs", "validate-execution-trace.mjs", "audit-skill.mjs"]) {
     const path = join(SKILL_ROOT, "scripts", name);
     const content = await readFile(path, "utf8");
     if (!content.startsWith("#!/usr/bin/env node")) findings.push(finding("SCRIPT_SHEBANG", `scripts/${name}`, "must start with a Node shebang"));
@@ -336,7 +339,7 @@ export async function main(options = {}) {
   findings.sort((left, right) => left.path.localeCompare(right.path) || left.code.localeCompare(right.code));
   return {
     auditor: "compose-topic-skill-audit",
-    version: "3.3.1",
+    version: "3.3.2",
     root: options.root ?? SKILL_ROOT,
     ok: findings.length === 0,
     findingCount: findings.length,

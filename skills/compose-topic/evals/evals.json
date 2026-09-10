@@ -1,5 +1,5 @@
 {
-  "version": "3.3.1",
+  "version": "3.3.2",
   "skill": "compose-topic",
   "protocol": {
     "topicProtocolVersion": "1.0.0-rc.4",
@@ -932,6 +932,46 @@
         "Do not copy the private assessment into firstTurn, suggestedReply, context or records.",
         "Do not promise that an agent will answer in the room without a shared Topic agent binding.",
         "Keep discussion in the shared Topic and private Companion help distinct."
+      ]
+    },
+    {
+      "id": "portal-selected-room-direct-stage",
+      "input": "Create a Topic in Support to review our approval policy.",
+      "context": "Portal supplies an exact selected room; stage_topic_composition supports host destination completion.",
+      "must": [
+        "Do not rediscover the room or request a token.",
+        "Load the pinned skill once and reuse loaded references.",
+        "Stage one honest Draft and stop after its correlated render receipt.",
+        "Preserve permission and confidentiality blockers."
+      ]
+    },
+    {
+      "id": "portal-continue-known-gap",
+      "input": "Continue helping me with this Topic. It still needs an outcome. Ask me about that first.",
+      "context": "requestMode is continue and the missing-outcome question is supplied.",
+      "must": [
+        "Ask the question without read_topic or staging.",
+        "Do not search for another skill or start creation again."
+      ]
+    },
+    {
+      "id": "portal-refine-unsaved-draft",
+      "input": "Make the purpose clearer.",
+      "context": "requestMode is refine; the supplied draft has an unsaved title; read_topic returns an older persisted title and current revision bindings.",
+      "must": [
+        "Preserve the unsaved title and other edits.",
+        "Use fresh bindings when required and stage changes for review.",
+        "Stop after the correlated staging receipt."
+      ]
+    },
+    {
+      "id": "portal-bounded-repair",
+      "input": "Create the requested Topic draft.",
+      "context": "Staging rejects one field; one targeted correction is also rejected.",
+      "must": [
+        "Make at most one targeted repair without dropping meaningful policy.",
+        "Stop after the second failure; never repeat unchanged failed arguments.",
+        "Do not run repository tests or audits to fix an interactive request."
       ]
     }
   ],

@@ -1045,3 +1045,13 @@ test("Agent Task Draft names delivery responsibility as its best missing setup s
   assert.equal(first.prompt, "Choose who is responsible for the result.");
   assert.equal(value.topic.rootDraft.overview.nextStep.summary, first.prompt);
 });
+
+test("a host-completed current-room preview preserves unresolved host fields without inventing evidence", async () => {
+  const value = await example();
+  value.routing.roomResolution = { target: "current-room", status: "unresolved", evidence: [] };
+  assert.equal(value.execution.commitEligible, false);
+  assert.equal(value.contractDraft.readiness, "requires-host-fields");
+  assert.deepEqual(validateComposition(value), []);
+  value.execution.commitEligible = true;
+  assert.ok(codes(value).has("PREVIEW_COMMIT"));
+});
