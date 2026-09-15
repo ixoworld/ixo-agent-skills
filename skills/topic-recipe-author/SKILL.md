@@ -83,19 +83,22 @@ digest, and read-back evidence. Never fabricate an image URL.
 
 ## 3. Create the protocol/topic domain
 
-Read [Publication and recovery](references/publication-and-recovery.md). Prefer
-the registry-backed Portal route and author-run signing. Pass `protocol/topic`
-explicitly through the actual action inputs and verify it in chain read-back.
-The legacy manage-flow POD recipe assumes `dao`; do not copy it unchanged.
-Use the requested pod-domain behaviour without silently changing entity type or
-creating a separate governance group. Configure governance/parent links only
-when the author selected them and the host supports them.
+Read [Publication and recovery](references/publication-and-recovery.md). Create
+the entity with the Portal browser tool `propose_domain_creation`: pass the
+approved name, description, `entityType: "protocol/topic"`, the card keywords,
+and a one-line purpose. The Portal opens its Create Domain form pre-filled; the
+author reviews it, may edit it, and signs twice (entity, then public card). The
+call waits for that decision and returns `{ created, entityDid,
+cardTransactionHash, cardError }`. Never sign, never bypass the review, and do
+not fall back to a flow template, a governance group, or a `dao` default when
+the tool is absent — report the missing tool instead.
 
 The entity must exist before domain-owned files can have final identifiers.
-Some creation actions also publish an initial card. Review that non-sensitive
-bootstrap card as part of creation, with no fake Shape links or ready claims.
-Its initial `#dmn` binding is a bootstrap receipt, not the finished recipe. Reuse
-the returned entity DID for all remaining operations.
+The card published at creation is a non-sensitive bootstrap card, with no Shape
+links or ready claims; its `#dmn` binding is a bootstrap receipt, not the
+finished recipe. If `cardError` is set the entity exists without a card; tell
+the author and continue, the card is re-published in step 5. Reuse the returned
+entity DID for all remaining operations.
 
 ## 4. Author and persist domain.md
 
