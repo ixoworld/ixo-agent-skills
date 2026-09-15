@@ -18,6 +18,7 @@ Load current schemas before invoking a tool; no source snapshot proves deploymen
 | Domain search | `domain_indexer_search` | Use nonempty `query`, `scopes:"domain_cards"`, `filters:{"dc.entity_type":"protocol/topic"}`. Compound types are exact strings. |
 | Domain summary | `get_domain_card({did})` | Intentionally strips fields to summary/name/type/FAQ. It cannot verify the complete secured card or recipe extension. |
 | Portal interaction | `portal` request tools | Browser supplies descriptors each turn. No connected Portal means no browser tools. Names from another session are not callable proof. |
+| Entity creation | `propose_domain_creation({requestKey,name,description,entityType,tags?,purpose?,image?})` | Portal browser tool. Opens the Create Domain form pre-filled; the author reviews and signs entity + public card. Waits for the decision; returns `{created:true,entityDid,cardTransactionHash?,cardError?}` or `{created:false,reason}`. `entityType` is written to chain as passed. |
 | Flow authoring | `list_actions`, `describe_action`, `requirements`, `validate_flow`, `create_template`, `read_flow`, `connect_steps` | Templates only. User runs/signs in Portal. Use live registry types and ports. |
 
 ## VFS namespace and authorisation are real gaps
@@ -42,51 +43,28 @@ resource/file scope, read ability, expiry, caveats, and revocation checks. No
 available grant path means private third-party access remains blocked, even if
 the author can read. Managed VFS encryption is not end-to-end encryption.
 
-## Registry-backed entity creation
+## Entity creation through the Portal
 
-The editor registry contains `qi/domain.card-preview` and `qi/domain.sign`.
-The latter accepts `domainCardData`, explicit `entityType`, optional governance
-and parent configuration, and an invocation/checkpoint identity. It creates the
-entity, signs/uploads a public card, attaches it, sources domain spaces, and may
-import templates. These are distinct checkpointed effects, not one atomic commit.
+`propose_domain_creation` is the only supported route. It is a Portal browser
+tool, so it exists only while a Portal conversation is connected. The Portal
+creates the entity with the author's wallet (`MsgCreateEntity`, type exactly as
+passed), provisions the domain's Matrix space, then builds the public Domain
+Card from name, description, tags, purpose and image, uploads it, and attaches
+it as `#dmn` (`MsgAddLinkedResource`). Each transaction is a separate PIN
+confirmation; the tool returns after both, or after the author cancels.
 
-Its schema-type inference falls back to `dao/pod`; explicitly bind
-`entityType: "protocol/topic"` and verify the Portal handler preserves it. A
-string-valued port alone does not prove the underlying handler accepts this type.
-Do not let the older manage-flow POD recipe's `dao` default override it.
+The bootstrap card carries only the fields above. It does not carry
+`topicRecipe`, `#top-nn`, or a custom context; those are added in step 5 through
+the card-update route. Adding `#top-nn` still requires a supported
+linked-resource action/handler; the bootstrap `#dmn` attachment does not register
+the Shape.
 
-The signing action rebuilds the credential envelope with `buildVerifiableCredential`
-before signing and always uploads the card publicly. It may discard a custom
-top-level context/schema. Verify preservation before using it for the final
-recipe card; use a compatible controller signing route when it cannot preserve
-the proposed profile. A restricted card must not use that public upload route.
-Do not patch signed JSON after signing. Adding `#top-nn` requires a supported
-linked-resource action/handler; domain.sign's built-in `#dmn` attachment does not
-automatically register the Shape.
-
-## Optional publication Flow
-
-Use the runtime's Flow tools when useful; use manage-flow only with its compatible
-editor surface. Discover each action and its requirements first. A possible
-dependency graph is:
-
-```text
-review bootstrap -> create entity -> domain documents and release upload
-  -> access verification -> review final card -> sign and anchor
-  -> index verification -> author rehearsal -> production decision
-```
-
-Only turn a stage into a Flow action when a registry entry and its executor exist.
-Keep unavailable operations as explicit human/controller handoffs with evidence
-requirements. Do not invent `qi/topic.publish`, an upload action, or an x402 action.
-Use `requirements` to expose unresolved inputs. Configure forms with
-`set_form_schema`; connect real outputs to inputs using `connect_steps`.
-Preserve existing IDs on edits. Validate, author under the runtime's plan-review
-rules, and read back. A created template is not an executed publishing workflow.
-Keep consequential review/publication human-only unless a separately authorised
-Flow runtime explicitly supports delegated execution. Carry run, release, and
-operation identities through each real action; never restart a partial mint as a
-new invocation. The runtime Flow builder cannot execute these steps itself.
+The editor registry also contains `qi/domain.card-preview` and `qi/domain.sign`
+(flow actions that a person runs from a flow template). They are not a fallback
+for this skill: they default to `dao/pod`, require the author to open and run a
+template by hand, and rebuild the credential envelope before signing. If
+`propose_domain_creation` is absent, report `BLOCKED_DOMAIN_CREATION_TOOL` and
+continue with independent authoring.
 
 ## Topic importer compatibility
 
