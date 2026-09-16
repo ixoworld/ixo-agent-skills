@@ -18,7 +18,7 @@ Load current schemas before invoking a tool; no source snapshot proves deploymen
 | Domain search | `domain_indexer_search` | Use nonempty `query`, `scopes:"domain_cards"`, `filters:{"dc.entity_type":"protocol/topic"}`. Compound types are exact strings. |
 | Domain summary | `get_domain_card({did})` | Intentionally strips fields to summary/name/type/FAQ. It cannot verify the complete secured card or recipe extension. |
 | Portal interaction | `portal` request tools | Browser supplies descriptors each turn. No connected Portal means no browser tools. Names from another session are not callable proof. |
-| Domain file persistence | `write_domain_file({entityDid,path,content,mimeType,public,overwrite?})` | Portal browser tool. Writes exact text bytes into `ixo:filesystem/<entityDid>` with the author's key (controller check on-chain), reads them back, returns `{written:true,fileId,version,digest,size,public,publicUrl?,cid?}` or `{written:false,reason,message}` (`exists`, `permission_denied`, `not_found`, `verification_failed`). Text up to 512 KB; binaries not yet. |
+| Domain file persistence | `write_domain_files({requestKey,entityDid,public,overwrite?,files:[{path,content,mimeType}]})` | Portal browser tool. Parks the batch behind one approval card and returns `{status:"awaiting_approval"}` immediately. On approval the Portal writes each file into `ixo:filesystem/<entityDid>` with the author's key (controller check on-chain), reads it back, and sends a chat message with one receipt per file: `written, fileId, version, digest, publicUrl` or `NOT written (exists / permission_denied / not_found / verification_failed)`. Up to 12 text files, 512 KB each, 1 MB total; binaries not yet. Never re-call while pending. |
 | Entity creation | `propose_domain_creation({requestKey,name,description,entityType,tags?,purpose?,image?})` | Portal browser tool. Opens the Create Domain form pre-filled; the author reviews and signs entity + public card. Returns `{status:"proposed"}` immediately; the decision arrives later as a Portal chat message (`Domain "<name>" created: <DID> …` / `… cancelled.`, with `metadata.domainProposal`). Never re-call or poll. `entityType` is written to chain as passed. |
 | Flow authoring | `list_actions`, `describe_action`, `requirements`, `validate_flow`, `create_template`, `read_flow`, `connect_steps` | Templates only. User runs/signs in Portal. Use live registry types and ports. |
 
@@ -30,13 +30,15 @@ resource selector, so they cannot reach a domain's namespace, and a grant made
 to the agent in the Portal does not change that. Writing `/domains/<did>/...`
 in personal Files is not the domain namespace either.
 
-`write_domain_file` is the domain-scoped adapter: it is a Portal browser tool,
-so it exists only while a Portal conversation is connected, and the Portal
-performs the write with the author's own key after the VFS worker confirms
-they control the domain. Its receipt (fileId, version, byte digest of the
-read-back, public URL) is the domain receipt. If the tool is absent, prepare
-sandbox files and return `BLOCKED_DOMAIN_VFS_ADAPTER`; do not mint tokens,
-request root grants, or introduce an ad-hoc uploader.
+`write_domain_files` is the domain-scoped adapter: it is a Portal browser
+tool, so it exists only while a Portal conversation is connected. Every write
+is gated by the author's click on one approval card per batch, and the Portal
+performs it with the author's own key after the VFS worker confirms they
+control the domain. The receipts (fileId, version, byte digest of the
+read-back, public URL) arrive as the next chat message and are the domain
+receipts. If the tool is absent, prepare sandbox files and return
+`BLOCKED_DOMAIN_VFS_ADAPTER`; do not mint tokens, request root grants, or
+introduce an ad-hoc uploader.
 
 The shipped VFS surface consumes the user's existing delegation; it has no tool
 to sell access or issue a new user's delegation. Use the controller's supported

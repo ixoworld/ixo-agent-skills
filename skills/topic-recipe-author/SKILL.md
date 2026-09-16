@@ -122,13 +122,19 @@ and no self-referential CID. Do not call an incomplete package conforming.
 
 ## 5. Publish the immutable release
 
-Persist every release file into the recipe domain's own filesystem with the
-Portal browser tool `write_domain_file`: pass the recipe `entityDid`, a new
-versioned path such as `/recipes/<slug>/<version>/shape.json`, the exact bytes
-read from your sandbox, the media type, and `public` chosen explicitly. The
-Portal writes with the author's key (they must control the domain), reads the
-bytes back, and returns `{ fileId, version, digest, publicUrl? }`; that digest
-is the value to pin. An existing path is reported, not replaced — use a new
+Persist the release files into the recipe domain's own filesystem with the
+Portal browser tool `write_domain_files`: one call with the recipe
+`entityDid`, a stable `requestKey`, `public` chosen explicitly, and every file
+of the release as `{ path, content, mimeType }` under a new versioned folder
+such as `/recipes/<slug>/<version>/`. Read the exact bytes from your sandbox
+first. The call returns at once with `{ status: "awaiting_approval" }`; the
+author sees one card listing the files and approves or declines. End the turn
+with one sentence saying you are waiting; do not call the tool again, poll, or
+ask whether they approved. The Portal then writes with the author's key (they
+must control the domain), reads each file back, and sends the next message:
+`Domain file write "<requestKey>" approved … ` with a receipt per file
+(`fileId`, `version`, `digest`, `publicUrl`), or `… declined`. Pin the
+returned digests. An existing path is reported, not replaced — use a new
 version rather than `overwrite`. Never use the personal `vfs_*` tools or
 `sandbox_to_vfs` for domain files; the personal filesystem is not the domain
 namespace and its receipts are not domain receipts.
