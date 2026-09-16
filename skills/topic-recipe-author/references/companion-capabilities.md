@@ -19,6 +19,7 @@ Load current schemas before invoking a tool; no source snapshot proves deploymen
 | Domain summary | `get_domain_card({did})` | Intentionally strips fields to summary/name/type/FAQ. It cannot verify the complete secured card or recipe extension. |
 | Portal interaction | `portal` request tools | Browser supplies descriptors each turn. No connected Portal means no browser tools. Names from another session are not callable proof. |
 | Domain file persistence | `write_domain_files({requestKey,entityDid,public,overwrite?,files:[{path,content,mimeType}]})` | Portal browser tool. Parks the batch behind one approval card and returns `{status:"awaiting_approval"}` immediately. On approval the Portal writes each file into `ixo:filesystem/<entityDid>` with the author's key (controller check on-chain), reads it back, and sends a chat message with one receipt per file: `written, fileId, version, digest, publicUrl` or `NOT written (exists / permission_denied / not_found / verification_failed)`. Up to 12 text files, 512 KB each, 1 MB total; binaries not yet. Never re-call while pending. |
+| Recipe release | `publish_recipe_release({requestKey,entityDid,recipe:{version,protocolVersion,baseKind,baseRecipe,listingVisibility},shape:{fileId,path,version,digest,mediaType,publicUrl?,cid?},access})` | Portal browser tool. Parks the release behind one approval card and returns `{status:"awaiting_approval"}` immediately. On approval the Portal re-issues the domain card with the `topicRecipe` extension (existing fields preserved) and anchors the Shape as the next `#top-nn` linked resource; two PIN signatures. Outcome arrives as a chat message: `published … resourceId, card tx, shape tx` / `declined` / `failed (card_failed | shape_failed)`. Never re-call while pending. |
 | Entity creation | `propose_domain_creation({requestKey,name,description,entityType,tags?,purpose?,image?})` | Portal browser tool. Opens the Create Domain form pre-filled; the author reviews and signs entity + public card. Returns `{status:"proposed"}` immediately; the decision arrives later as a Portal chat message (`Domain "<name>" created: <DID> …` / `… cancelled.`, with `metadata.domainProposal`). Never re-call or poll. `entityType` is written to chain as passed. |
 | Flow authoring | `list_actions`, `describe_action`, `requirements`, `validate_flow`, `create_template`, `read_flow`, `connect_steps` | Templates only. User runs/signs in Portal. Use live registry types and ports. |
 
@@ -61,10 +62,11 @@ the Portal reports the decision as the next chat message. Treat that message
 as the tool result; never re-call the tool while it is pending.
 
 The bootstrap card carries only the fields above. It does not carry
-`topicRecipe`, `#top-nn`, or a custom context; those are added in step 5 through
-the card-update route. Adding `#top-nn` still requires a supported
-linked-resource action/handler; the bootstrap `#dmn` attachment does not register
-the Shape.
+`topicRecipe`, `#top-nn`, or the recipe context; those are added in step 5 by
+`publish_recipe_release`, which re-issues `#dmn` with the recipe block on top of
+the existing card and anchors the Shape as a `#top-nn` linked resource (type
+`topicShape`, proof = the Shape's byte digest). The bootstrap `#dmn` attachment
+alone does not register the Shape.
 
 The editor registry also contains `qi/domain.card-preview` and `qi/domain.sign`
 (flow actions that a person runs from a flow template). They are not a fallback

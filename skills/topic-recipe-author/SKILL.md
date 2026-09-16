@@ -153,12 +153,25 @@ private recipe but must not contain its body, source material, or bearer
 credentials. `x402` is planned only; never charge or advertise paid acquisition
 as operational.
 
-Compile the final Domain Card using the bundled proposed profile and resolved
-IDs/digests. Preserve `VerifiableCredential`, `ixo:DomainCard`, `#dmn`, and original
-discovery fields. Validate, render for review, sign, publish, and anchor the final
-card through the available controller route. Verify that signing did not discard
-`@context`, `credentialSchema`, `topicRecipe`, or nested references. Changing
-content or access after approval invalidates the affected approval/signature.
+Anchor the release with the Portal browser tool `publish_recipe_release`: pass
+the recipe `entityDid`, a stable `requestKey`, the recipe block (`version`,
+`protocolVersion`, `baseKind`, `baseRecipe`, `listingVisibility`), the Shape
+receipt exactly as `write_domain_files` reported it (`fileId`, `path`,
+`version`, `digest`, `publicUrl`), and `access` (`public` or `ucan`, matching
+how shape.json was written). Do not compile or upload a card yourself: the
+Portal keeps the existing card's name, description, images and keywords, adds
+the `topicRecipe` block and the `relatedDocument` pointer, re-issues `#dmn`,
+then anchors the Shape as the next `#top-nn` linked resource with the digest
+as its proof. The call returns at once with `{ status: "awaiting_approval" }`;
+the author reviews one card and signs twice. End the turn with one sentence
+saying you are waiting; do not call the tool again, poll, or ask whether they
+signed. The outcome arrives as the next message: `Recipe release "<requestKey>"
+published … Shape anchored as <DID>#top-nn …` with both transaction hashes, or
+`… declined`, or `… failed (card_failed | shape_failed)`; a `shape_failed`
+message names the card transaction that already landed, so a retry only needs
+the Shape step. Changing content or access after approval invalidates the
+affected approval/signature. The bundled card profile and `validate_bundle.py`
+remain useful as an offline preview of what the Portal will write.
 
 ## 6. Verify discovery, then rehearse and improve
 
