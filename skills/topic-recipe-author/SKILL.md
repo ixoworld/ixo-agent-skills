@@ -88,17 +88,21 @@ the entity with the Portal browser tool `propose_domain_creation`: pass the
 approved name, description, `entityType: "protocol/topic"`, the card keywords,
 and a one-line purpose. The Portal opens its Create Domain form pre-filled; the
 author reviews it, may edit it, and signs twice (entity, then public card). The
-call waits for that decision and returns `{ created, entityDid,
-cardTransactionHash, cardError }`. Never sign, never bypass the review, and do
-not fall back to a flow template, a governance group, or a `dao` default when
-the tool is absent — report the missing tool instead.
+call returns at once with `{ status: "proposed" }`; it does not wait. End the
+turn with one sentence saying you are waiting for the author's decision. Do not
+call the tool again, do not poll, and do not ask whether they signed. The
+outcome arrives as the next Portal message: `Domain "<name>" created: <DID>,
+type protocol/topic, domain card published (tx …)` or `Domain proposal "<name>"
+cancelled.` Never sign, never bypass the review, and do not fall back to a flow
+template, a governance group, or a `dao` default when the tool is absent —
+report the missing tool instead.
 
 The entity must exist before domain-owned files can have final identifiers.
 The card published at creation is a non-sensitive bootstrap card, with no Shape
 links or ready claims; its `#dmn` binding is a bootstrap receipt, not the
-finished recipe. If `cardError` is set the entity exists without a card; tell
-the author and continue, the card is re-published in step 5. Reuse the returned
-entity DID for all remaining operations.
+finished recipe. If the message says the card was NOT published, the entity
+exists without a card; tell the author and continue, the card is re-published
+in step 5. Reuse the reported entity DID for all remaining operations.
 
 ## 4. Author and persist domain.md
 
@@ -118,18 +122,36 @@ and no self-referential CID. Do not call an incomplete package conforming.
 
 ## 5. Publish the immutable release
 
-Use new versioned paths and a new `#top-nn` for each changed Shape. Read the
-publication reference for ordering, UCAN requirements, and duplicate recovery.
-Keep working files, private source documents, and evidence reports out of public
-release folders. Publish only the reviewed allowlist of image, card, domain.md
-package files, and, for public recipes, Shape/recipe bytes.
+Persist the release files into the recipe domain's own filesystem with the
+Portal browser tool `write_domain_files`: one call with the recipe
+`entityDid`, a stable `requestKey`, `public` chosen explicitly, and every file
+of the release as `{ path, content, mimeType }` under a new versioned folder
+such as `/recipes/<slug>/<version>/`. Read the exact bytes from your sandbox
+first. The call returns at once with `{ status: "awaiting_approval" }`; the
+author sees one card listing the files and approves or declines. End the turn
+with one sentence saying you are waiting; do not call the tool again, poll, or
+ask whether they approved. The Portal then writes with the author's key (they
+must control the domain), reads each file back, and sends the next message:
+`Domain file write "<requestKey>" approved … ` with a receipt per file
+(`fileId`, `version`, `digest`, `publicUrl`), or `… declined`. Pin the
+returned digests. An existing path is reported, not replaced — use a new
+version rather than `overwrite`. Never use the personal `vfs_*` tools or
+`sandbox_to_vfs` for domain files; the personal filesystem is not the domain
+namespace and its receipts are not domain receipts.
 
-Public recipe: explicitly publish the release file, then anonymously retrieve
-and hash it. Private recipe: keep file/folder visibility private and verify both
-authorised read and unauthorised denial; verify delegation to a distinct test
-user when the author provides one. A public market teaser may describe a private
-recipe but must not contain its body, source material, or bearer credentials.
-`x402` is planned only; never charge or advertise paid acquisition as operational.
+Use new versioned paths and a new `#top-nn` for each changed Shape. Read the
+publication reference for ordering and duplicate recovery. Keep working files,
+private source documents, and evidence reports out of public release folders.
+Publish only the reviewed allowlist of image, card, domain.md package files,
+and, for public recipes, Shape/recipe bytes.
+
+Public recipe: write with `public: true`, then anonymously retrieve the returned
+`publicUrl` and hash it. Private recipe: write with `public: false` and verify
+both authorised read and unauthorised denial; verify delegation to a distinct
+test user when the author provides one. A public market teaser may describe a
+private recipe but must not contain its body, source material, or bearer
+credentials. `x402` is planned only; never charge or advertise paid acquisition
+as operational.
 
 Compile the final Domain Card using the bundled proposed profile and resolved
 IDs/digests. Preserve `VerifiableCredential`, `ixo:DomainCard`, `#dmn`, and original
