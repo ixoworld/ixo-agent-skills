@@ -18,23 +18,25 @@ Load current schemas before invoking a tool; no source snapshot proves deploymen
 | Domain search | `domain_indexer_search` | Use nonempty `query`, `scopes:"domain_cards"`, `filters:{"dc.entity_type":"protocol/topic"}`. Compound types are exact strings. |
 | Domain summary | `get_domain_card({did})` | Intentionally strips fields to summary/name/type/FAQ. It cannot verify the complete secured card or recipe extension. |
 | Portal interaction | `portal` request tools | Browser supplies descriptors each turn. No connected Portal means no browser tools. Names from another session are not callable proof. |
-| Entity creation | `propose_domain_creation({requestKey,name,description,entityType,tags?,purpose?,image?})` | Portal browser tool. Opens the Create Domain form pre-filled; the author reviews and signs entity + public card. Waits for the decision; returns `{created:true,entityDid,cardTransactionHash?,cardError?}` or `{created:false,reason}`. `entityType` is written to chain as passed. |
+| Domain file persistence | `write_domain_file({entityDid,path,content,mimeType,public,overwrite?})` | Portal browser tool. Writes exact text bytes into `ixo:filesystem/<entityDid>` with the author's key (controller check on-chain), reads them back, returns `{written:true,fileId,version,digest,size,public,publicUrl?,cid?}` or `{written:false,reason,message}` (`exists`, `permission_denied`, `not_found`, `verification_failed`). Text up to 512 KB; binaries not yet. |
+| Entity creation | `propose_domain_creation({requestKey,name,description,entityType,tags?,purpose?,image?})` | Portal browser tool. Opens the Create Domain form pre-filled; the author reviews and signs entity + public card. Returns `{status:"proposed"}` immediately; the decision arrives later as a Portal chat message (`Domain "<name>" created: <DID> …` / `… cancelled.`, with `metadata.domainProposal`). Never re-call or poll. `entityType` is written to chain as passed. |
 | Flow authoring | `list_actions`, `describe_action`, `requirements`, `validate_flow`, `create_template`, `read_flow`, `connect_steps` | Templates only. User runs/signs in Portal. Use live registry types and ports. |
 
-## VFS namespace and authorisation are real gaps
+## Domain files go through the Portal, not the vfs plugin
 
-The inspected VFS auth asks for the current user's delegation over
-`ixo:filesystem` and mints a fresh short-lived invocation for `fs/read`, `fs/list`,
-`fs/write`, or `fs/delete`. Tool inputs have no domain DID/resource selector.
-They therefore do **not** establish access to a newly minted domain's namespace.
-Writing `/domains/<did>/...` in personal Files does not change that namespace.
+The runtime's `vfs_*` tools mint invocations from the user's delegation over
+`ixo:filesystem`, the personal namespace; their inputs have no domain DID or
+resource selector, so they cannot reach a domain's namespace, and a grant made
+to the agent in the Portal does not change that. Writing `/domains/<did>/...`
+in personal Files is not the domain namespace either.
 
-Require a deployed domain-scoped VFS tool/Portal adapter that resolves the selected
-entity's namespace and delegated authority. Record its real schema and receipts.
-If unavailable, prepare sandbox files and return `BLOCKED_DOMAIN_VFS_ADAPTER` for
-domain persistence. Do not manually mint tokens, request root grants, or introduce
-an ad-hoc HTTP uploader to bypass the plugin. Metadata/version/visibility receipts
-and an exact-byte read are also required if the write wrapper omits them.
+`write_domain_file` is the domain-scoped adapter: it is a Portal browser tool,
+so it exists only while a Portal conversation is connected, and the Portal
+performs the write with the author's own key after the VFS worker confirms
+they control the domain. Its receipt (fileId, version, byte digest of the
+read-back, public URL) is the domain receipt. If the tool is absent, prepare
+sandbox files and return `BLOCKED_DOMAIN_VFS_ADAPTER`; do not mint tokens,
+request root grants, or introduce an ad-hoc uploader.
 
 The shipped VFS surface consumes the user's existing delegation; it has no tool
 to sell access or issue a new user's delegation. Use the controller's supported
@@ -51,7 +53,10 @@ creates the entity with the author's wallet (`MsgCreateEntity`, type exactly as
 passed), provisions the domain's Matrix space, then builds the public Domain
 Card from name, description, tags, purpose and image, uploads it, and attaches
 it as `#dmn` (`MsgAddLinkedResource`). Each transaction is a separate PIN
-confirmation; the tool returns after both, or after the author cancels.
+confirmation and takes the author minutes, longer than the runtime keeps a
+browser tool call open, so the tool returns `{status:"proposed"}` at once and
+the Portal reports the decision as the next chat message. Treat that message
+as the tool result; never re-call the tool while it is pending.
 
 The bootstrap card carries only the fields above. It does not carry
 `topicRecipe`, `#top-nn`, or a custom context; those are added in step 5 through
