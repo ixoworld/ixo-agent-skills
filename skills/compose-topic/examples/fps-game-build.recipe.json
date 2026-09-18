@@ -49,6 +49,15 @@
     "progressRules": [],
     "inferredRecordPolicy": { "autoAccept": [], "neverAutoAccept": [] }
   },
+  "project": {
+    "version": 1,
+    "compatibleKind": "project",
+    "compatibleShapeVersion": 1,
+    "allowedChildKinds": ["task", "question", "evaluation", "discussion"],
+    "entryPoints": [],
+    "milestoneSuggestions": [],
+    "requiredCloseEvidenceTypes": ["ixo.evaluation"]
+  },
   "draft": {
     "intent": "Build a playable vertical slice of a first-person shooter: one level, core movement and shooting, one enemy type, a main menu.",
     "outcome": "The slice runs on a clean machine for ten minutes without crashing and three external testers finish the level.",

@@ -77,6 +77,9 @@ export function staticIssues(recipe, expected) {
     if (typeof presentation?.priority !== "number") issues.push(`transition ${transition?.code}: presentation.priority is required`);
   }
   if (recipe.project !== undefined && expected.kind && expected.kind !== "project") issues.push("a project block is only allowed for kind project");
+  if (expected.kind === "project" && (!isRecord(recipe.project) || recipe.project.compatibleKind !== "project")) {
+    issues.push('a recipe for kind project needs a project block: { version: 1, compatibleKind: "project", compatibleShapeVersion: 1, allowedChildKinds, entryPoints, milestoneSuggestions }');
+  }
   if (!isRecord(recipe.draft)) issues.push("warning: no draft block; the Topic Draft will open with empty text");
   return issues;
 }

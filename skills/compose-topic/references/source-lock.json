@@ -325,10 +325,10 @@
       "sha256": "39a3db8789ef2f525cc9ff403502170419a0cddf9a3d53637bbae1517b010e6e"
     },
     "references/topic-recipe-publishing.md": {
-      "sha256": "b594a0d36baf3e500c2cdd081704e4ed263e376e686f230ba7a5733c6d909e5f"
+      "sha256": "7c6264ce0e491791ea1c84dc2a59bc0d3265b366b888fd37f2a88991bdea7e8a"
     },
     "scripts/validate-recipe.mjs": {
-      "sha256": "1f0195d8d2ded8befef4ead3336c1daa96fa4f93b2df2983ff76cf6a3e59c212"
+      "sha256": "a219aed679f072c236477e1516c8c0ddf0cacbffd2e571d9b703d6c16640b2d9"
     },
     "tests/validate-recipe.test.mjs": {
       "sha256": "0e2d9d60b8d61c0ca05cb4ed0a2e40ae69058b824d8523c56a792198a4fdddcd"
