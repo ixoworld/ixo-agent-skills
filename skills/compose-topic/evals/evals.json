@@ -973,6 +973,36 @@
         "Stop after the second failure; never repeat unchanged failed arguments.",
         "Do not run repository tests or audits to fix an interactive request."
       ]
+    },
+    {
+      "id": "publish-as-recipe",
+      "input": "Turn this Topic into a recipe others can use: build an FPS vertical slice with an independent playtest before close.",
+      "expected": {
+        "disposition": "create",
+        "kind": "project",
+        "baseRecipe": "project"
+      },
+      "must": [
+        "Compose the Topic first; publishing is the exit, not a different composition.",
+        "Write shape.json as a TopicRecipeV1 with a shape overlay built only from existing protocol axes and transitions, plus a draft block; never a bare brief.",
+        "Validate the exact bytes with scripts/validate-recipe.mjs before writing them.",
+        "Use propose_domain_creation, write_domain_files and publish_recipe_release in order, ending the turn after each call; never sign, never upload a card, never re-call a pending tool."
+      ]
+    },
+    {
+      "id": "compose-from-published-recipe",
+      "input": "Compose a Topic for me from the published recipe \"FPS Game Build\" (did:ixo:entity:00000000000000000000000000000001, version 1.0.0).",
+      "expected": {
+        "disposition": "create",
+        "kind": "project",
+        "baseRecipe": "project"
+      },
+      "must": [
+        "Call resolve_published_recipe once and copy its topicRecipeRef, shapeSources and shapeDigest verbatim; never compute a digest or search for the file.",
+        "Record registryLookup host-supplied and registryReason portal-published-recipe with strategy topic-recipe.",
+        "Seed the Draft text from the recipe draft block and keep every value proposed.",
+        "If the tool reports the file is a brief, compose on the Base Recipe and say the recipe carries no rules."
+      ]
     }
   ],
   "globalAssertions": [

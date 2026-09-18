@@ -13,6 +13,7 @@ const EXAMPLES = [
   "research-brief.example.json",
   "team-project.example.json",
   "verified-work-payment.example.json",
+  "published-recipe-project.example.json",
 ];
 
 async function example(name = "decision.example.json") {

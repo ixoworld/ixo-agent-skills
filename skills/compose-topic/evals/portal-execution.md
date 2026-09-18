@@ -16,6 +16,8 @@ These are release checks, not instructions to execute during a user's Topic turn
 | Duplicate choice, pending approval, bridge timeout, or missing render receipt | Return control; no polling, automatic restaging, or editor-open claim without the receipt. |
 | Selected room fails permission or confidentiality checks | Preserve the blocker; never fabricate evidence or clear the host's rejection. |
 | Model attempts the same failed call repeatedly | The trace check fails even when JSON key order changes. Inspect runtime termination separately. |
+| Compose from a published recipe named by DID and version | One `resolve_published_recipe` call; its `topicRecipeRef`, `shapeSources` and `shapeDigest` copied verbatim with `registryLookup: host-supplied`; one staging call; no file fetch or digest computation by the model. |
+| Publish the composed Topic as a recipe | `scripts/validate-recipe.mjs` run on the exact bytes; `propose_domain_creation`, `write_domain_files`, `publish_recipe_release` each called once with a turn ended between them; no card built by the model; a `card_failed` naming the file leads to a new version, never a retry of the same bytes. |
 
 ## Trace format
 

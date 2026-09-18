@@ -379,8 +379,29 @@ function validateRecipe(value, findings) {
   add(findings, selection?.baseRecipe === expectedBase, "KIND_BASE_RECIPE", "/recipeSelection/baseRecipe", "must match the selected Kind");
   add(findings, semantic?.baseRecipe === expectedBase, "CONTRACT_BASE_RECIPE", "/contractDraft/semantic/baseRecipe", "must match the selected Kind");
   add(findings, value.topic?.rootDraft === undefined || value.topic.rootDraft.baseRecipe === expectedBase, "ROOT_BASE_RECIPE", "/topic/rootDraft/baseRecipe", "must match the selected Kind");
-  add(findings, selection?.registryLookup === "not-performed" && selection?.registryReason === "pinned-catalog-only", "RECIPE_LOOKUP", "/recipeSelection", "Marketplace lookup is not available yet");
   add(findings, selection?.reviewState === "draft", "RECIPE_REVIEW_STATE", "/recipeSelection/reviewState", "every recipe selection must remain a Draft");
+
+  // A recipe the Portal loaded from chain has no bundled pin: the host supplied the ref, sources and digest, and the Portal re-resolves them before staging.
+  if (selection?.registryLookup === "host-supplied") {
+    const ref = selection.topicRecipeRef;
+    add(findings, selection.registryReason === "portal-published-recipe", "RECIPE_LOOKUP", "/recipeSelection/registryReason", "host-supplied recipes come only from the Portal");
+    add(findings, selection.strategy === "topic-recipe", "RECIPE_LOOKUP", "/recipeSelection/strategy", "a host-supplied recipe is a Topic Recipe");
+    add(findings, isObject(ref) && DOMAIN_DID.test(ref.id), "TOPIC_RECIPE_REF", "/recipeSelection/topicRecipeRef", "a published recipe is identified by its domain DID");
+    add(findings, typeof selection.topicRecipeCode === "string" && selection.topicRecipeCode.length > 0, "TOPIC_RECIPE_CODE", "/recipeSelection/topicRecipeCode", "the recipe's own code is required");
+    const recipeSource = Array.isArray(selection.shapeSources) ? selection.shapeSources.find((source) => source.kind === "topic-recipe") : undefined;
+    add(findings, isObject(ref) && isObject(recipeSource) && recipeSource.id === ref.id && recipeSource.version === ref.version && recipeSource.digest === ref.digest, "SHAPE_SOURCES", "/recipeSelection/shapeSources", "must carry the topic-recipe source exactly as the Portal returned it");
+    add(findings, Array.isArray(selection.shapeSources) && selection.shapeSources.some((source) => source.kind === "base-recipe") && selection.shapeSources.some((source) => source.kind === "kind"), "SHAPE_SOURCES", "/recipeSelection/shapeSources", "must carry the base-recipe and kind sources");
+    add(findings, same(semantic?.shapeSources, selection.shapeSources), "CONTRACT_SHAPE_SOURCES", "/contractDraft/semantic/shapeSources", "must match recipe selection");
+    add(findings, semantic?.shapeDigest === selection.shapeDigest, "CONTRACT_SHAPE_DIGEST", "/contractDraft/semantic/shapeDigest", "must match recipe selection");
+    add(findings, same(semantic?.topicRecipeRef, selection.topicRecipeRef), "CONTRACT_TOPIC_RECIPE", "/contractDraft/semantic/topicRecipeRef", "must match recipe selection");
+    if (value.topic?.rootDraft) {
+      add(findings, value.topic.rootDraft.shapeDigest === selection.shapeDigest, "ROOT_SHAPE_DIGEST", "/topic/rootDraft/shapeDigest", "must match recipe selection");
+      add(findings, same(value.topic.rootDraft.topicRecipeRef, selection.topicRecipeRef), "ROOT_TOPIC_RECIPE", "/topic/rootDraft/topicRecipeRef", "must match recipe selection");
+      add(findings, value.topic.rootDraft.kind === kind, "ROOT_CONTRACT_KIND", "/topic/rootDraft/kind", "root and contract Kind must agree");
+    }
+    return;
+  }
+  add(findings, selection?.registryLookup === "not-performed" && selection?.registryReason === "pinned-catalog-only", "RECIPE_LOOKUP", "/recipeSelection", "Marketplace lookup is not available yet");
 
   const pin = selection?.strategy === "topic-recipe"
     ? SHAPE_PINS.topicRecipes?.[selection.topicRecipeCode]

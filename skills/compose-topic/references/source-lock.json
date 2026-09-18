@@ -232,7 +232,7 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "6434fe7a73b4126ce55b9748033e173317ba39904fcbbb5c96f8b7becf67a1de"
+      "sha256": "f56a9050e42591de6a87a5d62b24ec1d030a414da12375a3724921f2f59ab4d3"
     },
     "schemas/topic-contract-draft.schema.json": {
       "sha256": "0b89342554188170964d28cf50e634517cab3c7ff0775776a40d17bf4d0d4c83"
@@ -244,7 +244,7 @@
       "sha256": "f84469286df40ea038e9b5373f7fb6a403d49ded0970fe096769a21099d8008b"
     },
     "references/topic-recipe-selection.md": {
-      "sha256": "3b838869ae6a1d0ac51d37feeeb8dad3ba10143b8668cfccf46a00784bd5a8fc"
+      "sha256": "39c381941ecbf5342e164f53c4d385f590f0af2db7c17aee5c592661b72813cc"
     },
     "references/topic-shape-pins.json": {
       "sha256": "e7f6d3e97072eca6641fe9742005f7dabd669cd976dac67a94057bf7fd129639"
@@ -256,13 +256,13 @@
       "sha256": "f52006b34c2303d3c7bb5edcd99fa0c72902c36abf409f15fe14f7264ad55cc3"
     },
     "SKILL.md": {
-      "sha256": "38701387a94d04bc2003663b8786bd836012b28f5ed0057e052eb6c504b9656f"
+      "sha256": "bd8245acba4c4f09d7534594237175850eb46f3c4354a36b2efea8cdd4d9816f"
     },
     "AUDIT.md": {
       "sha256": "0a9cd59534767185368d298e688653b0adf3fa89b72f9718df80ed05084b7c2f"
     },
     "evals/evals.json": {
-      "sha256": "fe2e94bd21081a7f68213d4dfffd63ac3db7853a1b9f43679f8238f364f4a84c"
+      "sha256": "4005a1d3a918ac4224720dfcc197620153ef8dcc2264489ab95137566b2cbdbc"
     },
     "subskills/compose-topic-project/SKILL.md": {
       "sha256": "6b18bb0b8ca484e80e149456d27fa46d63bc11ec9257dc026c7b2f6976acf66e"
@@ -316,13 +316,22 @@
       "sha256": "99b83b6d89c16a0333750c58496ae310bc465cda303c162bd2be13bdcafcdefe"
     },
     "evals/portal-execution.md": {
-      "sha256": "50df391f8f227e95b504d6a71885c205f76ebea3e4447c527b5244d30805abe7"
+      "sha256": "27903d15d754db0484ac8c5eac6dae7837ab0fbd782899557fea5ece63aa83dc"
     },
     "scripts/validate-execution-trace.mjs": {
       "sha256": "1b8f36663f70d200c4597adbc0e11dfbe6f3ca78c393f2faaa414ba72f348321"
     },
     "tests/execution-trace.test.mjs": {
       "sha256": "39a3db8789ef2f525cc9ff403502170419a0cddf9a3d53637bbae1517b010e6e"
+    },
+    "references/topic-recipe-publishing.md": {
+      "sha256": "b594a0d36baf3e500c2cdd081704e4ed263e376e686f230ba7a5733c6d909e5f"
+    },
+    "scripts/validate-recipe.mjs": {
+      "sha256": "1f0195d8d2ded8befef4ead3336c1daa96fa4f93b2df2983ff76cf6a3e59c212"
+    },
+    "tests/validate-recipe.test.mjs": {
+      "sha256": "0e2d9d60b8d61c0ca05cb4ed0a2e40ae69058b824d8523c56a792198a4fdddcd"
     }
   }
 }

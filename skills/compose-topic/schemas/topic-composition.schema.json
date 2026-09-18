@@ -15,21 +15,59 @@
     "quality"
   ],
   "properties": {
-    "version": { "const": "3.3.2" },
+    "version": {
+      "const": "3.3.2"
+    },
     "compositionId": {
       "type": "string",
       "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
-    "mode": { "enum": ["preview", "commit", "refine"] },
-    "disposition": { "enum": ["create", "continue", "branch", "split", "clarify", "answer-without-topic"] },
+    "mode": {
+      "enum": [
+        "preview",
+        "commit",
+        "refine"
+      ]
+    },
+    "disposition": {
+      "enum": [
+        "create",
+        "continue",
+        "branch",
+        "split",
+        "clarify",
+        "answer-without-topic"
+      ]
+    },
     "sourceIntent": {
       "type": "object",
-      "required": ["verbatim"],
+      "required": [
+        "verbatim"
+      ],
       "properties": {
-        "verbatim": { "type": "string", "minLength": 1, "maxLength": 20000 },
-        "sourceEventId": { "type": "string", "pattern": "^\\$" },
-        "sourceSurface": { "enum": ["qi-home", "topic", "matrix-message", "canvas", "external-session"] },
-        "language": { "type": "string", "minLength": 2, "maxLength": 32 }
+        "verbatim": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        },
+        "sourceEventId": {
+          "type": "string",
+          "pattern": "^\\$"
+        },
+        "sourceSurface": {
+          "enum": [
+            "qi-home",
+            "topic",
+            "matrix-message",
+            "canvas",
+            "external-session"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32
+        }
       },
       "additionalProperties": false
     },
@@ -50,47 +88,135 @@
         "legacyPolicy"
       ],
       "properties": {
-        "package": { "const": "@ixo/topic-protocol" },
-        "topicProtocolVersion": { "const": "1.0.0-rc.4" },
-        "rootVersion": { "const": 4 },
-        "contractBodyVersion": { "const": 4 },
-        "stateVersion": { "const": 4 },
-        "contractProfile": { "const": "qi.topic-contract-state/v4" },
-        "profileStatus": { "const": "normative" },
-        "sourceCommit": { "const": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d" },
-        "packageShasum": { "const": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a" },
-        "authoritativeHistory": { "const": "topic-root+operations+records+projection" },
-        "stateEventRole": { "const": "materialized-head-only" },
-        "legacyPolicy": { "const": "v4-only-no-migration" }
+        "package": {
+          "const": "@ixo/topic-protocol"
+        },
+        "topicProtocolVersion": {
+          "const": "1.0.0-rc.4"
+        },
+        "rootVersion": {
+          "const": 4
+        },
+        "contractBodyVersion": {
+          "const": 4
+        },
+        "stateVersion": {
+          "const": 4
+        },
+        "contractProfile": {
+          "const": "qi.topic-contract-state/v4"
+        },
+        "profileStatus": {
+          "const": "normative"
+        },
+        "sourceCommit": {
+          "const": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d"
+        },
+        "packageShasum": {
+          "const": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a"
+        },
+        "authoritativeHistory": {
+          "const": "topic-root+operations+records+projection"
+        },
+        "stateEventRole": {
+          "const": "materialized-head-only"
+        },
+        "legacyPolicy": {
+          "const": "v4-only-no-migration"
+        }
       },
       "additionalProperties": false
     },
     "routing": {
       "type": "object",
-      "required": ["rationale", "audience", "indexCompleteness", "duplicateDetection", "kindInference", "roomResolution"],
+      "required": [
+        "rationale",
+        "audience",
+        "indexCompleteness",
+        "duplicateDetection",
+        "kindInference",
+        "roomResolution"
+      ],
       "properties": {
-        "rationale": { "type": "string", "minLength": 1, "maxLength": 2000 },
-        "audience": { "enum": ["current-room", "separate-room-required", "unknown"] },
-        "indexCompleteness": { "enum": ["complete", "partial", "unknown"] },
-        "duplicateDetection": { "enum": ["matched", "no-match", "uncertain", "not-run"] },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "audience": {
+          "enum": [
+            "current-room",
+            "separate-room-required",
+            "unknown"
+          ]
+        },
+        "indexCompleteness": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown"
+          ]
+        },
+        "duplicateDetection": {
+          "enum": [
+            "matched",
+            "no-match",
+            "uncertain",
+            "not-run"
+          ]
+        },
         "kindInference": {
           "type": "object",
-          "required": ["status", "confidence", "rationale"],
+          "required": [
+            "status",
+            "confidence",
+            "rationale"
+          ],
           "properties": {
-            "status": { "enum": ["selected", "needs-user-choice", "not-required"] },
-            "selectedKind": { "$ref": "#/$defs/kind" },
-            "confidence": { "enum": ["high", "medium", "low", "unknown"] },
-            "rationale": { "type": "string", "minLength": 1, "maxLength": 2000 },
+            "status": {
+              "enum": [
+                "selected",
+                "needs-user-choice",
+                "not-required"
+              ]
+            },
+            "selectedKind": {
+              "$ref": "#/$defs/kind"
+            },
+            "confidence": {
+              "enum": [
+                "high",
+                "medium",
+                "low",
+                "unknown"
+              ]
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
             "alternatives": {
               "type": "array",
               "maxItems": 4,
               "items": {
                 "type": "object",
-                "required": ["kind", "when"],
+                "required": [
+                  "kind",
+                  "when"
+                ],
                 "properties": {
-                  "kind": { "$ref": "#/$defs/kind" },
-                  "when": { "type": "string", "minLength": 1, "maxLength": 1000 },
-                  "recommended": { "type": "boolean" }
+                  "kind": {
+                    "$ref": "#/$defs/kind"
+                  },
+                  "when": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "recommended": {
+                    "type": "boolean"
+                  }
                 },
                 "additionalProperties": false
               }
@@ -99,38 +225,103 @@
           "additionalProperties": false,
           "allOf": [
             {
-              "if": { "properties": { "status": { "const": "selected" } }, "required": ["status"] },
-              "then": { "required": ["selectedKind"] }
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "selected"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "selectedKind"
+                ]
+              }
             },
             {
-              "if": { "properties": { "status": { "const": "needs-user-choice" } }, "required": ["status"] },
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "needs-user-choice"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
               "then": {
                 "properties": {
                   "alternatives": {
                     "minItems": 2,
                     "contains": {
-                      "properties": { "recommended": { "const": true } },
-                      "required": ["recommended"]
+                      "properties": {
+                        "recommended": {
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "recommended"
+                      ]
                     },
                     "minContains": 1,
                     "maxContains": 1
                   }
                 },
-                "required": ["alternatives"]
+                "required": [
+                  "alternatives"
+                ]
               }
             }
           ]
         },
         "roomResolution": {
           "type": "object",
-          "required": ["target", "status", "evidence"],
+          "required": [
+            "target",
+            "status",
+            "evidence"
+          ],
           "properties": {
-            "target": { "enum": ["current-room", "named-room", "named-domain", "new-room-under-domain", "unspecified", "not-required"] },
-            "status": { "enum": ["resolved", "needs-user-choice", "unresolved", "not-found", "new-room-required", "blocked", "not-required"] },
-            "requestedLabel": { "type": "string", "minLength": 1, "maxLength": 512 },
-            "roomId": { "$ref": "#/$defs/matrixRoomId" },
-            "roomName": { "type": "string", "minLength": 1, "maxLength": 512 },
-            "domainDid": { "$ref": "#/$defs/ixoEntityDid" },
+            "target": {
+              "enum": [
+                "current-room",
+                "named-room",
+                "named-domain",
+                "new-room-under-domain",
+                "unspecified",
+                "not-required"
+              ]
+            },
+            "status": {
+              "enum": [
+                "resolved",
+                "needs-user-choice",
+                "unresolved",
+                "not-found",
+                "new-room-required",
+                "blocked",
+                "not-required"
+              ]
+            },
+            "requestedLabel": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "roomId": {
+              "$ref": "#/$defs/matrixRoomId"
+            },
+            "roomName": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "domainDid": {
+              "$ref": "#/$defs/ixoEntityDid"
+            },
             "evidence": {
               "type": "array",
               "maxItems": 8,
@@ -153,152 +344,384 @@
               "maxItems": 10,
               "items": {
                 "type": "object",
-                "required": ["type", "label"],
+                "required": [
+                  "type",
+                  "label"
+                ],
                 "properties": {
-                  "type": { "enum": ["room", "domain"] },
-                  "label": { "type": "string", "minLength": 1, "maxLength": 512 },
-                  "roomId": { "$ref": "#/$defs/matrixRoomId" },
-                  "domainDid": { "$ref": "#/$defs/ixoEntityDid" },
-                  "memberCount": { "type": "integer", "minimum": 0 }
+                  "type": {
+                    "enum": [
+                      "room",
+                      "domain"
+                    ]
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  },
+                  "roomId": {
+                    "$ref": "#/$defs/matrixRoomId"
+                  },
+                  "domainDid": {
+                    "$ref": "#/$defs/ixoEntityDid"
+                  },
+                  "memberCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
                 },
                 "additionalProperties": false,
                 "allOf": [
                   {
-                    "if": { "properties": { "type": { "const": "room" } }, "required": ["type"] },
-                    "then": { "required": ["roomId"] }
+                    "if": {
+                      "properties": {
+                        "type": {
+                          "const": "room"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "roomId"
+                      ]
+                    }
                   },
                   {
-                    "if": { "properties": { "type": { "const": "domain" } }, "required": ["type"] },
-                    "then": { "required": ["domainDid"] }
+                    "if": {
+                      "properties": {
+                        "type": {
+                          "const": "domain"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "domainDid"
+                      ]
+                    }
                   }
                 ]
               }
             },
             "newRoomProposal": {
               "type": "object",
-              "required": ["name", "parentDomainDid", "audience", "e2eeRequired", "federation", "roomCreatePermission", "confirmationRequired"],
+              "required": [
+                "name",
+                "parentDomainDid",
+                "audience",
+                "e2eeRequired",
+                "federation",
+                "roomCreatePermission",
+                "confirmationRequired"
+              ],
               "properties": {
-                "name": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S" },
-                "parentDomainDid": { "$ref": "#/$defs/ixoEntityDid" },
-                "audience": { "enum": ["domain-default", "specified", "unresolved"] },
-                "e2eeRequired": { "type": "boolean" },
-                "federation": { "enum": ["domain-default", "enabled", "disabled", "unresolved"] },
-                "roomCreatePermission": { "enum": ["verified", "unverified", "denied"] },
-                "confirmationRequired": { "const": true }
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512,
+                  "pattern": "\\S"
+                },
+                "parentDomainDid": {
+                  "$ref": "#/$defs/ixoEntityDid"
+                },
+                "audience": {
+                  "enum": [
+                    "domain-default",
+                    "specified",
+                    "unresolved"
+                  ]
+                },
+                "e2eeRequired": {
+                  "type": "boolean"
+                },
+                "federation": {
+                  "enum": [
+                    "domain-default",
+                    "enabled",
+                    "disabled",
+                    "unresolved"
+                  ]
+                },
+                "roomCreatePermission": {
+                  "enum": [
+                    "verified",
+                    "unverified",
+                    "denied"
+                  ]
+                },
+                "confirmationRequired": {
+                  "const": true
+                }
               },
               "additionalProperties": false
             },
             "blockedCode": {
               "allOf": [
-                { "$ref": "#/$defs/failureCode" },
-                { "enum": ["BLOCKED_CONFIDENTIALITY_BOUNDARY", "BLOCKED_ROOM_UNRESOLVED", "BLOCKED_ROOM_CREATION_UNAVAILABLE"] }
+                {
+                  "$ref": "#/$defs/failureCode"
+                },
+                {
+                  "enum": [
+                    "BLOCKED_CONFIDENTIALITY_BOUNDARY",
+                    "BLOCKED_ROOM_UNRESOLVED",
+                    "BLOCKED_ROOM_CREATION_UNAVAILABLE"
+                  ]
+                }
               ]
             }
           },
           "additionalProperties": false,
           "allOf": [
             {
-              "if": { "properties": { "status": { "const": "resolved" } }, "required": ["status"] },
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "resolved"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
               "then": {
                 "properties": {
                   "evidence": {
                     "minItems": 1,
                     "contains": {
-                      "enum": ["current-context", "user-supplied-room-id", "list-rooms", "domain-room-graph", "user-choice", "room-creation-result"]
+                      "enum": [
+                        "current-context",
+                        "user-supplied-room-id",
+                        "list-rooms",
+                        "domain-room-graph",
+                        "user-choice",
+                        "room-creation-result"
+                      ]
                     },
                     "minContains": 1
                   }
                 },
-                "required": ["roomId"]
+                "required": [
+                  "roomId"
+                ]
               }
             },
             {
               "if": {
                 "properties": {
-                  "target": { "const": "named-domain" },
-                  "status": { "const": "resolved" }
+                  "target": {
+                    "const": "named-domain"
+                  },
+                  "status": {
+                    "const": "resolved"
+                  }
                 },
-                "required": ["target", "status"]
+                "required": [
+                  "target",
+                  "status"
+                ]
               },
               "then": {
                 "properties": {
                   "evidence": {
-                    "contains": { "const": "domain-room-graph" },
+                    "contains": {
+                      "const": "domain-room-graph"
+                    },
                     "minContains": 1
                   }
                 },
-                "required": ["domainDid"]
+                "required": [
+                  "domainDid"
+                ]
               }
             },
             {
               "if": {
                 "properties": {
-                  "target": { "const": "new-room-under-domain" },
-                  "status": { "const": "resolved" }
+                  "target": {
+                    "const": "new-room-under-domain"
+                  },
+                  "status": {
+                    "const": "resolved"
+                  }
                 },
-                "required": ["target", "status"]
+                "required": [
+                  "target",
+                  "status"
+                ]
               },
               "then": {
                 "properties": {
                   "evidence": {
-                    "contains": { "const": "room-creation-result" },
+                    "contains": {
+                      "const": "room-creation-result"
+                    },
                     "minContains": 1
                   }
                 },
-                "required": ["domainDid"]
+                "required": [
+                  "domainDid"
+                ]
               }
-            },
-            {
-              "if": { "properties": { "status": { "const": "needs-user-choice" } }, "required": ["status"] },
-              "then": { "properties": { "candidates": { "minItems": 2 } }, "required": ["candidates"] }
-            },
-            {
-              "if": { "properties": { "status": { "const": "new-room-required" } }, "required": ["status"] },
-              "then": {
-                "properties": { "target": { "const": "new-room-under-domain" } },
-                "required": ["domainDid", "newRoomProposal"]
-              }
-            },
-            {
-              "if": { "properties": { "status": { "const": "blocked" } }, "required": ["status"] },
-              "then": { "required": ["blockedCode"] }
             },
             {
               "if": {
                 "properties": {
-                  "target": { "enum": ["named-room", "named-domain"] },
-                  "status": { "const": "unresolved" }
+                  "status": {
+                    "const": "needs-user-choice"
+                  }
                 },
-                "required": ["target", "status"]
+                "required": [
+                  "status"
+                ]
               },
               "then": {
-                "properties": { "blockedCode": { "const": "BLOCKED_ROOM_UNRESOLVED" } },
-                "required": ["blockedCode"]
+                "properties": {
+                  "candidates": {
+                    "minItems": 2
+                  }
+                },
+                "required": [
+                  "candidates"
+                ]
               }
             },
             {
-              "if": { "properties": { "status": { "const": "not-found" } }, "required": ["status"] },
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "new-room-required"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
               "then": {
-                "properties": { "blockedCode": { "const": "BLOCKED_ROOM_UNRESOLVED" } },
-                "required": ["blockedCode"]
+                "properties": {
+                  "target": {
+                    "const": "new-room-under-domain"
+                  }
+                },
+                "required": [
+                  "domainDid",
+                  "newRoomProposal"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "blocked"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "required": [
+                  "blockedCode"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "target": {
+                    "enum": [
+                      "named-room",
+                      "named-domain"
+                    ]
+                  },
+                  "status": {
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "target",
+                  "status"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "blockedCode": {
+                    "const": "BLOCKED_ROOM_UNRESOLVED"
+                  }
+                },
+                "required": [
+                  "blockedCode"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "not-found"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "blockedCode": {
+                    "const": "BLOCKED_ROOM_UNRESOLVED"
+                  }
+                },
+                "required": [
+                  "blockedCode"
+                ]
               }
             }
           ]
         },
-        "matchedTopicId": { "$ref": "#/$defs/topicId" },
-        "parentTopicId": { "$ref": "#/$defs/topicId" },
+        "matchedTopicId": {
+          "$ref": "#/$defs/topicId"
+        },
+        "parentTopicId": {
+          "$ref": "#/$defs/topicId"
+        },
         "proposedChildren": {
           "type": "array",
           "maxItems": 10,
           "items": {
             "type": "object",
-            "required": ["title", "outcome", "kind", "baseRecipe"],
+            "required": [
+              "title",
+              "outcome",
+              "kind",
+              "baseRecipe"
+            ],
             "properties": {
-              "title": { "type": "string", "minLength": 1, "maxLength": 280 },
-              "outcome": { "type": "string", "minLength": 1, "maxLength": 2000 },
-              "kind": { "$ref": "#/$defs/kind" },
-              "baseRecipe": { "$ref": "#/$defs/baseRecipe" },
-              "topicRecipeRef": { "$ref": "#/$defs/topicRecipeRef" }
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 280
+              },
+              "outcome": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "kind": {
+                "$ref": "#/$defs/kind"
+              },
+              "baseRecipe": {
+                "$ref": "#/$defs/baseRecipe"
+              },
+              "topicRecipeRef": {
+                "$ref": "#/$defs/topicRecipeRef"
+              }
             },
             "additionalProperties": false
           }
@@ -308,64 +731,174 @@
     },
     "interpretation": {
       "type": "object",
-      "required": ["job", "subject", "outcome", "value", "stakes"],
+      "required": [
+        "job",
+        "subject",
+        "outcome",
+        "value",
+        "stakes"
+      ],
       "properties": {
-        "job": { "type": "string", "minLength": 1, "maxLength": 1000 },
-        "subject": { "type": "string", "minLength": 1, "maxLength": 1000 },
-        "outcome": { "type": "string", "minLength": 1, "maxLength": 2000 },
-        "value": { "type": "string", "minLength": 1, "maxLength": 2000 },
-        "stakes": { "enum": ["low", "medium", "high", "unknown"] },
-        "timeHorizon": { "type": "string", "minLength": 1, "maxLength": 280 }
+        "job": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "outcome": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "stakes": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "unknown"
+          ]
+        },
+        "timeHorizon": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 280
+        }
       },
       "additionalProperties": false
     },
     "topic": {
       "type": "object",
-      "required": ["operation"],
+      "required": [
+        "operation"
+      ],
       "properties": {
-        "operation": { "enum": ["create", "reuse"] },
-        "topicId": { "$ref": "#/$defs/topicId" },
-        "observedProfile": { "const": "qi.topic-contract-state/v4" },
-        "expectedTopicRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "expectedContractRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "expectedShapeDigest": { "$ref": "#/$defs/digest" },
+        "operation": {
+          "enum": [
+            "create",
+            "reuse"
+          ]
+        },
+        "topicId": {
+          "$ref": "#/$defs/topicId"
+        },
+        "observedProfile": {
+          "const": "qi.topic-contract-state/v4"
+        },
+        "expectedTopicRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "expectedContractRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "expectedShapeDigest": {
+          "$ref": "#/$defs/digest"
+        },
         "rootDraft": {
           "type": "object",
-          "required": ["version", "title", "kind", "status", "baseRecipe", "shapeDigest", "context", "overview"],
+          "required": [
+            "version",
+            "title",
+            "kind",
+            "status",
+            "baseRecipe",
+            "shapeDigest",
+            "context",
+            "overview"
+          ],
           "properties": {
-            "version": { "const": 4 },
-            "title": { "type": "string", "minLength": 1, "maxLength": 280 },
-            "kind": { "$ref": "#/$defs/kind" },
-            "status": { "const": "draft" },
-            "baseRecipe": { "$ref": "#/$defs/baseRecipe" },
-            "topicRecipeRef": { "$ref": "#/$defs/topicRecipeRef" },
-            "shapeDigest": { "$ref": "#/$defs/digest" },
+            "version": {
+              "const": 4
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 280
+            },
+            "kind": {
+              "$ref": "#/$defs/kind"
+            },
+            "status": {
+              "const": "draft"
+            },
+            "baseRecipe": {
+              "$ref": "#/$defs/baseRecipe"
+            },
+            "topicRecipeRef": {
+              "$ref": "#/$defs/topicRecipeRef"
+            },
+            "shapeDigest": {
+              "$ref": "#/$defs/digest"
+            },
             "context": {
               "type": "array",
               "maxItems": 50,
               "uniqueItems": true,
               "items": {
                 "type": "object",
-                "required": ["type", "id"],
+                "required": [
+                  "type",
+                  "id"
+                ],
                 "properties": {
-                  "type": { "type": "string", "minLength": 1, "maxLength": 128 },
-                  "id": { "type": "string", "minLength": 1, "maxLength": 1024 }
+                  "type": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024
+                  }
                 },
                 "additionalProperties": false
               }
             },
             "overview": {
               "type": "object",
-              "required": ["summary", "nextStep"],
+              "required": [
+                "summary",
+                "nextStep"
+              ],
               "properties": {
-                "summary": { "type": "string", "minLength": 1, "maxLength": 280 },
+                "summary": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 280
+                },
                 "nextStep": {
                   "type": "object",
-                  "required": ["summary"],
+                  "required": [
+                    "summary"
+                  ],
                   "properties": {
-                    "summary": { "type": "string", "minLength": 1, "maxLength": 280 },
-                    "assignee": { "type": "string", "minLength": 1, "maxLength": 512 },
-                    "dueAt": { "type": "string", "format": "date-time" }
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 280
+                    },
+                    "assignee": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    },
+                    "dueAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
                   },
                   "additionalProperties": false
                 }
@@ -377,12 +910,30 @@
         },
         "anchor": {
           "type": "object",
-          "required": ["mode", "manifestSource"],
+          "required": [
+            "mode",
+            "manifestSource"
+          ],
           "properties": {
-            "mode": { "enum": ["native", "adopted"] },
-            "roomId": { "$ref": "#/$defs/matrixRoomId" },
-            "rootEventId": { "type": "string", "pattern": "^\\$" },
-            "manifestSource": { "enum": ["root-event", "state-event"] }
+            "mode": {
+              "enum": [
+                "native",
+                "adopted"
+              ]
+            },
+            "roomId": {
+              "$ref": "#/$defs/matrixRoomId"
+            },
+            "rootEventId": {
+              "type": "string",
+              "pattern": "^\\$"
+            },
+            "manifestSource": {
+              "enum": [
+                "root-event",
+                "state-event"
+              ]
+            }
           },
           "additionalProperties": false
         }
@@ -401,96 +952,303 @@
         "shapeDigest"
       ],
       "properties": {
-        "strategy": { "enum": ["base-recipe", "topic-recipe"] },
-        "baseRecipe": { "$ref": "#/$defs/baseRecipe" },
-        "topicRecipeCode": { "enum": ["research-brief", "agent-delivery", "verified-work-payment", "software-build", "blueprint-design"] },
-        "topicRecipeRef": { "$ref": "#/$defs/topicRecipeRef" },
-        "registryLookup": { "const": "not-performed" },
-        "registryReason": { "const": "pinned-catalog-only" },
-        "reviewState": { "const": "draft" },
+        "strategy": {
+          "enum": [
+            "base-recipe",
+            "topic-recipe"
+          ]
+        },
+        "baseRecipe": {
+          "$ref": "#/$defs/baseRecipe"
+        },
+        "topicRecipeCode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "A bundled catalog code, or the code of a host-supplied published recipe."
+        },
+        "topicRecipeRef": {
+          "$ref": "#/$defs/topicRecipeRef"
+        },
+        "registryLookup": {
+          "enum": [
+            "not-performed",
+            "host-supplied"
+          ]
+        },
+        "registryReason": {
+          "enum": [
+            "pinned-catalog-only",
+            "portal-published-recipe"
+          ]
+        },
+        "reviewState": {
+          "const": "draft"
+        },
         "shapeSources": {
           "type": "array",
           "minItems": 2,
           "maxItems": 20,
-          "items": { "$ref": "#/$defs/shapeSource" }
+          "items": {
+            "$ref": "#/$defs/shapeSource"
+          }
         },
-        "shapeDigest": { "$ref": "#/$defs/digest" }
+        "shapeDigest": {
+          "$ref": "#/$defs/digest"
+        }
       },
       "additionalProperties": false,
       "allOf": [
         {
-          "if": { "properties": { "strategy": { "const": "topic-recipe" } }, "required": ["strategy"] },
-          "then": { "required": ["topicRecipeCode", "topicRecipeRef"] }
+          "if": {
+            "properties": {
+              "strategy": {
+                "const": "topic-recipe"
+              }
+            },
+            "required": [
+              "strategy"
+            ]
+          },
+          "then": {
+            "required": [
+              "topicRecipeCode",
+              "topicRecipeRef"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "registryLookup": {
+                "const": "host-supplied"
+              }
+            },
+            "required": [
+              "registryLookup"
+            ]
+          },
+          "then": {
+            "properties": {
+              "registryReason": {
+                "const": "portal-published-recipe"
+              },
+              "strategy": {
+                "const": "topic-recipe"
+              },
+              "topicRecipeRef": {
+                "properties": {
+                  "id": {
+                    "pattern": "^did:ixo:entity:[0-9a-f]{32,}$"
+                  }
+                }
+              }
+            },
+            "required": [
+              "topicRecipeRef"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "registryLookup": {
+                "const": "not-performed"
+              }
+            },
+            "required": [
+              "registryLookup"
+            ]
+          },
+          "then": {
+            "properties": {
+              "registryReason": {
+                "const": "pinned-catalog-only"
+              }
+            }
+          }
         }
       ]
     },
-    "contractDraft": { "$ref": "topic-contract-draft.schema.json" },
+    "contractDraft": {
+      "$ref": "topic-contract-draft.schema.json"
+    },
     "claimResolutionEvidence": {
       "type": "object",
-      "required": ["entityDid", "collectionId", "protocolDid", "rubric", "readOnly"],
+      "required": [
+        "entityDid",
+        "collectionId",
+        "protocolDid",
+        "rubric",
+        "readOnly"
+      ],
       "properties": {
-        "entityDid": { "type": "string", "pattern": "^did:ixo:" },
-        "collectionId": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "protocolDid": { "type": "string", "pattern": "^did:ixo:" },
+        "entityDid": {
+          "type": "string",
+          "pattern": "^did:ixo:"
+        },
+        "collectionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "protocolDid": {
+          "type": "string",
+          "pattern": "^did:ixo:"
+        },
         "rubric": {
           "type": "object",
-          "required": ["id"],
+          "required": [
+            "id"
+          ],
           "properties": {
-            "id": { "type": "string", "minLength": 1, "maxLength": 1024 },
-            "digest": { "$ref": "#/$defs/digest" }
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "digest": {
+              "$ref": "#/$defs/digest"
+            }
           },
           "additionalProperties": false
         },
-        "readOnly": { "const": true }
+        "readOnly": {
+          "const": true
+        }
       },
       "additionalProperties": false
     },
     "canvas": {
       "type": "object",
-      "required": ["format", "collaboration", "contentEmbedded", "blocks", "focusBlockId", "nextActionBlockId"],
+      "required": [
+        "format",
+        "collaboration",
+        "contentEmbedded",
+        "blocks",
+        "focusBlockId",
+        "nextActionBlockId"
+      ],
       "properties": {
-        "format": { "const": "blocknote" },
-        "collaboration": { "const": "yjs" },
-        "contentEmbedded": { "const": false },
-        "documentId": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "format": {
+          "const": "blocknote"
+        },
+        "collaboration": {
+          "const": "yjs"
+        },
+        "contentEmbedded": {
+          "const": false
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
         "blocks": {
           "type": "array",
           "minItems": 3,
           "maxItems": 20,
           "items": {
             "type": "object",
-            "required": ["id", "type", "semanticRole", "basis", "visibility", "content"],
+            "required": [
+              "id",
+              "type",
+              "semanticRole",
+              "basis",
+              "visibility",
+              "content"
+            ],
             "properties": {
-              "id": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "type": { "enum": ["heading", "paragraph", "bullet-list", "checklist", "table", "callout", "divider"] },
-              "semanticRole": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "basis": { "enum": ["explicit", "contextual", "inferred", "suggested", "retrieved"] },
-              "visibility": { "enum": ["primary", "progressive"] },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "type": {
+                "enum": [
+                  "heading",
+                  "paragraph",
+                  "bullet-list",
+                  "checklist",
+                  "table",
+                  "callout",
+                  "divider"
+                ]
+              },
+              "semanticRole": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "basis": {
+                "enum": [
+                  "explicit",
+                  "contextual",
+                  "inferred",
+                  "suggested",
+                  "retrieved"
+                ]
+              },
+              "visibility": {
+                "enum": [
+                  "primary",
+                  "progressive"
+                ]
+              },
               "content": {},
-              "editable": { "type": "boolean" }
+              "editable": {
+                "type": "boolean"
+              }
             },
             "additionalProperties": false
           }
         },
-        "focusBlockId": { "type": "string", "minLength": 1, "maxLength": 128 },
-        "nextActionBlockId": { "type": "string", "minLength": 1, "maxLength": 128 }
+        "focusBlockId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "nextActionBlockId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
       },
       "additionalProperties": false
     },
     "collaborationSuggestions": {
       "type": "object",
-      "required": ["humanRoles", "agentRoles"],
+      "required": [
+        "humanRoles",
+        "agentRoles"
+      ],
       "properties": {
         "humanRoles": {
           "type": "array",
           "maxItems": 20,
           "items": {
             "type": "object",
-            "required": ["roleId", "role", "purpose"],
+            "required": [
+              "roleId",
+              "role",
+              "purpose"
+            ],
             "properties": {
-              "roleId": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "role": { "type": "string", "minLength": 1, "maxLength": 280 },
-              "purpose": { "type": "string", "minLength": 1, "maxLength": 2000 }
+              "roleId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "role": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 280
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
             },
             "additionalProperties": false
           }
@@ -500,21 +1258,62 @@
           "maxItems": 20,
           "items": {
             "type": "object",
-            "required": ["roleId", "role", "purpose", "output", "activation", "requiredAbilities", "stopWhen"],
+            "required": [
+              "roleId",
+              "role",
+              "purpose",
+              "output",
+              "activation",
+              "requiredAbilities",
+              "stopWhen"
+            ],
             "properties": {
-              "roleId": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "role": { "type": "string", "minLength": 1, "maxLength": 280 },
-              "purpose": { "type": "string", "minLength": 1, "maxLength": 2000 },
-              "output": { "type": "string", "minLength": 1, "maxLength": 2000 },
-              "activation": { "enum": ["now", "on_demand", "on_condition"] },
-              "activationCondition": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "roleId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "role": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 280
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "output": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "activation": {
+                "enum": [
+                  "now",
+                  "on_demand",
+                  "on_condition"
+                ]
+              },
+              "activationCondition": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
               "requiredAbilities": {
                 "type": "array",
                 "maxItems": 20,
                 "uniqueItems": true,
-                "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" }
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$"
+                }
               },
-              "stopWhen": { "type": "string", "minLength": 1, "maxLength": 2000 }
+              "stopWhen": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
             },
             "additionalProperties": false
           }
@@ -524,26 +1323,60 @@
     },
     "firstTurn": {
       "type": "object",
-      "required": ["message", "quickActions", "defaultActionId"],
+      "required": [
+        "message",
+        "quickActions",
+        "defaultActionId"
+      ],
       "properties": {
-        "message": { "type": "string", "minLength": 1, "maxLength": 4000 },
-        "suggestedReply": { "type": "string", "minLength": 1, "maxLength": 2000, "pattern": "\\S", "description": "Optional proposed answer to the opening question, reviewed before sharing and accepted into an editable local draft before Send. Omit when unsupported by the host or when answering would invent a commitment or acceptance." },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "suggestedReply": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "\\S",
+          "description": "Optional proposed answer to the opening question, reviewed before sharing and accepted into an editable local draft before Send. Omit when unsupported by the host or when answering would invent a commitment or acceptance."
+        },
         "quickActions": {
           "type": "array",
           "minItems": 2,
           "maxItems": 4,
           "items": {
             "type": "object",
-            "required": ["id", "label", "action"],
+            "required": [
+              "id",
+              "label",
+              "action"
+            ],
             "properties": {
-              "id": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "label": { "type": "string", "minLength": 1, "maxLength": 120 },
-              "action": { "type": "string", "minLength": 1, "maxLength": 1000 }
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
             },
             "additionalProperties": false
           }
         },
-        "defaultActionId": { "type": "string", "minLength": 1, "maxLength": 128 }
+        "defaultActionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
       },
       "additionalProperties": false
     },
@@ -552,45 +1385,118 @@
       "maxItems": 100,
       "items": {
         "type": "object",
-        "required": ["localId", "kind", "basis", "accepted", "sourceEventIds", "content"],
+        "required": [
+          "localId",
+          "kind",
+          "basis",
+          "accepted",
+          "sourceEventIds",
+          "content"
+        ],
         "properties": {
-          "localId": { "type": "string", "minLength": 1, "maxLength": 128 },
-          "kind": { "enum": ["fact", "decision", "assumption", "question", "task", "artifact", "outcome", "memory", "failure"] },
-          "recordClass": { "type": "string", "minLength": 1, "maxLength": 128 },
-          "basis": { "enum": ["explicit", "contextual", "inferred", "suggested", "retrieved"] },
-          "accepted": { "type": "boolean" },
+          "localId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "enum": [
+              "fact",
+              "decision",
+              "assumption",
+              "question",
+              "task",
+              "artifact",
+              "outcome",
+              "memory",
+              "failure"
+            ]
+          },
+          "recordClass": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "basis": {
+            "enum": [
+              "explicit",
+              "contextual",
+              "inferred",
+              "suggested",
+              "retrieved"
+            ]
+          },
+          "accepted": {
+            "type": "boolean"
+          },
           "sourceEventIds": {
             "type": "array",
             "maxItems": 100,
             "uniqueItems": true,
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "content": { "type": "object" }
+          "content": {
+            "type": "object"
+          }
         },
         "additionalProperties": false
       }
     },
     "execution": {
       "type": "object",
-      "required": ["commitEligible", "hostContext", "idempotencyKey", "proposedCalls", "externalActions", "stateEventPlan"],
+      "required": [
+        "commitEligible",
+        "hostContext",
+        "idempotencyKey",
+        "proposedCalls",
+        "externalActions",
+        "stateEventPlan"
+      ],
       "properties": {
-        "commitEligible": { "type": "boolean" },
+        "commitEligible": {
+          "type": "boolean"
+        },
         "hostContext": {
           "type": "object",
           "properties": {
-            "roomId": { "$ref": "#/$defs/matrixRoomId" },
-            "actorId": { "type": "string", "minLength": 1, "maxLength": 512 },
-            "matrixWrite": { "type": "boolean" },
-            "kindPreservingCreate": { "type": "boolean" },
+            "roomId": {
+              "$ref": "#/$defs/matrixRoomId"
+            },
+            "actorId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "matrixWrite": {
+              "type": "boolean"
+            },
+            "kindPreservingCreate": {
+              "type": "boolean"
+            },
             "verifiedAbilities": {
               "type": "array",
               "maxItems": 100,
               "uniqueItems": true,
-              "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" }
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$"
+              }
             },
-            "expectedTopicRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
-            "expectedContractRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
-            "expectedShapeDigest": { "$ref": "#/$defs/digest" }
+            "expectedTopicRevision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "expectedContractRevision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "expectedShapeDigest": {
+              "$ref": "#/$defs/digest"
+            }
           },
           "additionalProperties": false
         },
@@ -598,30 +1504,92 @@
           "type": "array",
           "maxItems": 50,
           "uniqueItems": true,
-          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
         },
-        "idempotencyKey": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
         "proposedCalls": {
           "type": "array",
           "maxItems": 20,
           "items": {
             "type": "object",
-            "required": ["stage", "tool", "purpose", "sideEffect", "confirmation", "requiredAbility", "idempotencyKey", "boundTo"],
+            "required": [
+              "stage",
+              "tool",
+              "purpose",
+              "sideEffect",
+              "confirmation",
+              "requiredAbility",
+              "idempotencyKey",
+              "boundTo"
+            ],
             "properties": {
-              "stage": { "type": "integer", "minimum": 1, "maximum": 20 },
-              "tool": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "purpose": { "type": "string", "minLength": 1, "maxLength": 2000 },
-              "sideEffect": { "enum": ["none", "topic-state", "canvas-state", "record", "thread-message"] },
-              "confirmation": { "enum": ["none", "policy", "human"] },
-              "requiredAbility": { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" },
-              "idempotencyKey": { "type": "string", "minLength": 1, "maxLength": 512 },
+              "stage": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "tool": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "sideEffect": {
+                "enum": [
+                  "none",
+                  "topic-state",
+                  "canvas-state",
+                  "record",
+                  "thread-message"
+                ]
+              },
+              "confirmation": {
+                "enum": [
+                  "none",
+                  "policy",
+                  "human"
+                ]
+              },
+              "requiredAbility": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$"
+              },
+              "idempotencyKey": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
               "boundTo": {
                 "type": "object",
-                "required": ["shapeDigest"],
+                "required": [
+                  "shapeDigest"
+                ],
                 "properties": {
-                  "topicRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
-                  "contractRevision": { "type": "string", "minLength": 1, "maxLength": 512 },
-                  "shapeDigest": { "$ref": "#/$defs/digest" }
+                  "topicRevision": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  },
+                  "contractRevision": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  },
+                  "shapeDigest": {
+                    "$ref": "#/$defs/digest"
+                  }
                 },
                 "additionalProperties": false
               }
@@ -629,7 +1597,10 @@
             "additionalProperties": false
           }
         },
-        "externalActions": { "type": "array", "maxItems": 0 },
+        "externalActions": {
+          "type": "array",
+          "maxItems": 0
+        },
         "stateEventPlan": {
           "type": "object",
           "required": [
@@ -645,16 +1616,42 @@
             "shapeRecordPersisted"
           ],
           "properties": {
-            "enabled": { "type": "boolean" },
-            "eventType": { "const": "ixo.topic.contract" },
-            "stateKeySource": { "const": "topicId" },
-            "profile": { "const": "qi.topic-contract-state/v4" },
-            "version": { "const": 4 },
-            "role": { "const": "materialized-head-only" },
-            "publishAfter": { "enum": ["root-and-projection", "setup-confirmation"] },
-            "disclosure": { "enum": ["inline", "reference-only"] },
-            "embedsCanvasContent": { "const": false },
-            "shapeRecordPersisted": { "const": false }
+            "enabled": {
+              "type": "boolean"
+            },
+            "eventType": {
+              "const": "ixo.topic.contract"
+            },
+            "stateKeySource": {
+              "const": "topicId"
+            },
+            "profile": {
+              "const": "qi.topic-contract-state/v4"
+            },
+            "version": {
+              "const": 4
+            },
+            "role": {
+              "const": "materialized-head-only"
+            },
+            "publishAfter": {
+              "enum": [
+                "root-and-projection",
+                "setup-confirmation"
+              ]
+            },
+            "disclosure": {
+              "enum": [
+                "inline",
+                "reference-only"
+              ]
+            },
+            "embedsCanvasContent": {
+              "const": false
+            },
+            "shapeRecordPersisted": {
+              "const": false
+            }
           },
           "additionalProperties": false
         }
@@ -663,24 +1660,43 @@
     },
     "quality": {
       "type": "object",
-      "required": ["confidence", "unresolvedPaths", "warnings", "blockers"],
+      "required": [
+        "confidence",
+        "unresolvedPaths",
+        "warnings",
+        "blockers"
+      ],
       "properties": {
-        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
         "unresolvedPaths": {
           "type": "array",
           "maxItems": 100,
           "uniqueItems": true,
-          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
         },
         "warnings": {
           "type": "array",
           "maxItems": 100,
-          "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
         },
         "blockers": {
           "type": "array",
           "maxItems": 20,
-          "items": { "$ref": "#/$defs/blocker" }
+          "items": {
+            "$ref": "#/$defs/blocker"
+          }
         }
       },
       "additionalProperties": false
@@ -691,9 +1707,18 @@
     {
       "if": {
         "properties": {
-          "disposition": { "enum": ["create", "continue", "branch", "split"] }
+          "disposition": {
+            "enum": [
+              "create",
+              "continue",
+              "branch",
+              "split"
+            ]
+          }
         },
-        "required": ["disposition"]
+        "required": [
+          "disposition"
+        ]
       },
       "then": {
         "required": [
@@ -714,30 +1739,54 @@
           "execution": {
             "properties": {
               "hostContext": {
-                "properties": { "kindPreservingCreate": { "const": false } },
-                "required": ["kindPreservingCreate"]
+                "properties": {
+                  "kindPreservingCreate": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "kindPreservingCreate"
+                ]
               }
             },
-            "required": ["hostContext"]
+            "required": [
+              "hostContext"
+            ]
           }
         },
-        "required": ["execution"]
+        "required": [
+          "execution"
+        ]
       },
       "then": {
         "properties": {
-          "execution": { "properties": { "commitEligible": { "const": false } } },
+          "execution": {
+            "properties": {
+              "commitEligible": {
+                "const": false
+              }
+            }
+          },
           "quality": {
             "properties": {
               "blockers": {
                 "contains": {
                   "type": "object",
-                  "properties": { "code": { "const": "BLOCKED_KIND_HANDOFF_UNAVAILABLE" } },
-                  "required": ["code"]
+                  "properties": {
+                    "code": {
+                      "const": "BLOCKED_KIND_HANDOFF_UNAVAILABLE"
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ]
                 },
                 "minContains": 1
               }
             },
-            "required": ["blockers"]
+            "required": [
+              "blockers"
+            ]
           }
         }
       }
@@ -749,54 +1798,40 @@
             "properties": {
               "roomResolution": {
                 "properties": {
-                  "target": { "enum": ["named-room", "named-domain"] },
-                  "status": { "const": "unresolved" }
+                  "target": {
+                    "enum": [
+                      "named-room",
+                      "named-domain"
+                    ]
+                  },
+                  "status": {
+                    "const": "unresolved"
+                  }
                 },
-                "required": ["target", "status"]
+                "required": [
+                  "target",
+                  "status"
+                ]
               }
             },
-            "required": ["roomResolution"]
+            "required": [
+              "roomResolution"
+            ]
           }
         },
-        "required": ["routing"]
+        "required": [
+          "routing"
+        ]
       },
       "then": {
         "properties": {
-          "execution": { "properties": { "commitEligible": { "const": false } } },
-          "quality": {
+          "execution": {
             "properties": {
-              "blockers": {
-                "contains": {
-                  "type": "object",
-                  "properties": { "code": { "const": "BLOCKED_ROOM_UNRESOLVED" } },
-                  "required": ["code"]
-                },
-                "minContains": 1
+              "commitEligible": {
+                "const": false
               }
-            },
-            "required": ["blockers"]
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "routing": {
-            "properties": {
-              "roomResolution": {
-                "properties": { "status": { "const": "blocked" } },
-                "required": ["status"]
-              }
-            },
-            "required": ["roomResolution"]
-          }
-        },
-        "required": ["routing"]
-      },
-      "then": {
-        "properties": {
-          "execution": { "properties": { "commitEligible": { "const": false } } },
+            }
+          },
           "quality": {
             "properties": {
               "blockers": {
@@ -804,66 +1839,20 @@
                   "type": "object",
                   "properties": {
                     "code": {
-                      "enum": ["BLOCKED_CONFIDENTIALITY_BOUNDARY", "BLOCKED_ROOM_UNRESOLVED", "BLOCKED_ROOM_CREATION_UNAVAILABLE"]
+                      "const": "BLOCKED_ROOM_UNRESOLVED"
                     }
                   },
-                  "required": ["code"]
+                  "required": [
+                    "code"
+                  ]
                 },
                 "minContains": 1
               }
             },
-            "required": ["blockers"]
+            "required": [
+              "blockers"
+            ]
           }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "routing": {
-            "properties": {
-              "roomResolution": {
-                "properties": { "status": { "const": "not-found" } },
-                "required": ["status"]
-              }
-            },
-            "required": ["roomResolution"]
-          }
-        },
-        "required": ["routing"]
-      },
-      "then": {
-        "properties": {
-          "execution": { "properties": { "commitEligible": { "const": false } } },
-          "quality": {
-            "properties": {
-              "blockers": {
-                "contains": {
-                  "type": "object",
-                  "properties": { "code": { "const": "BLOCKED_ROOM_UNRESOLVED" } },
-                  "required": ["code"]
-                },
-                "minContains": 1
-              }
-            },
-            "required": ["blockers"]
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "quality": {
-            "properties": { "blockers": { "minItems": 1 } },
-            "required": ["blockers"]
-          }
-        },
-        "required": ["quality"]
-      },
-      "then": {
-        "properties": {
-          "execution": { "properties": { "commitEligible": { "const": false } } }
         }
       }
     },
@@ -875,20 +1864,189 @@
               "roomResolution": {
                 "properties": {
                   "status": {
-                    "enum": ["needs-user-choice", "unresolved", "not-found", "new-room-required", "blocked", "not-required"]
+                    "const": "blocked"
                   }
                 },
-                "required": ["status"]
+                "required": [
+                  "status"
+                ]
               }
             },
-            "required": ["roomResolution"]
+            "required": [
+              "roomResolution"
+            ]
           }
         },
-        "required": ["routing"]
+        "required": [
+          "routing"
+        ]
       },
       "then": {
         "properties": {
-          "execution": { "properties": { "commitEligible": { "const": false } } }
+          "execution": {
+            "properties": {
+              "commitEligible": {
+                "const": false
+              }
+            }
+          },
+          "quality": {
+            "properties": {
+              "blockers": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "BLOCKED_CONFIDENTIALITY_BOUNDARY",
+                        "BLOCKED_ROOM_UNRESOLVED",
+                        "BLOCKED_ROOM_CREATION_UNAVAILABLE"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ]
+                },
+                "minContains": 1
+              }
+            },
+            "required": [
+              "blockers"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "routing": {
+            "properties": {
+              "roomResolution": {
+                "properties": {
+                  "status": {
+                    "const": "not-found"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            },
+            "required": [
+              "roomResolution"
+            ]
+          }
+        },
+        "required": [
+          "routing"
+        ]
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "commitEligible": {
+                "const": false
+              }
+            }
+          },
+          "quality": {
+            "properties": {
+              "blockers": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "BLOCKED_ROOM_UNRESOLVED"
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ]
+                },
+                "minContains": 1
+              }
+            },
+            "required": [
+              "blockers"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "quality": {
+            "properties": {
+              "blockers": {
+                "minItems": 1
+              }
+            },
+            "required": [
+              "blockers"
+            ]
+          }
+        },
+        "required": [
+          "quality"
+        ]
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "commitEligible": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "routing": {
+            "properties": {
+              "roomResolution": {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "needs-user-choice",
+                      "unresolved",
+                      "not-found",
+                      "new-room-required",
+                      "blocked",
+                      "not-required"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            },
+            "required": [
+              "roomResolution"
+            ]
+          }
+        },
+        "required": [
+          "routing"
+        ]
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "commitEligible": {
+                "const": false
+              }
+            }
+          }
         }
       }
     }
@@ -915,10 +2073,19 @@
     },
     "blocker": {
       "type": "object",
-      "required": ["code", "reason"],
+      "required": [
+        "code",
+        "reason"
+      ],
       "properties": {
-        "code": { "$ref": "#/$defs/failureCode" },
-        "reason": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        "code": {
+          "$ref": "#/$defs/failureCode"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
       },
       "additionalProperties": false
     },
@@ -940,29 +2107,80 @@
       "pattern": "^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
     "kind": {
-      "enum": ["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
+      "enum": [
+        "project",
+        "task",
+        "agent_task",
+        "proposal",
+        "evaluation",
+        "claims",
+        "question",
+        "discussion",
+        "incident"
+      ]
     },
     "baseRecipe": {
-      "enum": ["project", "flow", "proposal", "evaluation", "claims", "research", "discussion", "incident"]
+      "enum": [
+        "project",
+        "flow",
+        "proposal",
+        "evaluation",
+        "claims",
+        "research",
+        "discussion",
+        "incident"
+      ]
     },
     "topicRecipeRef": {
       "type": "object",
-      "required": ["id", "version", "digest"],
+      "required": [
+        "id",
+        "version",
+        "digest"
+      ],
       "properties": {
-        "id": { "type": "string", "format": "uri" },
-        "version": { "type": "string", "minLength": 1 },
-        "digest": { "$ref": "#/$defs/digest" }
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
       },
       "additionalProperties": false
     },
     "shapeSource": {
       "type": "object",
-      "required": ["kind", "id", "version", "digest"],
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "digest"
+      ],
       "properties": {
-        "kind": { "enum": ["base-recipe", "topic-recipe", "kind", "topic"] },
-        "id": { "type": "string", "format": "uri" },
-        "version": { "type": "string", "minLength": 1 },
-        "digest": { "$ref": "#/$defs/digest" }
+        "kind": {
+          "enum": [
+            "base-recipe",
+            "topic-recipe",
+            "kind",
+            "topic"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
       },
       "additionalProperties": false
     }
