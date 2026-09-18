@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "code": "fps-game-build",
+  "id": "did:ixo:entity:00000000000000000000000000000001",
+  "recipeVersion": "1.0.0",
+  "label": "FPS Game Build",
+  "description": "Take a first-person shooter from concept to a playable vertical slice that an independent tester has verified.",
+  "baseRecipe": "project",
+  "creates": "draft",
+  "shape": {
+    "version": 1,
+    "code": "recipe/fps-game-build",
+    "axes": [
+      {
+        "code": "verification",
+        "phase": "verifying",
+        "required": true,
+        "initialState": "pending",
+        "states": [
+          { "code": "pending" },
+          { "code": "verified", "terminal": true }
+        ]
+      }
+    ],
+    "transitions": [
+      {
+        "code": "record-verification",
+        "phase": "verifying",
+        "predecessor": { "axis": "verification", "state": "pending" },
+        "target": { "axis": "verification", "state": "verified" },
+        "command": "topic.record-verification",
+        "requiredAbility": "claim/evaluate",
+        "assignedTo": { "kind": "role", "value": "evaluator" },
+        "gates": [{ "kind": "axis", "axis": "work", "states": ["submitted"] }],
+        "confirmation": "none",
+        "consequence": "shared-state",
+        "evidence": { "kind": "record", "type": "ixo.evaluation", "finality": "accepted" },
+        "handoff": { "kind": "flow", "binding": "evaluation" },
+        "presentation": {
+          "reasonCode": "verification-required",
+          "actionLabelKey": "topic.action.record-verification.label",
+          "bodyKey": "topic.action.record-verification.prompt",
+          "purposeKey": "topic.action.record-verification.purpose",
+          "unlocksKey": "topic.action.record-verification.unlocks",
+          "priority": 900
+        }
+      }
+    ],
+    "progressRules": [],
+    "inferredRecordPolicy": { "autoAccept": [], "neverAutoAccept": [] }
+  },
+  "draft": {
+    "intent": "Build a playable vertical slice of a first-person shooter: one level, core movement and shooting, one enemy type, a main menu.",
+    "outcome": "The slice runs on a clean machine for ten minutes without crashing and three external testers finish the level.",
+    "definitionOfDone": [
+      "Movement and shooting feel responsive at 60 fps on the target machine",
+      "One enemy type with working AI",
+      "A greybox level playable start to finish",
+      "A recorded playthrough attached to the Topic"
+    ],
+    "questions": [
+      "Which engine and target platform?",
+      "Who plays the external tester role?"
+    ],
+    "milestones": [
+      { "name": "Concept and scope agreed" },
+      { "name": "Movement and shooting prototype", "evidenceRequired": ["playable build"] },
+      { "name": "Greybox level with one enemy", "evidenceRequired": ["playable build", "recorded playthrough"] },
+      { "name": "External playtest passed", "evidenceRequired": ["ixo.evaluation record"] }
+    ],
+    "childWork": [
+      { "title": "Prototype movement and shooting", "kind": "task" },
+      { "title": "Build the greybox level", "kind": "task" },
+      { "title": "Implement one enemy type with basic AI", "kind": "task" },
+      { "title": "Which engine and target platform do we commit to?", "kind": "question" },
+      { "title": "Independent playtest of the vertical slice", "kind": "evaluation" }
+    ]
+  }
+}

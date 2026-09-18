@@ -46,6 +46,7 @@ For creation or a concrete revision proposal, load only missing context:
 - [source-lock.json](references/source-lock.json) for exact release provenance and [topic-shape-pins.json](references/topic-shape-pins.json) for the selected Kind's exact pins. Prefer these bundled pins when the host does not expose a resolver; do not search for protocol source code.
 - [topic-contract-profile.md](references/topic-contract-profile.md) for the contract fields being composed.
 - [topic-recipe-selection.md](references/topic-recipe-selection.md) only when considering a specialist recipe; otherwise use the Kind's Base Recipe.
+- [topic-recipe-publishing.md](references/topic-recipe-publishing.md) only when the person wants the composed Topic published as a reusable recipe (see step 12).
 - Exactly the selected Kind's sub-skill:
 
   - [Project](subskills/compose-topic-project/SKILL.md)
@@ -91,7 +92,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 5. Never invent identity, authority, assignment, deadline, budget, evidence, acceptance, capability, Shape source, recipe match, claim resolution, Action success, or settlement finality.
 6. Every new Topic starts as a user-reviewable `draft`, including a blank Base Recipe and every Topic Recipe.
 7. `baseRecipe` is the canonical Kind recipe. Never emit the removed v0.8 `recipe` field.
-8. A Topic Recipe is optional and digest-pinned. Use only the five entries in the bundled pinned catalog unless the host supplies a verified registry adapter.
+8. A Topic Recipe is optional and digest-pinned. Use the five entries in the bundled pinned catalog, or a recipe the host hands you already resolved (the Portal registers recipes published on `protocol/topic` domains and supplies their exact `topicRecipeRef`, id `did:ixo:entity:…`). Never look one up yourself or invent an id or digest.
 9. Resolve the Effective Shape before any write. Copy its `sources` and `digest` into the root Draft and contract proposal; do not hand-calculate or improvise them.
 10. Do not place agents, Action definitions, effect contracts, evaluation kits, schedules, or settlement contracts in the Topic Contract body.
 11. Agent execution and external effects belong to registry Actions and Flow instances. A Topic carries only bindings, UDID references, operations, records, and receipts through the host runtime.
@@ -181,7 +182,9 @@ Always begin with the Kind's Base Recipe. Select a seed Topic Recipe only when t
 - `software-build` for a `project` coordinating reviewed software delivery;
 - `blueprint-design` for a `project` whose boundary is an independently reviewed, accepted blueprint.
 
-Do not search a Marketplace yet. Record `registryLookup: not-performed` and `registryReason: pinned-catalog-only`. A future registry adapter may add suggestions, but it must return digest-verifiable recipe references and cannot auto-select one without review.
+Do not search a Marketplace yet. Record `registryLookup: not-performed` and `registryReason: pinned-catalog-only`.
+
+When the person names a recipe published on chain (a `protocol/topic` domain DID, usually with a version, for example from the Portal's shelf), call `resolve_published_recipe` once. It returns the exact `topicRecipeRef`, the recipe's brief, and per compatible Kind the `shapeSources` and `shapeDigest` the Portal will require. Copy them verbatim, record `strategy: topic-recipe`, `topicRecipeCode` = the recipe's code, `registryLookup: host-supplied`, `registryReason: portal-published-recipe`, and seed the Draft text from the brief. If the tool reports the file is a brief without rules, compose on the Base Recipe and say so. Never fetch the file, compute a digest, or guess a version yourself.
 
 Resolve the Effective Shape with the pinned protocol resolver. If the runtime cannot do so, use an exact entry from [references/topic-shape-pins.json](references/topic-shape-pins.json). If neither is available, emit `BLOCKED_SHAPE_SOURCE_UNAVAILABLE`; do not write.
 
@@ -253,6 +256,14 @@ The host shows the opening message and suggested reply for review before sharing
 ### 11. Validate the handoff and stop
 
 Check the composition against the active host schema and let the staging tool perform protocol and permission validation. Apply the Portal conversation path's bounded recovery rules. A staged Draft awaits the person's review; it is not a created Topic or accepted setup.
+
+### 12. Publish as a recipe (only when asked)
+
+Nobody says "make it reusable" on their own: the Portal signals this exit explicitly, through the "Publish a Topic Recipe" composer chip (its instruction names this step) or a Portal message asking to publish a named Topic as a recipe. On that signal, read [topic-recipe-publishing.md](references/topic-recipe-publishing.md) and take the exit instead of staging a Draft. Without such a signal, never offer or perform publication. The composition stays the same: Kind, Base Recipe, the Shape overlay (built only from the protocol's existing axes and transitions) and the contract text become one `shape.json` of type `TopicRecipeV1` with a `draft` block. Strip everything personal: owners, assignees, dates, the room, records.
+
+Validate the exact bytes with `scripts/validate-recipe.mjs` before writing them. Then use the Portal browser tools in order, ending your turn after each call and waiting for the Portal's result message: `propose_domain_creation` (skipped when the person names or attaches a `protocol/topic` domain they control), `write_domain_files`, `publish_recipe_release`. The Portal validates the file the same way and asks the person to sign; you never sign, never upload a card yourself, and never re-call a tool while its result is pending. If any of the three tools is absent, report `BLOCKED_RECIPE_PUBLISHING_UNAVAILABLE` and keep the Draft.
+
+Instantiating a published recipe is the reverse path and needs nothing from you: the Portal's shelf loads the file, verifies it, registers it and opens a Draft that carries the recipe's `topicRecipeRef`.
 
 ## Clarification rule
 

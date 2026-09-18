@@ -1,0 +1,418 @@
+{
+  "version": "3.3.2",
+  "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702",
+  "mode": "commit",
+  "disposition": "create",
+  "sourceIntent": {
+    "verbatim": "Create a topic for the product team to launch the new onboarding experience.",
+    "sourceSurface": "matrix-message",
+    "language": "en"
+  },
+  "protocolBinding": {
+    "package": "@ixo/topic-protocol",
+    "topicProtocolVersion": "1.0.0-rc.4",
+    "rootVersion": 4,
+    "contractBodyVersion": 4,
+    "stateVersion": 4,
+    "contractProfile": "qi.topic-contract-state/v4",
+    "profileStatus": "normative",
+    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
+    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
+    "authoritativeHistory": "topic-root+operations+records+projection",
+    "stateEventRole": "materialized-head-only",
+    "legacyPolicy": "v4-only-no-migration"
+  },
+  "routing": {
+    "rationale": "The launch is a durable, multi-step team outcome with coordinated work and explicit completion.",
+    "audience": "current-room",
+    "indexCompleteness": "complete",
+    "duplicateDetection": "no-match",
+    "kindInference": {
+      "status": "selected",
+      "selectedKind": "project",
+      "confidence": "high",
+      "rationale": "The intended outcome requires coordinated milestones and linked work across a multi-stage launch."
+    },
+    "roomResolution": {
+      "target": "current-room",
+      "status": "resolved",
+      "roomId": "!product-team:matrix.ixo.world",
+      "roomName": "Product team",
+      "evidence": [
+        "current-context"
+      ]
+    }
+  },
+  "interpretation": {
+    "job": "Coordinate a product launch",
+    "subject": "New onboarding experience",
+    "outcome": "The onboarding experience is launched against reviewed readiness criteria.",
+    "value": "The product team can coordinate scope, ownership, and completion in one durable Topic.",
+    "stakes": "medium"
+  },
+  "topic": {
+    "operation": "create",
+    "rootDraft": {
+      "version": 4,
+      "title": "Build the FPS vertical slice",
+      "kind": "project",
+      "status": "draft",
+      "baseRecipe": "project",
+      "shapeDigest": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+      "context": [
+        {
+          "type": "ixo.domain",
+          "id": "did:ixo:domain:product-team"
+        }
+      ],
+      "overview": {
+        "summary": "Coordinate the reviewed scope, milestones, owner, and readiness for onboarding launch.",
+        "nextStep": {
+          "summary": "Assign the Project lead so setup can be reviewed."
+        }
+      },
+      "topicRecipeRef": {
+        "id": "did:ixo:entity:00000000000000000000000000000001",
+        "version": "1.0.0",
+        "digest": "sha256:508c0af3afb0bd333a0a8bd99b71ca1f4ca289f1f0372549dae9b25b1fcf0abc"
+      }
+    },
+    "anchor": {
+      "mode": "native",
+      "manifestSource": "root-event"
+    }
+  },
+  "recipeSelection": {
+    "strategy": "topic-recipe",
+    "baseRecipe": "project",
+    "registryLookup": "host-supplied",
+    "registryReason": "portal-published-recipe",
+    "reviewState": "draft",
+    "shapeSources": [
+      {
+        "kind": "base-recipe",
+        "id": "https://topic-protocol.ixo.world/base-recipes/project",
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
+      },
+      {
+        "kind": "topic-recipe",
+        "id": "did:ixo:entity:00000000000000000000000000000001",
+        "version": "1.0.0",
+        "digest": "sha256:508c0af3afb0bd333a0a8bd99b71ca1f4ca289f1f0372549dae9b25b1fcf0abc"
+      },
+      {
+        "kind": "kind",
+        "id": "https://topic-protocol.ixo.world/kinds/project",
+        "version": "1.0.0-rc.4",
+        "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
+      }
+    ],
+    "shapeDigest": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+    "topicRecipeCode": "fps-game-build",
+    "topicRecipeRef": {
+      "id": "did:ixo:entity:00000000000000000000000000000001",
+      "version": "1.0.0",
+      "digest": "sha256:508c0af3afb0bd333a0a8bd99b71ca1f4ca289f1f0372549dae9b25b1fcf0abc"
+    }
+  },
+  "contractDraft": {
+    "envelope": {
+      "version": 4,
+      "revision": null,
+      "authoredBy": "did:ixo:shaun",
+      "authoredAt": "2026-08-30T02:30:00Z"
+    },
+    "semantic": {
+      "kindRef": {
+        "source": "standard",
+        "kind": "project"
+      },
+      "workingMode": "team",
+      "baseRecipe": "project",
+      "shapeSources": [
+        {
+          "kind": "base-recipe",
+          "id": "https://topic-protocol.ixo.world/base-recipes/project",
+          "version": "1.0.0-rc.4",
+          "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
+        },
+        {
+          "kind": "topic-recipe",
+          "id": "did:ixo:entity:00000000000000000000000000000001",
+          "version": "1.0.0",
+          "digest": "sha256:508c0af3afb0bd333a0a8bd99b71ca1f4ca289f1f0372549dae9b25b1fcf0abc"
+        },
+        {
+          "kind": "kind",
+          "id": "https://topic-protocol.ixo.world/kinds/project",
+          "version": "1.0.0-rc.4",
+          "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
+        }
+      ],
+      "shapeDigest": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+      "timezone": "Asia/Singapore",
+      "intent": {
+        "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77721",
+        "text": "Launch the new onboarding experience with the product team.",
+        "provenance": {
+          "basis": "explicit",
+          "acceptance": "accepted",
+          "sourceEventIds": []
+        }
+      },
+      "outcome": {
+        "statement": {
+          "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77722",
+          "text": "The onboarding experience is launched against reviewed readiness criteria.",
+          "provenance": {
+            "basis": "suggested",
+            "acceptance": "proposed",
+            "sourceEventIds": []
+          }
+        },
+        "status": "proposed",
+        "successCriteria": []
+      },
+      "project": {
+        "version": 1
+      },
+      "completion": {
+        "definition": "The reviewed release is live and the authorised completion transition is recorded.",
+        "requiresOutcomeRecord": true
+      },
+      "scope": {
+        "included": [],
+        "excluded": []
+      },
+      "constraints": [],
+      "assumptions": [],
+      "questions": [],
+      "participants": [],
+      "roles": [],
+      "activationPolicy": {},
+      "topicRecipeRef": {
+        "id": "did:ixo:entity:00000000000000000000000000000001",
+        "version": "1.0.0",
+        "digest": "sha256:508c0af3afb0bd333a0a8bd99b71ca1f4ca289f1f0372549dae9b25b1fcf0abc"
+      }
+    },
+    "publication": {
+      "disclosure": "inline",
+      "dataClassification": "internal",
+      "e2eeRequired": false,
+      "maxInlineBytes": 49152,
+      "reason": "The compact Draft is suitable for the product-team room.",
+      "embedsCanvasContent": false,
+      "containsProviderSessionIds": false
+    },
+    "readiness": "requires-host-fields",
+    "unresolvedHostFields": [
+      "revision",
+      "topicId",
+      "rootEventId"
+    ],
+    "setupObligations": [
+      {
+        "code": "setup.editors",
+        "path": "/activationPolicy/editors",
+        "prompt": "Choose who can update this setup.",
+        "purpose": "This makes responsibility for preparing and changing the setup explicit.",
+        "responsibility": "unassigned",
+        "priority": 600,
+        "unlocks": "The chosen editors can prepare a complete setup for review."
+      },
+      {
+        "code": "setup.confirmation-policy",
+        "path": "/activationPolicy/confirmation",
+        "prompt": "Select who must confirm this setup.",
+        "purpose": "Confirmation authorizes the Topic to progress without implying mutual or legal agreement.",
+        "responsibility": "unassigned",
+        "priority": 610,
+        "unlocks": "The named confirmer or confirmers can review this exact setup revision."
+      },
+      {
+        "code": "setup.project-lead",
+        "path": "/project/lead",
+        "prompt": "Who will lead this Project?",
+        "purpose": "The lead coordinates the plan and current blocker without inheriting any other authority.",
+        "responsibility": "unassigned",
+        "priority": 400,
+        "unlocks": "The Project setup can be reviewed and confirmed."
+      },
+      {
+        "code": "setup.project-closer",
+        "path": "/project/closer",
+        "prompt": "Who may close this Project by accepting remaining risk?",
+        "purpose": "Project closure requires independent, explicit acceptance authority.",
+        "responsibility": "unassigned",
+        "priority": 650,
+        "unlocks": "The Project may enter closing after its work is ready."
+      }
+    ]
+  },
+  "canvas": {
+    "format": "blocknote",
+    "collaboration": "yjs",
+    "contentEmbedded": false,
+    "blocks": [
+      {
+        "id": "outcome",
+        "type": "callout",
+        "semanticRole": "outcome",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": "Launch the onboarding experience against reviewed readiness criteria.",
+        "editable": true
+      },
+      {
+        "id": "milestones",
+        "type": "checklist",
+        "semanticRole": "milestones",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": [
+          "Confirm minimum launch scope."
+        ],
+        "editable": true
+      },
+      {
+        "id": "next",
+        "type": "checklist",
+        "semanticRole": "next-action",
+        "basis": "suggested",
+        "visibility": "primary",
+        "content": [
+          "Review the Draft launch setup and choose its confirmer."
+        ],
+        "editable": true
+      }
+    ],
+    "focusBlockId": "milestones",
+    "nextActionBlockId": "next"
+  },
+  "collaborationSuggestions": {
+    "humanRoles": [
+      {
+        "roleId": "launch-owner",
+        "role": "Launch owner",
+        "purpose": "Coordinate work and readiness."
+      }
+    ],
+    "agentRoles": []
+  },
+  "firstTurn": {
+    "message": "I created a Project Draft with the launch outcome and left its lead, closer, and setup authority visibly unresolved.",
+    "quickActions": [
+      {
+        "id": "review",
+        "label": "Review Draft",
+        "action": "Review the proposed setup."
+      },
+      {
+        "id": "edit-scope",
+        "label": "Edit scope",
+        "action": "Add or remove launch scope."
+      }
+    ],
+    "defaultActionId": "review"
+  },
+  "records": [
+    {
+      "localId": "intent",
+      "kind": "memory",
+      "recordClass": "ixo.topic.intent",
+      "basis": "explicit",
+      "accepted": true,
+      "sourceEventIds": [],
+      "content": {
+        "type": "user-intent",
+        "verbatim": "Create a topic for the product team to launch the new onboarding experience."
+      }
+    }
+  ],
+  "execution": {
+    "commitEligible": true,
+    "hostContext": {
+      "roomId": "!product-team:matrix.ixo.world",
+      "actorId": "did:ixo:shaun",
+      "matrixWrite": true,
+      "kindPreservingCreate": true,
+      "verifiedAbilities": [
+        "topic/create",
+        "topic/write"
+      ]
+    },
+    "requiredHostFields": [
+      "topicId",
+      "rootEventId",
+      "revision"
+    ],
+    "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:commit",
+    "proposedCalls": [
+      {
+        "stage": 1,
+        "tool": "topic_composition_commit",
+        "purpose": "Create or recover the v4 Draft root and exact intent record.",
+        "sideEffect": "topic-state",
+        "confirmation": "policy",
+        "requiredAbility": "topic/create",
+        "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:topic-create",
+        "boundTo": {
+          "shapeDigest": "sha256:7777777777777777777777777777777777777777777777777777777777777777"
+        }
+      },
+      {
+        "stage": 2,
+        "tool": "canvas_initialize",
+        "purpose": "Initialise the reviewable BlockNote/Yjs canvas.",
+        "sideEffect": "canvas-state",
+        "confirmation": "policy",
+        "requiredAbility": "topic/write",
+        "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:canvas",
+        "boundTo": {
+          "shapeDigest": "sha256:7777777777777777777777777777777777777777777777777777777777777777"
+        }
+      },
+      {
+        "stage": 3,
+        "tool": "topic_projection_publish",
+        "purpose": "Project and publish the v4 materialized Topic state.",
+        "sideEffect": "topic-state",
+        "confirmation": "policy",
+        "requiredAbility": "topic/write",
+        "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:projection",
+        "boundTo": {
+          "shapeDigest": "sha256:7777777777777777777777777777777777777777777777777777777777777777"
+        }
+      }
+    ],
+    "externalActions": [],
+    "stateEventPlan": {
+      "enabled": true,
+      "eventType": "ixo.topic.contract",
+      "stateKeySource": "topicId",
+      "profile": "qi.topic-contract-state/v4",
+      "version": 4,
+      "role": "materialized-head-only",
+      "publishAfter": "root-and-projection",
+      "disclosure": "inline",
+      "embedsCanvasContent": false,
+      "shapeRecordPersisted": false
+    }
+  },
+  "quality": {
+    "confidence": 0.93,
+    "unresolvedPaths": [
+      "/contractDraft/envelope/revision",
+      "/contractDraft/semantic/activationPolicy/editors",
+      "/contractDraft/semantic/activationPolicy/confirmation",
+      "/contractDraft/semantic/project/lead",
+      "/contractDraft/semantic/project/closer"
+    ],
+    "warnings": [
+      "The host must still allocate Topic identity and publish only the Draft projection."
+    ],
+    "blockers": []
+  }
+}

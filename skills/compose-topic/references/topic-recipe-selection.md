@@ -18,6 +18,8 @@ Every selection produces an editable Draft.
 
 If none matches exactly, select only the Kind's Base Recipe.
 
+A recipe published on chain by a `protocol/topic` domain is a sixth source, available only when the host supplies it: the Portal fetches the file from the domain's `#top-nn` resource, verifies the bytes, registers it for its resolver and hands the Draft an exact `topicRecipeRef` whose `id` is the domain DID. Use that ref as given, with `strategy: topic-recipe` and `registryLookup: host-supplied`. Do not search for published recipes, resolve their files, or compute their digests yourself; see [topic-recipe-publishing.md](topic-recipe-publishing.md) for how one is written and published.
+
 Do not interpret “similar” as a verified match. Do not invent a recipe ID or digest. Do not change the Kind merely to make a preferred recipe fit.
 
 Project Recipes configure only eligible suggestions, evidence presentation, and entry-points. They grant no authority, create no milestone or child Topic, and invoke no coding application or Design POD.
