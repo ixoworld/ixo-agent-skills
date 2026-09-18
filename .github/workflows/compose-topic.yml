@@ -1,0 +1,26 @@
+name: Compose Topic checks
+on:
+  pull_request:
+    paths:
+      - 'skills/compose-topic/**'
+      - '.github/workflows/compose-topic.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'skills/compose-topic/**'
+      - '.github/workflows/compose-topic.yml'
+permissions:
+  contents: read
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: bash scripts/validate-skill.sh skills/compose-topic
+      - run: node --test tests/*.test.mjs
+        working-directory: skills/compose-topic
+      - run: node scripts/validate-recipe.mjs examples/fps-game-build.recipe.json --did did:ixo:entity:00000000000000000000000000000001 --version 1.0.0 --kind project
+        working-directory: skills/compose-topic
