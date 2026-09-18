@@ -56,7 +56,7 @@ Rules the Portal enforces before it lets the person sign:
 - `baseRecipe` matches the Kind the recipe is for (`task`/`project` → `project`, `question` → `research`, `agent_task` → `flow`, otherwise the Kind's own name).
 - `shape` is an overlay: it lists only what it adds or replaces. The resolver merges it over the base recipe by `code`, then applies the Kind overlay.
 - The merged Shape must resolve: every transition has a full `presentation`, exactly one transition carries `completesTopic: true` (the base provides it; do not add another), every gate names a real axis and state.
-- A `project` block (entry points, allowed child Kinds, close evidence) is accepted only for Kind `project`.
+- Kind `project` requires a `project` block and no other Kind may carry one. The minimum is `{ "version": 1, "compatibleKind": "project", "compatibleShapeVersion": 1, "allowedChildKinds": [...], "entryPoints": [], "milestoneSuggestions": [] }`; `requiredCloseEvidenceTypes` lists record types that must exist in the thread before the project can close (only types the Portal can record, such as `ixo.evaluation`). Entry points and milestone suggestions need targets the Portal knows; leave them empty unless the person names one.
 - A file without a `shape` block is a brief. The Portal can still show its text but refuses to publish it as a recipe.
 
 ## What an overlay may use
