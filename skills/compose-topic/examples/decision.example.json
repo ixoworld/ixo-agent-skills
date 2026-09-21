@@ -138,37 +138,14 @@
             "sourceEventIds": []
           }
         },
-        "status": "proposed",
-        "successCriteria": []
+        "status": "proposed"
       },
       "decision": {
         "question": "Which route best meets the required capability, time, cost, control, and risk?",
         "method": "weighted_score",
-        "options": [
-          {
-            "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77713",
-            "label": "Build internally",
-            "status": "available"
-          },
-          {
-            "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77714",
-            "label": "Partner with a specialist",
-            "status": "available"
-          }
-        ],
         "criteria": [
-          {
-            "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77715",
-            "label": "Time to usable capability",
-            "direction": "minimize",
-            "weight": 0.5
-          },
-          {
-            "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77716",
-            "label": "Long-term control",
-            "direction": "maximize",
-            "weight": 0.5
-          }
+          "Time to usable capability (weight 0.5)",
+          "Long-term control (weight 0.5)"
         ]
       },
       "completion": {
@@ -176,8 +153,6 @@
       },
       "assumptions": [],
       "questions": [],
-      "participants": [],
-      "roles": [],
       "activationPolicy": {
         "lifecycle": {
           "onExpiry": "pause-consequential"

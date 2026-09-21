@@ -28,8 +28,8 @@ Capture:
 - intended audience and decision authority;
 - the artifact or recommendation to be produced;
 - scope, constraints, and assumptions;
-- options or governance proposal when supplied;
-- approval criteria;
+- the governance proposal text, with any options described inside it;
+- approval criteria as short strings;
 - what revision or evidence the reviewer will receive; and
 - the explicit closure rule.
 

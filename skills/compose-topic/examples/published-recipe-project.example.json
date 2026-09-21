@@ -171,8 +171,7 @@
             "sourceEventIds": []
           }
         },
-        "status": "proposed",
-        "successCriteria": []
+        "status": "proposed"
       },
       "project": {
         "version": 1
@@ -187,8 +186,6 @@
       "constraints": [],
       "assumptions": [],
       "questions": [],
-      "participants": [],
-      "roles": [],
       "activationPolicy": {},
       "topicRecipeRef": {
         "id": "did:ixo:entity:00000000000000000000000000000001",

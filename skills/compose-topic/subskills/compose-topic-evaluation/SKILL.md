@@ -25,8 +25,8 @@ Use only after the parent skill selects `evaluation`.
 Capture:
 
 1. the evaluation question;
-2. objects or options being evaluated;
-3. criteria and method;
+2. objects or options being evaluated, named in the question or intent text (the Draft has no separate options list);
+3. criteria as short strings and the method;
 4. evidence requirements;
 5. evaluator and decision authority only when supplied;
 6. treatment of uncertainty and missing evidence;
