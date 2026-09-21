@@ -166,17 +166,7 @@
             "sourceEventIds": []
           }
         },
-        "status": "proposed",
-        "successCriteria": []
-      },
-      "plan": {
-        "milestones": [
-          {
-            "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77733",
-            "title": "Capture one representative assessment",
-            "status": "pending"
-          }
-        ]
+        "status": "proposed"
       },
       "completion": {
         "definition": "A person reviews the delivery and explicitly completes the Topic."
@@ -184,8 +174,6 @@
       "constraints": [],
       "assumptions": [],
       "questions": [],
-      "participants": [],
-      "roles": [],
       "activationPolicy": {
         "lifecycle": {
           "onExpiry": "pause-consequential"

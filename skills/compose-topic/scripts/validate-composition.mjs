@@ -71,8 +71,8 @@ const RECIPE_BY_KIND = {
 };
 const KIND_FIELDS = {
   project: ["outcome", "project", "completion"],
-  task: ["outcome", "plan", "completion"],
-  agent_task: ["outcome", "plan", "completion"],
+  task: ["outcome", "completion"],
+  agent_task: ["outcome", "completion"],
   proposal: ["outcome", "decision", "completion"],
   evaluation: ["outcome", "decision", "completion"],
   claims: ["outcome", "completion"],
@@ -203,11 +203,7 @@ function repeatableEntries(semantic) {
       if (isObject(value)) entries.push([value, `${path}/${index}`]);
     }
   };
-  append(semantic?.outcome?.successCriteria, "/contractDraft/semantic/outcome/successCriteria");
   append(semantic?.risks, "/contractDraft/semantic/risks");
-  append(semantic?.decision?.options, "/contractDraft/semantic/decision/options");
-  append(semantic?.decision?.criteria?.filter(isObject), "/contractDraft/semantic/decision/criteria");
-  append(semantic?.plan?.milestones, "/contractDraft/semantic/plan/milestones");
   return entries;
 }
 
@@ -469,17 +465,9 @@ function validateContract(value, findings) {
     add(findings, ENTRY.test(entry.id ?? ""), "ENTRY_ID", `${path}/id`, "must be UUIDv7");
   }
 
-  const selected = semantic?.decision?.options?.some((option) => option.status === "selected");
-  add(findings, !selected || typeof semantic?.decision?.decisionRecordId === "string", "DECISION_RECORD", "/contractDraft/semantic/decision/decisionRecordId", "a selected option requires an accepted decision record");
   add(findings, semantic?.outcome?.status !== "achieved" || typeof semantic?.outcome?.outcomeRecordId === "string", "OUTCOME_RECORD", "/contractDraft/semantic/outcome/outcomeRecordId", "an achieved outcome requires an accepted outcome record");
 
-  const criteria = semantic?.decision?.criteria?.filter(isObject) ?? [];
-  const weights = criteria.map((criterion) => criterion.weight).filter((weight) => typeof weight === "number");
-  if (weights.length > 0) {
-    add(findings, weights.length === criteria.length, "WEIGHT_COMPLETENESS", "/contractDraft/semantic/decision/criteria", "all criteria must be weighted or none");
-    const sum = weights.reduce((total, weight) => total + weight, 0);
-    add(findings, Math.abs(sum - 1) < 1e-9, "WEIGHT_SUM", "/contractDraft/semantic/decision/criteria", "weights must sum to 1");
-  }
+  add(findings, (semantic?.decision?.criteria ?? []).every((criterion) => typeof criterion === "string" && criterion.trim().length > 0), "DECISION_CRITERIA", "/contractDraft/semantic/decision/criteria", "criteria are short strings; the Portal editor has no structured criterion");
 
   const claim = semantic?.claimBinding;
   if (claim !== undefined) {

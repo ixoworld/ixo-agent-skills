@@ -190,25 +190,16 @@ test("rejects colon-form abilities and invented agent identity", async () => {
   assert(result.has("INVENTED_AGENT_ID"));
 });
 
-test("requires a decision record for a selected option", async () => {
-  const value = await example();
-  value.contractDraft.semantic.decision.options[0].status = "selected";
-  assert(codes(value).has("DECISION_RECORD"));
-});
-
 test("requires an outcome record for achieved state", async () => {
   const value = await example();
   value.contractDraft.semantic.outcome.status = "achieved";
   assert(codes(value).has("OUTCOME_RECORD"));
 });
 
-test("weighted criteria must be complete and sum to one", async () => {
+test("decision criteria are strings, never structured objects", async () => {
   const value = await example();
-  value.contractDraft.semantic.decision.criteria[0].weight = 0.7;
-  value.contractDraft.semantic.decision.criteria[1].weight = 0.4;
-  assert(codes(value).has("WEIGHT_SUM"));
-  delete value.contractDraft.semantic.decision.criteria[1].weight;
-  assert(codes(value).has("WEIGHT_COMPLETENESS"));
+  value.contractDraft.semantic.decision.criteria = [{ id: "01a0c2dd-9b5c-704f-a99a-901daebaf993", label: "Cost", direction: "minimize" }];
+  assert(codes(value).has("DECISION_CRITERIA"));
 });
 
 test("claim binding is singular and exact", async () => {
@@ -749,8 +740,8 @@ test("continue and refine require v4 plus Topic, contract, and Shape pins", asyn
 test("all canonical Kinds require their focused Draft structures", async () => {
   const required = {
     project: ["outcome", "project", "completion"],
-    task: ["outcome", "plan", "completion"],
-    agent_task: ["outcome", "plan", "completion"],
+    task: ["outcome", "completion"],
+    agent_task: ["outcome", "completion"],
     proposal: ["outcome", "decision", "completion"],
     evaluation: ["outcome", "decision", "completion"],
     claims: ["outcome", "completion"],
@@ -779,7 +770,6 @@ test("all canonical Kinds require their focused Draft structures", async () => {
       value.contractDraft.semantic.baseRecipe = pin.baseRecipe;
       value.contractDraft.semantic.shapeSources = pin.shapeSources;
       value.contractDraft.semantic.shapeDigest = pin.shapeDigest;
-      value.contractDraft.semantic.plan ??= { milestones: [] };
       value.contractDraft.semantic.decision ??= {};
       value.contractDraft.semantic.questions ??= [];
       value.contractDraft.semantic.risks ??= [];

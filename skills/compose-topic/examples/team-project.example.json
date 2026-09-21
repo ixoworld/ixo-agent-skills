@@ -148,8 +148,7 @@
             "sourceEventIds": []
           }
         },
-        "status": "proposed",
-        "successCriteria": []
+        "status": "proposed"
       },
       "project": {
         "version": 1
@@ -164,8 +163,6 @@
       "constraints": [],
       "assumptions": [],
       "questions": [],
-      "participants": [],
-      "roles": [],
       "activationPolicy": {}
     },
     "publication": {

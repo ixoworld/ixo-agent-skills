@@ -235,13 +235,13 @@
       "sha256": "f56a9050e42591de6a87a5d62b24ec1d030a414da12375a3724921f2f59ab4d3"
     },
     "schemas/topic-contract-draft.schema.json": {
-      "sha256": "22f22c46c0e11785170b8f82852be4d1a9d25e38ede4cfa5b4900219f78a32ed"
+      "sha256": "d423b6bfb5f4c5e8005c29360455f2be5ca6e00e981d940dc908b4e7f7270505"
     },
     "schemas/topic-refine-change-set.schema.json": {
       "sha256": "c09b669324dc4de72b9a0d19b5f9be6017f86017f75cebbd47ef7d069c5c1763"
     },
     "references/topic-contract-profile.md": {
-      "sha256": "963a77b1596bf17b8be5e166f750e3e3062eab88f58fc9013dd426c0db8bed13"
+      "sha256": "b03d27b208f9e3791b030f30e1cc5c0a4011184b627d027f93a6511cfed1b144"
     },
     "references/topic-recipe-selection.md": {
       "sha256": "39c381941ecbf5342e164f53c4d385f590f0af2db7c17aee5c592661b72813cc"
@@ -283,13 +283,13 @@
       "sha256": "31f11714bc49504eb5dca300170e64e98329bbd38341f0b0e01afaf6b45af586"
     },
     "subskills/compose-topic-evaluation/SKILL.md": {
-      "sha256": "6637f2f7e75d49b4d394e6cba9d287d18e5ff42ab2cb15c0780d26750827d459"
+      "sha256": "b1fd41b6f0e186be10376845a20d8c24018cdaf38fd96b6c0d0f1c94166340af"
     },
     "subskills/compose-topic-incident/SKILL.md": {
       "sha256": "1a252d3e6dc31a3e96ac667d9ad25087943af81fced50b4342b1f3e987f57d3f"
     },
     "subskills/compose-topic-proposal/SKILL.md": {
-      "sha256": "3121706128bd69bc91b93fee991766534366900a9f7babff568bc1a1fb82f1d1"
+      "sha256": "790c7062881e2cd5964098851c12165d6a4992c114249c16dd2e31972d93c7b4"
     },
     "subskills/compose-topic-question/SKILL.md": {
       "sha256": "8bdebd992a04050dcf8fd2a7ee0eb7672a8e3e073239b11ed0b07964eb99e95c"

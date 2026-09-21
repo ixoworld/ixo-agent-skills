@@ -55,6 +55,10 @@ Authorship is provenance only. Creator, owner, membership, role labels, and comp
 
 An open dispute suppresses consequential moves. Resolution requires its own authority and does not confirm setup, approve an outcome, or complete the Topic.
 
+## Fields the Portal reviews
+
+The Portal opens a Draft only for fields its editor can show. Compose these and nothing else in `contractDraft.semantic`: `kindRef`, `workingMode`, `baseRecipe`, `topicRecipeRef (optional)`, `shapeSources`, `shapeDigest`, `claimBinding (optional)`, `activationPolicy`, `assentPolicy (optional)`, `tags`, `appearance`, `intent`, `outcome (statement, status, target)`, `completion (definition, acceptanceAuthorityIds)`, `ownerId`, `project`, `scope`, `constraints`, `assumptions`, `questions`, `risks`, `decision (question, criteria as strings, method, governanceProposal)`, `fieldProvenance`. Never emit `participants`, `roles`, `plan`, `attachments`, `outcome.successCriteria`, `decision.options`, `completion.requiresOutcomeRecord`, `completion.reviewAt`, `kindProfile`, `kindResource`, `locale`, `timezone`, `temporalMode`: the Portal rejects the whole handoff when any of them is present, even empty.
+
 ## Kind and Base Recipe
 
 | Kind | Base Recipe |

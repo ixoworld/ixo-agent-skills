@@ -264,20 +264,6 @@
             "$ref": "#/$defs/risk"
           }
         },
-        "participants": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "type": "object"
-          }
-        },
-        "roles": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "type": "object"
-          }
-        },
         "decision": {
           "type": "object",
           "properties": {
@@ -296,56 +282,17 @@
               "minLength": 1,
               "maxLength": 128
             },
-            "options": {
-              "type": "array",
-              "maxItems": 50,
-              "items": {
-                "$ref": "#/$defs/decisionOption"
-              }
-            },
             "criteria": {
               "type": "array",
               "maxItems": 50,
               "items": {
-                "oneOf": [
-                  {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 500
-                  },
-                  {
-                    "$ref": "#/$defs/decisionCriterion"
-                  }
-                ]
-              }
-            },
-            "decisionRecordId": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 512
-            }
-          },
-          "additionalProperties": true
-        },
-        "plan": {
-          "type": "object",
-          "properties": {
-            "milestones": {
-              "type": "array",
-              "maxItems": 100,
-              "items": {
-                "$ref": "#/$defs/milestone"
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
               }
             }
           },
-          "additionalProperties": true
-        },
-        "attachments": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "type": "object"
-          }
+          "additionalProperties": false
         },
         "fieldProvenance": {
           "type": "object",
@@ -1109,40 +1056,6 @@
             }
           ]
         },
-        "successCriteria": {
-          "type": "array",
-          "maxItems": 50,
-          "items": {
-            "type": "object",
-            "required": [
-              "id",
-              "description",
-              "status"
-            ],
-            "properties": {
-              "id": {
-                "$ref": "#/$defs/uuidv7"
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 2000
-              },
-              "status": {
-                "enum": [
-                  "pending",
-                  "met",
-                  "not_met",
-                  "waived"
-                ]
-              },
-              "verification": {
-                "type": "object"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
         "outcomeRecordId": {
           "type": "string",
           "minLength": 1,
@@ -1200,63 +1113,6 @@
         }
       },
       "additionalProperties": false
-    },
-    "decisionOption": {
-      "type": "object",
-      "required": [
-        "id",
-        "label",
-        "status"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/uuidv7"
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
-        },
-        "status": {
-          "enum": [
-            "available",
-            "eliminated",
-            "selected"
-          ]
-        }
-      },
-      "additionalProperties": true
-    },
-    "decisionCriterion": {
-      "type": "object",
-      "required": [
-        "id",
-        "label",
-        "direction"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/uuidv7"
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
-        },
-        "direction": {
-          "enum": [
-            "maximize",
-            "minimize",
-            "satisfy"
-          ]
-        },
-        "weight": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1
-        }
-      },
-      "additionalProperties": true
     },
     "milestone": {
       "type": "object",

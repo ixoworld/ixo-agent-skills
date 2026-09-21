@@ -175,8 +175,7 @@
             "sourceEventIds": []
           }
         },
-        "status": "proposed",
-        "successCriteria": []
+        "status": "proposed"
       },
       "completion": {
         "definition": "Verification, decision, final Action and settlement receipts are present, then the authorised Topic completion transition is recorded."
@@ -184,8 +183,6 @@
       "constraints": [],
       "assumptions": [],
       "questions": [],
-      "participants": [],
-      "roles": [],
       "activationPolicy": {
         "lifecycle": {
           "onExpiry": "pause-consequential"
