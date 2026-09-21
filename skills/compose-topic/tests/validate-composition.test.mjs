@@ -53,26 +53,6 @@ function acceptProjectAuthority(value, name) {
   };
 }
 
-function selectTopicRecipe(value, code, pin) {
-  value.recipeSelection = {
-    strategy: "topic-recipe",
-    baseRecipe: pin.baseRecipe,
-    topicRecipeCode: code,
-    topicRecipeRef: pin.topicRecipeRef,
-    registryLookup: "not-performed",
-    registryReason: "pinned-catalog-only",
-    reviewState: "draft",
-    shapeSources: pin.shapeSources,
-    shapeDigest: pin.shapeDigest,
-  };
-  value.topic.rootDraft.topicRecipeRef = pin.topicRecipeRef;
-  value.topic.rootDraft.shapeDigest = pin.shapeDigest;
-  value.contractDraft.semantic.topicRecipeRef = pin.topicRecipeRef;
-  value.contractDraft.semantic.shapeSources = pin.shapeSources;
-  value.contractDraft.semantic.shapeDigest = pin.shapeDigest;
-  for (const call of value.execution.proposedCalls) call.boundTo.shapeDigest = pin.shapeDigest;
-}
-
 test("all bundled v4 examples pass", async () => {
   for (const name of EXAMPLES) {
     const report = await validateFile(join(ROOT, "examples", name));
@@ -124,22 +104,22 @@ test("requires root and contract Shape pins to match recipe selection", async ()
   assert(result.has("CONTRACT_SHAPE_DIGEST"));
 });
 
-test("rejects a Topic Recipe on the wrong Kind or Base Recipe", async () => {
+test("rejects a Topic Recipe pinned from the protocol's bundled samples", async () => {
   const value = await example("research-brief.example.json");
-  value.contractDraft.semantic.kindRef = { source: "standard", kind: "task" };
-  value.topic.rootDraft.kind = "task";
-  const result = codes(value);
-  assert(result.has("TOPIC_RECIPE_KIND"));
-  assert(result.has("KIND_BASE_RECIPE"));
+  const ref = { id: "https://topic-protocol.ixo.world/recipes/research-brief", version: "1.0.0-rc.4", digest: `sha256:${"3".repeat(64)}` };
+  value.recipeSelection = { ...value.recipeSelection, strategy: "topic-recipe", topicRecipeCode: "research-brief", topicRecipeRef: ref };
+  value.contractDraft.semantic.topicRecipeRef = ref;
+  value.topic.rootDraft.topicRecipeRef = ref;
+  assert(codes(value).has("BUNDLED_RECIPE"));
 });
 
-test("does not allow invented Marketplace lookup or unpinned recipe refs", async () => {
+test("does not allow invented Marketplace lookup or a stray recipe ref on the Base Recipe path", async () => {
   const value = await example("research-brief.example.json");
   value.recipeSelection.registryLookup = "complete";
-  value.recipeSelection.topicRecipeRef.digest = `sha256:${"0".repeat(64)}`;
+  value.recipeSelection.topicRecipeRef = { id: "https://topic-protocol.ixo.world/recipes/research-brief", version: "1.0.0-rc.4", digest: `sha256:${"0".repeat(64)}` };
   const result = codes(value);
   assert(result.has("RECIPE_LOOKUP"));
-  assert(result.has("TOPIC_RECIPE_REF"));
+  assert(result.has("BASE_RECIPE_ONLY"));
 });
 
 test("rejects v0.8 recipe and agent fields from the v4 contract", async () => {
@@ -895,17 +875,6 @@ test("Project authorities require valid subjects and accepted field provenance",
   acceptProjectAuthority(value, "closer");
   assert.equal(codes(value).has("PROJECT_LEAD_OBLIGATION"), false);
   assert.equal(codes(value).has("PROJECT_CLOSER_OBLIGATION"), false);
-});
-
-test("Project recipes use their exact digest-pinned Effective Shapes", async () => {
-  const catalog = await pins();
-  for (const code of ["software-build", "blueprint-design"]) {
-    const value = await example("team-project.example.json");
-    const pin = catalog.topicRecipes[code];
-    selectTopicRecipe(value, code, pin);
-    const report = validateComposition(value);
-    assert.deepEqual(report, [], `${code}: ${JSON.stringify(report, null, 2)}`);
-  }
 });
 
 test("secret-like material is rejected", async () => {

@@ -18,9 +18,9 @@ Use only after the parent skill selects `claims`.
 - Kind: `claims`
 - Base Recipe: `claims`
 - Base Shape axes: contract, work, verification, decision, Topic completion
-- Optional seed Topic Recipe: `verified-work-payment`
+- Topic Recipe: none bundled; only a recipe published by a `protocol/topic` domain that the Portal resolves
 
-Select `verified-work-payment` only when the lifecycle genuinely includes verified work, an explicit decision, an external effect through a Flow, and settlement finality. It adds effect and settlement axes and still creates a Draft.
+A published recipe may add effect and settlement axes when the lifecycle genuinely includes an external effect through a Flow and settlement finality; it still creates a Draft.
 
 ## Compose
 

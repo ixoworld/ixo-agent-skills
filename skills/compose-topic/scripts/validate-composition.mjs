@@ -398,22 +398,16 @@ function validateRecipe(value, findings) {
     return;
   }
   add(findings, selection?.registryLookup === "not-performed" && selection?.registryReason === "pinned-catalog-only", "RECIPE_LOOKUP", "/recipeSelection", "Marketplace lookup is not available yet");
+  // No Topic Recipe is bundled: without a host-supplied published recipe, only the Kind's Base Recipe may be pinned.
+  add(findings, selection?.strategy === "base-recipe", "BUNDLED_RECIPE", "/recipeSelection/strategy", "a Topic Recipe is available only when the Portal supplies a published one (registryLookup: host-supplied)");
 
-  const pin = selection?.strategy === "topic-recipe"
-    ? SHAPE_PINS.topicRecipes?.[selection.topicRecipeCode]
-    : SHAPE_PINS.baseCompositions?.[kind];
-  add(findings, isObject(pin), "SHAPE_PIN", "/recipeSelection", "must use a pinned Base or Topic Recipe entry");
+  const pin = SHAPE_PINS.baseCompositions?.[kind];
+  add(findings, isObject(pin), "SHAPE_PIN", "/recipeSelection", "must use a pinned Base Recipe entry");
   if (!isObject(pin)) return;
-  add(findings, pin.kind === undefined || pin.kind === kind, "TOPIC_RECIPE_KIND", "/recipeSelection/topicRecipeCode", "Topic Recipe does not match Kind");
-  add(findings, pin.baseRecipe === expectedBase, "TOPIC_RECIPE_BASE", "/recipeSelection/baseRecipe", "Topic Recipe does not extend this Base Recipe");
+  add(findings, pin.baseRecipe === expectedBase, "TOPIC_RECIPE_BASE", "/recipeSelection/baseRecipe", "Base Recipe pin does not match this Kind");
   add(findings, same(selection.shapeSources, pin.shapeSources), "SHAPE_SOURCES", "/recipeSelection/shapeSources", "must equal the resolver's pinned source list");
   add(findings, selection.shapeDigest === pin.shapeDigest, "SHAPE_DIGEST", "/recipeSelection/shapeDigest", "must equal the resolver's Effective Shape digest");
-  if (selection.strategy === "topic-recipe") {
-    add(findings, same(selection.topicRecipeRef, pin.topicRecipeRef), "TOPIC_RECIPE_REF", "/recipeSelection/topicRecipeRef", "must equal the pinned Topic Recipe reference");
-    add(findings, pin.creates === "draft", "TOPIC_RECIPE_CREATES", "/recipeSelection/reviewState", "Topic Recipe must create a Draft");
-  } else {
-    add(findings, selection.topicRecipeRef === undefined && selection.topicRecipeCode === undefined, "BASE_RECIPE_ONLY", "/recipeSelection", "Base Recipe strategy cannot carry a Topic Recipe");
-  }
+  add(findings, selection.topicRecipeRef === undefined && selection.topicRecipeCode === undefined, "BASE_RECIPE_ONLY", "/recipeSelection", "Base Recipe strategy cannot carry a Topic Recipe");
   add(findings, same(semantic?.shapeSources, selection.shapeSources), "CONTRACT_SHAPE_SOURCES", "/contractDraft/semantic/shapeSources", "must match recipe selection");
   add(findings, semantic?.shapeDigest === selection.shapeDigest, "CONTRACT_SHAPE_DIGEST", "/contractDraft/semantic/shapeDigest", "must match recipe selection");
   add(findings, same(semantic?.topicRecipeRef, selection.topicRecipeRef), "CONTRACT_TOPIC_RECIPE", "/contractDraft/semantic/topicRecipeRef", "must match recipe selection");

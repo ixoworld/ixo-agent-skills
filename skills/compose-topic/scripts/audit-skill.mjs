@@ -15,8 +15,6 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SKILL_ROOT = resolve(SCRIPT_DIR, "..");
 const SUBSKILLS = [
   "compose-topic-project",
-  "compose-project-software-build",
-  "compose-project-blueprint-design",
   "compose-topic-task",
   "compose-topic-agent-task",
   "compose-topic-proposal",
@@ -239,7 +237,7 @@ async function auditSourceLock(findings) {
     findings.push(finding("LOCK_ARTIFACT", lock.topicProtocol.package.artifact, "Candidate bytes do not match the pinned package"));
   }
   const sources = lock.topicProtocol?.sourceFiles ?? [];
-  if (sources.length < 20) findings.push(finding("LOCK_SOURCE_COUNT", "references/source-lock.json", "must pin v4 contracts, Shape resolution/projection, and all seed Topic Recipes"));
+  if (sources.length < 20) findings.push(finding("LOCK_SOURCE_COUNT", "references/source-lock.json", "must pin v4 contracts and Shape resolution/projection sources"));
   const sourcePaths = sources.map((item) => item.path);
   if (new Set(sourcePaths).size !== sourcePaths.length) findings.push(finding("LOCK_DUPLICATE_SOURCE", "references/source-lock.json", "source paths must be unique"));
   for (const item of sources) {
@@ -263,14 +261,10 @@ async function auditShapePins(findings) {
   if (pins.protocolVersion !== "1.0.0-rc.4") findings.push(finding("PIN_PROTOCOL", path, "must pin Topic Protocol 1.0.0-rc.4"));
   if (pins.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("PIN_COMMIT", path, "must pin the normative protocol source head"));
   const expectedKinds = ["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"];
-  const expectedRecipes = ["research-brief", "agent-delivery", "verified-work-payment", "software-build", "blueprint-design"];
   const kinds = Object.keys(pins.baseCompositions ?? {}).sort();
-  const recipes = Object.keys(pins.topicRecipes ?? {}).sort();
   if (kinds.join() !== [...expectedKinds].sort().join()) findings.push(finding("PIN_KINDS", path, "must contain exactly the nine canonical Kind resolutions"));
-  if (recipes.join() !== [...expectedRecipes].sort().join()) findings.push(finding("PIN_RECIPES", path, "must contain exactly the five seed Topic Recipes"));
-  for (const [code, recipe] of Object.entries(pins.topicRecipes ?? {})) {
-    if (recipe.creates !== "draft") findings.push(finding("PIN_RECIPE_DRAFT", path, `${code} must create a Draft`));
-  }
+  // Topic Recipes are never bundled: the Portal resolves only recipes published by protocol/topic domains.
+  if (pins.topicRecipes !== undefined) findings.push(finding("PIN_RECIPES", path, "must not carry a bundled Topic Recipe catalog"));
 }
 
 async function auditExamples(findings) {
@@ -295,7 +289,7 @@ async function auditEvals(findings) {
   if (cases.length < 36) findings.push(finding("EVAL_COVERAGE", "evals/evals.json", "must include all Kinds, recipes, Shapes, Portal progression, authority, inference, and security cases"));
   const ids = cases.map((item) => item.id);
   if (new Set(ids).size !== ids.length) findings.push(finding("EVAL_DUPLICATE", "evals/evals.json", "case IDs must be unique"));
-  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "legacy-v08", "legacy-v3", "adopt-existing-thread", "custom-kind", "partial-draft", "partial-activation-policy", "owner-authority-fallback", "confirmation-not-assent", "expiry-non-invention", "dispute-authority", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question", "kind-project", "kind-task", "kind-agent-task", "kind-proposal", "kind-evaluation", "kind-claims", "kind-question", "kind-discussion", "kind-incident", "kind-job-profile", "governance-policy-proposal", "ambiguous-policy-kind", "named-domain-is-not-room", "ambiguous-joined-room", "create-domain-conversation-room", "verified-room-and-kind-handoff", "recipe-software-build", "recipe-blueprint-design", "recipe-research-brief", "recipe-agent-delivery", "recipe-verified-work-payment", "recipe-marketplace-future", "project-lead-authority", "project-child-boundary", "project-close-boundary", "shape-digest-mismatch", "claim-singular-binding", "flow-action-boundary", "viewer-authority", "inference-boundary"];
+  const required = ["sensitive-audience", "confidential-contract", "unresolved-agent", "ability-syntax", "selected-option", "achieved-outcome", "prompt-injection-attachment", "secret-input", "stale-revision", "legacy-v08", "legacy-v3", "adopt-existing-thread", "custom-kind", "partial-draft", "partial-activation-policy", "owner-authority-fallback", "confirmation-not-assent", "expiry-non-invention", "dispute-authority", "impact-only-risk", "virtual-thread", "refine-apply-existing", "refine-tool-unavailable", "refine-answer-question", "kind-project", "kind-task", "kind-agent-task", "kind-proposal", "kind-evaluation", "kind-claims", "kind-question", "kind-discussion", "kind-incident", "kind-job-profile", "governance-policy-proposal", "ambiguous-policy-kind", "named-domain-is-not-room", "ambiguous-joined-room", "create-domain-conversation-room", "verified-room-and-kind-handoff", "recipe-published-only", "recipe-bundled-rejected", "recipe-marketplace-future", "project-lead-authority", "project-child-boundary", "project-close-boundary", "shape-digest-mismatch", "claim-singular-binding", "flow-action-boundary", "viewer-authority", "inference-boundary"];
   for (const id of required) if (!ids.includes(id)) findings.push(finding("EVAL_REQUIRED", "evals/evals.json", `missing security or protocol case: ${id}`));
 }
 

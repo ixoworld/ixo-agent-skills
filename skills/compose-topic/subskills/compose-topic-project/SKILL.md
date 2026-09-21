@@ -76,13 +76,12 @@ ability, authority proof, and recipe-required evidence.
 A child success, Action receipt, evaluation, settlement, or external tracker
 terminal state cannot close the Project.
 
-## Project Type routing
+## Project recipes
 
-Generic Project has no `topicRecipeRef`. Read exactly one additional sub-skill
-when a matching Project Type is selected:
-
-- [Software Build](../compose-project-software-build/SKILL.md)
-- [Blueprint Design](../compose-project-blueprint-design/SKILL.md)
+A Generic Project has no `topicRecipeRef`. A Project carries one only when the
+Portal resolved a recipe published by a `protocol/topic` domain
+(`resolve_published_recipe`); its `project` block then supplies milestone
+suggestions, child Kinds and entry-points. Nothing is bundled with this skill.
 
 ## rc.4 lifecycle contract
 

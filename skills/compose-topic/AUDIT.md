@@ -17,8 +17,8 @@ The audit covers:
 - outcome-led Kind inference, explicit ambiguity handling, and no Discussion fallback;
 - Matrix room resolution kept separate from Domain/entity lookup and new-room creation;
 - Effective Shape resolution and digest pins;
-- five Draft-producing seed Topic Recipes;
-- nine progressively loaded Kind sub-skills, plus focused Software Build and Blueprint Design routes;
+- Draft-producing Topic Recipes only when published by a `protocol/topic` domain and supplied by the host;
+- nine progressively loaded Kind sub-skills;
 - singular claim binding and read-only protocol/rubric resolution;
 - Flow, Action, UDID, evaluation, effect, and settlement boundaries;
 - Matrix plus UCAN authority requirements;
@@ -64,13 +64,13 @@ Resolution: v4 uses `baseRecipe`, optional digest-pinned `topicRecipeRef`, `shap
 
 Finding: one large reference held all Kind rules, increasing reader load and encouraging generic composition.
 
-Resolution: the root is a shared router and each of the nine canonical Kinds has a focused sub-skill. Project may additionally load Software Build or Blueprint Design guidance after the user selects that Project Type. The selected sub-skill defines its required structures, progression boundaries, evidence posture, and Portal handoff.
+Resolution: the root is a shared router and each of the nine canonical Kinds has a focused sub-skill. The selected sub-skill defines its required structures, progression boundaries, evidence posture, and Portal handoff.
 
 ### Topic Recipe and Base Recipe were conflated
 
 Finding: “recipe” meant the fixed Kind recipe and offered no governed path for expert-honed Topic Recipes.
 
-Resolution: Base Recipe is reserved for the canonical Kind model. The skill pins the five published seed Topic Recipes, verifies their Base Recipe and digest, and keeps every instantiation a Draft. Marketplace lookup is explicitly not performed until a verified registry and useful library exist.
+Resolution: Base Recipe is reserved for the canonical Kind model. A Topic Recipe reaches the skill only when the Portal resolves one published by a `protocol/topic` domain; no catalog is bundled and every instantiation stays a Draft. Marketplace lookup is explicitly not performed until a verified registry and useful library exist.
 
 ### Project coordination could collapse distinct authorities
 
@@ -130,16 +130,16 @@ Resolution: Shape-permitted non-effecting fact, summary, and classification reco
 
 The package includes:
 
-- five valid v4 examples, including the Generic Project path, three established seed Topic Recipes, and explicit unresolved setup obligations;
+- five valid v4 examples on the Base Recipe path, including the Generic Project path and explicit unresolved setup obligations, plus one host-supplied published-recipe example;
 - negative tests for v3 and older Topics, Shape pins, policy provenance, owner fallback, assent, expiry, thresholds, claims, Action/effect leakage, authority, inference, decisions, outcomes, secrets, canvas bounds, and refinement pins;
 - package audit for root and nested skill frontmatter, links, source locks, local digests, schemas, examples, eval coverage, scripts, and secret patterns; and
-- behavioral evals covering all nine Kinds, five seed recipes, Project lead/child/close boundaries, future Marketplace posture, Portal viewer authority, legacy exclusion, and Flow/Action boundaries.
+- behavioral evals covering all nine Kinds, the published-recipe path and the rejection of bundled samples, Project lead/child/close boundaries, future Marketplace posture, Portal viewer authority, legacy exclusion, and Flow/Action boundaries.
 
 ## Residual limits
 
 The skill cannot prove deployed Matrix, E2EE, VFS, UCAN, Entity/claim resolution, Flow execution, evaluation, payment, settlement, or receipt finality. The host must validate those boundaries and reproject current state.
 
-The recipe Marketplace lookup is intentionally not implemented. The local catalog is sufficient only for the nine Base Recipe compositions and five seed Topic Recipes pinned to the release candidate.
+The recipe Marketplace lookup is intentionally not implemented. The local pins cover only the nine Base Recipe compositions; Topic Recipes come exclusively from `protocol/topic` domains through the Portal.
 
 ## rc.4 candidate status
 
