@@ -235,13 +235,13 @@
       "sha256": "f56a9050e42591de6a87a5d62b24ec1d030a414da12375a3724921f2f59ab4d3"
     },
     "schemas/topic-contract-draft.schema.json": {
-      "sha256": "0b89342554188170964d28cf50e634517cab3c7ff0775776a40d17bf4d0d4c83"
+      "sha256": "22f22c46c0e11785170b8f82852be4d1a9d25e38ede4cfa5b4900219f78a32ed"
     },
     "schemas/topic-refine-change-set.schema.json": {
       "sha256": "c09b669324dc4de72b9a0d19b5f9be6017f86017f75cebbd47ef7d069c5c1763"
     },
     "references/topic-contract-profile.md": {
-      "sha256": "f84469286df40ea038e9b5373f7fb6a403d49ded0970fe096769a21099d8008b"
+      "sha256": "963a77b1596bf17b8be5e166f750e3e3062eab88f58fc9013dd426c0db8bed13"
     },
     "references/topic-recipe-selection.md": {
       "sha256": "39c381941ecbf5342e164f53c4d385f590f0af2db7c17aee5c592661b72813cc"

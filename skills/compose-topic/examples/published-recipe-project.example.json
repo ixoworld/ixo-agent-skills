@@ -178,8 +178,7 @@
         "version": 1
       },
       "completion": {
-        "definition": "The reviewed release is live and the authorised completion transition is recorded.",
-        "requiresOutcomeRecord": true
+        "definition": "The reviewed release is live and the authorised completion transition is recorded."
       },
       "scope": {
         "included": [],

@@ -179,8 +179,7 @@
         ]
       },
       "completion": {
-        "definition": "A person reviews the delivery and explicitly completes the Topic.",
-        "requiresOutcomeRecord": true
+        "definition": "A person reviews the delivery and explicitly completes the Topic."
       },
       "constraints": [],
       "assumptions": [],

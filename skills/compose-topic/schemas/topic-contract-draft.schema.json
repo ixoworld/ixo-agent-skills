@@ -3,47 +3,129 @@
   "$id": "https://skills.ixo.earth/schemas/compose-topic/topic-contract-draft.schema.json",
   "title": "Topic Protocol v1 contract body Draft",
   "type": "object",
-  "required": ["envelope", "semantic", "setupObligations", "publication", "readiness", "unresolvedHostFields"],
+  "required": [
+    "envelope",
+    "semantic",
+    "setupObligations",
+    "publication",
+    "readiness",
+    "unresolvedHostFields"
+  ],
   "properties": {
     "envelope": {
       "type": "object",
-      "required": ["version", "revision", "authoredBy", "authoredAt"],
+      "required": [
+        "version",
+        "revision",
+        "authoredBy",
+        "authoredAt"
+      ],
       "properties": {
-        "version": { "const": 4 },
-        "revision": { "type": ["string", "null"], "minLength": 1 },
-        "authoredBy": { "type": ["string", "null"], "minLength": 1 },
-        "authoredAt": { "type": ["string", "null"], "format": "date-time" }
+        "version": {
+          "const": 4
+        },
+        "revision": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "authoredBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "authoredAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
       },
       "additionalProperties": false
     },
     "semantic": {
       "type": "object",
-      "required": ["kindRef", "workingMode", "baseRecipe", "shapeSources", "shapeDigest", "activationPolicy"],
+      "required": [
+        "kindRef",
+        "workingMode",
+        "baseRecipe",
+        "shapeSources",
+        "shapeDigest",
+        "activationPolicy"
+      ],
       "properties": {
-        "kindRef": { "$ref": "#/$defs/kindRef" },
-        "kindProfile": { "$ref": "#/$defs/kindProfile" },
-        "kindResource": { "$ref": "#/$defs/kindResource" },
-        "workingMode": { "enum": ["solo", "team", "client"] },
-        "baseRecipe": { "$ref": "#/$defs/baseRecipe" },
-        "topicRecipeRef": { "$ref": "#/$defs/topicRecipeRef" },
+        "kindRef": {
+          "$ref": "#/$defs/kindRef"
+        },
+        "kindProfile": {
+          "$ref": "#/$defs/kindProfile"
+        },
+        "kindResource": {
+          "$ref": "#/$defs/kindResource"
+        },
+        "workingMode": {
+          "enum": [
+            "solo",
+            "team",
+            "client"
+          ]
+        },
+        "baseRecipe": {
+          "$ref": "#/$defs/baseRecipe"
+        },
+        "topicRecipeRef": {
+          "$ref": "#/$defs/topicRecipeRef"
+        },
         "shapeSources": {
           "type": "array",
           "minItems": 2,
           "maxItems": 20,
-          "items": { "$ref": "#/$defs/shapeSource" }
+          "items": {
+            "$ref": "#/$defs/shapeSource"
+          }
         },
-        "shapeDigest": { "$ref": "#/$defs/digest" },
-        "claimBinding": { "$ref": "#/$defs/claimBinding" },
-        "activationPolicy": { "$ref": "#/$defs/activationPolicy" },
-        "assentPolicy": { "$ref": "#/$defs/assentPolicy" },
-        "locale": { "type": "string", "minLength": 2, "maxLength": 32 },
-        "timezone": { "type": "string", "minLength": 1, "maxLength": 128 },
-        "temporalMode": { "enum": ["finite", "ongoing"] },
+        "shapeDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "claimBinding": {
+          "$ref": "#/$defs/claimBinding"
+        },
+        "activationPolicy": {
+          "$ref": "#/$defs/activationPolicy"
+        },
+        "assentPolicy": {
+          "$ref": "#/$defs/assentPolicy"
+        },
+        "locale": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 32
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "temporalMode": {
+          "enum": [
+            "finite",
+            "ongoing"
+          ]
+        },
         "tags": {
           "type": "array",
           "maxItems": 50,
           "uniqueItems": true,
-          "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
         },
         "appearance": {
           "type": "object",
@@ -52,20 +134,44 @@
               "oneOf": [
                 {
                   "type": "object",
-                  "required": ["type", "value"],
+                  "required": [
+                    "type",
+                    "value"
+                  ],
                   "properties": {
-                    "type": { "const": "emoji" },
-                    "value": { "type": "string", "minLength": 1, "maxLength": 16 }
+                    "type": {
+                      "const": "emoji"
+                    },
+                    "value": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16
+                    }
                   },
                   "additionalProperties": false
                 },
                 {
                   "type": "object",
-                  "required": ["type", "name"],
+                  "required": [
+                    "type",
+                    "name"
+                  ],
                   "properties": {
-                    "type": { "const": "icon" },
+                    "type": {
+                      "const": "icon"
+                    },
                     "name": {
-                      "enum": ["project", "task", "agent", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
+                      "enum": [
+                        "project",
+                        "task",
+                        "agent",
+                        "proposal",
+                        "evaluation",
+                        "claims",
+                        "question",
+                        "discussion",
+                        "incident"
+                      ]
                     }
                   },
                   "additionalProperties": false
@@ -75,37 +181,57 @@
           },
           "additionalProperties": false
         },
-        "intent": { "$ref": "#/$defs/statement" },
-        "outcome": { "$ref": "#/$defs/outcome" },
+        "intent": {
+          "$ref": "#/$defs/statement"
+        },
+        "outcome": {
+          "$ref": "#/$defs/outcome"
+        },
         "completion": {
           "type": "object",
           "properties": {
-            "definition": { "type": "string", "minLength": 1, "maxLength": 2000 },
+            "definition": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
             "acceptanceAuthorityIds": {
               "type": "array",
               "maxItems": 50,
               "uniqueItems": true,
-              "items": { "type": "string", "minLength": 1, "maxLength": 512 }
-            },
-            "requiresOutcomeRecord": { "type": "boolean" },
-            "reviewAt": { "type": "string", "format": "date-time" }
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            }
           },
           "additionalProperties": false
         },
-        "ownerId": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "project": { "$ref": "#/$defs/projectPlan" },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "project": {
+          "$ref": "#/$defs/projectPlan"
+        },
         "scope": {
           "type": "object",
           "properties": {
             "included": {
               "type": "array",
               "maxItems": 100,
-              "items": { "$ref": "#/$defs/statement" }
+              "items": {
+                "$ref": "#/$defs/statement"
+              }
             },
             "excluded": {
               "type": "array",
               "maxItems": 100,
-              "items": { "$ref": "#/$defs/statement" }
+              "items": {
+                "$ref": "#/$defs/statement"
+              }
             }
           },
           "additionalProperties": false
@@ -113,55 +239,91 @@
         "constraints": {
           "type": "array",
           "maxItems": 100,
-          "items": { "$ref": "#/$defs/statement" }
+          "items": {
+            "$ref": "#/$defs/statement"
+          }
         },
         "assumptions": {
           "type": "array",
           "maxItems": 100,
-          "items": { "$ref": "#/$defs/proposition" }
+          "items": {
+            "$ref": "#/$defs/proposition"
+          }
         },
         "questions": {
           "type": "array",
           "maxItems": 100,
-          "items": { "$ref": "#/$defs/question" }
+          "items": {
+            "$ref": "#/$defs/question"
+          }
         },
         "risks": {
           "type": "array",
           "maxItems": 100,
-          "items": { "$ref": "#/$defs/risk" }
+          "items": {
+            "$ref": "#/$defs/risk"
+          }
         },
         "participants": {
           "type": "array",
           "maxItems": 100,
-          "items": { "type": "object" }
+          "items": {
+            "type": "object"
+          }
         },
         "roles": {
           "type": "array",
           "maxItems": 100,
-          "items": { "type": "object" }
+          "items": {
+            "type": "object"
+          }
         },
         "decision": {
           "type": "object",
           "properties": {
-            "question": { "type": "string", "minLength": 1, "maxLength": 2000 },
-            "governanceProposal": { "type": "string", "minLength": 1, "maxLength": 4000 },
-            "method": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "question": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "governanceProposal": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "method": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
             "options": {
               "type": "array",
               "maxItems": 50,
-              "items": { "$ref": "#/$defs/decisionOption" }
+              "items": {
+                "$ref": "#/$defs/decisionOption"
+              }
             },
             "criteria": {
               "type": "array",
               "maxItems": 50,
               "items": {
                 "oneOf": [
-                  { "type": "string", "minLength": 1, "maxLength": 500 },
-                  { "$ref": "#/$defs/decisionCriterion" }
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  {
+                    "$ref": "#/$defs/decisionCriterion"
+                  }
                 ]
               }
             },
-            "decisionRecordId": { "type": "string", "minLength": 1, "maxLength": 512 }
+            "decisionRecordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
           },
           "additionalProperties": true
         },
@@ -171,7 +333,9 @@
             "milestones": {
               "type": "array",
               "maxItems": 100,
-              "items": { "$ref": "#/$defs/milestone" }
+              "items": {
+                "$ref": "#/$defs/milestone"
+              }
             }
           },
           "additionalProperties": true
@@ -179,12 +343,18 @@
         "attachments": {
           "type": "array",
           "maxItems": 100,
-          "items": { "type": "object" }
+          "items": {
+            "type": "object"
+          }
         },
         "fieldProvenance": {
           "type": "object",
-          "propertyNames": { "pattern": "^/" },
-          "additionalProperties": { "$ref": "#/$defs/provenance" }
+          "propertyNames": {
+            "pattern": "^/"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/provenance"
+          }
         }
       },
       "additionalProperties": false
@@ -192,7 +362,9 @@
     "setupObligations": {
       "type": "array",
       "maxItems": 100,
-      "items": { "$ref": "#/$defs/setupObligation" }
+      "items": {
+        "$ref": "#/$defs/setupObligation"
+      }
     },
     "publication": {
       "type": "object",
@@ -206,22 +378,58 @@
         "containsProviderSessionIds"
       ],
       "properties": {
-        "disclosure": { "enum": ["inline", "reference-only"] },
-        "dataClassification": { "enum": ["public", "internal", "confidential", "restricted"] },
-        "e2eeRequired": { "type": "boolean" },
-        "maxInlineBytes": { "type": "integer", "minimum": 1024, "maximum": 49152 },
-        "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
-        "embedsCanvasContent": { "const": false },
-        "containsProviderSessionIds": { "const": false }
+        "disclosure": {
+          "enum": [
+            "inline",
+            "reference-only"
+          ]
+        },
+        "dataClassification": {
+          "enum": [
+            "public",
+            "internal",
+            "confidential",
+            "restricted"
+          ]
+        },
+        "e2eeRequired": {
+          "type": "boolean"
+        },
+        "maxInlineBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 49152
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "embedsCanvasContent": {
+          "const": false
+        },
+        "containsProviderSessionIds": {
+          "const": false
+        }
       },
       "additionalProperties": false
     },
-    "readiness": { "enum": ["ready-to-materialize", "requires-host-fields", "blocked"] },
+    "readiness": {
+      "enum": [
+        "ready-to-materialize",
+        "requires-host-fields",
+        "blocked"
+      ]
+    },
     "unresolvedHostFields": {
       "type": "array",
       "maxItems": 50,
       "uniqueItems": true,
-      "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
     }
   },
   "additionalProperties": false,
@@ -239,30 +447,73 @@
       "pattern": "^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
     "baseRecipe": {
-      "enum": ["project", "flow", "proposal", "evaluation", "claims", "research", "discussion", "incident"]
+      "enum": [
+        "project",
+        "flow",
+        "proposal",
+        "evaluation",
+        "claims",
+        "research",
+        "discussion",
+        "incident"
+      ]
     },
     "kind": {
-      "enum": ["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]
+      "enum": [
+        "project",
+        "task",
+        "agent_task",
+        "proposal",
+        "evaluation",
+        "claims",
+        "question",
+        "discussion",
+        "incident"
+      ]
     },
     "kindRef": {
       "oneOf": [
         {
           "type": "object",
-          "required": ["source", "kind"],
+          "required": [
+            "source",
+            "kind"
+          ],
           "properties": {
-            "source": { "const": "standard" },
-            "kind": { "$ref": "#/$defs/kind" }
+            "source": {
+              "const": "standard"
+            },
+            "kind": {
+              "$ref": "#/$defs/kind"
+            }
           },
           "additionalProperties": false
         },
         {
           "type": "object",
-          "required": ["source", "customId", "label", "baseKind"],
+          "required": [
+            "source",
+            "customId",
+            "label",
+            "baseKind"
+          ],
           "properties": {
-            "source": { "const": "custom" },
-            "customId": { "type": "string", "minLength": 1, "maxLength": 128 },
-            "label": { "type": "string", "minLength": 1, "maxLength": 80 },
-            "baseKind": { "$ref": "#/$defs/kind" }
+            "source": {
+              "const": "custom"
+            },
+            "customId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "baseKind": {
+              "$ref": "#/$defs/kind"
+            }
           },
           "additionalProperties": false
         }
@@ -270,51 +521,120 @@
     },
     "topicRecipeRef": {
       "type": "object",
-      "required": ["id", "version", "digest"],
+      "required": [
+        "id",
+        "version",
+        "digest"
+      ],
       "properties": {
-        "id": { "type": "string", "format": "uri" },
-        "version": { "type": "string", "minLength": 1 },
-        "digest": { "$ref": "#/$defs/digest" }
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
       },
       "additionalProperties": false
     },
     "shapeSource": {
       "type": "object",
-      "required": ["kind", "id", "version", "digest"],
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "digest"
+      ],
       "properties": {
-        "kind": { "enum": ["base-recipe", "topic-recipe", "kind", "topic"] },
-        "id": { "type": "string", "format": "uri" },
-        "version": { "type": "string", "minLength": 1 },
-        "digest": { "$ref": "#/$defs/digest" }
+        "kind": {
+          "enum": [
+            "base-recipe",
+            "topic-recipe",
+            "kind",
+            "topic"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
       },
       "additionalProperties": false
     },
     "claimBinding": {
       "type": "object",
-      "required": ["entityDid", "collectionId"],
+      "required": [
+        "entityDid",
+        "collectionId"
+      ],
       "properties": {
-        "entityDid": { "type": "string", "pattern": "^did:ixo:" },
-        "collectionId": { "type": "string", "minLength": 1, "maxLength": 512 }
+        "entityDid": {
+          "type": "string",
+          "pattern": "^did:ixo:"
+        },
+        "collectionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
       },
       "additionalProperties": false
     },
     "projectPlan": {
       "type": "object",
-      "required": ["version"],
+      "required": [
+        "version"
+      ],
       "properties": {
-        "version": { "const": 1 },
-        "lead": { "$ref": "#/$defs/subject" },
-        "closer": { "$ref": "#/$defs/subject" },
+        "version": {
+          "const": 1
+        },
+        "lead": {
+          "$ref": "#/$defs/subject"
+        },
+        "closer": {
+          "$ref": "#/$defs/subject"
+        },
         "milestones": {
           "type": "array",
           "maxItems": 100,
           "items": {
             "type": "object",
-            "required": ["id", "name"],
+            "required": [
+              "id",
+              "name"
+            ],
             "properties": {
-              "id": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "name": { "type": "string", "minLength": 1, "maxLength": 500 },
-              "evidenceRequired": { "type": "array", "maxItems": 20, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "evidenceRequired": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             },
             "additionalProperties": false
           }
@@ -324,51 +644,135 @@
           "maxItems": 100,
           "items": {
             "type": "object",
-            "required": ["id", "title"],
+            "required": [
+              "id",
+              "title"
+            ],
             "properties": {
-              "id": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "title": { "type": "string", "minLength": 1, "maxLength": 500 },
-              "kind": { "enum": ["task", "agent_task", "proposal", "evaluation", "claims", "incident", "question", "discussion"] },
-              "topicId": { "$ref": "#/$defs/topicId" }
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "kind": {
+                "enum": [
+                  "task",
+                  "agent_task",
+                  "proposal",
+                  "evaluation",
+                  "claims",
+                  "incident",
+                  "question",
+                  "discussion"
+                ]
+              },
+              "topicId": {
+                "$ref": "#/$defs/topicId"
+              }
             },
             "additionalProperties": false
           }
         },
-        "currentBlockingChildObligationId": { "type": "string", "minLength": 1, "maxLength": 128 },
-        "methodManifestRef": { "$ref": "#/$defs/topicRecipeRef" }
+        "currentBlockingChildObligationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "methodManifestRef": {
+          "$ref": "#/$defs/topicRecipeRef"
+        }
       },
       "additionalProperties": false
     },
     "subject": {
       "type": "object",
-      "required": ["kind", "id"],
+      "required": [
+        "kind",
+        "id"
+      ],
       "properties": {
-        "kind": { "enum": ["actor", "role"] },
-        "id": { "type": "string", "minLength": 1, "maxLength": 512 }
+        "kind": {
+          "enum": [
+            "actor",
+            "role"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
       },
       "additionalProperties": false
     },
     "confirmationPolicy": {
       "type": "object",
-      "required": ["mode", "subjects"],
+      "required": [
+        "mode",
+        "subjects"
+      ],
       "properties": {
-        "mode": { "enum": ["any", "all", "threshold"] },
-        "subjects": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/$defs/subject" } },
-        "threshold": { "type": "integer", "minimum": 1 }
+        "mode": {
+          "enum": [
+            "any",
+            "all",
+            "threshold"
+          ]
+        },
+        "subjects": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/subject"
+          }
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 1
+        }
       },
       "additionalProperties": false
     },
     "disputePolicy": {
       "type": "object",
       "properties": {
-        "resolvers": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/$defs/subject" } },
+        "resolvers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/subject"
+          }
+        },
         "process": {
           "type": "object",
-          "required": ["kind", "id"],
+          "required": [
+            "kind",
+            "id"
+          ],
           "properties": {
-            "kind": { "enum": ["flow", "resource"] },
-            "id": { "type": "string", "minLength": 1, "maxLength": 1024 },
-            "label": { "type": "string", "minLength": 1, "maxLength": 280 }
+            "kind": {
+              "enum": [
+                "flow",
+                "resource"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 280
+            }
           },
           "additionalProperties": false
         }
@@ -378,124 +782,328 @@
     "activationPolicy": {
       "type": "object",
       "properties": {
-        "editors": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/$defs/subject" } },
-        "confirmation": { "$ref": "#/$defs/confirmationPolicy" },
+        "editors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/subject"
+          }
+        },
+        "confirmation": {
+          "$ref": "#/$defs/confirmationPolicy"
+        },
         "lifecycle": {
           "type": "object",
-          "required": ["onExpiry"],
+          "required": [
+            "onExpiry"
+          ],
           "properties": {
-            "effectiveAt": { "type": "string", "format": "date-time" },
-            "reviewAt": { "type": "string", "format": "date-time" },
-            "expiresAt": { "type": "string", "format": "date-time" },
-            "onExpiry": { "const": "pause-consequential" }
+            "effectiveAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "reviewAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "onExpiry": {
+              "const": "pause-consequential"
+            }
           },
           "additionalProperties": false
         },
-        "dispute": { "$ref": "#/$defs/disputePolicy" }
+        "dispute": {
+          "$ref": "#/$defs/disputePolicy"
+        }
       },
       "additionalProperties": false
     },
     "assentPolicy": {
       "type": "object",
-      "required": ["mode", "signatories"],
+      "required": [
+        "mode",
+        "signatories"
+      ],
       "properties": {
-        "mode": { "enum": ["any", "all", "threshold"] },
-        "signatories": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/$defs/subject" } },
-        "threshold": { "type": "integer", "minimum": 1 }
+        "mode": {
+          "enum": [
+            "any",
+            "all",
+            "threshold"
+          ]
+        },
+        "signatories": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/subject"
+          }
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 1
+        }
       },
       "additionalProperties": false
     },
     "setupObligation": {
       "type": "object",
-      "required": ["code", "path", "prompt", "purpose", "responsibility", "priority", "unlocks"],
+      "required": [
+        "code",
+        "path",
+        "prompt",
+        "purpose",
+        "responsibility",
+        "priority",
+        "unlocks"
+      ],
       "properties": {
-        "code": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
-        "path": { "type": "string", "pattern": "^/" },
-        "prompt": { "type": "string", "minLength": 1, "maxLength": 500 },
-        "purpose": { "type": "string", "minLength": 1, "maxLength": 1000 },
-        "responsibility": { "enum": ["mine", "theirs", "unassigned", "unauthorized", "unavailable"] },
-        "responsibleActor": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "priority": { "type": "integer", "minimum": 0 },
-        "unlocks": { "type": "string", "minLength": 1, "maxLength": 1000 }
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "responsibility": {
+          "enum": [
+            "mine",
+            "theirs",
+            "unassigned",
+            "unauthorized",
+            "unavailable"
+          ]
+        },
+        "responsibleActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unlocks": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
       },
       "additionalProperties": false
     },
     "provenance": {
       "type": "object",
-      "required": ["basis", "acceptance", "sourceEventIds"],
+      "required": [
+        "basis",
+        "acceptance",
+        "sourceEventIds"
+      ],
       "properties": {
-        "basis": { "enum": ["explicit", "contextual", "inferred", "suggested", "retrieved"] },
-        "acceptance": { "enum": ["proposed", "accepted", "rejected", "superseded"] },
+        "basis": {
+          "enum": [
+            "explicit",
+            "contextual",
+            "inferred",
+            "suggested",
+            "retrieved"
+          ]
+        },
+        "acceptance": {
+          "enum": [
+            "proposed",
+            "accepted",
+            "rejected",
+            "superseded"
+          ]
+        },
         "sourceEventIds": {
           "type": "array",
           "maxItems": 100,
           "uniqueItems": true,
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
-        "createdBy": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       },
       "additionalProperties": false
     },
     "statement": {
       "type": "object",
-      "required": ["id", "text", "provenance"],
+      "required": [
+        "id",
+        "text",
+        "provenance"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/uuidv7" },
-        "text": { "type": "string", "minLength": 1, "maxLength": 10000 },
-        "provenance": { "$ref": "#/$defs/provenance" }
+        "id": {
+          "$ref": "#/$defs/uuidv7"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
       },
       "additionalProperties": false
     },
     "proposition": {
       "type": "object",
-      "required": ["statement"],
+      "required": [
+        "statement"
+      ],
       "properties": {
-        "statement": { "$ref": "#/$defs/statement" },
-        "status": { "type": "string", "minLength": 1, "maxLength": 128 },
-        "answer": { "type": "string", "maxLength": 10000 },
-        "owner": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "dueAt": { "type": "string", "format": "date-time" }
+        "statement": {
+          "$ref": "#/$defs/statement"
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "answer": {
+          "type": "string",
+          "maxLength": 10000
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "dueAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       },
       "additionalProperties": true
     },
     "question": {
       "type": "object",
-      "required": ["statement", "status"],
+      "required": [
+        "statement",
+        "status"
+      ],
       "properties": {
-        "statement": { "$ref": "#/$defs/statement" },
-        "status": { "enum": ["open", "answered", "deferred", "closed"] },
-        "materiality": { "enum": ["low", "medium", "high", "critical"] },
-        "answer": { "type": "string", "maxLength": 10000 },
-        "owner": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "dueAt": { "type": "string", "format": "date-time" }
+        "statement": {
+          "$ref": "#/$defs/statement"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "answered",
+            "deferred",
+            "closed"
+          ]
+        },
+        "materiality": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "answer": {
+          "type": "string",
+          "maxLength": 10000
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "dueAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       },
       "additionalProperties": false
     },
     "outcome": {
       "type": "object",
       "properties": {
-        "statement": { "$ref": "#/$defs/statement" },
-        "status": { "enum": ["proposed", "accepted", "achieved", "abandoned"] },
+        "statement": {
+          "$ref": "#/$defs/statement"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "accepted",
+            "achieved",
+            "abandoned"
+          ]
+        },
         "target": {
           "oneOf": [
             {
               "type": "object",
-              "required": ["precision", "value", "timezone"],
+              "required": [
+                "precision",
+                "value",
+                "timezone"
+              ],
               "properties": {
-                "precision": { "const": "date" },
-                "value": { "type": "string", "format": "date" },
-                "timezone": { "type": "string", "minLength": 1 }
+                "precision": {
+                  "const": "date"
+                },
+                "value": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "timezone": {
+                  "type": "string",
+                  "minLength": 1
+                }
               },
               "additionalProperties": false
             },
             {
               "type": "object",
-              "required": ["precision", "value", "timezone"],
+              "required": [
+                "precision",
+                "value",
+                "timezone"
+              ],
               "properties": {
-                "precision": { "const": "datetime" },
-                "value": { "type": "string", "format": "date-time" },
-                "timezone": { "type": "string", "minLength": 1 }
+                "precision": {
+                  "const": "datetime"
+                },
+                "value": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "timezone": {
+                  "type": "string",
+                  "minLength": 1
+                }
               },
               "additionalProperties": false
             }
@@ -506,85 +1114,234 @@
           "maxItems": 50,
           "items": {
             "type": "object",
-            "required": ["id", "description", "status"],
+            "required": [
+              "id",
+              "description",
+              "status"
+            ],
             "properties": {
-              "id": { "$ref": "#/$defs/uuidv7" },
-              "description": { "type": "string", "minLength": 1, "maxLength": 2000 },
-              "status": { "enum": ["pending", "met", "not_met", "waived"] },
-              "verification": { "type": "object" }
+              "id": {
+                "$ref": "#/$defs/uuidv7"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "status": {
+                "enum": [
+                  "pending",
+                  "met",
+                  "not_met",
+                  "waived"
+                ]
+              },
+              "verification": {
+                "type": "object"
+              }
             },
             "additionalProperties": false
           }
         },
-        "outcomeRecordId": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "abandonedReason": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        "outcomeRecordId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "abandonedReason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
       },
       "additionalProperties": false
     },
     "risk": {
       "type": "object",
-      "required": ["id", "description", "status"],
+      "required": [
+        "id",
+        "description",
+        "status"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/uuidv7" },
-        "description": { "type": "string", "minLength": 1, "maxLength": 2000 },
-        "impact": { "enum": ["low", "medium", "high", "critical"] },
-        "status": { "enum": ["open", "mitigated", "accepted", "closed"] },
-        "owner": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "mitigation": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        "id": {
+          "$ref": "#/$defs/uuidv7"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "impact": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "status": {
+          "enum": [
+            "open",
+            "mitigated",
+            "accepted",
+            "closed"
+          ]
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "mitigation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
       },
       "additionalProperties": false
     },
     "decisionOption": {
       "type": "object",
-      "required": ["id", "label", "status"],
+      "required": [
+        "id",
+        "label",
+        "status"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/uuidv7" },
-        "label": { "type": "string", "minLength": 1, "maxLength": 500 },
-        "status": { "enum": ["available", "eliminated", "selected"] }
+        "id": {
+          "$ref": "#/$defs/uuidv7"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "status": {
+          "enum": [
+            "available",
+            "eliminated",
+            "selected"
+          ]
+        }
       },
       "additionalProperties": true
     },
     "decisionCriterion": {
       "type": "object",
-      "required": ["id", "label", "direction"],
+      "required": [
+        "id",
+        "label",
+        "direction"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/uuidv7" },
-        "label": { "type": "string", "minLength": 1, "maxLength": 500 },
-        "direction": { "enum": ["maximize", "minimize", "satisfy"] },
-        "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+        "id": {
+          "$ref": "#/$defs/uuidv7"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "direction": {
+          "enum": [
+            "maximize",
+            "minimize",
+            "satisfy"
+          ]
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       },
       "additionalProperties": true
     },
     "milestone": {
       "type": "object",
-      "required": ["id", "title", "status"],
+      "required": [
+        "id",
+        "title",
+        "status"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/uuidv7" },
-        "title": { "type": "string", "minLength": 1, "maxLength": 500 },
-        "status": { "enum": ["pending", "active", "complete", "blocked"] }
+        "id": {
+          "$ref": "#/$defs/uuidv7"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "active",
+            "complete",
+            "blocked"
+          ]
+        }
       },
       "additionalProperties": true
     },
     "kindProfile": {
       "type": "object",
-      "required": ["id", "version", "schema", "digest"],
+      "required": [
+        "id",
+        "version",
+        "schema",
+        "digest"
+      ],
       "properties": {
-        "id": { "type": "string", "format": "uri" },
-        "version": { "type": "string", "minLength": 1 },
-        "schema": { "type": "string", "format": "uri" },
-        "digest": { "$ref": "#/$defs/digest" }
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
       },
       "additionalProperties": false
     },
     "kindResource": {
       "type": "object",
-      "required": ["profile", "type", "id", "version", "value"],
+      "required": [
+        "profile",
+        "type",
+        "id",
+        "version",
+        "value"
+      ],
       "properties": {
-        "profile": { "$ref": "#/$defs/kindProfile" },
-        "type": { "type": "string", "minLength": 1, "maxLength": 128 },
-        "id": { "type": "string", "minLength": 1, "maxLength": 1024 },
-        "version": { "type": "integer", "minimum": 1 },
-        "value": { "type": "object" }
+        "profile": {
+          "$ref": "#/$defs/kindProfile"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "value": {
+          "type": "object"
+        }
       },
       "additionalProperties": false
     }
