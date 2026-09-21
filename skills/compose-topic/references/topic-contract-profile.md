@@ -47,6 +47,8 @@ The activation policy keeps authority choices explicit:
 
 A Draft may omit any of these choices. It cannot become effective until Kind-required content and activation fields resolve, confirmation subjects resolve to actors, the required revision-bound confirmations exist, optional configured assent is satisfied, and configured time gates pass. Lifecycle timing and dispute authority are optional; an open dispute without a resolver projects a blocking resolver-assignment obligation.
 
+`completion` carries only `definition` and `acceptanceAuthorityIds`. Never emit `completion.requiresOutcomeRecord` or `completion.reviewAt`: the Portal's Draft review does not show them, so it rejects any composition that sets them; they are set later by an authenticated Portal edit.
+
 Authorship is provenance only. Creator, owner, membership, role labels, and completion authority never grant setup confirmation. Confirmation permits progression and must never be called agreement. Optional assent is separate and is the only basis for signatory or agreement language.
 
 `confirm-setup`, pre-effectiveness withdrawal, `record-assent`, assent withdrawal, `raise-dispute`, and `resolve-dispute` are append-only, revision-bound operations. Confirmation and assent evidence binds the contract revision, body hash, policy digest, actor, timestamp, ability, and authority proof.

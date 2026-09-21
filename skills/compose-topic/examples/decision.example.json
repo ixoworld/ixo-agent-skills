@@ -172,8 +172,7 @@
         ]
       },
       "completion": {
-        "definition": "The authorised decision is recorded with its evidence and rationale.",
-        "requiresOutcomeRecord": true
+        "definition": "The authorised decision is recorded with its evidence and rationale."
       },
       "assumptions": [],
       "questions": [],

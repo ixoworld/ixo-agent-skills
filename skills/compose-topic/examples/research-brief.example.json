@@ -184,8 +184,7 @@
         }
       ],
       "completion": {
-        "definition": "The sources and conclusions are reviewed, verification is recorded, and the Topic is explicitly completed.",
-        "requiresOutcomeRecord": true
+        "definition": "The sources and conclusions are reviewed, verification is recorded, and the Topic is explicitly completed."
       },
       "constraints": [],
       "assumptions": [],
