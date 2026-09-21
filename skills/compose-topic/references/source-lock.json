@@ -334,7 +334,7 @@
       "sha256": "0e2d9d60b8d61c0ca05cb4ed0a2e40ae69058b824d8523c56a792198a4fdddcd"
     },
     "references/portal-create-template.md": {
-      "sha256": "646416da106a3d31226fc1376973ef73dee737624332d040592a853b5aad5da7"
+      "sha256": "1f76af32d4180d93572c4b5a8588dc51ef3f9a7769705fb4d58d5ce071e02756"
     },
     "tests/portal-template.test.mjs": {
       "sha256": "685b42715ad5999dc97897430e82995ed747dbd2854addd0c57cf53268441ba1"
