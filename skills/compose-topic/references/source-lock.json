@@ -256,7 +256,7 @@
       "sha256": "f52006b34c2303d3c7bb5edcd99fa0c72902c36abf409f15fe14f7264ad55cc3"
     },
     "SKILL.md": {
-      "sha256": "bd8245acba4c4f09d7534594237175850eb46f3c4354a36b2efea8cdd4d9816f"
+      "sha256": "d4db521bfbae57d2e7cf673b91b4d9a12455365d8cd63dcbe5afef6893808021"
     },
     "AUDIT.md": {
       "sha256": "0a9cd59534767185368d298e688653b0adf3fa89b72f9718df80ed05084b7c2f"
@@ -332,6 +332,12 @@
     },
     "tests/validate-recipe.test.mjs": {
       "sha256": "0e2d9d60b8d61c0ca05cb4ed0a2e40ae69058b824d8523c56a792198a4fdddcd"
+    },
+    "references/portal-create-template.md": {
+      "sha256": "646416da106a3d31226fc1376973ef73dee737624332d040592a853b5aad5da7"
+    },
+    "tests/portal-template.test.mjs": {
+      "sha256": "685b42715ad5999dc97897430e82995ed747dbd2854addd0c57cf53268441ba1"
     }
   }
 }

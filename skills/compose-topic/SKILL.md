@@ -33,6 +33,8 @@ When the person chose a room in the Portal and the active staging tool supports 
 
 Do not rediscover that room with `findEntity`, `getEntityProfileDomain`, or `resolve_domain_topic_rooms`. If the active host requires a token, call `list_topic_destinations` once with the exact supplied `roomId`. A different destination or a requested new room follows [room-resolution.md](references/room-resolution.md).
 
+For a `create` on this path read exactly two files: [portal-create-template.md](references/portal-create-template.md) and the selected Kind's sub-skill. The template carries the complete skeleton, the Shape pins for every Kind, and the Kind-specific additions. Do not open `schemas/`, `scripts/`, `tests/`, `examples/`, the shape pins, or the source lock, and do not run `validate-composition.mjs` in a conversation: the Portal validates the handoff and returns the exact failing path.
+
 Treat tool definitions already in context as the capability inventory. Load this pinned skill once and reuse references already loaded in the conversation. Do not run repository audits, tests, dependency installs, or registry discovery while helping someone compose a Topic.
 
 After staging, return control to the person. Report the editor as open only when the host supplies the request-correlated render receipt. A pending approval, missing receipt, timeout, duplicate choice, or unresolved question is a stopping point, not a reason to poll or stage again.
@@ -41,7 +43,7 @@ For an actionable validation error, make at most one targeted repair and retry w
 
 ## Load the controlled model
 
-For creation or a concrete revision proposal, load only missing context:
+On the Portal conversation path a `create` needs only [portal-create-template.md](references/portal-create-template.md) and the Kind sub-skill; skip the rest of this list. Otherwise, for creation or a concrete revision proposal, load only missing context:
 
 - [source-lock.json](references/source-lock.json) for exact release provenance and [topic-shape-pins.json](references/topic-shape-pins.json) for the selected Kind's exact pins. Prefer these bundled pins when the host does not expose a resolver; do not search for protocol source code.
 - [topic-contract-profile.md](references/topic-contract-profile.md) for the contract fields being composed.
