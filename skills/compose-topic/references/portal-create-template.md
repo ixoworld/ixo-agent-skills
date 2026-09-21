@@ -8,7 +8,7 @@ Steps:
 2. Copy the skeleton below. Replace every `<<…>>` placeholder. Remove nothing else.
 3. Take `baseRecipe`, `shapeSources`, and `shapeDigest` for that Kind from the pins block and paste them verbatim into the three places marked `<<PINS.*>>`.
 4. Add the Kind-specific block from the table at the end. Do not add blocks that belong to other Kinds.
-5. Call `stage_topic_composition` with `{ composition }` and stop.
+5. Call `stage_topic_composition` once with `composition` set to the filled skeleton serialised as **one JSON string** (the text of the object, quotes escaped), not as a nested object: the runtime mangles nested objects inside arrays when they are passed structurally. Then stop.
 
 Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y` ∈ `8 9 a b`. Use a fresh one per placeholder.
 
