@@ -54,12 +54,7 @@
       "kind": "question",
       "status": "draft",
       "baseRecipe": "research",
-      "topicRecipeRef": {
-        "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
-      },
-      "shapeDigest": "sha256:d586f6c131e1b748fcc3eba6dfabba23cbd22059d579e0b9a8c75d6578a56d26",
+      "shapeDigest": "sha256:12dce5300689c2966e9de6ea5f71dbffe48c061405fecd5bc01e9d0a86a42804",
       "context": [],
       "overview": {
         "summary": "Research accessible measurement methods, costs, constraints, and evidence quality.",
@@ -74,14 +69,8 @@
     }
   },
   "recipeSelection": {
-    "strategy": "topic-recipe",
+    "strategy": "base-recipe",
     "baseRecipe": "research",
-    "topicRecipeCode": "research-brief",
-    "topicRecipeRef": {
-      "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-      "version": "1.0.0-rc.4",
-      "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
-    },
     "registryLookup": "not-performed",
     "registryReason": "pinned-catalog-only",
     "reviewState": "draft",
@@ -97,15 +86,9 @@
         "id": "https://topic-protocol.ixo.world/kinds/question",
         "version": "1.0.0-rc.4",
         "digest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b"
-      },
-      {
-        "kind": "topic-recipe",
-        "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
       }
     ],
-    "shapeDigest": "sha256:d586f6c131e1b748fcc3eba6dfabba23cbd22059d579e0b9a8c75d6578a56d26"
+    "shapeDigest": "sha256:12dce5300689c2966e9de6ea5f71dbffe48c061405fecd5bc01e9d0a86a42804"
   },
   "contractDraft": {
     "envelope": {
@@ -121,11 +104,6 @@
       },
       "workingMode": "solo",
       "baseRecipe": "research",
-      "topicRecipeRef": {
-        "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
-      },
       "shapeSources": [
         {
           "kind": "base-recipe",
@@ -138,15 +116,9 @@
           "id": "https://topic-protocol.ixo.world/kinds/question",
           "version": "1.0.0-rc.4",
           "digest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b"
-        },
-        {
-          "kind": "topic-recipe",
-          "id": "https://topic-protocol.ixo.world/recipes/research-brief",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:319d13281c2aaaed6162269199ef2f46eec9f52e4ccb813c5916a02da341862d"
         }
       ],
-      "shapeDigest": "sha256:d586f6c131e1b748fcc3eba6dfabba23cbd22059d579e0b9a8c75d6578a56d26",
+      "shapeDigest": "sha256:12dce5300689c2966e9de6ea5f71dbffe48c061405fecd5bc01e9d0a86a42804",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77741",
         "text": "Research whether smallholder farmers can access affordable soil carbon measurement in Kenya.",

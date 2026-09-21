@@ -73,7 +73,7 @@ The Portal renders nothing new for a recipe. Build from these parts only; anythi
 | Evidence | `operation`, `record` (with `finality`), `receipt` |
 | Presentation keys | the built-in `topic.action.<transition-code>.label|prompt|purpose|unlocks` keys; copy the whole `presentation` block from a built-in transition |
 
-The safe way to add a stage is to copy its axis and transition verbatim from a built-in recipe (`record-verification` from `blueprint-design`, `record-decision`, `request-action`, `confirm-action` from `agent-delivery`, `record-settlement` from `verified-work-payment`) and then change only `gates`, `assignedTo`, `confirmation` or `presentation.priority`.
+The safe way to add a stage is to copy its axis and transition verbatim from one of the sample recipes inside the `@ixo/topic-protocol` package (`record-verification` from `blueprint-design`, `record-decision`, `request-action`, `confirm-action` from `agent-delivery`, `record-settlement` from `verified-work-payment`; source material only, the Portal never pins them) and then change only `gates`, `assignedTo`, `confirmation` or `presentation.priority`.
 
 What a recipe cannot do: invent an axis, a command, a role name, a record type, a phase or a locale key; change the base transitions' codes; add a second completing transition.
 

@@ -18,9 +18,9 @@ Use only after the parent skill selects `agent_task`.
 - Kind: `agent_task`
 - Base Recipe: `flow`
 - Base Shape axes: contract, work, Topic completion
-- Optional seed Topic Recipe: `agent-delivery`
+- Topic Recipe: none bundled; only a recipe published by a `protocol/topic` domain that the Portal resolves
 
-Select `agent-delivery` only when the Topic commissions agent work, reviews a delivery, records a decision, and may explicitly request or confirm an external Action. It adds verification, decision, and effect stages and still creates a Draft.
+A published recipe may add verification, decision, and effect stages (review a delivery, record a decision, request or confirm an external Action); it still creates a Draft.
 
 ## Compose
 
@@ -63,4 +63,4 @@ The Portal derives the Now phase and legal moves from the resolved Shape. Sugges
 
 ## rc.4 lifecycle contract
 
-Verify that a matching executable Flow or agent binding is available before describing agent execution as ready. The base Kind does not itself run an agent. `agent-delivery` adds verification, decision, external Action, and successful-receipt obligations. A failed receipt enables a reviewed retry with a new request identity.
+Verify that a matching executable Flow or agent binding is available before describing agent execution as ready. The base Kind does not itself run an agent. A published recipe with delivery stages adds verification, decision, external Action, and successful-receipt obligations. A failed receipt enables a reviewed retry with a new request identity.

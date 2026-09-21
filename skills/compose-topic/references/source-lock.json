@@ -244,40 +244,34 @@
       "sha256": "b03d27b208f9e3791b030f30e1cc5c0a4011184b627d027f93a6511cfed1b144"
     },
     "references/topic-recipe-selection.md": {
-      "sha256": "39c381941ecbf5342e164f53c4d385f590f0af2db7c17aee5c592661b72813cc"
+      "sha256": "db2da7e3d50253d549790b9d531031d131d19069fb9b7d8cde4204d7b6085501"
     },
     "references/topic-shape-pins.json": {
-      "sha256": "e7f6d3e97072eca6641fe9742005f7dabd669cd976dac67a94057bf7fd129639"
+      "sha256": "1d0e3ad72ca6979c64699bef22edde12a4e9308b6424c80f83babeba584989ba"
     },
     "references/topic-kind-templates.md": {
-      "sha256": "88ce88c3666e3d259a1e5eba84fec60a8504e17bebb3a4ac4bc7505d9a85d5cc"
+      "sha256": "cdab6b2cde868964b5aad8a17a344d3b40e0eb808c60ee27e308dd1b6036db27"
     },
     "references/room-resolution.md": {
       "sha256": "f52006b34c2303d3c7bb5edcd99fa0c72902c36abf409f15fe14f7264ad55cc3"
     },
     "SKILL.md": {
-      "sha256": "d4db521bfbae57d2e7cf673b91b4d9a12455365d8cd63dcbe5afef6893808021"
+      "sha256": "5c42d9100ade5b342562df603bd786115a0f54fe5ee0db93ce341ac46251b1d9"
     },
     "AUDIT.md": {
-      "sha256": "0a9cd59534767185368d298e688653b0adf3fa89b72f9718df80ed05084b7c2f"
+      "sha256": "ce888ca437f774e29849550e3f881c18338fcc9a2cfcf39dad715d4c6bdc1775"
     },
     "evals/evals.json": {
-      "sha256": "4005a1d3a918ac4224720dfcc197620153ef8dcc2264489ab95137566b2cbdbc"
+      "sha256": "d530e40c256196af3e59d41b9599966173475bf474820ef6c8de5eb66ce4fab7"
     },
     "subskills/compose-topic-project/SKILL.md": {
-      "sha256": "6b18bb0b8ca484e80e149456d27fa46d63bc11ec9257dc026c7b2f6976acf66e"
-    },
-    "subskills/compose-project-software-build/SKILL.md": {
-      "sha256": "c589d24dd0c726d449fa8b17d726d85b27cbb4b1defe067792561ba0d36aaeae"
-    },
-    "subskills/compose-project-blueprint-design/SKILL.md": {
-      "sha256": "f3990344fb94fcc703b858b6386f0a24319b609ef2098fefcbc2d32dcc7debb5"
+      "sha256": "76a9207fd5fb56c6d1d915da9bc7c1e96c842d8e1173b1453dfd0b863cc8606f"
     },
     "subskills/compose-topic-agent-task/SKILL.md": {
-      "sha256": "8f29cabada585ad9ab4ebdf31dc379ef292835a33578f1ff2fe3613c1ef54946"
+      "sha256": "eb08b3e414b0f369cb0c9c4512ed8065af54c0fb3544fd450add8a1fc5ad001a"
     },
     "subskills/compose-topic-claims/SKILL.md": {
-      "sha256": "2013f2fb6c44f3688c22afb29a022072bee290dd522b0956b97de53179a74ec9"
+      "sha256": "5416758ad2eac6af6b7c4cb9636daf517e884ab831e438f6554201a3a997e10d"
     },
     "subskills/compose-topic-discussion/SKILL.md": {
       "sha256": "31f11714bc49504eb5dca300170e64e98329bbd38341f0b0e01afaf6b45af586"
@@ -292,16 +286,16 @@
       "sha256": "790c7062881e2cd5964098851c12165d6a4992c114249c16dd2e31972d93c7b4"
     },
     "subskills/compose-topic-question/SKILL.md": {
-      "sha256": "8bdebd992a04050dcf8fd2a7ee0eb7672a8e3e073239b11ed0b07964eb99e95c"
+      "sha256": "0d87194fe24f68b66c97146f956953b07b7480234d5d1b67ce5075c5c174277b"
     },
     "subskills/compose-topic-task/SKILL.md": {
       "sha256": "24f664209744ca22c3fd4618e403c04dc7b981b80a46d2306af9819ad2cc397b"
     },
     "references/topic-shape-pins-rc3.json": {
-      "sha256": "3529504b40999b603f71b094e09983856a617397b294d96648ab34a004b8df61"
+      "sha256": "24eba8f9505d28a40654e5c3a0c7157c61c188dca070b65c2f18a43f8150958f"
     },
     "tests/lifecycle-pins.test.mjs": {
-      "sha256": "627c9c48313e617f6b367b5d8e442b02b389a9e7563bfb5c35af538a6f2f5757"
+      "sha256": "15747a8a37584b81671aacc3ab9cd40cdc6e8cb5b8c0b468689344a3d3091a06"
     },
     "references/artifacts/ixo-topic-protocol-1.0.0-rc.4.tgz": {
       "sha256": "c88cd0b1055bfb21639984553b418d782e7d27ca9a35f32d89fb9fcc6032f5d0"
@@ -310,7 +304,7 @@
       "sha256": "559b830b10076f79cbdadda224781939178ea6051a1ccabc030d7ea24c62a804"
     },
     "references/protocol-adapter.md": {
-      "sha256": "4530a138b6a65c80ab5655fb729743d54d31fa58fe042e01d8c7514c9ab2a20c"
+      "sha256": "35959934247c0e01b2719d1db8d6b0779bb12b49a5d659394e229a840f06a179"
     },
     "references/refine-existing-topic.md": {
       "sha256": "99b83b6d89c16a0333750c58496ae310bc465cda303c162bd2be13bdcafcdefe"
@@ -325,7 +319,7 @@
       "sha256": "39a3db8789ef2f525cc9ff403502170419a0cddf9a3d53637bbae1517b010e6e"
     },
     "references/topic-recipe-publishing.md": {
-      "sha256": "7c6264ce0e491791ea1c84dc2a59bc0d3265b366b888fd37f2a88991bdea7e8a"
+      "sha256": "b9f17dd6cd7f1187ac4da40400ba70d8bd9595b37876d8f4aecc1bd7fdd59b3c"
     },
     "scripts/validate-recipe.mjs": {
       "sha256": "a219aed679f072c236477e1516c8c0ddf0cacbffd2e571d9b703d6c16640b2d9"

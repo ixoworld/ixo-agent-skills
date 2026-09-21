@@ -16,7 +16,7 @@ Kind-specific composition now lives in independently loadable sub-skills. The pa
 
 Use this file as a compatibility index only. Read the chosen sub-skill for the complete composition rules.
 
-Project Type is optional configuration, not another Kind. Software Build and Blueprint Design use pinned Topic Recipes; Generic Project has no `topicRecipeRef`.
+A Project carries a `topicRecipeRef` only when the Portal resolved a recipe published by a `protocol/topic` domain; a Generic Project has none.
 
 Custom labels extend exactly one base Kind. The canonical Job Profile remains a Task specialization with Base Recipe `project`; it does not become another protocol Kind.
 

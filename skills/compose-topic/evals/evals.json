@@ -636,46 +636,32 @@
       ]
     },
     {
-      "id": "recipe-research-brief",
-      "input": "Research the evidence for affordable soil testing and produce a verified brief.",
+      "id": "recipe-published-only",
+      "input": "Start a Topic from the FPS Game Build recipe published by did:ixo:entity:f6263ec758245bac7ec7685faac05aa7, version 1.0.1.",
+      "context": "The Portal exposes resolve_published_recipe.",
+      "expected": {
+        "kind": "project",
+        "baseRecipe": "project",
+        "recipeSelection": { "strategy": "topic-recipe", "registryLookup": "host-supplied", "registryReason": "portal-published-recipe" },
+        "status": "draft"
+      },
+      "must": [
+        "Call resolve_published_recipe exactly once and copy its topicRecipeRef, shapeSources and shapeDigest verbatim.",
+        "Never fetch the file, compute a digest, or guess a version."
+      ]
+    },
+    {
+      "id": "recipe-bundled-rejected",
+      "input": "Research the evidence for affordable soil testing and produce a verified brief using the research-brief recipe.",
       "expected": {
         "kind": "question",
         "baseRecipe": "research",
-        "topicRecipeCode": "research-brief",
+        "recipeSelection": { "strategy": "base-recipe", "registryLookup": "not-performed" },
         "status": "draft"
       },
       "must": [
-        "Use the exact digest-pinned seed recipe.",
-        "Resolve its Effective Shape before any write."
-      ]
-    },
-    {
-      "id": "recipe-agent-delivery",
-      "input": "Commission an agent to produce a report, have a person review it, then confirm any external Action.",
-      "expected": {
-        "kind": "agent_task",
-        "baseRecipe": "flow",
-        "topicRecipeCode": "agent-delivery",
-        "status": "draft"
-      },
-      "must": [
-        "Keep agent execution and Action contracts in the Flow.",
-        "Do not simulate effect success when the adapter is absent."
-      ]
-    },
-    {
-      "id": "recipe-verified-work-payment",
-      "input": "Verify work against this claim collection, approve it, pay through a Flow, and observe settlement.",
-      "context": "One entity DID and one collection ID are supplied.",
-      "expected": {
-        "kind": "claims",
-        "baseRecipe": "claims",
-        "topicRecipeCode": "verified-work-payment",
-        "status": "draft"
-      },
-      "must": [
-        "Bind exactly one entity and collection.",
-        "Keep verification, decision, effect, settlement, and Topic completion independent."
+        "Compose on the Base Recipe: the samples bundled with the protocol are not a catalog and the Portal rejects a handoff that pins one.",
+        "Say that a recipe can only come from a protocol/topic domain the Portal resolves."
       ]
     },
     {
@@ -830,32 +816,6 @@
       "must": [
         "Select the persisted Project Kind and the project Base Recipe.",
         "Ask what exists when the Project is done and who will lead it; do not route this nested outcome to Task."
-      ]
-    },
-    {
-      "id": "recipe-software-build",
-      "input": "Set up a software project to implement and release the new claims application.",
-      "expected": {
-        "kind": "project",
-        "topicRecipeCode": "software-build",
-        "status": "draft"
-      },
-      "must": [
-        "Use the digest-pinned Software Build recipe only after it is selected or confirmed.",
-        "Suggest implementation, verification, release, and operational-readiness patterns without creating repositories, milestones, agents, deployments, or child Topics."
-      ]
-    },
-    {
-      "id": "recipe-blueprint-design",
-      "input": "Use the Yoma Design POD to produce the accepted blueprint for a protocol Deed.",
-      "expected": {
-        "kind": "project",
-        "topicRecipeCode": "blueprint-design",
-        "status": "draft"
-      },
-      "must": [
-        "Use the digest-pinned Blueprint Design recipe and preserve the authoritative design-yoma/v1 method boundary when bound.",
-        "Treat the accepted blueprint as the Project outcome, never as an effective Deed, deployed service, or operational proof."
       ]
     },
     {

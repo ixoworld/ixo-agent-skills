@@ -160,7 +160,7 @@ Use `topicSetupFieldState` for present fields and field values. Use `applyTopicS
 
 Accepted finality does not mean success. Verification needs status `verified`; Claims decisions need `approved`; Action receipts need `succeeded`; settlement receipts need `confirmed`. Answer acceptance needs `accepted`. A proposal decision uses status `recorded` and keeps approved, rejected, or deferred as its substantive result. Failed evaluations remain open for correction. Retrying a failed Action requires an explicit new request and its usual confirmation.
 
-Read the host's supported commands before suggesting an executable recipe. Preserve unavailable obligations visibly. The current Portal candidate has no complete settlement write-back adapter, so it must not offer `verified-work-payment` as an executable recipe. Do not fill this gap with a success-shaped receipt or an unrelated Flow link.
+Read the host's supported commands before suggesting an executable recipe. Preserve unavailable obligations visibly. The current Portal candidate has no complete settlement write-back adapter, so it must not offer a published recipe with a settlement stage as executable. Do not fill this gap with a success-shaped receipt or an unrelated Flow link.
 
 This skill pins an unpublished rc.4 candidate. The source lock includes the actual source commit, tarball bytes, and measured hashes. Do not claim npm publication or replace its provenance with invented registry metadata.
 

@@ -16,7 +16,8 @@ test("every current and rc3 composition pin resolves from the bundled candidate"
     const { resolveEffectiveTopicShape } = await import(pathToFileURL(join(temporary, "package/dist/src/shapes/resolver.js")).href);
     for (const filename of ["topic-shape-pins.json", "topic-shape-pins-rc3.json"]) {
       const pins = JSON.parse(await readFile(join(root, "references", filename), "utf8"));
-      const cases = [...Object.entries(pins.baseCompositions), ...Object.values(pins.topicRecipes).map((pin) => [pin.kind, pin])];
+      assert.equal(pins.topicRecipes, undefined, `${filename}: no bundled Topic Recipe catalog`);
+      const cases = Object.entries(pins.baseCompositions);
       for (const [kind, pin] of cases) {
         const resolved = resolveEffectiveTopicShape({ kind, baseRecipe: pin.baseRecipe, sourceVersion: pins.protocolVersion,
           ...(pin.topicRecipeRef ? { topicRecipeRef: pin.topicRecipeRef } : {}) });

@@ -47,7 +47,7 @@ On the Portal conversation path a `create` needs only [portal-create-template.md
 
 - [source-lock.json](references/source-lock.json) for exact release provenance and [topic-shape-pins.json](references/topic-shape-pins.json) for the selected Kind's exact pins. Prefer these bundled pins when the host does not expose a resolver; do not search for protocol source code.
 - [topic-contract-profile.md](references/topic-contract-profile.md) for the contract fields being composed.
-- [topic-recipe-selection.md](references/topic-recipe-selection.md) only when considering a specialist recipe; otherwise use the Kind's Base Recipe.
+- [topic-recipe-selection.md](references/topic-recipe-selection.md) only when the person names a recipe published on chain; otherwise use the Kind's Base Recipe.
 - [topic-recipe-publishing.md](references/topic-recipe-publishing.md) only when the person wants the composed Topic published as a reusable recipe (see step 12).
 - Exactly the selected Kind's sub-skill:
 
@@ -94,7 +94,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 5. Never invent identity, authority, assignment, deadline, budget, evidence, acceptance, capability, Shape source, recipe match, claim resolution, Action success, or settlement finality.
 6. Every new Topic starts as a user-reviewable `draft`, including a blank Base Recipe and every Topic Recipe.
 7. `baseRecipe` is the canonical Kind recipe. Never emit the removed v0.8 `recipe` field.
-8. A Topic Recipe is optional and digest-pinned. Use the five entries in the bundled pinned catalog, or a recipe the host hands you already resolved (the Portal registers recipes published on `protocol/topic` domains and supplies their exact `topicRecipeRef`, id `did:ixo:entity:…`). Never look one up yourself or invent an id or digest.
+8. A Topic Recipe is optional and digest-pinned, and only the host can hand you one: the Portal registers recipes published on `protocol/topic` domains and `resolve_published_recipe` returns their exact `topicRecipeRef` (id `did:ixo:entity:…`). There is no bundled catalog. Never look one up yourself or invent an id or digest.
 9. Resolve the Effective Shape before any write. Copy its `sources` and `digest` into the root Draft and contract proposal; do not hand-calculate or improvise them.
 10. Do not place agents, Action definitions, effect contracts, evaluation kits, schedules, or settlement contracts in the Topic Contract body.
 11. Agent execution and external effects belong to registry Actions and Flow instances. A Topic carries only bindings, UDID references, operations, records, and receipts through the host runtime.
@@ -170,21 +170,13 @@ Record the best guess and concise basis in `routing.kindInference`. When one Kin
 
 Do not instantiate until the selected Kind can reach the editor or host adapter without being discarded. If the only available creation tool omits Kind and would open a default Discussion, return `BLOCKED_KIND_HANDOFF_UNAVAILABLE` for commit while still showing the composed Draft.
 
-Read the matching sub-skill before producing Kind-specific fields. Its setup questions are a menu for later turns, not a checklist to complete before showing a Draft. Ask at most one useful question at a time. For a Project, then read [Software Build](subskills/compose-project-software-build/SKILL.md) or [Blueprint Design](subskills/compose-project-blueprint-design/SKILL.md) only when that Project Type is selected. Custom labels must extend exactly one canonical base Kind. `Thread` is a virtual Portal presentation and is never persisted as a Kind.
+Read the matching sub-skill before producing Kind-specific fields. Its setup questions are a menu for later turns, not a checklist to complete before showing a Draft. Ask at most one useful question at a time. Custom labels must extend exactly one canonical base Kind. `Thread` is a virtual Portal presentation and is never persisted as a Kind.
 
 For a Project, ask only the smallest unresolved questions: what exists when it is done; who leads it; the optional first named milestone; who may close it by accepting remaining risk; and, only when useful, who resolves a contested outcome. Outcome is required for a useful Draft. Lead is required for effectiveness. Closer is required only to enter closing. Never default any of them from creator, owner, room membership, or another authority.
 
 ### 5. Select the recipe source
 
-Always begin with the Kind's Base Recipe. Select a seed Topic Recipe only when the intent exactly matches its declared use case and base:
-
-- `research-brief` for a `question`;
-- `agent-delivery` for an `agent_task`;
-- `verified-work-payment` for `claims` with verification, decision, effect, and settlement.
-- `software-build` for a `project` coordinating reviewed software delivery;
-- `blueprint-design` for a `project` whose boundary is an independently reviewed, accepted blueprint.
-
-Do not search a Marketplace yet. Record `registryLookup: not-performed` and `registryReason: pinned-catalog-only`.
+Compose on the Kind's Base Recipe. There is no bundled catalog of Topic Recipes: the samples shipped inside `@ixo/topic-protocol` are not offered and the Portal rejects a handoff that pins one. Record `strategy: base-recipe`, `registryLookup: not-performed` and `registryReason: pinned-catalog-only`. Do not search a Marketplace.
 
 When the person names a recipe published on chain (a `protocol/topic` domain DID, usually with a version, for example from the Portal's shelf), call `resolve_published_recipe` once. It returns the exact `topicRecipeRef`, the recipe's brief, and per compatible Kind the `shapeSources` and `shapeDigest` the Portal will require. Copy them verbatim, record `strategy: topic-recipe`, `topicRecipeCode` = the recipe's code, `registryLookup: host-supplied`, `registryReason: portal-published-recipe`, and seed the Draft text from the brief. If the tool reports the file is a brief without rules, compose on the Base Recipe and say so. Never fetch the file, compute a digest, or guess a version yourself.
 

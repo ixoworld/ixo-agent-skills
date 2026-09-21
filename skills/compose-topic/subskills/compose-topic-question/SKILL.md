@@ -18,9 +18,9 @@ Use only after the parent skill selects `question`.
 - Kind: `question`
 - Base Recipe: `research`
 - Base Shape axes: contract, work, Topic completion
-- Optional seed Topic Recipe: `research-brief`
+- Topic Recipe: none bundled; only a recipe published by a `protocol/topic` domain that the Portal resolves
 
-Select `research-brief` when the Topic will frame a question, research it, verify sources, and explicitly close the brief. It adds a verification axis and still creates a Draft.
+A published recipe may add a verification axis (research, verify sources, explicitly close the brief); it still creates a Draft.
 
 ## Compose
 
@@ -45,10 +45,10 @@ Ask the primary question, the expected answer or brief, who will review the answ
 
 ## Evidence and completion
 
-A summary is not verified merely because an agent produced it. Preserve citations and provenance. When `research-brief` is selected, verification must be represented by the Shape's accepted evaluation/evidence record.
+A summary is not verified merely because an agent produced it. Preserve citations and provenance. When a published recipe adds a verification axis, verification must be represented by the Shape's accepted evaluation/evidence record.
 
 An answered question or verified brief still requires the Shape's Topic completion transition.
 
 ## rc.4 lifecycle contract
 
-After work submission, `topic.record-verification` requires an accepted `ixo.topic.answer-acceptance` record with status `accepted` from the assigned completion authority using `topic/accept-answer`. The `research-brief` recipe first requires source verification through `ixo.evaluation` with status `verified`. Both axes must finish before explicit Topic completion.
+After work submission, `topic.record-verification` requires an accepted `ixo.topic.answer-acceptance` record with status `accepted` from the assigned completion authority using `topic/accept-answer`. A published recipe with a verification axis first requires source verification through `ixo.evaluation` with status `verified`. Both axes must finish before explicit Topic completion.
