@@ -22301,7 +22301,18 @@ function checkOutput(text2, bundle, options = {}) {
   if (bundle.link && !compact.includes(bundle.link)) issues.push("The certificate link is missing or broken: " + bundle.link);
   if (v.synthetic && !/synthetic example/i.test(text2)) issues.push('The "Synthetic example, not a real certificate" label is missing.');
   if (!text2.includes(iso)) issues.push(`The check date ${iso} is missing.`);
-  if (!/IXO Reporter/i.test(text2) || !text2.toLowerCase().includes(v.verdict.title.toLowerCase())) issues.push(`Reporter's result ("IXO Reporter: ${v.verdict.title}") is missing; it must open the output.`);
+  const flat = compact.replace(/[*_>]/g, "").toLowerCase();
+  const opening = Math.max(1500, Math.floor(flat.length / 4));
+  const near = (phrase) => {
+    const at = flat.indexOf(phrase.replace(/\s+/g, "").toLowerCase());
+    return at === -1 ? "missing" : at > opening ? "late" : "ok";
+  };
+  const stamp = near(`IXO Reporter: ${v.verdict.title}`);
+  if (stamp !== "ok") issues.push(`Reporter's result ("IXO Reporter: ${v.verdict.title}") is ${stamp === "late" ? "not near the start" : "missing"}; it must open the output.`);
+  if (bundle.outputs.lead) {
+    const lead = near(bundle.outputs.lead);
+    if (lead !== "ok") issues.push(`The full result is ${lead === "late" ? "not near the start" : "missing"}; the output must open with: ${bundle.outputs.lead}`);
+  }
   if (!compact.toLowerCase().includes(bundle.disclaimer.replace(/\s+/g, "").toLowerCase())) issues.push("The disclaimer is missing: " + bundle.disclaimer);
   let rest = bundle.link ? text2.replace(new RegExp([...bundle.link].map((character) => character.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[\\s\\u200b\\u00ad]*"), "g"), " ") : text2;
   const known = [
@@ -22324,7 +22335,8 @@ function checkOutput(text2, bundle, options = {}) {
     bundle.certificate.subject,
     ...bundle.certificate.figuresAsAt ? [bundle.certificate.figuresAsAt, bundle.certificate.figuresAsAt.slice(0, 10), ...dates(bundle.certificate.figuresAsAt)] : []
   ].filter((item) => !!item && (new RegExp("\\p{Nd}", "u").test(item) || item.length >= 4)).sort((a, b) => b.length - a.length);
-  for (const item of known) rest = rest.split(item).join(" ");
+  const escape = (item) => item.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  for (const item of known) rest = rest.replace(new RegExp("(?<![\\p{L}\\p{Nd}]|\\p{Nd}[.,])" + escape(item) + "(?![\\p{L}\\p{Nd}]|[.,]\\p{Nd})", "gu"), " ");
   rest = rest.replace(/\bF[1-9][0-9]{0,2}\b/g, " ");
   rest = rest.replace(/(?:[\w.~-]*\/)+[\w.-]+/g, " ").replace(/\b[0-9a-f]{8,}\b/g, " ");
   if (options.allowNumbering) rest = rest.replace(new RegExp("^\\s*(slide|page)?\\s*\\p{Nd}{1,3}\\s*$", "gimu"), " ");
@@ -23465,23 +23477,15 @@ async function withDeadline(ms, run) {
     clearTimeout(timer);
   }
 }
-function validReport(value) {
-  const report = value;
-  return !!report && typeof report === "object" && report.mode === "live" && ["verified", "incomplete", "failed"].includes(report.outcome) && Array.isArray(report.checks) && Array.isArray(report.values) && typeof report.checkedAt === "string";
-}
-async function serviceReport(link, context) {
+async function serviceBundle(link, context) {
   const fetcher = context.fetcher ?? ((request) => fetch(request));
+  const token = link.slice(link.indexOf("#r=") + 3);
   try {
     return await withDeadline(45e3, async (signal) => {
-      const response = await fetcher(new Request(serviceOrigin(context) + "/api/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ locator: link }), signal }));
+      const response = await fetcher(new Request(serviceOrigin(context) + "/api/agent/verify?r=" + token, { signal }));
       if (!response.ok) return null;
-      const text2 = await response.text();
-      for (const line of text2.split("\n").reverse()) {
-        if (!line.trim()) continue;
-        const event = JSON.parse(line);
-        return event.type === "result" && validReport(event.report) ? event.report : null;
-      }
-      return null;
+      const bundle = await readBundle(await response.json());
+      return bundle.verification.checkedBy === "reporter-service" && bundle.link === link && !bundle.verification.synthetic ? bundle : null;
     });
   } catch {
     return null;
@@ -23563,20 +23567,19 @@ async function main(argv, context) {
         const link = first ? canonicalLink(first) : null;
         if (!link) return fail(2, "Give the certificate link from Reporter (…/present#r=…) or its token.");
         const now = context.now?.() ?? /* @__PURE__ */ new Date();
-        let report = await withDeadline(3e4, (signal) => inspect(link, createLiveAdapters(context.config, signal, context.fetcher), { mode: "live", signal, now }));
-        let checkedBy = "agent";
-        let local;
+        const report = await withDeadline(3e4, (signal) => inspect(link, createLiveAdapters(context.config, signal, context.fetcher), { mode: "live", signal, now }));
+        const outdated = await stale(context, configDigest);
         const definitive = report.checks.some((check2) => check2.status === "failed");
         if (!definitive && report.checks.some((check2) => CONNECTIVITY.has(check2.code || ""))) {
-          const remote = await serviceReport(link, context);
+          const remote = await serviceBundle(link, context);
           if (remote) {
-            local = { outcome: report.outcome, reason: "This sandbox could not reach IXO services, so IXO Reporter's service checked it." };
-            report = remote;
-            checkedBy = "reporter-service";
+            const local = { outcome: report.outcome, reason: "This sandbox could not reach IXO services, so IXO Reporter's service checked it." };
+            out(summary(remote, writeVerification(remote, base2()), { localAttempt: local, stale: outdated }));
+            return 0;
           }
         }
-        const bundle = await buildBundle(report, { checkedBy, configDigest, link, stale: await stale(context, configDigest) });
-        out(summary(bundle, writeVerification(bundle, base2()), local ? { localAttempt: local } : {}));
+        const bundle = await buildBundle(report, { checkedBy: "agent", configDigest, link, stale: outdated });
+        out(summary(bundle, writeVerification(bundle, base2())));
         return 0;
       }
       case "example": {
