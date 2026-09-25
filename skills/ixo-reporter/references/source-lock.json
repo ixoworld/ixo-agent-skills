@@ -2,16 +2,16 @@
   "source": {
     "repository": "https://github.com/ixoworld/constellation",
     "path": "apps/ixo-report",
-    "commit": "4e82ef5ad00b1d30d4bf25b3f988c85b7ce7e491"
+    "commit": "b2454d06d0dd15fb9fd99e1939b4feaf9a8a1888"
   },
   "skill": {
     "name": "ixo-reporter",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "cli": {
     "path": "scripts/reporter.mjs",
-    "sha256": "47de64cb14621d45b312cf82188716115e80688a918b2064f25e3da10a0ad46b",
-    "bytes": 892285,
+    "sha256": "7cb77936da048609df851275a32e49a9d2dd296ffc0260186564a2369a7b9574",
+    "bytes": 893482,
     "rebuild": "cd apps/ixo-report && pnpm install --frozen-lockfile && node scripts/build-skills.mjs --export <dir>"
   }
 }

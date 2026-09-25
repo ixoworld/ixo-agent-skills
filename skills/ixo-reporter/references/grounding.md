@@ -26,6 +26,7 @@ Choose the humblest basis that is true. "The programme trained {F2}" is `signed`
 - Units belong to the fact. They are the certificate's own words and are not translated or converted.
 - `{CHECKED}` and `{ASAT}` are written in the output language ("19 septembre 2026"); Reporter's stamp keeps English with ISO dates.
 - A signed statement that cites only the as-at date is tagged "(Signed date)".
+- The title comes before Reporter's result in every output, so it carries no `{F…}` figures. Put figures in the body. `{CHECKED}` and `{ASAT}` are fine.
 
 ## Links
 

@@ -55,7 +55,7 @@ Every sentence in a draft is a statement:
 - `basis`: `signed`, `check`, `reading` or `missing` (see grounding.md). Podcasts may also use `framing` for short spoken glue.
 - `refs`: fact ids or group ids it rests on. Facts used as placeholders count as cited, so `refs` may be empty for a `signed` statement. For a synthetic example, a `check` statement may also cite `sample` when it says the certificate is a sample.
 
-Headings, titles, slide titles and speaker names follow the same text rules but carry no basis.
+Headings, titles, slide titles and speaker names follow the same text rules but carry no basis. The draft's `title` also carries no `{F…}` figures, because every output shows it before Reporter's result.
 
 ## 3. Drafts for each format
 

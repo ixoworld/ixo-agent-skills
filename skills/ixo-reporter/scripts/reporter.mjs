@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ixo-reporter 1.0.0: generated from IXO Reporter's verification engine (ixoworld/constellation, apps/ixo-report). Do not edit; rebuild with scripts/build-skills.mjs.
+// ixo-reporter 1.0.1: generated from IXO Reporter's verification engine (ixoworld/constellation, apps/ixo-report). Do not edit; rebuild with scripts/build-skills.mjs.
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -3134,9 +3134,9 @@ var $ZodIBAN = /* @__PURE__ */ $constructor("$ZodIBAN", (inst, def) => {
     });
   };
 });
-function isValidJWT(token, algorithm = null) {
+function isValidJWT(token2, algorithm = null) {
   try {
-    const tokensParts = token.split(".");
+    const tokensParts = token2.split(".");
     if (tokensParts.length !== 3)
       return false;
     const [header] = tokensParts;
@@ -19791,10 +19791,10 @@ function parseBoundedJson(input2, maxBytes = 262144) {
       fail();
     } else if (input2[i] === '"') string4();
     else {
-      const token = /^(?:true|false|null|-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)/.exec(input2.slice(i));
-      if (!token) fail();
-      if (/^[-0-9]/.test(token[0])) validateNumericLiteral(token[0]);
-      i += token[0].length;
+      const token2 = /^(?:true|false|null|-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)/.exec(input2.slice(i));
+      if (!token2) fail();
+      if (/^[-0-9]/.test(token2[0])) validateNumericLiteral(token2[0]);
+      i += token2[0].length;
     }
   }
   value(0);
@@ -21799,19 +21799,19 @@ async function createExample(id, options) {
     [SNAPSHOT_DATE]: snapshot,
     verifiableCredential: [{ "@context": VC_CONTEXT, type: "EnvelopedVerifiableCredential", id: "data:application/vc+jwt," + vcToken }]
   };
-  let token = await sign(vp, holder, "vp+jwt");
-  if (id === "unsigned") token = encodeBase64url(new TextEncoder().encode(JSON.stringify({ alg: "none", typ: "vp+jwt" }))) + "." + encodeBase64url(new TextEncoder().encode(JSON.stringify(vp))) + ".";
+  let token2 = await sign(vp, holder, "vp+jwt");
+  if (id === "unsigned") token2 = encodeBase64url(new TextEncoder().encode(JSON.stringify({ alg: "none", typ: "vp+jwt" }))) + "." + encodeBase64url(new TextEncoder().encode(JSON.stringify(vp))) + ".";
   if (id === "bad-signature") {
-    const pieces = token.split(".");
+    const pieces = token2.split(".");
     pieces[2] = (pieces[2][0] === "A" ? "B" : "A") + pieces[2].slice(1);
-    token = pieces.join(".");
+    token2 = pieces.join(".");
   }
   if (id === "unsupported") {
-    const pieces = token.split(".");
+    const pieces = token2.split(".");
     pieces[0] = encodeBase64url(new TextEncoder().encode(JSON.stringify({ alg: "ES256", typ: "vp+jwt", kid: holder + "#key-1" })));
-    token = pieces.join(".");
+    token2 = pieces.join(".");
   }
-  const bytes = new TextEncoder().encode(token);
+  const bytes = new TextEncoder().encode(token2);
   const digest2 = await sha256(bytes);
   const locator = {
     version: 1,
@@ -21841,7 +21841,7 @@ async function createExample(id, options) {
     async retrieve() {
       if (id === "unavailable") return { state: "unavailable", detail: "The presentation source is unavailable in this example. No verification result has been fabricated." };
       if (id === "access-required") return { state: "access_required", detail: "This example represents a private presentation. Sign-in alone would not grant access to its evidence." };
-      return { state: "retrieved", bytes: id === "tampered" ? new TextEncoder().encode(token + "changed") : bytes.slice(), mediaType: "application/vp+jwt" };
+      return { state: "retrieved", bytes: id === "tampered" ? new TextEncoder().encode(token2 + "changed") : bytes.slice(), mediaType: "application/vp+jwt" };
     },
     async credentialStatus(_credential, request) {
       if (id === "status-unavailable") return { state: "unavailable", detail: "The status source is unavailable in this example." };
@@ -22145,7 +22145,7 @@ function verdictFor(report, access = AGENT_ACCESS_SENTENCE) {
 
 // src/agent/contracts.ts
 var SKILL_NAME = "ixo-reporter";
-var SKILL_VERSION = "1.0.0";
+var SKILL_VERSION = "1.0.1";
 var CANONICAL_ORIGIN = "https://reporter.ixo.world";
 var Hex = external_exports.string().regex(/^[a-f0-9]{64}$/);
 var Text2 = external_exports.string().min(1).max(4096);
@@ -22291,32 +22291,53 @@ var LOCALES = ["en-GB", "af", "xh", "zu", "sw", "fr", "pt", "es", "ar", "hi"];
 var dates = (iso) => LOCALES.map((locale2) => day2(iso, locale2));
 var NUMBER_WORDS = /\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundreds?|thousands?|millions?|billions?|dozens?|percent|per cent|half|halves|thirds?|quarters?|twice)\b/gi;
 var PROTOCOL = [/\b(DID|VP|VC|JOSE|CID|JWT)\b/, /\b(revoked|revocation|snapshot|indexer|resolver|verifiable credential|presentation proof)\b/i];
+var OPENING = 500;
+var LAYOUT = /[\s\u200b\u00ad*_>]/u;
+function squash(text2) {
+  let flat = "";
+  const origin = [];
+  let at = 0;
+  for (const character of text2) {
+    if (!LAYOUT.test(character)) {
+      const lower = character.toLowerCase();
+      flat += lower;
+      for (let i = 0; i < lower.length; i++) origin.push(at);
+    }
+    at += character.length;
+  }
+  return { flat, origin };
+}
+var escape = (item) => item.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+var token = (item) => new RegExp("(?<![\\p{L}\\p{Nd}]|\\p{Nd}[.,])" + escape(item) + "(?![\\p{L}\\p{Nd}]|[.,]\\p{Nd})", "gu");
 function checkOutput(text2, bundle, options = {}) {
   const issues = [];
   text2 = text2.replace(/<!--\s*Slide number:\s*\d+\s*-->/gi, " ").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\b[\w-]+\.(?:png|jpe?g|svg|gif|emf|wmf)\b/gi, " ");
   text2 = text2.replace(/\\([!-/:-@[-`{-~])/g, "$1").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
   const compact = text2.replace(/[\s​­]+/g, "");
+  const { flat, origin } = squash(text2);
   const v = bundle.verification;
   const iso = v.checkedAt.slice(0, 10);
-  if (bundle.link && !compact.includes(bundle.link)) issues.push("The certificate link is missing or broken: " + bundle.link);
-  if (v.synthetic && !/synthetic example/i.test(text2)) issues.push('The "Synthetic example, not a real certificate" label is missing.');
-  if (!text2.includes(iso)) issues.push(`The check date ${iso} is missing.`);
-  const flat = compact.replace(/[*_>]/g, "").toLowerCase();
-  const opening = Math.max(1500, Math.floor(flat.length / 4));
-  const near = (phrase) => {
-    const at = flat.indexOf(phrase.replace(/\s+/g, "").toLowerCase());
-    return at === -1 ? "missing" : at > opening ? "late" : "ok";
+  const find = (phrase) => {
+    const at = flat.indexOf(squash(phrase).flat);
+    return { at, state: at === -1 ? "missing" : at > OPENING ? "late" : "ok" };
   };
-  const stamp = near(`IXO Reporter: ${v.verdict.title}`);
-  if (stamp !== "ok") issues.push(`Reporter's result ("IXO Reporter: ${v.verdict.title}") is ${stamp === "late" ? "not near the start" : "missing"}; it must open the output.`);
+  const where = (state) => state === "late" ? "not near the start" : "missing";
+  if (bundle.link && !compact.includes(bundle.link)) issues.push("The certificate link is missing or broken: " + bundle.link);
+  if (v.synthetic) {
+    const label = find("Synthetic example");
+    if (label.state !== "ok") issues.push(`The "Synthetic example, not a real certificate" label is ${label.state === "late" ? "not near the start; it must open the output" : "missing"}.`);
+  }
+  if (!text2.includes(iso)) issues.push(`The check date ${iso} is missing.`);
+  const stamp = find(`IXO Reporter: ${v.verdict.title}`);
+  if (stamp.state !== "ok") issues.push(`Reporter's result ("IXO Reporter: ${v.verdict.title}") is ${where(stamp.state)}; it must open the output.`);
   if (bundle.outputs.lead) {
-    const lead = near(bundle.outputs.lead);
-    if (lead !== "ok") issues.push(`The full result is ${lead === "late" ? "not near the start" : "missing"}; the output must open with: ${bundle.outputs.lead}`);
+    const lead = find(bundle.outputs.lead);
+    if (lead.state !== "ok") issues.push(`The full result is ${where(lead.state)}; the output must open with: ${bundle.outputs.lead}`);
   }
   if (!compact.toLowerCase().includes(bundle.disclaimer.replace(/\s+/g, "").toLowerCase())) issues.push("The disclaimer is missing: " + bundle.disclaimer);
-  let rest = bundle.link ? text2.replace(new RegExp([...bundle.link].map((character) => character.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[\\s\\u200b\\u00ad]*"), "g"), " ") : text2;
-  const known = [
-    bundle.link,
+  const link = bundle.link ? new RegExp([...bundle.link].map(escape).join("[\\s\\u200b\\u00ad]*"), "g") : null;
+  const asAt = bundle.certificate.figuresAsAt;
+  const reporter = [
     bundle.digest,
     v.configDigest,
     iso,
@@ -22328,18 +22349,28 @@ function checkOutput(text2, bundle, options = {}) {
     bundle.outputs.lead,
     bundle.disclaimer,
     ...v.groups.flatMap((group) => [group.title, group.sentence]),
+    ...asAt ? [asAt, asAt.slice(0, 10), ...dates(asAt)] : []
+  ];
+  const certificate = [
     ...bundle.facts.flatMap((fact) => [fact.value + (fact.unit ? " " + fact.unit : ""), fact.value, fact.property, fact.label]),
     bundle.certificate.title,
     bundle.certificate.description,
     bundle.certificate.issuer,
-    bundle.certificate.subject,
-    ...bundle.certificate.figuresAsAt ? [bundle.certificate.figuresAsAt, bundle.certificate.figuresAsAt.slice(0, 10), ...dates(bundle.certificate.figuresAsAt)] : []
-  ].filter((item) => !!item && (new RegExp("\\p{Nd}", "u").test(item) || item.length >= 4)).sort((a, b) => b.length - a.length);
-  const escape = (item) => item.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  for (const item of known) rest = rest.replace(new RegExp("(?<![\\p{L}\\p{Nd}]|\\p{Nd}[.,])" + escape(item) + "(?![\\p{L}\\p{Nd}]|[.,]\\p{Nd})", "gu"), " ");
-  rest = rest.replace(/\bF[1-9][0-9]{0,2}\b/g, " ");
-  rest = rest.replace(/(?:[\w.~-]*\/)+[\w.-]+/g, " ").replace(/\b[0-9a-f]{8,}\b/g, " ");
-  if (options.allowNumbering) rest = rest.replace(new RegExp("^\\s*(slide|page)?\\s*\\p{Nd}{1,3}\\s*$", "gimu"), " ");
+    bundle.certificate.subject
+  ];
+  const strip = (part, known) => {
+    let rest2 = link ? part.replace(link, " ") : part;
+    for (const item of known.filter((item2) => !!item2 && (new RegExp("\\p{Nd}", "u").test(item2) || item2.length >= 4)).sort((a, b) => b.length - a.length)) rest2 = rest2.replace(token(item), " ");
+    rest2 = rest2.replace(/\bF[1-9][0-9]{0,2}\b/g, " ");
+    rest2 = rest2.replace(/(?:[\w.~-]*\/)+[\w.-]+/g, " ").replace(/\b[0-9a-f]{8,}\b/g, " ");
+    return options.allowNumbering ? rest2.replace(new RegExp("^\\s*(slide|page)?\\s*\\p{Nd}{1,3}\\s*$", "gimu"), " ") : rest2;
+  };
+  if (stamp.at > 0) {
+    const before = strip(text2.slice(0, origin[stamp.at]), reporter);
+    const early = bundle.facts.filter((fact) => new RegExp("\\p{Nd}", "u").test(fact.value) && token(fact.value).test(before));
+    if (early.length) issues.push(`Figures from the certificate come before Reporter's result: ${early.slice(0, 5).map((fact) => `${fact.value} (${fact.id})`).join(", ")}. Put the result first.`);
+  }
+  const rest = strip(text2, [...reporter, ...certificate]);
   const stray = [...new Set([...rest.matchAll(new RegExp("\\p{Nd}+(?:[.,]\\p{Nd}+)*", "gu"))].map((match) => match[0]))];
   if (stray.length) issues.push(`Figures that do not come from the certificate: ${stray.slice(0, 10).join(", ")}${stray.length > 10 ? ", …" : ""}. Use only the facts in the bundle.`);
   if (options.english !== false) {
@@ -22369,7 +22400,7 @@ var TARGETS = {
 var placeholders = (text2) => [...text2.matchAll(PLACEHOLDER)].map((match) => match[1]);
 var words = (text2) => text2.replace(PLACEHOLDER, "x").split(/\s+/).filter(Boolean).length;
 function checkText(text2, where, bundle, issues, english) {
-  for (const [token] of text2.matchAll(ANY_BRACES)) if (!new RegExp("^" + PLACEHOLDER.source + "$").test(token)) issues.push(`${where}: ${token} is not a placeholder. Use {F1}…{F${Math.max(bundle.facts.length, 1)}}, {CHECKED} or {ASAT}.`);
+  for (const [token2] of text2.matchAll(ANY_BRACES)) if (!new RegExp("^" + PLACEHOLDER.source + "$").test(token2)) issues.push(`${where}: ${token2} is not a placeholder. Use {F1}…{F${Math.max(bundle.facts.length, 1)}}, {CHECKED} or {ASAT}.`);
   for (const id of placeholders(text2)) {
     if (id === "ASAT" && !bundle.certificate.figuresAsAt) issues.push(`${where}: {ASAT} is not available; this certificate states no date for its figures.`);
     else if (!SPECIAL.has(id) && !bundle.facts.some((fact) => fact.id === id)) issues.push(`${where}: {${id}} is not a fact in this bundle.`);
@@ -22431,6 +22462,7 @@ function validateDraft(input2, bundle) {
   if (!bundle.outputs.allowed) issues.push("This certificate cannot be reported on: " + bundle.outputs.reason);
   if (draft.bundleDigest !== bundle.digest) issues.push("bundleDigest does not match this bundle. Write drafts from the bundle you verified.");
   checkText(draft.title, "title", bundle, issues, english);
+  if (placeholders(draft.title).some((id) => !SPECIAL.has(id))) issues.push("title: the title comes before Reporter's result in every output, so it carries no {F…} figures. Put figures in the body.");
   const ordered = [];
   if (draft.format === "narrative") draft.sections.forEach((section, s) => {
     checkText(section.heading, `sections.${s}.heading`, bundle, issues, english);
@@ -23449,9 +23481,9 @@ var USAGE = `ixo-reporter ${SKILL_VERSION}
   check <bundle.json> <file> [--allow-numbering] [--not-english]   check text extracted from another tool's output`;
 function canonicalLink(input2) {
   const text2 = input2.trim();
-  const token = text2.includes("#r=") ? text2.slice(text2.indexOf("#r=") + 3) : text2;
+  const token2 = text2.includes("#r=") ? text2.slice(text2.indexOf("#r=") + 3) : text2;
   if (text2.includes("#r=") && !/^https?:\/\/[^\s/]+\/present#r=/.test(text2)) return null;
-  return TOKEN.test(token) ? CANONICAL_ORIGIN + "/present#r=" + token : null;
+  return TOKEN.test(token2) ? CANONICAL_ORIGIN + "/present#r=" + token2 : null;
 }
 function flags(argv) {
   const positional = [];
@@ -23479,10 +23511,10 @@ async function withDeadline(ms, run) {
 }
 async function serviceBundle(link, context) {
   const fetcher = context.fetcher ?? ((request) => fetch(request));
-  const token = link.slice(link.indexOf("#r=") + 3);
+  const token2 = link.slice(link.indexOf("#r=") + 3);
   try {
     return await withDeadline(45e3, async (signal) => {
-      const response = await fetcher(new Request(serviceOrigin(context) + "/api/agent/verify?r=" + token, { signal }));
+      const response = await fetcher(new Request(serviceOrigin(context) + "/api/agent/verify?r=" + token2, { signal }));
       if (!response.ok) return null;
       const bundle = await readBundle(await response.json());
       return bundle.verification.checkedBy === "reporter-service" && bundle.link === link && !bundle.verification.synthetic ? bundle : null;

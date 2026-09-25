@@ -27,7 +27,7 @@ Rendering is not evidence that the facts survived. Extract the text of the produ
 
 - **.pptx or .docx**: use the tool's text extraction (for example, the pptx or docx skill's markitdown step) or unzip and read the XML text.
 - **.pdf**: `pdftotext`, or the pdf skill.
-- **Audio**: check `script.md`, which holds the spoken lines with Reporter's header and sources. `voice-lines.txt` holds only what is spoken, so it fails `check` on its own by design. If the tool wrote its own words, check its transcript with `show-notes.md` appended.
+- **Audio**: check `script.md`, which holds the spoken lines with Reporter's header and sources. `voice-lines.txt` holds only what is spoken, so it fails `check` on its own by design. If the tool wrote its own words, save `show-notes.md` followed by its transcript as one file and check that. This finds figures and technical words the tool added. It cannot tell whether the audio states the result early, so read the transcript's first 150 words yourself. If the result is not there, use the label above.
 
 Save the text to a file and run:
 
@@ -40,10 +40,10 @@ node <core>/scripts/reporter.mjs check <bundle.json> <extracted.txt> [--allow-nu
 
 `check` fails if any of these are missing or wrong:
 
-- "IXO Reporter" with the result, for example "IXO Reporter: Withdrawn since it was issued";
+- "IXO Reporter" with the result, for example "IXO Reporter: Withdrawn since it was issued", and the full result when it is not Verified. They must open the output: within its first 500 characters, not counting spaces (about a title slide or the top of a first page), and before any figure from the certificate;
+- the sample label, also at the start;
 - the certificate link;
 - the ISO check date;
-- the sample label;
 - the disclaimer;
 - figures (any figure not in the certificate fails it);
 - plain words (protocol terms fail it).
