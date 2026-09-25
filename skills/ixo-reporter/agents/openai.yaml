@@ -1,0 +1,4 @@
+interface:
+  display_name: "IXO Reporter"
+  short_description: "Verify an IXO outcome certificate, then report on it"
+  default_prompt: "Use $ixo-reporter to verify this IXO outcome certificate, tell me the result in plain words, then make the report, deck, mind map or podcast script I ask for, grounded in what the certificate states."
