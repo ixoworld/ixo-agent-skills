@@ -1,0 +1,26 @@
+name: IXO Reporter skill checks
+on:
+  pull_request:
+    paths:
+      - 'skills/ixo-reporter/**'
+      - '.github/workflows/ixo-reporter.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'skills/ixo-reporter/**'
+      - '.github/workflows/ixo-reporter.yml'
+permissions:
+  contents: read
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: bash scripts/validate-skill.sh skills/ixo-reporter
+      - name: Validate the format sub-skills
+        run: for dir in skills/ixo-reporter/subskills/*/; do bash scripts/validate-skill.sh "${dir%/}"; done
+      - run: node --test tests/*.test.mjs
+        working-directory: skills/ixo-reporter
