@@ -6,7 +6,7 @@ compatibility: Needs the ixo-reporter skill and Node.js 22 or later.
 allowed-tools: shell
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "1.0.1"
   parent-skill: ixo-reporter
 ---
 

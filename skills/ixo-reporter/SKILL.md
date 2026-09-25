@@ -6,7 +6,7 @@ compatibility: Node.js 22 or later, with network access to IXO services or to re
 allowed-tools: shell
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "1.0.1"
   category: impact-reporting
   homepage: https://reporter.ixo.world/skills/
 ---

@@ -6,7 +6,7 @@ compatibility: Needs the ixo-reporter skill and Node.js 22 or later. Audio needs
 allowed-tools: shell
 metadata:
   author: IXO
-  version: "1.0.0"
+  version: "1.0.1"
   parent-skill: ixo-reporter
 ---
 
@@ -59,7 +59,7 @@ It writes a `podcast/` folder containing:
 Follow `<core>/references/media-handoff.md`. Give the voice tool `voice-lines.txt`, and publish `show-notes.md` with the audio.
 
 - A text-to-speech tool that reads the lines as written keeps Reporter's wording.
-- A tool that writes its own script, such as NotebookLM's audio overview, does not. Use one only if the reader asks, and label the audio "wording not checked by Reporter" unless you can check its transcript with `node <core>/scripts/reporter.mjs check <bundle.json> <transcript.txt>`.
+- A tool that writes its own script, such as NotebookLM's audio overview, does not. Use one only if the reader asks, and label the audio "wording not checked by Reporter" unless you can check its transcript. Save `show-notes.md` followed by the transcript as one file, run `node <core>/scripts/reporter.mjs check <bundle.json> <that file>`, and read the transcript's first 150 words to confirm they state the result.
 
 If no voice tool is available, deliver the script and show notes and say that audio needs one.
 
