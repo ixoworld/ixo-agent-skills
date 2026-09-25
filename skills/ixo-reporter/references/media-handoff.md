@@ -27,7 +27,7 @@ Rendering is not evidence that the facts survived. Extract the text of the produ
 
 - **.pptx or .docx**: use the tool's text extraction (for example, the pptx or docx skill's markitdown step) or unzip and read the XML text.
 - **.pdf**: `pdftotext`, or the pdf skill.
-- **Audio**: check `script.md`, which holds the spoken lines with Reporter's header and sources. If the tool wrote its own words, check its transcript with `show-notes.md` appended.
+- **Audio**: check `script.md`, which holds the spoken lines with Reporter's header and sources. `voice-lines.txt` holds only what is spoken, so it fails `check` on its own by design. If the tool wrote its own words, check its transcript with `show-notes.md` appended.
 
 Save the text to a file and run:
 

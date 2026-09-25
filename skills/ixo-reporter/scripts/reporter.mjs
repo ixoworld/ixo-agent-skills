@@ -22286,7 +22286,9 @@ async function readBundle(input2) {
 }
 
 // src/agent/check.ts
-var day2 = (iso) => new Intl.DateTimeFormat("en-GB", { dateStyle: "long", timeZone: "UTC" }).format(new Date(iso));
+var day2 = (iso, locale2 = "en-GB") => new Intl.DateTimeFormat(locale2, { dateStyle: "long", timeZone: "UTC" }).format(new Date(iso));
+var LOCALES = ["en-GB", "af", "xh", "zu", "sw", "fr", "pt", "es", "ar", "hi"];
+var dates = (iso) => LOCALES.map((locale2) => day2(iso, locale2));
 var NUMBER_WORDS = /\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundreds?|thousands?|millions?|billions?|dozens?|percent|per cent|half|halves|thirds?|quarters?|twice)\b/gi;
 var PROTOCOL = [/\b(DID|VP|VC|JOSE|CID|JWT)\b/, /\b(revoked|revocation|snapshot|indexer|resolver|verifiable credential|presentation proof)\b/i];
 function checkOutput(text2, bundle, options = {}) {
@@ -22307,7 +22309,7 @@ function checkOutput(text2, bundle, options = {}) {
     bundle.digest,
     v.configDigest,
     iso,
-    day2(v.checkedAt),
+    ...dates(v.checkedAt),
     bundle.skill.version,
     v.engineVersion,
     v.verdict.title,
@@ -22320,7 +22322,7 @@ function checkOutput(text2, bundle, options = {}) {
     bundle.certificate.description,
     bundle.certificate.issuer,
     bundle.certificate.subject,
-    ...bundle.certificate.figuresAsAt ? [bundle.certificate.figuresAsAt, bundle.certificate.figuresAsAt.slice(0, 10), day2(bundle.certificate.figuresAsAt)] : []
+    ...bundle.certificate.figuresAsAt ? [bundle.certificate.figuresAsAt, bundle.certificate.figuresAsAt.slice(0, 10), ...dates(bundle.certificate.figuresAsAt)] : []
   ].filter((item) => !!item && (new RegExp("\\p{Nd}", "u").test(item) || item.length >= 4)).sort((a, b) => b.length - a.length);
   for (const item of known) rest = rest.split(item).join(" ");
   rest = rest.replace(/\bF[1-9][0-9]{0,2}\b/g, " ");
@@ -23176,7 +23178,10 @@ function qrSvg(text2) {
 }
 
 // src/agent/render.ts
-var day3 = (iso) => new Intl.DateTimeFormat("en-GB", { dateStyle: "long", timeZone: "UTC" }).format(new Date(iso));
+var day3 = (iso, locale2 = "en-GB") => new Intl.DateTimeFormat(locale2, { dateStyle: "long", timeZone: "UTC" }).format(new Date(iso));
+var LOCALES2 = { English: "en-GB", Afrikaans: "af", isiXhosa: "xh", isiZulu: "zu", Kiswahili: "sw", French: "fr", Portuguese: "pt", Spanish: "es", Arabic: "ar", Hindi: "hi" };
+var locale = "en-GB";
+var dated = (id, bundle) => day3(id === "CHECKED" ? bundle.verification.checkedAt : bundle.certificate.figuresAsAt, locale);
 var GROUP_TITLES = { issuer: "Issuer", unchanged: "Unchanged", signatures: "Signatures", standing: "Standing", record: "Public record", evidence: "Evidence files", sample: "Sample" };
 var BASIS = { signed: "Signed", evidence: "Evidence", reading: "Agent's reading", check: "Check", missing: "Not recorded", framing: "" };
 function mdEscape(text2) {
@@ -23196,14 +23201,14 @@ function fill(text2, bundle) {
     out += spaced(text2.slice(last, match.index));
     const id = match[1];
     const fact = bundle.facts.find((item) => item.id === id);
-    out += id === "CHECKED" ? day3(bundle.verification.checkedAt) : id === "ASAT" ? day3(bundle.certificate.figuresAsAt) : fact ? mdLiteral(factText(fact)) : "";
+    out += id === "CHECKED" || id === "ASAT" ? dated(id, bundle) : fact ? mdLiteral(factText(fact)) : "";
     last = match.index + match[0].length;
   }
   out += spaced(text2.slice(last));
   return out.replace(/ {2,}/g, " ").trim().replace(/^(\d+)([.)])(?=\s|$)/, "$1\\$2").replace(/^([-+=#])/, "\\$1");
 }
 function plain2(text2, bundle) {
-  return text2.replace(PLACEHOLDER, (_, id) => id === "CHECKED" ? day3(bundle.verification.checkedAt) : id === "ASAT" ? day3(bundle.certificate.figuresAsAt) : factText(bundle.facts.find((fact) => fact.id === id))).replace(/[<>*_`#|\\]/g, " ").replace(/\s+/g, " ").replace(/ ([.,;:!?])/g, "$1").trim();
+  return text2.replace(PLACEHOLDER, (_, id) => id === "CHECKED" || id === "ASAT" ? dated(id, bundle) : factText(bundle.facts.find((fact) => fact.id === id))).replace(/[<>*_`#|\\]/g, " ").replace(/\s+/g, " ").replace(/ ([.,;:!?])/g, "$1").trim();
 }
 function refsOf(statement) {
   const ids = /* @__PURE__ */ new Set([...[...statement.text.matchAll(PLACEHOLDER)].map((match) => match[1]).filter((id) => id !== "CHECKED" && id !== "ASAT"), ...statement.refs]);
@@ -23213,7 +23218,7 @@ function cite(statement, bundle) {
   if (statement.basis === "missing") return `*${fill(statement.text, bundle)}*`;
   if (statement.basis === "framing") return fill(statement.text, bundle);
   const refs = refsOf(statement);
-  const tag = statement.basis === "signed" ? refs.length ? refs.join(", ") : "Signed" : BASIS[statement.basis] + (refs.length ? ": " + refs.join(", ") : "");
+  const tag = statement.basis === "signed" ? refs.length ? refs.join(", ") : "Signed date" : BASIS[statement.basis] + (refs.length ? ": " + refs.join(", ") : "");
   return fill(statement.text, bundle) + (tag ? ` (${tag})` : "");
 }
 function provenance(bundle, images = true) {
@@ -23236,14 +23241,15 @@ function sources(bundle, cited, compact = false) {
   const found = bundle.verification.groups.filter((group) => group.state === "failed" || group.state === "caveat");
   const skipped = bundle.verification.groups.filter((group) => group.state === "skipped");
   if (found.length) {
-    lines.push("", "**What Reporter found**", "");
+    lines.push("", "**Problems Reporter found**", "");
     for (const group of found) lines.push(`- ${GROUP_TITLES[group.id]}: ${mdEscape(group.sentence)}`);
   }
   if (skipped.length) {
     lines.push("", "**Not checked by Reporter**", "");
     for (const group of skipped) lines.push(`- ${GROUP_TITLES[group.id]}: ${mdEscape(group.sentence)}`);
   }
-  if (!compact) lines.push("", "**How to read the notes in parentheses.** Fact ids such as F1 mark signed facts from the certificate. *Agent's reading* marks the agent's own interpretation. *Check* marks a result of Reporter's checks. Sentences in italics say what the certificate does not record.");
+  if (compact) lines.push("", "*Notes in parentheses: fact ids are signed facts; Agent's reading is interpretation; Check is Reporter's result. Italics: not recorded.*");
+  else lines.push("", "**How to read the notes in parentheses.** Fact ids such as F1 mark signed facts from the certificate. *Agent's reading* marks the agent's own interpretation. *Check* marks a result of Reporter's checks. Sentences in italics say what the certificate does not record.");
   lines.push("", mdEscape(bundle.disclaimer), "", `Certificate title as issued: ${mdLiteral(bundle.certificate.title)}.` + (bundle.certificate.issuer ? ` Issuer's IXO identity: \`${bundle.certificate.issuer.replace(/`/g, "")}\`.` : "") + ` Source fingerprint: ${bundle.digest}.`);
   return lines.join("\n") + "\n";
 }
@@ -23326,22 +23332,27 @@ ${script}
 
 ${sources(bundle, cited)}`,
     "voice-lines.txt": voice + "\n",
-    "show-notes.md": `# ${fill(draft.title, bundle)}: show notes
+    "show-notes.md": `# Show notes: ${fill(draft.title, bundle)}
 
 ${provenance(bundle)}
 ${sources(bundle, cited)}`
   };
 }
 function renderDraft(draft, bundle, cited) {
-  switch (draft.format) {
-    case "narrative":
-      return narrative(draft, bundle, cited);
-    case "presentation":
-      return presentation(draft, bundle, cited);
-    case "mind-map":
-      return mindMap(draft, bundle, cited);
-    case "podcast":
-      return podcast(draft, bundle, cited);
+  locale = LOCALES2[draft.language] ?? "en-GB";
+  try {
+    switch (draft.format) {
+      case "narrative":
+        return narrative(draft, bundle, cited);
+      case "presentation":
+        return presentation(draft, bundle, cited);
+      case "mind-map":
+        return mindMap(draft, bundle, cited);
+      case "podcast":
+        return podcast(draft, bundle, cited);
+    }
+  } finally {
+    locale = "en-GB";
   }
 }
 
@@ -23532,7 +23543,8 @@ function summary(bundle, written, extra = {}) {
 var readFirst = (bundle) => {
   const v = bundle.verification;
   const today = bundle.answers.find((answer) => answer.id === "today")?.answer.replace(/^(Yes, as far as Reporter can check\.|No\.|Reporter could not confirm this fully\.)\s*/, "");
-  return [v.synthetic ? "Synthetic example, not a real certificate." : "", `${v.verdict.title}. ${v.verdict.detail}`, today ?? ""].filter(Boolean).join(" ");
+  const sentences = [v.synthetic ? "Synthetic example, not a real certificate." : "", `${v.verdict.title}.`, v.verdict.detail, today ?? ""].join(" ").match(/[^.!?]+[.!?]+/g) ?? [];
+  return [...new Set(sentences.map((sentence2) => sentence2.trim()))].join(" ");
 };
 async function main(argv, context) {
   const print = context.stdout ?? ((text2) => process.stdout.write(text2 + "\n"));

@@ -43,7 +43,7 @@ If `checkedBy` is `agent`, you ran IXO Reporter's own checks yourself; say so. I
 
 **No shell, or no network?** Read [references/hosts.md](references/hosts.md). In short: fetch `https://reporter.ixo.world/api/agent/verify?r=<token>` with your web tool. It returns the same bundle as JSON. If your fetch tool only opens links the user sent, show them that exact URL and ask them to send it back. If nothing works, stop and ask the reader to open the link in IXO Reporter. Do not describe the certificate from memory or from the link text.
 
-**Trying the skill without a certificate?** Run `node <core>/scripts/reporter.mjs examples`, then `example valid` (or `revoked`, `tampered`, `status-unavailable`…). Examples are synthetic. Reporter labels every output made from them as a sample, so do not add your own label, and never present one as a real outcome.
+**Trying the skill without a certificate?** Run `node <core>/scripts/reporter.mjs examples`, then `example valid` (or `revoked`, `tampered`, `status-unavailable`…). Examples are synthetic. Reporter's stamp labels every output made from them as a sample. Say so in words too wherever a reader or listener could miss the stamp (a podcast, a closing slide), and never present one as a real outcome.
 
 ## 2. Tell the reader the result
 

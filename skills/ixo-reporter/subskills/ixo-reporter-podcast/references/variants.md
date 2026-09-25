@@ -8,14 +8,16 @@ Running orders are for the default length. Scale each part for `short` or `long`
 2. **What the certificate states.** Hosts take turns with the figures (`signed`), one figure per turn, each with its unit.
 3. **What it means.** A back-and-forth of `reading` statements for the audience. One host asks the question a listener would ask; the other answers from the facts.
 4. **What we can't tell.** `missing` and `check` statements: evaluator, method, cost, evidence files not opened.
-5. **Close.** Where to check it themselves (reporter.ixo.world, the QR code in the show notes) and the result once more.
+5. **Close.** For a real certificate, where to check it themselves (reporter.ixo.world, the QR code in the show notes); for an example, that it was a sample. Then the result once more.
 
 ## brief (one voice)
 
 1. The result and date (`check`, with the sample notice for examples), then the outcome in a line.
-2. The two or three most important figures (`signed`).
-3. One sentence of interpretation (`reading`) and one of what is not recorded (`missing`).
-4. Where to check it.
+2. The most important figures (`signed`), each with a sentence on what it covers.
+3. A few sentences of interpretation (`reading`) and of what is not recorded (`missing`).
+4. Where to check it (real certificates), or that it was a sample.
+
+A brief is usually `short`, about three minutes (450 words). With few figures it may run shorter; that is better than padding.
 
 ## critique (host and reviewer)
 

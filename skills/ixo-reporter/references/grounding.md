@@ -21,9 +21,11 @@ Choose the humblest basis that is true. "The programme trained {F2}" is `signed`
 
 - Write every figure, date and number as a placeholder: `{F1}` for a fact, `{CHECKED}` for the check date, `{ASAT}` for the date the figures are as at (when the certificate states one). The renderer inserts the exact signed value and unit, so figures cannot drift in transcription or translation.
 - The placeholder brings its unit with it. Write "Participants: {F2}" or "{F2} took part", not "{F2} people".
-- Free text may contain no digits at all, in any script. Spelled-out numbers ("twelve", "half", "a third") count as figures too. `render` refuses them in English, and in other languages you must avoid them yourself.
+- Free text may contain no digits at all, in any script. Spelled-out numbers ("twelve", "half", "a third") count as figures too. `render` refuses them in English. In other languages, avoid them yourself; articles that double as "one" (French "un", Spanish "una") are fine.
 - Never derive new numbers: no totals, averages, percentages, growth rates, per-person figures or comparisons with other programmes. If a reader asks for one, say the certificate does not state it.
-- Units belong to the fact. Do not convert them.
+- Units belong to the fact. They are the certificate's own words and are not translated or converted.
+- `{CHECKED}` and `{ASAT}` are written in the output language ("19 septembre 2026"); Reporter's stamp keeps English with ISO dates.
+- A signed statement that cites only the as-at date is tagged "(Signed date)".
 
 ## Links
 
