@@ -52,7 +52,7 @@ What this skill does:
 - prints a summary-first view;
 - runs at most **one** follow-up round.
 
-The skill never holds keys. The host mints a single-use UCAN invocation for each request, between `prepare` and `search`.
+The skill never holds keys. The host (QiForge Workers runtime) mints a single-use UCAN invocation for each request, between `prepare` and `search`.
 
 ## Trigger conditions
 
@@ -109,16 +109,14 @@ Options:
 
 ### 2. Host mints the authorization
 
-Ask the host's UCAN minting tool for one fresh invocation with the values from `mint`:
+The QiForge Workers runtime handles this with two tools, so the credential never enters the conversation:
 
-- audience: the gateway DID;
-- capability: `search/authenticate` on `ixo:search`;
-- proof: the user's `search/authenticate` delegation to this oracle;
-- facts: `{ nonce, iat, rd }`.
+1. `search_gateway_authorize({ requestDigest: "<mint.facts.rd>" })` returns `{ blobId, writeTo }`.
+2. `sandbox_write_blob({ blobId, path: writeTo })`
 
-Then write the **full Bearer value** to `authorizationFile`. The value is the invocation followed by the user's stored gateway grants, separated by dots. If the host supports opaque blob writes, use them so the value never passes through the conversation.
+The runtime signs a fresh `search/authenticate` invocation as this oracle. The proof is the user's oracle delegation, and the invocation is bound to this exact request by `rd`. The runtime then appends the user's own gateway grants from the UCAN store.
 
-The exact contract, and what the user signs once in Portal, is in [references/host-contract.md](references/host-contract.md).
+If the tool reports a missing authorization, relay its message: the user needs to authorize search in Portal. [references/host-contract.md](references/host-contract.md) lists exactly what the user signs.
 
 ### 3. `search`: send it
 
@@ -151,7 +149,7 @@ When `followUps` is non-empty and the user would benefit from on-chain context f
 node /workspace/skills/<cid>/scripts/jev-search.js follow-up --from <savedTo> --index 0
 ```
 
-This prepares a new request from the chosen follow-up and prints a new `mint`. Mint again, write the authorization again, and run `search` again. A response from a follow-up offers no further follow-ups.
+This prepares a new request from the chosen follow-up and prints a new `mint`. Call `search_gateway_authorize` and `sandbox_write_blob` again, then run `search` again. A response from a follow-up offers no further follow-ups.
 
 The follow-up needs grants that cover the chain catalog: `search/list` on the blocksync resource, `keyword` mode, and the `transactions`/`claims`/`messages` categories.
 
@@ -186,8 +184,8 @@ Jev judges whether each result **serves the stated need**, so describe the need 
 | --- | --- | --- |
 | `INVALID_REQUEST` | Bad option, or the gateway rejected the body | Fix the option; do not retry unchanged |
 | `NOT_PREPARED` | No prepared request, or it was edited | Run `prepare` again |
-| `MISSING_AUTHORIZATION` | The host has not written the authorization | Mint and write it, then run `search` |
-| `AUTH_FAILED` (401) | Invocation missing, expired, or bound to a different request | `prepare` again, then a fresh mint |
+| `MISSING_AUTHORIZATION` | The host has not written the authorization | Call `search_gateway_authorize`, then `sandbox_write_blob`, then run `search` |
+| `AUTH_FAILED` (401) | Invocation missing, expired, or bound to a different request | `prepare` again, then `search_gateway_authorize` again |
 | `FORBIDDEN` (403) | Grants don't cover this request, or the invocation was reused | Narrow the categories or mode, or ask the user to extend the grants in Portal |
 | `RATE_LIMITED` (429) | Too many requests | Wait, then `prepare` and mint again |
 | `UPSTREAM_UNAVAILABLE` / `TIMEOUT` (503) | Gateway or sources temporarily unavailable | Retry once with a fresh `prepare` and mint |

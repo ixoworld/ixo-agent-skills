@@ -1,79 +1,97 @@
-# Host contract: minting the gateway authorization
+# Host contract: QiForge Workers runtime
 
-The skill never holds a key. For each search, the host (the QiForge oracle runtime) mints one single-use authorization. It does this after `prepare` and before `search`. This page gives the exact contract. The normative spec is the gateway's `docs/authorization/http-envelope-v1.md`, in the section on delegated authentication.
+The skill never holds a key. For each search, the host mints one single-use authorization, after `prepare` and before `search`. This page covers QiForge's Workers runtime (`packages/oracle-runtime-workers`) only.
 
-## Signed once by the user (Portal)
+Normative spec: the gateway's `docs/authorization/http-envelope-v1.md`, in the section on delegated authentication.
 
-1. **Authentication delegation** (user → oracle):
-   - `issuer`: the user's DID
-   - `audience`: the oracle's DID
-   - `capabilities`: exactly `[{ can: "search/authenticate", with: "ixo:search" }]`, with **no `nb`**
-   - no proofs
-   - a finite expiration (the user chooses it)
-2. **Gateway grants** (user → gateway DID). Each grant has exactly one capability, and its `nb` carries the full caveats object:
+## Agent flow for one search
 
-   | `can` | `with` | Needed for |
-   | --- | --- | --- |
-   | `search/query` | `ixo:search` | every search |
-   | `search/semantic` | `ixo:search` | `hybrid` or `semantic` mode |
-   | `search/list` | `ixo:search/domains/<domain-indexer did>` | domains |
-   | `search/list` | `ixo:search/blocksync/<blocksync did>` | transactions, claims, messages (the follow-ups) |
-   | `search/list` | `ixo:search/vfs/<vfs did>` | the user's private files |
-   | `fs/read` (bare, no `nb`) | `ixo:filesystem` | the user's private files (paired with the VFS list grant) |
+1. `node scripts/jev-search.js prepare …` prints `mint.facts.rd`.
+2. `search_gateway_authorize({ requestDigest: <mint.facts.rd> })` returns `{ blobId, writeTo }`.
+3. `sandbox_write_blob({ blobId, path: writeTo })` writes the Bearer value to `/workspace/data/ixo-jev-search/authorization`. The value never passes through the conversation.
+4. `node scripts/jev-search.js search`
 
-   Caveats (`nb`):
+A new `prepare` produces a new `rd`, so step 2 has to run again. Each authorization works for exactly one request.
 
-   ```json
-   { "categories": ["domains", "transactions", "claims", "messages", "files"],
-     "connectors": ["domains", "blocksync", "vfs"],
-     "modes": ["keyword", "semantic", "hybrid"],
-     "maxResults": 20, "maxRuntimeMs": 5000, "facetKeys": [],
-     "maxDisclosure": "snippets", "openActions": [], "allowExistenceSignal": false,
-     "relevanceEvaluation": true }
-   ```
+## What the user authorizes (Portal)
 
-   `relevanceEvaluation: true` on the VFS grant is the user's explicit opt-in to let the relevance classifier score their private files. Leave it out, and private files are returned **unscored**.
+The Workers runtime keeps **one** delegation per user and oracle. It is deposited with `POST /delegation` (or the `ucan_delegation` room state), and every plugin mints from it.
 
-   Keep `maxResults: 20`. Jev ranking over-fetches up to the smallest `maxResults` across the grants, which gives the reranker more to choose from.
+**1. Search authentication, added to that oracle delegation.** Add one capability:
 
-The gateway checks all of these. The agent can only authenticate searches that the user's own grants already allow. Revoking the authentication delegation stops the agent immediately.
-
-## Minted by the host for each request
-
-The skill's `prepare` prints `mint.audience` and `mint.facts.rd`. Using them, the host creates:
-
-```ts
-const invocation = await createInvocation({
-  issuer: oracleSigner,                     // the agent
-  audience: mint.audience,                  // gateway DID from /.well-known/did.json
-  capability: { can: "search/authenticate", with: "ixo:search" },
-  proofs: [userAuthenticationDelegation],   // exactly one proof
-  expiration: now + 120,                    // short; single-use regardless
-  facts: [{ nonce: crypto.randomUUID(), iat: now, rd: mint.facts.rd }],
-});
-const bearer = [
-  await serializeInvocation(invocation),
-  ...userGatewayGrants,                     // base64 CARs, as stored
-].join(".");
-// write `bearer` to mint.authorizationFile (opaque write; never through the LLM)
+```json
+{ "can": "search/authenticate", "with": "ixo:search" }
 ```
 
-- A new `prepare` means a new `rd`, which means a new mint. Invocations are consumed atomically, and a mismatched `rd` is rejected with 401 before anything is spent.
-- The skill deletes the authorization file after each `search`, whether it succeeded or failed.
+`search/*` on `ixo:search` is also accepted. The capability must carry no `nb`.
 
-## Required QiForge change (drafted, not applied)
+The delegation keeps its other capabilities, such as `* ixo:filesystem/.oracles` and `skills/* ixo:skills`, and it may have no expiry. The gateway requires:
 
-`UcanService.mintInvocation` in `packages/oracle-runtime-workers/src/do/ucan-service.ts` (and its Node counterpart) currently hard-codes `facts: [{ nonce }]` and returns only the invocation. For this skill it needs two additions:
+- exactly one `ixo:search` capability;
+- that capability grants authentication;
+- no other capability names an `ixo:search/…` resource;
+- no proofs on the delegation;
+- the delegation is addressed to the oracle that signs the invocation.
 
-1. **A facts passthrough.** It must accept an optional `facts` record and merge it with the generated nonce:
+**2. Gateway grants, deposited in the UCAN store.** These are separate delegations:
 
-   ```diff
-   -      facts: [{ nonce: crypto.randomUUID() }],
-   +      facts: [{ nonce: crypto.randomUUID(), iat: nowSeconds, ...(options.facts ?? {}) }],
-   ```
+- issuer: the user;
+- audience: the **gateway DID**;
+- each has exactly one capability, whose `nb` holds the full caveats.
 
-   Keep `nonce` host-generated: a caller-supplied `nonce` must be ignored.
+| `can` | `with` | Needed for |
+| --- | --- | --- |
+| `search/query` | `ixo:search` | every search |
+| `search/semantic` | `ixo:search` | `hybrid` or `semantic` mode |
+| `search/list` | `ixo:search/domains/<domain-indexer did>` | domains |
+| `search/list` | `ixo:search/blocksync/<blocksync did>` | transactions, claims, messages (the follow-ups) |
+| `search/list` | `ixo:search/vfs/<vfs did>` | the user's private files |
+| `fs/read` (bare, no `nb`) | `ixo:filesystem` | the user's private files (paired with the VFS list grant) |
 
-2. **Bearer assembly.** It must append the user's stored gateway grants (from the UCAN store, matched by gateway DID) after the invocation, separated by `.`. It then writes the result through the existing opaque blob write (`sandbox_write_blob`) to `/workspace/data/ixo-jev-search/authorization`.
+Caveats (`nb`):
 
-The existing `mintInvocation` checks still apply: the delegation audience must equal the oracle DID, and the lifetime is capped by the delegation.
+```json
+{ "categories": ["domains", "transactions", "claims", "messages", "files"],
+  "connectors": ["domains", "blocksync", "vfs"],
+  "modes": ["keyword", "semantic", "hybrid"],
+  "maxResults": 20, "maxRuntimeMs": 5000, "facetKeys": [],
+  "maxDisclosure": "snippets", "openActions": [], "allowExistenceSignal": false,
+  "relevanceEvaluation": true }
+```
+
+- `relevanceEvaluation: true` on the VFS grant is the user's opt-in to let the relevance classifier score their private files. Without it, private files come back **unscored**.
+- Keep `maxResults: 20`. Jev ranking over-fetches up to the smallest `maxResults` across the grants.
+
+The gateway only honours grants that the user issued to the gateway, so the oracle can only authenticate searches the user already allowed. The receipt records the oracle as `actorDid` and the user as `rootActorDid`. Revoking the oracle delegation stops the oracle at once, because the gateway revocation-checks the hop.
+
+## Workers runtime change required
+
+The runtime does not do this today. `ctx.ucan.mintInvocation` hard-codes `facts: [{ nonce }]`, and nothing lists a user's grants for a service. The patch `qiforge-workers-search-gateway-authorize.patch` (against ixoworld/qiforge `e61b285`) makes three changes.
+
+**1. Facts passthrough.**
+
+- `ctx.ucan.mintInvocation(target, { can, facts })` and `createInvocationFromDelegation(…, { facts })` merge caller facts into the invocation.
+- The host still generates `nonce` last, so a caller cannot choose it.
+- Files: `do/ucan-service.ts`, `do/ambient.ts`, `core/runtime-context.ts`, `plugin-api/types.ts`.
+
+**2. `ctx.ucan.listAudienceGrants(userDid, { storeUrl, audienceDid })`.**
+
+- Returns every active UCAN-store delegation that the user issued **to that audience**, at most 20.
+- Issuer and audience are checked on the token itself. The existing `getServiceDelegation` matches store rows by capability only, and could hand back the user's oracle delegation instead.
+
+**3. New `search-gateway` plugin** (`plugins/search-gateway/`), bundled in `BUNDLED_WORKERS_PLUGINS`.
+
+- It contributes one request-time tool, `search_gateway_authorize({ requestDigest })`, only when the oracle has a signing key.
+- The tool:
+  1. resolves the gateway DID from `SEARCH_GATEWAY_URL`, or from the `NETWORK` defaults: `search.ixo.earth`, `testnet.search.ixo.earth`, `devnet.search.ixo.earth`;
+  2. mints `search/authenticate` on `ixo:search` with facts `{ iat, rd }`;
+  3. appends the user's gateway grants, read from `UCAN_STORE_URL`;
+  4. stores the Bearer value in the user-scoped blob store with a 300 s TTL;
+  5. returns `{ blobId, writeTo, audience, grantCount }`.
+- Error text tells the agent whether the user is missing the authentication capability or the gateway grants.
+
+Verified on a local clone of qiforge `e61b285`:
+
+- `tsc --noEmit`, ESLint (no new findings) and Prettier are clean.
+- The core suite passes: 52 files, 391 tests, including 4 new tests for the tool.
+- The workerd suite passes: 105 files, 785 tests.
