@@ -1,0 +1,124 @@
+{
+  "description": "Request-digest vectors: sha256 over the canonical AuthorizationVerificationRequest (requestDigest omitted) built from each searchRequest. Client ports (e.g. the ixo-jev-search skill) must reproduce these exactly.",
+  "vectors": [
+    {
+      "name": "explicit-jev-domains",
+      "audienceDid": "did:web:devnet.search.ixo.earth",
+      "searchRequest": {
+        "schemaVersion": "ixo.search.v1",
+        "requestId": "req_vector_1",
+        "query": {
+          "text": "clean cooking mini-grid",
+          "mode": "hybrid"
+        },
+        "categories": [
+          "domains"
+        ],
+        "scope": {
+          "kind": "actor_default"
+        },
+        "include": {
+          "outputLevel": "metadata",
+          "facets": [],
+          "explanations": true
+        },
+        "page": {
+          "limit": 10
+        },
+        "ranking": {
+          "strategy": "jev"
+        }
+      },
+      "requestDigest": "b9b34b3a135edc0d8f0126bfba13e49b2826a4bfd21360f96f718db91fba7e81"
+    },
+    {
+      "name": "no-ranking-files-snippets",
+      "audienceDid": "did:web:devnet.search.ixo.earth",
+      "searchRequest": {
+        "schemaVersion": "ixo.search.v1",
+        "requestId": "req_vector_2",
+        "query": {
+          "text": "quarterly report",
+          "mode": "keyword"
+        },
+        "categories": [
+          "files"
+        ],
+        "scope": {
+          "kind": "actor_default"
+        },
+        "include": {
+          "outputLevel": "snippets",
+          "facets": [
+            "category"
+          ],
+          "explanations": false
+        },
+        "page": {
+          "limit": 5
+        }
+      },
+      "requestDigest": "4cb6f024124046af6387c887ffdaa6185d48e38ce69d2a87578a7cbdabe7335e"
+    },
+    {
+      "name": "keyword-follow-up-chain",
+      "audienceDid": "did:web:devnet.search.ixo.earth",
+      "searchRequest": {
+        "schemaVersion": "ixo.search.v1",
+        "requestId": "req_vector_3",
+        "query": {
+          "text": "did:ixo:entity:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2",
+          "mode": "keyword"
+        },
+        "categories": [
+          "transactions",
+          "claims",
+          "messages"
+        ],
+        "scope": {
+          "kind": "actor_default"
+        },
+        "include": {
+          "outputLevel": "metadata",
+          "facets": [],
+          "explanations": true
+        },
+        "page": {
+          "limit": 20
+        },
+        "ranking": {
+          "strategy": "jev",
+          "minRelevance": 0.1
+        }
+      },
+      "requestDigest": "a4adbec846460a1e9bf28f1de8a0826d6bdebc3d77b142aef5a1fcc51bfd3f9f"
+    },
+    {
+      "name": "unicode-query",
+      "audienceDid": "did:web:devnet.search.ixo.earth",
+      "searchRequest": {
+        "schemaVersion": "ixo.search.v1",
+        "requestId": "req_vector_4",
+        "query": {
+          "text": "énergie solaire — Kenya",
+          "mode": "hybrid"
+        },
+        "categories": [
+          "domains"
+        ],
+        "scope": {
+          "kind": "actor_default"
+        },
+        "include": {
+          "outputLevel": "metadata",
+          "facets": [],
+          "explanations": true
+        },
+        "page": {
+          "limit": 20
+        }
+      },
+      "requestDigest": "9ea2e8a15ecc4ceea5f8f1a830ab6d3cf6bbf23a9a261cb2c890b366ce277461"
+    }
+  ]
+}
