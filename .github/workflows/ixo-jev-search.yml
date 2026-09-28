@@ -1,0 +1,24 @@
+name: IXO Jev Search skill checks
+on:
+  pull_request:
+    paths:
+      - 'skills/ixo-jev-search/**'
+      - '.github/workflows/ixo-jev-search.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'skills/ixo-jev-search/**'
+      - '.github/workflows/ixo-jev-search.yml'
+permissions:
+  contents: read
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: bash scripts/validate-skill.sh skills/ixo-jev-search
+      - run: node --test tests/*.test.mjs
+        working-directory: skills/ixo-jev-search
