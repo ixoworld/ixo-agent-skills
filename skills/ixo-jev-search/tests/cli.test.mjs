@@ -259,11 +259,12 @@ test('refuses a gateway whose DID does not match its origin', async () => {
 });
 
 test('never lets a gateway query id escape the output directory', async () => {
-  queryIdOverride = '../../escaped';
+  // One level up is this test's private temp root, so the check stays hermetic.
+  queryIdOverride = '../escaped';
   await main({ command: 'prepare', query: 'solar', gatewayUrl, requestId: 'req_safe_name' });
   writeFileSync(join(dataDir, 'authorization'), BEARER);
   const searched = await main({ command: 'search' });
   assert.equal(searched.success, true, JSON.stringify(searched));
   assert.equal(searched.savedTo, join(outputDir, 'req_safe_name.json'));
-  assert.equal(existsSync(join(outputDir, '..', '..', 'escaped.json')), false);
+  assert.equal(existsSync(join(outputDir, '..', 'escaped.json')), false);
 });
