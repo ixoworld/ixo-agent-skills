@@ -1,0 +1,4 @@
+interface:
+  display_name: "Qi Library"
+  short_description: "Find, edit, save, and organise persistent Qi files"
+  default_prompt: "Use $qi-library to find my files, make the requested changes, and save the result in my Qi Library."

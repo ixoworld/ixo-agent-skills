@@ -1,0 +1,85 @@
+{
+  "format_version": 1,
+  "inspected_on": "2026-09-22",
+  "scope": "Public source snapshots for a workflow-only skill. Live tool schemas and authorization remain authoritative; this is not deployment verification.",
+  "workflow_origin": "Adapted from the ChatGPT Library workflow: resolve, choose read or local bytes, preserve identity, inspect results, manage lifecycle. ChatGPT-specific tools, identifiers, helpers, limits and URI formats are not runtime dependencies.",
+  "sources": [
+    {
+      "repository": "ixoworld/qiforge",
+      "commit": "85d94ae43a139fedb01c06074dc716f51dfc0a90",
+      "path": "packages/oracle-runtime-workers/src/plugins/vfs/vfs-tools.ts",
+      "blob_sha": "d8a4ee30f20dfc29cd0eb6cec5d073688f3242f1",
+      "url": "https://github.com/ixoworld/qiforge/blob/85d94ae43a139fedb01c06074dc716f51dfc0a90/packages/oracle-runtime-workers/src/plugins/vfs/vfs-tools.ts"
+    },
+    {
+      "repository": "ixoworld/qiforge",
+      "commit": "85d94ae43a139fedb01c06074dc716f51dfc0a90",
+      "path": "packages/oracle-runtime-workers/src/plugins/vfs/vfs-sandbox-tools.ts",
+      "blob_sha": "8f593dbcee618af2aafe8646db6716f149ac5265",
+      "url": "https://github.com/ixoworld/qiforge/blob/85d94ae43a139fedb01c06074dc716f51dfc0a90/packages/oracle-runtime-workers/src/plugins/vfs/vfs-sandbox-tools.ts"
+    },
+    {
+      "repository": "ixoworld/qiforge",
+      "commit": "85d94ae43a139fedb01c06074dc716f51dfc0a90",
+      "path": "packages/oracle-runtime-workers/src/plugins/vfs/vfs.plugin.ts",
+      "blob_sha": "9ea0221f44c8fce97dfef936e0bc987a0bb0c42b",
+      "url": "https://github.com/ixoworld/qiforge/blob/85d94ae43a139fedb01c06074dc716f51dfc0a90/packages/oracle-runtime-workers/src/plugins/vfs/vfs.plugin.ts"
+    },
+    {
+      "repository": "ixoworld/qiforge",
+      "commit": "85d94ae43a139fedb01c06074dc716f51dfc0a90",
+      "path": "packages/oracle-runtime-workers/src/plugins/vfs/vfs-client.ts",
+      "blob_sha": "82b892e008d704073ed1e6d4521ea3a794e0c843",
+      "url": "https://github.com/ixoworld/qiforge/blob/85d94ae43a139fedb01c06074dc716f51dfc0a90/packages/oracle-runtime-workers/src/plugins/vfs/vfs-client.ts"
+    },
+    {
+      "repository": "ixoworld/qiforge",
+      "commit": "85d94ae43a139fedb01c06074dc716f51dfc0a90",
+      "path": "packages/oracle-runtime-workers/src/plugins/vfs/vfs-content.ts",
+      "blob_sha": "b36fb8a99b4e7bb4fd6486cdcc1d1931425fb8b1",
+      "url": "https://github.com/ixoworld/qiforge/blob/85d94ae43a139fedb01c06074dc716f51dfc0a90/packages/oracle-runtime-workers/src/plugins/vfs/vfs-content.ts"
+    },
+    {
+      "repository": "ixoworld/qiforge",
+      "commit": "85d94ae43a139fedb01c06074dc716f51dfc0a90",
+      "path": "packages/oracle-runtime-workers/src/plugins/vfs/vfs-errors.ts",
+      "blob_sha": "39085ecfcf27513377d74dac164f6556a8430b31",
+      "url": "https://github.com/ixoworld/qiforge/blob/85d94ae43a139fedb01c06074dc716f51dfc0a90/packages/oracle-runtime-workers/src/plugins/vfs/vfs-errors.ts"
+    },
+    {
+      "repository": "ixoworld/qiforge",
+      "commit": "85d94ae43a139fedb01c06074dc716f51dfc0a90",
+      "path": "packages/oracle-runtime-workers/src/plugins/vfs/vfs-auth.ts",
+      "blob_sha": "2cae744b05483e56fe35f79ebae8a239d2fb89c4",
+      "url": "https://github.com/ixoworld/qiforge/blob/85d94ae43a139fedb01c06074dc716f51dfc0a90/packages/oracle-runtime-workers/src/plugins/vfs/vfs-auth.ts"
+    },
+    {
+      "repository": "ixoworld/ixo-portal",
+      "commit": "7c3fcce1b409bdc3d219be6f5bfd331b8649a04c",
+      "path": "lib/vfs/client.ts",
+      "blob_sha": "4fab773e110edf9acb1751aaaf4f47f477080c16",
+      "url": "https://github.com/ixoworld/ixo-portal/blob/7c3fcce1b409bdc3d219be6f5bfd331b8649a04c/lib/vfs/client.ts"
+    },
+    {
+      "repository": "ixoworld/ixo-portal",
+      "commit": "7c3fcce1b409bdc3d219be6f5bfd331b8649a04c",
+      "path": "lib/vfs/types.ts",
+      "blob_sha": "affbe78101c3598d5b359b49e88a2dabd5c6572f",
+      "url": "https://github.com/ixoworld/ixo-portal/blob/7c3fcce1b409bdc3d219be6f5bfd331b8649a04c/lib/vfs/types.ts"
+    },
+    {
+      "repository": "ixoworld/ixo-portal",
+      "commit": "7c3fcce1b409bdc3d219be6f5bfd331b8649a04c",
+      "path": "hooks/useVfs.ts",
+      "blob_sha": "3462f647d5d2e5bd9d9ea17eb9295b54d3b33a8f",
+      "url": "https://github.com/ixoworld/ixo-portal/blob/7c3fcce1b409bdc3d219be6f5bfd331b8649a04c/hooks/useVfs.ts"
+    },
+    {
+      "repository": "ixoworld/ixo-portal",
+      "commit": "7c3fcce1b409bdc3d219be6f5bfd331b8649a04c",
+      "path": "constants/vfs.ts",
+      "blob_sha": "4bfecc63236e58dd9319495799fa92172ed4821f",
+      "url": "https://github.com/ixoworld/ixo-portal/blob/7c3fcce1b409bdc3d219be6f5bfd331b8649a04c/constants/vfs.ts"
+    }
+  ]
+}
