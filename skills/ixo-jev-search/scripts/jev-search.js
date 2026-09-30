@@ -76,11 +76,28 @@ async function fetchJson(url, init, timeoutMs) {
   return { status: response.status, body };
 }
 
+/**
+ * The only DID a gateway at this origin can legitimately hold: did:web binds the
+ * identifier to the host (a port is encoded as %3A), exactly as the gateway
+ * derives its own. Anything else means the origin is claiming another
+ * service's identity, so an authorization minted for that DID must never be
+ * sent there.
+ */
+function expectedGatewayDid(gatewayUrl) {
+  return `did:web:${new URL(gatewayUrl).host.replace(/:/g, '%3A')}`;
+}
+
 /** The gateway DID is the UCAN audience; it comes from the published did:web document. */
 async function resolveGatewayDid(gatewayUrl) {
   const { status, body } = await fetchJson(`${gatewayUrl}/.well-known/did.json`, {}, DID_TIMEOUT_MS);
   if (status !== 200 || !body || typeof body.id !== 'string' || !body.id.startsWith('did:')) {
     throw new SkillError('UPSTREAM_UNAVAILABLE', 'Gateway did:web document is unavailable');
+  }
+  if (body.id !== expectedGatewayDid(gatewayUrl)) {
+    throw new SkillError(
+      'UNTRUSTED_GATEWAY',
+      `Gateway at ${gatewayUrl} claims ${body.id}, but its origin can only be ${expectedGatewayDid(gatewayUrl)}`,
+    );
   }
   return body.id;
 }
@@ -155,6 +172,13 @@ async function readPrepared() {
   // stale authorization.
   if (computeRequestDigest(prepared.audienceDid, prepared.searchRequest) !== prepared.requestDigest) {
     throw new SkillError('NOT_PREPARED', 'Prepared request was modified; run prepare again');
+  }
+  // The credential is minted for audienceDid; it may only travel to that DID's origin.
+  if (
+    gatewayUrlFrom({ gatewayUrl: prepared.gatewayUrl }) !== prepared.gatewayUrl ||
+    prepared.audienceDid !== expectedGatewayDid(prepared.gatewayUrl)
+  ) {
+    throw new SkillError('UNTRUSTED_GATEWAY', 'Prepared gateway URL does not match its DID; run prepare again');
   }
   return prepared;
 }
@@ -313,7 +337,13 @@ async function search() {
     response: result.body,
   };
   await ensureDir(outputDir());
-  const savedTo = join(outputDir(), `${result.body.queryId || prepared.searchRequest.requestId}.json`);
+  // Only a well-formed gateway query id may name the file; anything else (e.g.
+  // path traversal from a hostile gateway) falls back to the locally
+  // validated request id.
+  const fileStem = /^search_query_[0-9a-f]{64}$/.test(String(result.body.queryId))
+    ? result.body.queryId
+    : prepared.searchRequest.requestId;
+  const savedTo = join(outputDir(), `${fileStem}.json`);
   await writeFile(savedTo, `${JSON.stringify(saved, null, 2)}\n`);
   return success({ command: 'search', ...summarize(saved), savedTo });
 }

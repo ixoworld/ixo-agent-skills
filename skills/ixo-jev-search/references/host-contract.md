@@ -62,6 +62,8 @@ Caveats (`nb`):
 - `relevanceEvaluation: true` on the VFS grant is the user's opt-in to let the relevance classifier score their private files. Without it, private files come back **unscored**.
 - Keep `maxResults: 20`. Jev ranking over-fetches up to the smallest `maxResults` across the grants.
 
+The skill binds the gateway to its origin: `prepare` accepts a gateway only if its did:web DID matches its host, and `search` refuses to send the credential to any other origin. An authorization minted for the real gateway DID therefore can't be relayed through a look-alike URL.
+
 The gateway only honours grants that the user issued to the gateway, so the oracle can only authenticate searches the user already allowed. The receipt records the oracle as `actorDid` and the user as `rootActorDid`. Revoking the oracle delegation stops the oracle at once, because the gateway revocation-checks the hop.
 
 ## Workers runtime change required

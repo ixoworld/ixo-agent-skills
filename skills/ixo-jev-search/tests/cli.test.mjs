@@ -9,7 +9,10 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { computeRequestDigest } = require('../scripts/lib/request.js');
 
-const GATEWAY_DID = 'did:web:gateway.test';
+// Set once the stub listens: did:web binds the DID to the gateway's origin.
+let GATEWAY_DID;
+let didOverride = null;
+let queryIdOverride = null;
 const DOMAIN_DID = 'did:ixo:entity:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2';
 const BEARER = 'aW52b2NhdGlvbg==.ZGVsZWdhdGlvbg==';
 
@@ -22,7 +25,7 @@ function searchResponse(body) {
   return {
     schemaVersion: 'ixo.search.v1',
     requestId: body.requestId,
-    queryId: `search_query_${'a'.repeat(64)}`,
+    queryId: queryIdOverride ?? `search_query_${'a'.repeat(64)}`,
     status: 'complete',
     results: [
       {
@@ -86,7 +89,7 @@ before(async () => {
       received.push({ method: request.method, url: request.url, headers: request.headers, body: raw });
       response.setHeader('content-type', 'application/json');
       if (request.url === '/.well-known/did.json') {
-        response.end(JSON.stringify({ id: GATEWAY_DID }));
+        response.end(JSON.stringify({ id: didOverride ?? GATEWAY_DID }));
       } else if (request.url === '/ready') {
         response.end(JSON.stringify({ status: 'ready' }));
       } else if (request.url === '/search' && request.method === 'POST') {
@@ -107,6 +110,7 @@ before(async () => {
   });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   gatewayUrl = `http://127.0.0.1:${server.address().port}`;
+  GATEWAY_DID = `did:web:127.0.0.1%3A${server.address().port}`;
 });
 
 after(() => server.close());
@@ -116,6 +120,8 @@ let outputDir;
 beforeEach(() => {
   received = [];
   nextStatus = 200;
+  didOverride = null;
+  queryIdOverride = null;
   const root = mkdtempSync(join(tmpdir(), 'ixo-jev-search-'));
   dataDir = join(root, 'data');
   outputDir = join(root, 'output');
@@ -228,4 +234,37 @@ test('unknown commands fail with a structured envelope', async () => {
   assert.equal(result.success, false);
   assert.equal(result.errorType, 'INVALID_REQUEST');
   rmSync(dataDir, { recursive: true, force: true });
+});
+
+test('refuses a gateway whose DID does not match its origin', async () => {
+  // An origin claiming another service's DID must never receive an
+  // authorization minted for that DID.
+  didOverride = 'did:web:search.ixo.earth';
+  const prepared = await main({ command: 'prepare', query: 'solar', gatewayUrl });
+  assert.equal(prepared.success, false);
+  assert.equal(prepared.errorType, 'UNTRUSTED_GATEWAY');
+  assert.equal(existsSync(join(dataDir, 'request.json')), false);
+
+  // A prepared request edited to point elsewhere is refused before sending.
+  didOverride = null;
+  await main({ command: 'prepare', query: 'solar', gatewayUrl });
+  const path = join(dataDir, 'request.json');
+  const stored = JSON.parse(readFileSync(path, 'utf8'));
+  stored.gatewayUrl = 'https://attacker.example';
+  writeFileSync(path, JSON.stringify(stored));
+  writeFileSync(join(dataDir, 'authorization'), BEARER);
+  const result = await main({ command: 'search' });
+  assert.equal(result.errorType, 'UNTRUSTED_GATEWAY');
+  assert.equal(received.some((entry) => entry.url === '/search'), false);
+});
+
+test('never lets a gateway query id escape the output directory', async () => {
+  // One level up is this test's private temp root, so the check stays hermetic.
+  queryIdOverride = '../escaped';
+  await main({ command: 'prepare', query: 'solar', gatewayUrl, requestId: 'req_safe_name' });
+  writeFileSync(join(dataDir, 'authorization'), BEARER);
+  const searched = await main({ command: 'search' });
+  assert.equal(searched.success, true, JSON.stringify(searched));
+  assert.equal(searched.savedTo, join(outputDir, 'req_safe_name.json'));
+  assert.equal(existsSync(join(outputDir, '..', 'escaped.json')), false);
 });
