@@ -1,7 +1,7 @@
 {
   "name": "@qi-skills/mcda",
-  "version": "1.1.0",
-  "description": "Deterministic Multi-Criteria Decision Analysis Qi Skill for the Qi Flow Engine",
+  "version": "1.2.0",
+  "description": "Deterministic and probabilistic Multi-Criteria Decision Analysis Qi Skill for the Qi Flow Engine",
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/src/handlers.js",
