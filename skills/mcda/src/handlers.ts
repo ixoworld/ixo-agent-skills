@@ -5,11 +5,13 @@ import {
   assessStability,
   stableStringify,
 } from "./engine.js";
+import { runProbabilisticMCDA } from "./probabilistic.js";
 import { generateDecisionReport } from "./report.js";
 import {
   CompareMethodsArgsSchema,
   GenerateReportArgsSchema,
   MCDAConfigSchema,
+  RunProbabilisticArgsSchema,
   RunAnalysisArgsSchema,
   RunScenariosArgsSchema,
   RunSensitivityArgsSchema,
@@ -100,6 +102,44 @@ export async function runAnalysis(
     },
     evidence_cid: evidenceCid,
     summary: `${top.option_name} ranked #1 (score: ${top.normalized_score.toFixed(3)}, confidence: ${analysis.confidence})`,
+  };
+}
+
+export async function runProbabilisticAnalysis(
+  args: unknown,
+  context: QiContext,
+): Promise<ToolResult> {
+  requireCapability(context, "mcda_execute");
+  requireCapability(context, "ipfs_store");
+
+  const { config } = RunProbabilisticArgsSchema.parse(args);
+  const result = runProbabilisticMCDA(config);
+  const requestTime = getRequestTime(context);
+  const evidenceCid = await saveEvidence(context, {
+    type: "probabilistic_mcda_governance_artifact",
+    config,
+    result,
+    ucan: {
+      issuer: context.ucan?.issuer ?? null,
+      audience: context.ucan?.audience ?? null,
+    },
+    stored_at: requestTime,
+  });
+
+  const top = result.options[0]!;
+  return {
+    data: {
+      ...result,
+      evidence_model: {
+        probabilities: "criterion outcome evidence",
+        confidence:
+          "distribution concentration / autonomy signal; not a preference weight",
+        weights: "principal preference importance",
+      },
+    },
+    evidence_cid: evidenceCid,
+    summary:
+      `${top.option_name} has P(best)=${top.probability_best.toFixed(3)} and expected utility ${top.expected_utility.toFixed(3)}; policy: ${result.policy.disposition}`,
   };
 }
 
