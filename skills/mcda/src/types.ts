@@ -254,7 +254,10 @@ export const CriterionAssessmentSchema = z
     confidence: z
       .object({
         value: ProbabilitySchema,
-        semantics: z.string().trim().min(1),
+        semantics: z.enum([
+          "distribution-concentration",
+          "jev-score-distribution-concentration",
+        ]),
       })
       .strict()
       .optional(),

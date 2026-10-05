@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 
+import { stableStringify } from "./engine.js";
 import type {
   ProbabilisticMCDAConfig,
   ProbabilisticMCDAResult,
@@ -62,12 +63,26 @@ export function runProbabilisticMCDA(
       wins[winner.id] = (wins[winner.id] ?? 0) + 1 / winners.length;
     }
 
-    const topIds = new Set(scores.slice(0, Math.min(2, scores.length)).map((x) => x.id));
-    for (const id of topIds) topTwo[id] = (topTwo[id] ?? 0) + 1;
+    // Use the same top tie group as P(best), so P(top 2) cannot be
+    // smaller than P(best) even when near-equality is not transitive.
+    if (winners.length >= 2) {
+      for (const winner of winners) {
+        topTwo[winner.id] = (topTwo[winner.id] ?? 0) + 2 / winners.length;
+      }
+    } else {
+      const winner = winners[0]!;
+      topTwo[winner.id] = (topTwo[winner.id] ?? 0) + 1;
+      const runnersUp = scores.slice(1).filter(
+        (entry) => Math.abs(entry.utility - scores[1]!.utility) <= EPSILON,
+      );
+      for (const entry of runnersUp) {
+        topTwo[entry.id] = (topTwo[entry.id] ?? 0) + 1 / runnersUp.length;
+      }
+    }
   }
 
   const options: ProbabilisticOptionResult[] = config.options
-    .map((option) => {
+    .map((option): ProbabilisticOptionResult => {
       const samples = totals[option.id]!.sort((a, b) => a - b);
       const criterionExpectedUtilities = Object.fromEntries(
         config.criteria.map((criterion) => [
@@ -110,7 +125,7 @@ export function runProbabilisticMCDA(
     );
 
   const criticalUncertainties = computeCriticalUncertainties(config);
-  const policy = evaluateAutonomyPolicy(config, options, criticalUncertainties);
+  const policy = evaluateAutonomyPolicy(config, options);
 
   return {
     seed,
@@ -130,9 +145,7 @@ function computeCriticalUncertainties(config: ProbabilisticMCDAConfig) {
           assessment.distribution,
           criterion.utilities,
         );
-        const confidence =
-          assessment.confidence?.value ??
-          normalizedConcentration(assessment.distribution);
+        const confidence = assessmentConfidence(assessment);
         const voiProxy = criterion.weight * Math.sqrt(variance) * (1 - confidence);
         return {
           option_id: option.id,
@@ -162,7 +175,6 @@ function computeCriticalUncertainties(config: ProbabilisticMCDAConfig) {
 function evaluateAutonomyPolicy(
   config: ProbabilisticMCDAConfig,
   options: ProbabilisticOptionResult[],
-  uncertainties: ProbabilisticMCDAResult["critical_uncertainties"],
 ): ProbabilisticMCDAResult["policy"] {
   const policy = config.autonomy_policy;
   if (!policy) {
@@ -185,19 +197,22 @@ function evaluateAutonomyPolicy(
     );
   }
 
-  const lowConfidence = uncertainties.filter(
-    (entry) =>
-      policy.min_criterion_confidence !== undefined &&
-      entry.confidence < policy.min_criterion_confidence &&
-      entry.weight >= (policy.critical_weight_threshold ?? 0),
-  );
-  for (const entry of lowConfidence) {
-    reasons.push(
-      `Critical criterion '${entry.criterion_id}' confidence ${entry.confidence} is below ${policy.min_criterion_confidence}.`,
-    );
-    evidenceRequests.push(
-      `Acquire evidence that reduces uncertainty for '${entry.criterion_name}' on option '${entry.option_id}'.`,
-    );
+  // The VOI summary keeps one representative per criterion. Policy must inspect
+  // every assessment, including low-variance options absent from that summary.
+  if (policy.min_criterion_confidence !== undefined) {
+    for (const criterion of config.criteria) {
+      if (criterion.weight < (policy.critical_weight_threshold ?? 0)) continue;
+      for (const option of config.options) {
+        const confidence = assessmentConfidence(option.criteria[criterion.id]!);
+        if (confidence >= policy.min_criterion_confidence) continue;
+        reasons.push(
+          `Critical criterion '${criterion.id}' on option '${option.id}' confidence ${confidence} is below ${policy.min_criterion_confidence}.`,
+        );
+        evidenceRequests.push(
+          `Acquire evidence that reduces uncertainty for '${criterion.name}' on option '${option.id}'.`,
+        );
+      }
+    }
   }
 
   if (!reasons.length) {
@@ -214,7 +229,7 @@ export function expectedUtility(
   distribution: Record<string, number>,
   utilities: Record<string, number>,
 ): number {
-  return Object.entries(distribution).reduce(
+  return canonicalEntries(distribution).reduce(
     (sum, [outcome, probability]) => sum + probability * utilities[outcome]!,
     0,
   );
@@ -225,7 +240,7 @@ export function utilityVariance(
   utilities: Record<string, number>,
 ): number {
   const mean = expectedUtility(distribution, utilities);
-  return Object.entries(distribution).reduce(
+  return canonicalEntries(distribution).reduce(
     (sum, [outcome, probability]) =>
       sum + probability * (utilities[outcome]! - mean) ** 2,
     0,
@@ -239,7 +254,9 @@ export function utilityVariance(
 export function normalizedConcentration(
   distribution: Record<string, number>,
 ): number {
-  const probabilities = Object.values(distribution);
+  const probabilities = canonicalEntries(distribution).map(
+    ([, probability]) => probability,
+  );
   if (probabilities.length <= 1) return 1;
   const entropy = -probabilities.reduce(
     (sum, p) => (p > 0 ? sum + p * Math.log(p) : sum),
@@ -256,7 +273,7 @@ export function noulConcentration(probabilityTrue: number): number {
 function sampleOutcome(distribution: Record<string, number>, rng: RNG): string {
   const draw = rng.next();
   let cumulative = 0;
-  const entries = Object.entries(distribution);
+  const entries = canonicalEntries(distribution);
   for (const [outcome, probability] of entries) {
     cumulative += probability;
     if (draw <= cumulative + EPSILON) return outcome;
@@ -275,9 +292,25 @@ function percentile(sorted: number[], p: number): number {
 
 function stableSeed(config: ProbabilisticMCDAConfig): string {
   return createHash("sha256")
-    .update(JSON.stringify(config))
+    .update(stableStringify(config))
     .digest("hex")
     .slice(0, 16);
+}
+
+function canonicalEntries(
+  distribution: Record<string, number>,
+): [string, number][] {
+  return Object.keys(distribution)
+    .sort()
+    .map((outcome) => [outcome, distribution[outcome]!]);
+}
+
+function assessmentConfidence(
+  assessment: ProbabilisticMCDAConfig["options"][number]["criteria"][string],
+): number {
+  return (
+    assessment.confidence?.value ?? normalizedConcentration(assessment.distribution)
+  );
 }
 
 function mapRounded(values: Record<string, number>): Record<string, number> {

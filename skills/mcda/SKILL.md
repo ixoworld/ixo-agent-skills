@@ -178,7 +178,9 @@ Monte Carlo simulation samples one outcome from every criterion distribution on 
 - 5th–95th percentile utility interval;
 - expected utility per criterion.
 
-The simulation is deterministically seeded for governance reproducibility.
+The simulation is deterministically seeded for governance reproducibility. Outcome keys are sampled in canonical order, and derived seeds use recursively sorted record keys, so JSON object key order does not affect the result. Array order remains significant.
+
+`P(best)` and `P(top 2)` describe relative utility in independently sampled criterion outcomes with fixed weights and utilities. They are not probabilities that an answer is correct, or confidence that an option has the highest long-run expected utility. Options are ordered by `P(best)`, then expected utility, then ID; this is a different objective from maximizing expected utility. Ties share probability mass equally, including ties across the top-two cutoff.
 
 ### Uncertainty and evidence acquisition
 
@@ -190,7 +192,7 @@ VOI_proxy = criterion_weight × sqrt(utility_variance) × (1 - confidence)
 
 This is a prioritization heuristic, not a formal expected value of perfect information. It identifies influential uncertain criteria where gathering more evidence is most promising.
 
-If Jev/another provider supplies confidence, preserve it with explicit semantics such as `jev-score-distribution-concentration`. If no provider confidence exists, the engine falls back to normalized entropy concentration.
+Provider confidence must declare one of the supported semantics: `distribution-concentration` or `jev-score-distribution-concentration`. Other semantics, including probability-of-correctness scores, are rejected rather than used in policy calculations. Only supply a value that actually measures concentration under one of these contracts; do not relabel an unrelated provider score. If no provider concentration measure exists, omit confidence and the engine falls back to normalized entropy concentration.
 
 An optional autonomy policy can require:
 
@@ -199,6 +201,8 @@ An optional autonomy policy can require:
 - a weight threshold defining "critical" criteria.
 
 Policy output is `decide`, `gather_evidence`, or `escalate`. Low confidence does not reduce an option's utility directly.
+
+The confidence threshold is checked against every option/criterion assessment whose weight meets the critical threshold, using unrounded concentration values. The VOI summary keeps only the highest-proxy option per criterion for prioritization; it does not limit which assessments can trigger evidence requests.
 
 ### Probabilistic input example
 
