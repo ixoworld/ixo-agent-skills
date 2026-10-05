@@ -1,0 +1,28 @@
+name: MCDA skill checks
+on:
+  pull_request:
+    paths:
+      - 'skills/mcda/**'
+      - '.github/workflows/mcda.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'skills/mcda/**'
+      - '.github/workflows/mcda.yml'
+permissions:
+  contents: read
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: bash scripts/validate-skill.sh skills/mcda
+      - run: npm install --ignore-scripts --no-audit --no-fund
+        working-directory: skills/mcda
+      - run: npm run lint
+        working-directory: skills/mcda
+      - run: npm test
+        working-directory: skills/mcda
