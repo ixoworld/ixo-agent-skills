@@ -45,6 +45,6 @@ For a finite Discussion, setup and the closure rule must be confirmed before wor
 
 If deliberation yields a proposal, evaluation, or task with an independent lifecycle, branch it instead of mutating the Kind in place.
 
-## rc.4 lifecycle contract
+## Lifecycle contract
 
 A finite Discussion requires an explicit closure definition before confirmation. Only the actual value `temporalMode: ongoing` satisfies the ongoing alternative. Do not use the presence of the temporalMode field as proof that this requirement is met.

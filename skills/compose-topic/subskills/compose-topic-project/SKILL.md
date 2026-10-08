@@ -83,6 +83,6 @@ Portal resolved a recipe published by a `protocol/topic` domain
 (`resolve_published_recipe`); its `project` block then supplies milestone
 suggestions, child Kinds and entry-points. Nothing is bundled with this skill.
 
-## rc.4 lifecycle contract
+## Lifecycle contract
 
 Project milestones, child links, waivers, and blockers are runtime progress. Review them against the authenticated projection. Linking a child does not prove completion. Close review and remaining-risk acceptance are separate steps. A new setup revision resets the checklist and earlier close acceptance.

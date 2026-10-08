@@ -40,6 +40,8 @@ const EXPECTED_FILES = [
   "references/topic-kind-templates.md",
   "references/topic-recipe-selection.md",
   "references/topic-shape-pins.json",
+  "references/topic-shape-pins-rc4.json",
+  "references/artifacts/noble-hashes-2.4.0.tgz",
   "references/security-review.md",
   "references/source-lock.json",
   "examples/decision.example.json",
@@ -61,10 +63,10 @@ const EXPECTED_FILES = [
   "evals/portal-execution.md",
   ...SUBSKILLS.map((name) => `subskills/${name}/SKILL.md`),
 ];
-const EXPECTED_SOURCE_COMMIT = "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d";
-const EXPECTED_PACKAGE_GIT_HEAD = "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d";
-const EXPECTED_PACKAGE_SHASUM = "b2d9b88b01c4fc3a16586845c96c369de0a96b9a";
-const EXPECTED_PACKAGE_INTEGRITY = "sha512-jyZ1JauOXLyn06MOyAVv4nFYCWiIOVobbjmRYHM0ws3xyuvpR8Xd2niAZOt+MzE26ik/svjsR6zhidB4LwTriA==";
+const EXPECTED_SOURCE_COMMIT = "808c9aa4918db9ed8e6e244d5143af1c12a6dd95";
+const EXPECTED_PACKAGE_GIT_HEAD = "808c9aa4918db9ed8e6e244d5143af1c12a6dd95";
+const EXPECTED_PACKAGE_SHASUM = "c1c929923dee7005c3369108a73af37d696cded8";
+const EXPECTED_PACKAGE_INTEGRITY = "sha512-IpDt3g2OHDTUk2ipG5cn7fMHnn1Oy7jAL+rquiLJpD7RqKafkN5XSmdhfT2iEQvD0crj3lv/8TjyN9v2+4cv+A==";
 const ACTUAL_SECRET_PATTERNS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
   /\bsk-[A-Za-z0-9_-]{32,}\b/u,
@@ -91,13 +93,17 @@ async function exists(path) {
   }
 }
 
+/** Working folders that are never part of the skill: the protocol loader unpacks packages into .cache while tests run. */
+const UNTRACKED_DIRECTORIES = new Set([".cache", "node_modules"]);
+
 async function listFiles(directory) {
   const result = [];
   async function visit(current) {
     for (const entry of await readdir(current, { withFileTypes: true })) {
       const path = join(current, entry.name);
-      if (entry.isDirectory()) await visit(path);
-      else result.push(path);
+      if (entry.isDirectory()) {
+        if (!UNTRACKED_DIRECTORIES.has(entry.name)) await visit(path);
+      } else result.push(path);
     }
   }
   await visit(directory);
@@ -221,7 +227,7 @@ async function auditSourceLock(findings) {
   const lock = JSON.parse(await readFile(lockPath, "utf8"));
   if (lock.skill !== "compose-topic") findings.push(finding("LOCK_SKILL", "references/source-lock.json", "skill must equal compose-topic"));
   if (lock.version !== 6) findings.push(finding("LOCK_VERSION", "references/source-lock.json", "source lock must use version 6"));
-  if (lock.topicProtocol?.version !== "1.0.0-rc.4") findings.push(finding("LOCK_PROTOCOL", "references/source-lock.json", "Topic Protocol must be pinned to 1.0.0-rc.4"));
+  if (lock.topicProtocol?.version !== "1.0.0-rc.7") findings.push(finding("LOCK_PROTOCOL", "references/source-lock.json", "Topic Protocol must be pinned to 1.0.0-rc.7"));
   if (lock.topicProtocol?.normativeBaseCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_BASE_COMMIT", "references/source-lock.json", `normative commit must equal ${EXPECTED_SOURCE_COMMIT}`));
   if (lock.topicProtocol?.contractProfile?.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("LOCK_COMMIT", "references/source-lock.json", `source commit must equal ${EXPECTED_SOURCE_COMMIT}`));
   if (lock.topicProtocol?.contractProfile?.status !== "normative") findings.push(finding("LOCK_STATUS", "references/source-lock.json", "contract profile must be normative"));
@@ -230,11 +236,22 @@ async function auditSourceLock(findings) {
   if (lock.topicProtocol?.package?.sourceCommit !== EXPECTED_PACKAGE_GIT_HEAD) findings.push(finding("LOCK_PACKAGE_GIT_HEAD", "references/source-lock.json", "candidate source commit mismatch"));
   if (lock.topicProtocol?.package?.shasum !== EXPECTED_PACKAGE_SHASUM) findings.push(finding("LOCK_PACKAGE_SHASUM", "references/source-lock.json", "candidate package shasum mismatch"));
   if (lock.topicProtocol?.package?.integrity !== EXPECTED_PACKAGE_INTEGRITY) findings.push(finding("LOCK_PACKAGE_INTEGRITY", "references/source-lock.json", "candidate package integrity mismatch"));
-  if (lock.topicProtocol?.package?.publication !== "unpublished-candidate") findings.push(finding("LOCK_PUBLICATION", "references/source-lock.json", "This candidate has not been published"));
+  if (lock.topicProtocol?.package?.publication !== "published") findings.push(finding("LOCK_PUBLICATION", "references/source-lock.json", "The pinned package must be the published release"));
   const artifact = await readFile(join(SKILL_ROOT, lock.topicProtocol.package.artifact));
   if (createHash("sha1").update(artifact).digest("hex") !== EXPECTED_PACKAGE_SHASUM
       || `sha512-${createHash("sha512").update(artifact).digest("base64")}` !== EXPECTED_PACKAGE_INTEGRITY) {
     findings.push(finding("LOCK_ARTIFACT", lock.topicProtocol.package.artifact, "Candidate bytes do not match the pinned package"));
+  }
+  for (const dependency of lock.topicProtocol?.package?.dependencies ?? []) {
+    const path = dependency.artifact ?? "";
+    if (!(await exists(join(SKILL_ROOT, path)))) {
+      findings.push(finding("LOCK_DEPENDENCY_MISSING", path || "references/source-lock.json", `bundled ${dependency.name} is missing`));
+      continue;
+    }
+    const bytes = await readFile(join(SKILL_ROOT, path));
+    if (createHash("sha1").update(bytes).digest("hex") !== dependency.shasum || `sha512-${createHash("sha512").update(bytes).digest("base64")}` !== dependency.integrity) {
+      findings.push(finding("LOCK_DEPENDENCY_ARTIFACT", path, `${dependency.name} bytes do not match the pinned package`));
+    }
   }
   const sources = lock.topicProtocol?.sourceFiles ?? [];
   if (sources.length < 20) findings.push(finding("LOCK_SOURCE_COUNT", "references/source-lock.json", "must pin v4 contracts and Shape resolution/projection sources"));
@@ -258,7 +275,7 @@ async function auditShapePins(findings) {
   const path = "references/topic-shape-pins.json";
   const pins = JSON.parse(await readFile(join(SKILL_ROOT, path), "utf8"));
   if (pins.version !== 2) findings.push(finding("PIN_VERSION", path, "must use catalog version 2"));
-  if (pins.protocolVersion !== "1.0.0-rc.4") findings.push(finding("PIN_PROTOCOL", path, "must pin Topic Protocol 1.0.0-rc.4"));
+  if (pins.protocolVersion !== "1.0.0-rc.7") findings.push(finding("PIN_PROTOCOL", path, "must pin Topic Protocol 1.0.0-rc.7"));
   if (pins.sourceCommit !== EXPECTED_SOURCE_COMMIT) findings.push(finding("PIN_COMMIT", path, "must pin the normative protocol source head"));
   const expectedKinds = ["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"];
   const kinds = Object.keys(pins.baseCompositions ?? {}).sort();
@@ -283,7 +300,7 @@ async function auditExamples(findings) {
 
 async function auditEvals(findings) {
   const evals = JSON.parse(await readFile(join(SKILL_ROOT, "evals/evals.json"), "utf8"));
-  if (evals.version !== "3.3.2") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.3.2"));
+  if (evals.version !== "3.3.3") findings.push(finding("EVAL_VERSION", "evals/evals.json", "must equal 3.3.3"));
   if (evals.skill !== "compose-topic") findings.push(finding("EVAL_SKILL", "evals/evals.json", "must equal compose-topic"));
   const cases = evals.cases ?? [];
   if (cases.length < 36) findings.push(finding("EVAL_COVERAGE", "evals/evals.json", "must include all Kinds, recipes, Shapes, Portal progression, authority, inference, and security cases"));
@@ -333,7 +350,7 @@ export async function main(options = {}) {
   findings.sort((left, right) => left.path.localeCompare(right.path) || left.code.localeCompare(right.code));
   return {
     auditor: "compose-topic-skill-audit",
-    version: "3.3.2",
+    version: "3.3.3",
     root: options.root ?? SKILL_ROOT,
     ok: findings.length === 0,
     findingCount: findings.length,

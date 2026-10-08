@@ -1,5 +1,5 @@
 {
-  "version": "3.3.2",
+  "version": "3.3.3",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77705",
   "mode": "preview",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.4",
+    "topicProtocolVersion": "1.0.0-rc.7",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
-    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
+    "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95",
+    "packageShasum": "c1c929923dee7005c3369108a73af37d696cded8",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -54,7 +54,7 @@
       "kind": "claims",
       "status": "draft",
       "baseRecipe": "claims",
-      "shapeDigest": "sha256:06fd9511ecbbb1cd6e321c03ef376b3cfe7154d3be4a25db5d9441de5e941cfe",
+      "shapeDigest": "sha256:35770406f687aeab195b81c6df2f583c592e96da8e460a6e8ffb03033c02beee",
       "context": [
         {
           "type": "ixo.entity",
@@ -83,17 +83,17 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/claims",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:79fc99b1a85fea39e0a17e62b173aba49c986047218eeafaa681001d9adb389e"
+        "version": "1.0.0-rc.7",
+        "digest": "sha256:647dc64cfdbea39692b6b116a1b4a25d7029e91b46b4180ef91ab9d77380e52f"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/claims",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:604309d70c2d762551dc9c11572bf095c8879f255dcff0d78adb4f1b13815f47"
+        "version": "1.0.0-rc.7",
+        "digest": "sha256:1fc2ec2616aeab4fb9d533a4ab9f8075dc25b5df729b30e3689876343aaad6c8"
       }
     ],
-    "shapeDigest": "sha256:06fd9511ecbbb1cd6e321c03ef376b3cfe7154d3be4a25db5d9441de5e941cfe"
+    "shapeDigest": "sha256:35770406f687aeab195b81c6df2f583c592e96da8e460a6e8ffb03033c02beee"
   },
   "contractDraft": {
     "envelope": {
@@ -113,17 +113,17 @@
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/claims",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:79fc99b1a85fea39e0a17e62b173aba49c986047218eeafaa681001d9adb389e"
+          "version": "1.0.0-rc.7",
+          "digest": "sha256:647dc64cfdbea39692b6b116a1b4a25d7029e91b46b4180ef91ab9d77380e52f"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/claims",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:604309d70c2d762551dc9c11572bf095c8879f255dcff0d78adb4f1b13815f47"
+          "version": "1.0.0-rc.7",
+          "digest": "sha256:1fc2ec2616aeab4fb9d533a4ab9f8075dc25b5df729b30e3689876343aaad6c8"
         }
       ],
-      "shapeDigest": "sha256:06fd9511ecbbb1cd6e321c03ef376b3cfe7154d3be4a25db5d9441de5e941cfe",
+      "shapeDigest": "sha256:35770406f687aeab195b81c6df2f583c592e96da8e460a6e8ffb03033c02beee",
       "claimBinding": {
         "entityDid": "did:ixo:entity:solar-programme",
         "collectionId": "solar-installations-2026"

@@ -3,21 +3,32 @@
   "skill": "compose-topic",
   "topicProtocol": {
     "repository": "https://github.com/ixoworld/topic-protocol",
-    "version": "1.0.0-rc.4",
-    "normativeBaseCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
+    "version": "1.0.0-rc.7",
+    "normativeBaseCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95",
     "package": {
       "name": "@ixo/topic-protocol",
-      "version": "1.0.0-rc.4",
-      "publication": "unpublished-candidate",
-      "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
-      "shasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
-      "integrity": "sha512-jyZ1JauOXLyn06MOyAVv4nFYCWiIOVobbjmRYHM0ws3xyuvpR8Xd2niAZOt+MzE26ik/svjsR6zhidB4LwTriA==",
-      "artifact": "references/artifacts/ixo-topic-protocol-1.0.0-rc.4.tgz"
+      "version": "1.0.0-rc.7",
+      "publication": "published",
+      "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95",
+      "shasum": "c1c929923dee7005c3369108a73af37d696cded8",
+      "integrity": "sha512-IpDt3g2OHDTUk2ipG5cn7fMHnn1Oy7jAL+rquiLJpD7RqKafkN5XSmdhfT2iEQvD0crj3lv/8TjyN9v2+4cv+A==",
+      "artifact": "references/artifacts/ixo-topic-protocol-1.0.0-rc.7.tgz",
+      "dependencies": [
+        {
+          "name": "@noble/hashes",
+          "version": "2.4.0",
+          "license": "MIT",
+          "shasum": "e6a3e98edbed3c8659b28bb8f9b18ca02ec8ea4b",
+          "integrity": "sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==",
+          "artifact": "references/artifacts/noble-hashes-2.4.0.tgz",
+          "reason": "the Shape digest code (dist/src/shapes/canonical.js) imports sha256 from it"
+        }
+      ]
     },
     "contractProfile": {
       "profile": "qi.topic-contract-state/v4",
       "status": "normative",
-      "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
+      "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95",
       "rootVersion": 4,
       "bodyVersion": 4,
       "stateVersion": 4,
@@ -29,7 +40,7 @@
     "sourceFiles": [
       {
         "path": "protocol-manifest.json",
-        "blobSha": "ec581c735485f757b64ea156f5b15fc1c318e644"
+        "blobSha": "260b4bfdf50a5dfce964b6ee7e47751081720768"
       },
       {
         "path": "schemas/topic-root.schema.json",
@@ -105,15 +116,15 @@
       },
       {
         "path": "src/shapes/resolver.ts",
-        "blobSha": "474d8e3705d2d52ea41c1c7e595fb2d9003819d2"
+        "blobSha": "4f398602a4a64d682528ceac1963862577757d80"
       },
       {
         "path": "src/shapes/recipes.ts",
-        "blobSha": "61708771b34ffb48bbead149921141d555f46562"
+        "blobSha": "8e550e5be0946dea15bcccd06da73edfb88c089a"
       },
       {
         "path": "src/shapes/progress.ts",
-        "blobSha": "a5f54795181557ba90d01ca12a9ba8c5044093ab"
+        "blobSha": "85784856d7cc626fcaf1d4ced7403935a5c2d6fe"
       },
       {
         "path": "src/shapes/now.ts",
@@ -125,31 +136,31 @@
       },
       {
         "path": "recipes/registry.json",
-        "blobSha": "83179f2a77514709b2bae4ddd5c6739bc7ddb30d"
+        "blobSha": "abe18e63754a5f675ea8930c787b2c571558a3ea"
       },
       {
         "path": "recipes/research-brief.json",
-        "blobSha": "4fac118c615c99a023b4fdfd2c6023cb1dbe7dcb"
+        "blobSha": "4ae411aa1ff84b084f331d3bc50d2c0af0f0cb37"
       },
       {
         "path": "recipes/agent-delivery.json",
-        "blobSha": "4c9320f9e632c61431f01cc1257e6b227560fdce"
+        "blobSha": "f64d60f2d2e245fb39913c1cc5e85caa47882cf4"
       },
       {
         "path": "recipes/verified-work-payment.json",
-        "blobSha": "668ef80d6174845a207e11fe38a75881fd166ba5"
+        "blobSha": "ad16e0092f09bbb757e7bbd6eaa270be2c8596c9"
       },
       {
         "path": "recipes/software-build.json",
-        "blobSha": "efd23277c90c7d2f4b486ab66d6ffeeb7a375d4b"
+        "blobSha": "d2244c627f1b7238ad2db4b9d46d8fa17649bca0"
       },
       {
         "path": "recipes/blueprint-design.json",
-        "blobSha": "967843c75b02d6d1906bc746d383240862d2b714"
+        "blobSha": "05088467010c56584c59a2c5610ba0f45de40c0a"
       },
       {
         "path": "docs/topic-shape-framework.md",
-        "blobSha": "c76a2efaa8db84109a08647b374d49ec73946c6d"
+        "blobSha": "4b7a62431243f1e1034f8946543b1370e1df951a"
       },
       {
         "path": "docs/protocol/13-project-topics-and-recipes.md",
@@ -185,7 +196,7 @@
       },
       {
         "path": "src/shapes/commands.ts",
-        "blobSha": "cc00bdfbff14f70d87550ec930e6feeb281bbb73"
+        "blobSha": "32691c80de85f74d9220f3ff96bb79c1e33fd2c4"
       },
       {
         "path": "src/shapes/fields.ts",
@@ -193,7 +204,7 @@
       },
       {
         "path": "src/shapes/releases.ts",
-        "blobSha": "eb22e3ea699a55a10b69f52919f4567c9037d69c"
+        "blobSha": "08c63a26c15a982dad0df95d315dd9d0c6897b01"
       },
       {
         "path": "src/shapes/reachability.ts",
@@ -201,7 +212,7 @@
       },
       {
         "path": "src/shapes/availability.ts",
-        "blobSha": "7d922ba0fd820e55b7ab944304957f2c34691d38"
+        "blobSha": "e3bfaa49a5da42a933964b54a18a822360846b49"
       },
       {
         "path": "profiles/releases/1.0.0-rc.3.json",
@@ -214,7 +225,7 @@
         "version": "1.0.0",
         "schema": "https://topic-protocol.ixo.world/schemas/topic-kind-profile.schema.json",
         "digest": "sha256:0991eb565e1253c5caf92e7f06a392edacda6d9d90c3b3111ebfa6bf65b8eaf5",
-        "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d"
+        "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95"
       }
     },
     "topicRecipes": {
@@ -232,7 +243,7 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "f56a9050e42591de6a87a5d62b24ec1d030a414da12375a3724921f2f59ab4d3"
+      "sha256": "bce41c023e24923517356193620ac9fd764d3aa8234a5e76cc033f078499cdbd"
     },
     "schemas/topic-contract-draft.schema.json": {
       "sha256": "d423b6bfb5f4c5e8005c29360455f2be5ca6e00e981d940dc908b4e7f7270505"
@@ -241,13 +252,13 @@
       "sha256": "c09b669324dc4de72b9a0d19b5f9be6017f86017f75cebbd47ef7d069c5c1763"
     },
     "references/topic-contract-profile.md": {
-      "sha256": "b03d27b208f9e3791b030f30e1cc5c0a4011184b627d027f93a6511cfed1b144"
+      "sha256": "f0b1c8e1fc460c35732405176608c514a930b33fe50c501b13a979bafadc3b90"
     },
     "references/topic-recipe-selection.md": {
       "sha256": "db2da7e3d50253d549790b9d531031d131d19069fb9b7d8cde4204d7b6085501"
     },
     "references/topic-shape-pins.json": {
-      "sha256": "1d0e3ad72ca6979c64699bef22edde12a4e9308b6424c80f83babeba584989ba"
+      "sha256": "f545bd6e8cfed67c12462672432b36483b798f5829c7818602db26975440573a"
     },
     "references/topic-kind-templates.md": {
       "sha256": "cdab6b2cde868964b5aad8a17a344d3b40e0eb808c60ee27e308dd1b6036db27"
@@ -256,37 +267,37 @@
       "sha256": "f52006b34c2303d3c7bb5edcd99fa0c72902c36abf409f15fe14f7264ad55cc3"
     },
     "SKILL.md": {
-      "sha256": "5c42d9100ade5b342562df603bd786115a0f54fe5ee0db93ce341ac46251b1d9"
+      "sha256": "fee562c62b9e50204e1d48292b5b691090b721233dc69493a670fc495071513c"
     },
     "AUDIT.md": {
-      "sha256": "ce888ca437f774e29849550e3f881c18338fcc9a2cfcf39dad715d4c6bdc1775"
+      "sha256": "1f35a82d6dcd08dc56ad990def175b767fb691df4a3504156faac522c5d8572c"
     },
     "evals/evals.json": {
-      "sha256": "d530e40c256196af3e59d41b9599966173475bf474820ef6c8de5eb66ce4fab7"
+      "sha256": "47857f5dffcfd6cf40e5756d4191df544b01311ad7063133e198de8d68f9cf8e"
     },
     "subskills/compose-topic-project/SKILL.md": {
-      "sha256": "76a9207fd5fb56c6d1d915da9bc7c1e96c842d8e1173b1453dfd0b863cc8606f"
+      "sha256": "9fd0a279887a0e7d7957b24e632081ff32de1394367579d221aab6625237ea95"
     },
     "subskills/compose-topic-agent-task/SKILL.md": {
-      "sha256": "eb08b3e414b0f369cb0c9c4512ed8065af54c0fb3544fd450add8a1fc5ad001a"
+      "sha256": "4c2f5c6e9f0e37c9393776e13d47b3bb336afe63e76d1818652432259670627d"
     },
     "subskills/compose-topic-claims/SKILL.md": {
-      "sha256": "5416758ad2eac6af6b7c4cb9636daf517e884ab831e438f6554201a3a997e10d"
+      "sha256": "bfbe9140845884a7cc221e99fd47d4fbc3150ae6c79dd0f8576410554ffc9675"
     },
     "subskills/compose-topic-discussion/SKILL.md": {
-      "sha256": "31f11714bc49504eb5dca300170e64e98329bbd38341f0b0e01afaf6b45af586"
+      "sha256": "e4690413a265044ca70ff1a9f88d3b6d56390aca8fde1b8a0b330174e9810ce3"
     },
     "subskills/compose-topic-evaluation/SKILL.md": {
-      "sha256": "b1fd41b6f0e186be10376845a20d8c24018cdaf38fd96b6c0d0f1c94166340af"
+      "sha256": "ab9ab8993bf16b0a7cf59cc09132a0efc6630cd9992ec45c93cd6cd373b74748"
     },
     "subskills/compose-topic-incident/SKILL.md": {
-      "sha256": "1a252d3e6dc31a3e96ac667d9ad25087943af81fced50b4342b1f3e987f57d3f"
+      "sha256": "fd74549a7066ef7b79915a201f037e4cffeeee854aeafcecca3fc816ff90421d"
     },
     "subskills/compose-topic-proposal/SKILL.md": {
-      "sha256": "790c7062881e2cd5964098851c12165d6a4992c114249c16dd2e31972d93c7b4"
+      "sha256": "1f15e9b482c3cb5ab02fb58721647210e006d3f865b1af939748e09179f55018"
     },
     "subskills/compose-topic-question/SKILL.md": {
-      "sha256": "0d87194fe24f68b66c97146f956953b07b7480234d5d1b67ce5075c5c174277b"
+      "sha256": "9773a22923a47459136c5e7138fb9877366dbff429ac9260835936dc249e434b"
     },
     "subskills/compose-topic-task/SKILL.md": {
       "sha256": "24f664209744ca22c3fd4618e403c04dc7b981b80a46d2306af9819ad2cc397b"
@@ -295,19 +306,19 @@
       "sha256": "24eba8f9505d28a40654e5c3a0c7157c61c188dca070b65c2f18a43f8150958f"
     },
     "tests/lifecycle-pins.test.mjs": {
-      "sha256": "15747a8a37584b81671aacc3ab9cd40cdc6e8cb5b8c0b468689344a3d3091a06"
+      "sha256": "50304a58d617c26159da5279f3d227c93e8c458efd02992445f6027ae2f572ee"
     },
-    "references/artifacts/ixo-topic-protocol-1.0.0-rc.4.tgz": {
-      "sha256": "c88cd0b1055bfb21639984553b418d782e7d27ca9a35f32d89fb9fcc6032f5d0"
+    "references/artifacts/ixo-topic-protocol-1.0.0-rc.7.tgz": {
+      "sha256": "09304bd66a78bc9604fa9173b0e07e2a99a6401a90c71c1a4100edf6ccc66d02"
     },
     "schemas/topic-refine-preview.schema.json": {
       "sha256": "559b830b10076f79cbdadda224781939178ea6051a1ccabc030d7ea24c62a804"
     },
     "references/protocol-adapter.md": {
-      "sha256": "35959934247c0e01b2719d1db8d6b0779bb12b49a5d659394e229a840f06a179"
+      "sha256": "b2c439bbb80ac2fbc8245ea260c8daf221565deec5dd06b29a644e58c4731974"
     },
     "references/refine-existing-topic.md": {
-      "sha256": "99b83b6d89c16a0333750c58496ae310bc465cda303c162bd2be13bdcafcdefe"
+      "sha256": "6679791429bd1876f64e2f40e776886fc561ef6674b45d2acb51ae2131bc9544"
     },
     "evals/portal-execution.md": {
       "sha256": "27903d15d754db0484ac8c5eac6dae7837ab0fbd782899557fea5ece63aa83dc"
@@ -322,16 +333,22 @@
       "sha256": "b9f17dd6cd7f1187ac4da40400ba70d8bd9595b37876d8f4aecc1bd7fdd59b3c"
     },
     "scripts/validate-recipe.mjs": {
-      "sha256": "a219aed679f072c236477e1516c8c0ddf0cacbffd2e571d9b703d6c16640b2d9"
+      "sha256": "2aa7a8f5a14e5713e8230f534b667010501e645a21f2d042d77286d4a09f35a9"
     },
     "tests/validate-recipe.test.mjs": {
       "sha256": "0e2d9d60b8d61c0ca05cb4ed0a2e40ae69058b824d8523c56a792198a4fdddcd"
     },
     "references/portal-create-template.md": {
-      "sha256": "1f76af32d4180d93572c4b5a8588dc51ef3f9a7769705fb4d58d5ce071e02756"
+      "sha256": "82cc03e19a554e14439f804113c4a77ee5f85064bc3f1e14d8003e2f524209a9"
     },
     "tests/portal-template.test.mjs": {
-      "sha256": "685b42715ad5999dc97897430e82995ed747dbd2854addd0c57cf53268441ba1"
+      "sha256": "58b4423be5d41a27ae49cafb2d51a3af00f1ed52ef7e5eb0960bdf75fe8e2fff"
+    },
+    "references/topic-shape-pins-rc4.json": {
+      "sha256": "1d0e3ad72ca6979c64699bef22edde12a4e9308b6424c80f83babeba584989ba"
+    },
+    "references/artifacts/noble-hashes-2.4.0.tgz": {
+      "sha256": "e1946149b780017b2564fcc092cb01c04e1d7f20627d0296c17da8868f4436dc"
     }
   }
 }
