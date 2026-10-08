@@ -1,12 +1,12 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.3.2`
-Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.4`
+Audit target: `compose-topic` `3.3.3`
+Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.7`
 Topic Contract profile: `qi.topic-contract-state/v4`
-Pinned protocol commit: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
-Candidate package source commit: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
-Candidate package shasum: `b2d9b88b01c4fc3a16586845c96c369de0a96b9a`
-Candidate package integrity: `sha512-jyZ1JauOXLyn06MOyAVv4nFYCWiIOVobbjmRYHM0ws3xyuvpR8Xd2niAZOt+MzE26ik/svjsR6zhidB4LwTriA==`
+Pinned protocol commit: `808c9aa4918db9ed8e6e244d5143af1c12a6dd95`
+Candidate package source commit: `808c9aa4918db9ed8e6e244d5143af1c12a6dd95`
+Candidate package shasum: `c1c929923dee7005c3369108a73af37d696cded8`
+Candidate package integrity: `sha512-IpDt3g2OHDTUk2ipG5cn7fMHnn1Oy7jAL+rquiLJpD7RqKafkN5XSmdhfT2iEQvD0crj3lv/8TjyN9v2+4cv+A==`
 
 ## Review scope
 
@@ -141,6 +141,6 @@ The skill cannot prove deployed Matrix, E2EE, VFS, UCAN, Entity/claim resolution
 
 The recipe Marketplace lookup is intentionally not implemented. The local pins cover only the nine Base Recipe compositions; Topic Recipes come exclusively from `protocol/topic` domains through the Portal.
 
-## rc.4 candidate status
+## rc.7 release status
 
-This update uses a locally committed source and a measured, bundled npm tarball. It does not claim registry publication or production deployment. Run the audit and tests to validate the candidate.
+This update bundles the published npm tarball for `@ixo/topic-protocol@1.0.0-rc.7` and pins its source commit, shasum, and integrity. It does not claim production deployment. Run the audit and tests to validate it.

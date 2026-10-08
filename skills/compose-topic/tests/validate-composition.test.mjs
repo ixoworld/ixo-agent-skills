@@ -106,7 +106,7 @@ test("requires root and contract Shape pins to match recipe selection", async ()
 
 test("rejects a Topic Recipe pinned from the protocol's bundled samples", async () => {
   const value = await example("research-brief.example.json");
-  const ref = { id: "https://topic-protocol.ixo.world/recipes/research-brief", version: "1.0.0-rc.4", digest: `sha256:${"3".repeat(64)}` };
+  const ref = { id: "https://topic-protocol.ixo.world/recipes/research-brief", version: "1.0.0-rc.7", digest: `sha256:${"3".repeat(64)}` };
   value.recipeSelection = { ...value.recipeSelection, strategy: "topic-recipe", topicRecipeCode: "research-brief", topicRecipeRef: ref };
   value.contractDraft.semantic.topicRecipeRef = ref;
   value.topic.rootDraft.topicRecipeRef = ref;
@@ -116,7 +116,7 @@ test("rejects a Topic Recipe pinned from the protocol's bundled samples", async 
 test("does not allow invented Marketplace lookup or a stray recipe ref on the Base Recipe path", async () => {
   const value = await example("research-brief.example.json");
   value.recipeSelection.registryLookup = "complete";
-  value.recipeSelection.topicRecipeRef = { id: "https://topic-protocol.ixo.world/recipes/research-brief", version: "1.0.0-rc.4", digest: `sha256:${"0".repeat(64)}` };
+  value.recipeSelection.topicRecipeRef = { id: "https://topic-protocol.ixo.world/recipes/research-brief", version: "1.0.0-rc.7", digest: `sha256:${"0".repeat(64)}` };
   const result = codes(value);
   assert(result.has("RECIPE_LOOKUP"));
   assert(result.has("BASE_RECIPE_ONLY"));

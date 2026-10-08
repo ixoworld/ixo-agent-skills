@@ -30,10 +30,10 @@ const HOSTNAME = /^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?
 const TOPIC = /^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const ENTRY = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
-const COMMIT = "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d";
-const PACKAGE_SHASUM = "b2d9b88b01c4fc3a16586845c96c369de0a96b9a";
-const PROTOCOL_VERSION = "1.0.0-rc.4";
-const COMPOSITION_VERSION = "3.3.2";
+const COMMIT = "808c9aa4918db9ed8e6e244d5143af1c12a6dd95";
+const PACKAGE_SHASUM = "c1c929923dee7005c3369108a73af37d696cded8";
+const PROTOCOL_VERSION = "1.0.0-rc.7";
+const COMPOSITION_VERSION = "3.3.3";
 const PROFILE = "qi.topic-contract-state/v4";
 const KINDS = new Set(["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
 const ROOM_TARGETS = new Set(ROOM_SCHEMA.properties.target.enum);

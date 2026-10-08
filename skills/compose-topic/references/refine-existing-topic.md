@@ -42,7 +42,7 @@ Do not persist the private edit-session ID, personal-agent session data, viewer 
 
 ## Preserve an existing release
 
-Keep the existing Shape sources and digest during refinement, including rc.3 pins. The bundled [rc.3 Shape pins](topic-shape-pins-rc3.json) provide compatibility references. Opening an editor does not upgrade the protocol release. An explicit upgrade proposes a new setup with rc.4 pins and explains new obligations. It requires fresh confirmation and assent, and it resets revision-bound work and Project progress.
+Keep the existing Shape sources and digest during refinement, including rc.3 and rc.4 pins. The bundled [rc.3 Shape pins](topic-shape-pins-rc3.json) and [rc.4 Shape pins](topic-shape-pins-rc4.json) provide compatibility references. Opening an editor does not upgrade the protocol release. An explicit upgrade proposes a new setup with rc.7 pins and explains new obligations. It requires fresh confirmation and assent, and it resets revision-bound work and Project progress.
 
 ## Incomplete refinement preview
 

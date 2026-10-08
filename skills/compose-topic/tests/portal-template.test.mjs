@@ -23,7 +23,7 @@ function uuidv7(seed) {
 
 function sourcesFor(pins, kind) {
   const entry = pins.kinds[kind];
-  return [pins.baseRecipeSources[entry.baseRecipe], { kind: "kind", id: `https://topic-protocol.ixo.world/kinds/${kind}`, version: "1.0.0-rc.4", digest: entry.kindDigest }];
+  return [pins.baseRecipeSources[entry.baseRecipe], { kind: "kind", id: `https://topic-protocol.ixo.world/kinds/${kind}`, version: "1.0.0-rc.7", digest: entry.kindDigest }];
 }
 
 function fill(skeleton, pins, kind) {

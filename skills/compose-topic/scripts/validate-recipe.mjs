@@ -7,7 +7,7 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -21,7 +21,7 @@ const PHASES = new Set(["forming", "working", "verifying", "deciding", "effectin
 const COMMANDS = new Set([
   "topic.edit-setup", "topic.confirm-setup", "topic.record-assent", "topic.raise-dispute", "topic.resolve-dispute",
   "topic.start-work", "topic.answer-question", "topic.change-due-date", "topic.unblock", "topic.record-outcome",
-  "topic.complete", "topic.close-project", "topic.request-action", "topic.confirm-action",
+  "topic.complete", "topic.close-project", "topic.request-action", "topic.confirm-action", "topic.record-flow-run",
   "topic.record-verification", "topic.record-decision", "topic.record-settlement",
 ]);
 const DID = /^did:ixo:entity:[0-9a-f]{32,}$/u;
@@ -37,6 +37,12 @@ export async function loadProtocol() {
   await mkdir(join(ROOT, ".cache"), { recursive: true });
   const temporary = await mkdtemp(join(ROOT, ".cache", "protocol-"));
   execFileSync("tar", ["-xzf", lock.topicProtocol.package.artifact, "-C", relative(ROOT, temporary)], { cwd: ROOT });
+  // The package's own dependencies are bundled too, so this works offline: each lands where Node resolves it from the package.
+  for (const dependency of lock.topicProtocol.package.dependencies ?? []) {
+    const target = join(temporary, "package", "node_modules", ...dependency.name.split("/"));
+    await mkdir(target, { recursive: true });
+    execFileSync("tar", ["-xzf", dependency.artifact, "-C", relative(ROOT, target).split(sep).join("/"), "--strip-components=1"], { cwd: ROOT });
+  }
   const resolver = await import(pathToFileURL(join(temporary, "package/dist/src/shapes/resolver.js")).href);
   const canonical = await import(pathToFileURL(join(temporary, "package/dist/src/shapes/canonical.js")).href);
   return { ...resolver, ...canonical, dispose: () => rm(temporary, { recursive: true, force: true }) };

@@ -49,6 +49,6 @@ A summary is not verified merely because an agent produced it. Preserve citation
 
 An answered question or verified brief still requires the Shape's Topic completion transition.
 
-## rc.4 lifecycle contract
+## Lifecycle contract
 
 After work submission, `topic.record-verification` requires an accepted `ixo.topic.answer-acceptance` record with status `accepted` from the assigned completion authority using `topic/accept-answer`. A published recipe with a verification axis first requires source verification through `ixo.evaluation` with status `verified`. Both axes must finish before explicit Topic completion.

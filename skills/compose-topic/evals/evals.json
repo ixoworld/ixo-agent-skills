@@ -1,11 +1,11 @@
 {
-  "version": "3.3.2",
+  "version": "3.3.3",
   "skill": "compose-topic",
   "protocol": {
-    "topicProtocolVersion": "1.0.0-rc.4",
+    "topicProtocolVersion": "1.0.0-rc.7",
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d"
+    "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95"
   },
   "cases": [
     {

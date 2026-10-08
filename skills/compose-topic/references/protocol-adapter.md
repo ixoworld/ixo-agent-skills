@@ -8,7 +8,7 @@ The host, not the skill:
 
 - allocates Topic and record IDs;
 - creates or adopts the Matrix root;
-- resolves the Effective Shape with @ixo/topic-protocol 1.0.0-rc.4;
+- resolves the Effective Shape with @ixo/topic-protocol 1.0.0-rc.7;
 - creates body references and hashes;
 - computes the activation-policy digest;
 - appends operations and records;
@@ -154,7 +154,7 @@ Return stable recovery details for partial writes. At minimum retain:
 
 Never report external success without the exact finality-bearing receipt required by the Shape.
 
-## rc.4 evidence admission
+## Evidence admission
 
 Use `topicSetupFieldState` for present fields and field values. Use `applyTopicShapeEvidence` after authenticating the selected operation, its semantic record, its actor, and its capability. Every source must carry the current contract revision, body hash, policy digest, and a reference to verified authority proof. Store the authenticated pre-event context for replay. A current dispute or disabled host command must not rewrite past admitted evidence.
 
@@ -162,7 +162,7 @@ Accepted finality does not mean success. Verification needs status `verified`; C
 
 Read the host's supported commands before suggesting an executable recipe. Preserve unavailable obligations visibly. The current Portal candidate has no complete settlement write-back adapter, so it must not offer a published recipe with a settlement stage as executable. Do not fill this gap with a success-shaped receipt or an unrelated Flow link.
 
-This skill pins an unpublished rc.4 candidate. The source lock includes the actual source commit, tarball bytes, and measured hashes. Do not claim npm publication or replace its provenance with invented registry metadata.
+This skill pins the published rc.7 release. The source lock includes the source commit, the bundled npm tarball, its npm shasum and integrity, and measured hashes. Do not replace its provenance with invented registry metadata.
 
 ### Portal candidate child completion
 

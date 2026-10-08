@@ -1,5 +1,5 @@
 {
-  "version": "3.3.2",
+  "version": "3.3.3",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77703",
   "mode": "preview",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.4",
+    "topicProtocolVersion": "1.0.0-rc.7",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
-    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
+    "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95",
+    "packageShasum": "c1c929923dee7005c3369108a73af37d696cded8",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -54,7 +54,7 @@
       "kind": "agent_task",
       "status": "draft",
       "baseRecipe": "flow",
-      "shapeDigest": "sha256:a8ff0560848f307a4b35fd5a639e526772c2ab3ce54cb92d20c6d46ddf8bccc5",
+      "shapeDigest": "sha256:3df9f3f474ac907da30bae73c207057c2def551b8e8f314e1632872f6bc3dbc9",
       "context": [],
       "overview": {
         "summary": "Capture a bounded expert method, review its delivery, and keep execution in a Flow.",
@@ -78,17 +78,17 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/flow",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
+        "version": "1.0.0-rc.7",
+        "digest": "sha256:7e56c421fc5c7dd996d572fac46bc4fa115824ef5329b82ca5e1f7469b805103"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/agent_task",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:fc14c140eb2849d1c5e424fa4449f5c39264a288cefc309ccdff8615c99724d2"
+        "version": "1.0.0-rc.7",
+        "digest": "sha256:eed3ea8992998843e13b2f73bcb6d4371603468be2c91815f0b74536be169c87"
       }
     ],
-    "shapeDigest": "sha256:a8ff0560848f307a4b35fd5a639e526772c2ab3ce54cb92d20c6d46ddf8bccc5"
+    "shapeDigest": "sha256:3df9f3f474ac907da30bae73c207057c2def551b8e8f314e1632872f6bc3dbc9"
   },
   "contractDraft": {
     "envelope": {
@@ -108,17 +108,17 @@
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/flow",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
+          "version": "1.0.0-rc.7",
+          "digest": "sha256:7e56c421fc5c7dd996d572fac46bc4fa115824ef5329b82ca5e1f7469b805103"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/agent_task",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:fc14c140eb2849d1c5e424fa4449f5c39264a288cefc309ccdff8615c99724d2"
+          "version": "1.0.0-rc.7",
+          "digest": "sha256:eed3ea8992998843e13b2f73bcb6d4371603468be2c91815f0b74536be169c87"
         }
       ],
-      "shapeDigest": "sha256:a8ff0560848f307a4b35fd5a639e526772c2ab3ce54cb92d20c6d46ddf8bccc5",
+      "shapeDigest": "sha256:3df9f3f474ac907da30bae73c207057c2def551b8e8f314e1632872f6bc3dbc9",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77731",
         "text": "Capture the grant assessor's method as a controlled agent delivery workflow.",

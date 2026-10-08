@@ -4,9 +4,9 @@ description: "Compose or refine a reviewable Topic Protocol v4 Draft from a pers
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.3.2"
+  version: "3.3.3"
   category: collaboration
-  topic-protocol: "1.0.0-rc.4"
+  topic-protocol: "1.0.0-rc.7"
   topic-contract-profile: qi.topic-contract-state/v4
   profile-status: normative
 ---
@@ -19,7 +19,7 @@ The skill composes; the Topic Protocol resolves and projects; the Portal present
 
 For ordinary conversation in an existing Topic, answer or ask the next useful question. Do not restart composition for every reply. Use `facilitate-topic` only when already supplied by a bound shared Topic runtime. A private Personal Agent conversation does not establish that binding. Do not search for or delegate to another skill during a Portal composition turn.
 
-This package targets an unpublished rc.4 candidate. The skill publisher validates the bundled artifact and source lock at release time; the host verifies the exact protocol pins when staging. Preserve existing rc.3 Topic pins during refinement.
+This package targets the published `@ixo/topic-protocol@1.0.0-rc.7` release. The skill publisher validates the bundled artifact and source lock at release time; the host verifies the exact protocol pins when staging. Preserve existing rc.3 and rc.4 Topic pins during refinement.
 
 ## Portal conversation path
 
@@ -119,7 +119,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 ### 1. Pin and preflight
 
 - Use the verified bundled release and host-provided tool schemas; release validation belongs to maintainers.
-- Use composition version `3.3.2`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.3.3`, Topic Protocol `1.0.0-rc.7`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Use only tools supplied for this turn. Do not call discovery tools to inventory them.
 - Scan for secrets and excessive sensitive data.
 

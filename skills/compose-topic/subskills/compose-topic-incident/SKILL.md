@@ -47,6 +47,6 @@ Waiting or blocking must name the source and exact target. A failed Action recei
 
 Containment, recovery, and closure are distinct. A recovered service does not complete the Topic until the Shape's completion transition records the authorised closure.
 
-## rc.4 lifecycle contract
+## Lifecycle contract
 
 After resolution work is submitted, require an accepted `ixo.topic.incident-resolution` record with status `verified`, authorized by `topic/verify-resolution` for the completion authority. A failed check keeps verification open. Explicit Topic completion follows verification.

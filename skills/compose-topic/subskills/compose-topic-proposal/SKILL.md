@@ -47,6 +47,6 @@ The Base Recipe supports forming and working. If the use case needs formal verif
 
 Approval of an external Action must be handled by the linked Flow/Action contract, not by embedding effect terms in the Topic body.
 
-## rc.4 lifecycle contract
+## Lifecycle contract
 
 After submitted work, record the governance decision through `topic.record-decision` and `topic/record-decision`. The accepted `ixo.topic.proposal-decision` evidence has status `recorded`. Preserve rejection or deferral in the result. This completes the decision-recording axis without fabricating approval, execution, payment, or Topic completion.
