@@ -93,13 +93,17 @@ async function exists(path) {
   }
 }
 
+/** Working folders that are never part of the skill: the protocol loader unpacks packages into .cache while tests run. */
+const UNTRACKED_DIRECTORIES = new Set([".cache", "node_modules"]);
+
 async function listFiles(directory) {
   const result = [];
   async function visit(current) {
     for (const entry of await readdir(current, { withFileTypes: true })) {
       const path = join(current, entry.name);
-      if (entry.isDirectory()) await visit(path);
-      else result.push(path);
+      if (entry.isDirectory()) {
+        if (!UNTRACKED_DIRECTORIES.has(entry.name)) await visit(path);
+      } else result.push(path);
     }
   }
   await visit(directory);
