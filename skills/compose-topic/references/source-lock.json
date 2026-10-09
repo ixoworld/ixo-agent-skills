@@ -228,7 +228,7 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "a17f5a9d34c12058cec1bc366a2dbaa21ba596a7e4b5fb46893c8b7325cc45d5"
+      "sha256": "9822a0497e9636a5bf06ba56c9a09676a3fb7bcc2ad9b549cbec4cd1f039e361"
     },
     "schemas/topic-contract-draft.schema.json": {
       "sha256": "d423b6bfb5f4c5e8005c29360455f2be5ca6e00e981d940dc908b4e7f7270505"
@@ -252,13 +252,13 @@
       "sha256": "9577337918211589ff58a87428336ad1dddd2aa24b9a8e0d6956453e2969e737"
     },
     "SKILL.md": {
-      "sha256": "4056e7f9d6bef1b8b765cb9e73bd448527a3f64d53d25ef7a76d88516e51c20a"
+      "sha256": "86fd0653ad9df779fb3b1aa4672bdebd79229f6b9259502596c8d969e2dd4423"
     },
     "AUDIT.md": {
-      "sha256": "5128c8d79290e738d5bba64adec145a170a9f36e95723573aae0e5154507101f"
+      "sha256": "0cba930f76ff45c82327c48e5e53d624a5eaf94bdac2ec0489bb17c3af13a012"
     },
     "evals/evals.json": {
-      "sha256": "75807909231159e32d459d553f8260a4e2f08faeaf6b44bd0330e88de648a7eb"
+      "sha256": "91cba519e646bb98f5a9befbf94f08d0704e83ce226cb67db43c74581b63adcb"
     },
     "subskills/compose-topic-project/SKILL.md": {
       "sha256": "3b026a232602b68956193690183cf6fde35c3437e9638fb97feadece7de7e488"
@@ -321,10 +321,10 @@
       "sha256": "ac300710904ad6d0f229cb8e708c90be3089cf3c77fa05059af7467fafe5b464"
     },
     "references/portal-create-template.md": {
-      "sha256": "fd0c8ced130a8eb998db16093991b4543aec8e8f3c9088b0974198e3d5e1c344"
+      "sha256": "19eaf9ef7d71b81392997ebfd0925a1593a8f8a16fcfaca592ba199e37c94e9f"
     },
     "tests/portal-template.test.mjs": {
-      "sha256": "2f3fb33a3c9c1a83be8f3df486801a888372058772aaba06e5e9ce2db5558b8b"
+      "sha256": "617daa482bfa525b6b20ea55d312905c1bcca34841edc331e72bbff4c5feb9b8"
     },
     "references/topic-shape-pins-rc4.json": {
       "sha256": "1d0e3ad72ca6979c64699bef22edde12a4e9308b6424c80f83babeba584989ba"

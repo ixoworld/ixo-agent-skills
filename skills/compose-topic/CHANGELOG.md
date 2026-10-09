@@ -2,6 +2,12 @@
 
 Every change to the skill's behaviour bumps `metadata.version`. The Portal asks the agent for one version by name (`COMPOSE_TOPIC_SKILL_VERSION`), so a new version reaches people only when the Portal's pin moves to it.
 
+## 3.4.1
+
+- The Portal template gives the item shape for `scope.included`, `scope.excluded` and `constraints` (statement objects) and for `assumptions` (a wrapped statement). 3.4.0 showed only empty arrays, so the agent wrote plain strings and the Portal rejected the handoff.
+- The template says to pass no `destinationEvidenceToken`; 3.4.0's agent invented one.
+- The validator rejects plain-text list items and unwrapped assumptions or questions instead of skipping them.
+
 ## 3.4.0
 
 - Pins the published `@ixo/topic-protocol@1.0.0-rc.7` (commit `808c9aa`) instead of the unpublished rc.4 candidate: new Shape pins for all nine Kinds, a new bundled tarball and source lock. rc.4 pins are kept in `references/topic-shape-pins-rc4.json`; existing rc.3 and rc.4 Topics keep their pins during refinement.

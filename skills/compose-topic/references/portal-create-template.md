@@ -9,7 +9,7 @@ Steps:
 3. Take `baseRecipe`, `shapeSources`, and `shapeDigest` for that Kind from the pins block and paste them verbatim into the three places marked `<<PINS.*>>`.
 4. Add the Kind-specific block from the table at the end. Do not add blocks that belong to other Kinds.
 5. Add the people obligations the Kind needs from "People the setup must name". Keep them unless the person named that person.
-6. Call `stage_topic_composition` once with `composition` set to the filled skeleton serialised as **one JSON string** (the text of the object, quotes escaped), not as a nested object: the runtime mangles nested objects inside arrays when they are passed structurally. Then stop.
+6. Call `stage_topic_composition` once with `composition` set to the filled skeleton serialised as **one JSON string** (the text of the object, quotes escaped), not as a nested object: the runtime mangles nested objects inside arrays when they are passed structurally. Pass no `destinationEvidenceToken`: the Portal supplies the room the person chose, and an invented token is not evidence. Then stop.
 
 Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y` ∈ `8 9 a b`. Use a fresh one per placeholder.
 
@@ -17,7 +17,7 @@ Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y
 
 ```json
 {
-  "version": "3.4.0",
+  "version": "3.4.1",
   "compositionId": "urn:uuid:<<UUIDV7>>",
   "mode": "preview",
   "disposition": "create",
@@ -222,6 +222,7 @@ Rules the skeleton already encodes; keep them:
 - `firstTurn.message` is the first message into the shared room: one question that advances the work, or the proposed next step. Never "I created a Draft…".
 - Every `id` is a fresh UUIDv7. The two `<<VERBATIM_INTENT>>` copies must equal `sourceIntent.verbatim` byte for byte.
 - `sourceEventId` is omitted unless the Portal supplied one in the request.
+- `scope.included`, `scope.excluded`, `constraints` and `assumptions` may stay `[]`. Their items are never plain text. A scope or constraint item is a statement: `{ "id": "<<UUIDV7>>", "text": "<<…>>", "provenance": { "basis": "suggested", "acceptance": "proposed", "sourceEventIds": [] } }`, with `"basis": "explicit", "acceptance": "accepted"` only for words the person said. An assumption wraps one: `{ "statement": { "id": …, "text": …, "provenance": … } }`.
 
 ## Pins by Kind
 

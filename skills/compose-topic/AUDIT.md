@@ -1,6 +1,6 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.4.0`
+Audit target: `compose-topic` `3.4.1`
 Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.7`
 Topic Contract profile: `qi.topic-contract-state/v4`
 Pinned protocol commit: `808c9aa4918db9ed8e6e244d5143af1c12a6dd95`
@@ -29,6 +29,10 @@ The audit covers:
 - provenance, disclosure, revision, idempotency, and secret controls;
 - Portal-compatible Draft creation and refinement;
 - schemas, examples, scripts, tests, and behavioral eval coverage.
+
+## 3.4.1 list items and destination token
+
+A live Portal run of 3.4.0 failed staging: the template showed `scope`, `constraints` and `assumptions` as empty arrays without an item shape, so the agent wrote plain strings, and it passed an invented `destinationEvidenceToken`. The template now gives each item's exact shape and forbids the token, and the validator rejects plain-text items (`STATEMENT_ITEM`) and unwrapped assumptions or questions (`WRAPPED_STATEMENT_ITEM`), which it previously skipped silently.
 
 ## 3.4.0 Topic Protocol rc.7
 
