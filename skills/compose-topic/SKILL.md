@@ -4,7 +4,7 @@ description: "Compose or refine a reviewable Topic Protocol v4 Draft from a pers
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.4.0"
+  version: "3.4.1"
   category: collaboration
   topic-protocol: "1.0.0-rc.7"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -120,7 +120,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 ### 1. Pin and preflight
 
 - Use the verified bundled release and host-provided tool schemas; release validation belongs to maintainers.
-- Use composition version `3.4.0`, Topic Protocol `1.0.0-rc.7`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.4.1`, Topic Protocol `1.0.0-rc.7`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Use only tools supplied for this turn. Do not call discovery tools to inventory them.
 - Scan for secrets and excessive sensitive data.
 

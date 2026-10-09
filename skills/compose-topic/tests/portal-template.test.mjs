@@ -109,6 +109,24 @@ test("a named owner and acceptor replace their obligations", async () => {
   assert.ok(validateComposition(composition).some((item) => item.code === "OWNER_ID"));
 });
 
+test("scope, constraints and assumptions take statement objects, never plain text", async () => {
+  const { skeleton, pins, people } = await templateBlocks();
+  const statement = (seed, text) => ({ id: uuidv7(seed), text, provenance: { basis: "suggested", acceptance: "proposed", sourceEventIds: [] } });
+  const composition = withPeople(fill(skeleton, pins, "proposal"), people, peopleFor("proposal"));
+  const semantic = composition.contractDraft.semantic;
+  semantic.scope = { included: [statement(201, "Payroll runs")], excluded: [statement(202, "Benefits")] };
+  semantic.constraints = [statement(203, "No gap in salaries")];
+  semantic.assumptions = [{ statement: statement(204, "Current contract ends in March") }];
+  assert.deepEqual(validateComposition(composition), []);
+  semantic.scope.included = ["Payroll runs"];
+  semantic.constraints = ["No gap in salaries"];
+  semantic.assumptions = [statement(205, "Current contract ends in March")];
+  const codes = validateComposition(composition).map((item) => `${item.code} ${item.path}`);
+  assert.ok(codes.includes("STATEMENT_ITEM /contractDraft/semantic/scope/included/0"));
+  assert.ok(codes.includes("STATEMENT_ITEM /contractDraft/semantic/constraints/0"));
+  assert.ok(codes.includes("WRAPPED_STATEMENT_ITEM /contractDraft/semantic/assumptions/0"));
+});
+
 test("an ongoing Discussion needs an owner but no acceptor", async () => {
   const { skeleton, pins, people } = await templateBlocks();
   const composition = withPeople(fill(skeleton, pins, "discussion"), people, ["setup.owner"]);

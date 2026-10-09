@@ -33,7 +33,7 @@ const DIGEST = /^sha256:[0-9a-f]{64}$/u;
 const COMMIT = "808c9aa4918db9ed8e6e244d5143af1c12a6dd95";
 const PACKAGE_SHASUM = "c1c929923dee7005c3369108a73af37d696cded8";
 const PROTOCOL_VERSION = "1.0.0-rc.7";
-const COMPOSITION_VERSION = "3.4.0";
+const COMPOSITION_VERSION = "3.4.1";
 const MATRIX_USER = /^@[^:\s]+:\S+$/u;
 // rc.7 confirm-setup gates: who does the work and who accepts the result must be named before anyone confirms the setup.
 const OWNER_KINDS = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
@@ -470,6 +470,16 @@ function validateContract(value, findings) {
   }
   for (const [entry, path] of repeatableEntries(semantic)) {
     add(findings, ENTRY.test(entry.id ?? ""), "ENTRY_ID", `${path}/id`, "must be UUIDv7");
+  }
+  for (const [name, values] of [["scope/included", semantic?.scope?.included], ["scope/excluded", semantic?.scope?.excluded], ["constraints", semantic?.constraints]]) {
+    for (const [index, item] of (values ?? []).entries()) {
+      add(findings, isObject(item) && typeof item.text === "string", "STATEMENT_ITEM", `/contractDraft/semantic/${name}/${index}`, "must be a statement object { id, text, provenance }, not plain text");
+    }
+  }
+  for (const [name, values] of [["assumptions", semantic?.assumptions], ["questions", semantic?.questions]]) {
+    for (const [index, item] of (values ?? []).entries()) {
+      add(findings, isObject(item?.statement), "WRAPPED_STATEMENT_ITEM", `/contractDraft/semantic/${name}/${index}`, "must wrap its statement: { statement: { id, text, provenance } }");
+    }
   }
 
   add(findings, semantic?.outcome?.status !== "achieved" || typeof semantic?.outcome?.outcomeRecordId === "string", "OUTCOME_RECORD", "/contractDraft/semantic/outcome/outcomeRecordId", "an achieved outcome requires an accepted outcome record");
