@@ -72,6 +72,7 @@ const EXPECTED_PACKAGE_GIT_HEAD = "808c9aa4918db9ed8e6e244d5143af1c12a6dd95";
 const EXPECTED_PACKAGE_SHASUM = "c1c929923dee7005c3369108a73af37d696cded8";
 const EXPECTED_PACKAGE_INTEGRITY = "sha512-IpDt3g2OHDTUk2ipG5cn7fMHnn1Oy7jAL+rquiLJpD7RqKafkN5XSmdhfT2iEQvD0crj3lv/8TjyN9v2+4cv+A==";
 const TEXT_EXTENSIONS = new Set([".md", ".json", ".mjs", ".yaml", ".yml"]);
+const IGNORED_DIRECTORIES = new Set([".cache", "node_modules"]);
 const ACTUAL_SECRET_PATTERNS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
   /\bsk-[A-Za-z0-9_-]{32,}\b/u,
@@ -108,6 +109,8 @@ async function listFiles(directory) {
   async function visit(current) {
     for (const entry of await readdir(current, { withFileTypes: true })) {
       const path = join(current, entry.name);
+      // Tests unpack the protocol into .cache while the audit runs; it is scratch space, not part of the skill.
+      if (entry.isDirectory() && IGNORED_DIRECTORIES.has(entry.name)) continue;
       if (entry.isDirectory()) await visit(path);
       else result.push(path);
     }
