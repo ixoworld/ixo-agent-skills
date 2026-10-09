@@ -41,7 +41,7 @@ The first canvas should put the intended answer first, then the research frame, 
 
 ## Smallest setup questions
 
-Ask the primary question, the expected answer or brief, who will review the answer, and who must confirm the setup. The answer reviewer, setup confirmer, researcher, and Topic completion authority may be different people; leave each unresolved unless supplied.
+Ask the primary question, the expected answer or brief, who researches it, who will review the answer, and who must confirm the setup. The answer reviewer, setup confirmer, researcher, and Topic completion authority may be different people; leave each unresolved unless supplied.
 
 ## Evidence and completion
 
@@ -49,6 +49,8 @@ A summary is not verified merely because an agent produced it. Preserve citation
 
 An answered question or verified brief still requires the Shape's Topic completion transition.
 
-## rc.4 lifecycle contract
+## rc.7 lifecycle contract
+
+Before anyone can confirm the setup it must name the owner who researches the answer (`ownerId`) and who reviews and accepts it (`completion.acceptanceAuthorityIds`). Keep each one the person has not named visible as `setup.owner` or `setup.answer-reviewer`.
 
 After work submission, `topic.record-verification` requires an accepted `ixo.topic.answer-acceptance` record with status `accepted` from the assigned completion authority using `topic/accept-answer`. A published recipe with a verification axis first requires source verification through `ixo.evaluation` with status `verified`. Both axes must finish before explicit Topic completion.

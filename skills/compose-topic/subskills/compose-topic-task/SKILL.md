@@ -40,9 +40,11 @@ The first canvas should show the outcome, the next milestone or work breakdown, 
 
 ## Smallest setup questions
 
-Ask for the intended result, the person responsible for it, the completion rule, and who must confirm the setup. Ask timing, review, expiry, and dispute questions only when the use case calls for them. Do not turn the owner into the confirmer or dispute resolver unless the person explicitly selects that same actor for both responsibilities.
+Ask for the intended result, the person responsible for it, the completion rule, who accepts the result, and who must confirm the setup. Ask timing, review, expiry, and dispute questions only when the use case calls for them. Do not turn the owner into the confirmer or dispute resolver unless the person explicitly selects that same actor for both responsibilities.
 
 ## Progression
+
+Before anyone can confirm the setup it must name the owner who does the work (`ownerId`) and who accepts the result (`completion.acceptanceAuthorityIds`). Keep each one the person has not named visible as `setup.owner` or `setup.acceptor`.
 
 Setup must be confirmed before `start-work` becomes legal. Confirmation permits progression; it is not mutual agreement. Work submission is evidence for the work axis, not Topic completion. Completion still requires the Shape's `complete-topic` transition.
 

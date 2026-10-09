@@ -39,7 +39,7 @@ Keep unresolved reviewers and decision authorities as suggestions. A role name d
 
 ## Smallest setup questions
 
-Ask what will be proposed, who is responsible for producing it, who must confirm the Topic setup, and who has the separate authority to approve or reject the proposal. If mutual agreement is actually required, ask for signatories independently and only for a team or client Topic.
+Ask what will be proposed, who is responsible for producing it, who accepts the result, who must confirm the Topic setup, and who has the separate authority to approve or reject the proposal. If mutual agreement is actually required, ask for signatories independently and only for a team or client Topic.
 
 ## Progression
 
@@ -47,6 +47,8 @@ The Base Recipe supports forming and working. If the use case needs formal verif
 
 Approval of an external Action must be handled by the linked Flow/Action contract, not by embedding effect terms in the Topic body.
 
-## rc.4 lifecycle contract
+## rc.7 lifecycle contract
+
+Before anyone can confirm the setup it must name the owner who produces the proposal (`ownerId`) and who accepts the result and closes the Topic (`completion.acceptanceAuthorityIds`). Neither is the decision authority. Keep each one the person has not named visible as `setup.owner` or `setup.acceptor`.
 
 After submitted work, record the governance decision through `topic.record-decision` and `topic/record-decision`. The accepted `ixo.topic.proposal-decision` evidence has status `recorded`. Preserve rejection or deferral in the result. This completes the decision-recording axis without fabricating approval, execution, payment, or Topic completion.

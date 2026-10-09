@@ -1,5 +1,5 @@
 {
-  "version": "3.3.2",
+  "version": "3.4.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77704",
   "mode": "preview",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.4",
+    "topicProtocolVersion": "1.0.0-rc.7",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
-    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
+    "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95",
+    "packageShasum": "c1c929923dee7005c3369108a73af37d696cded8",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -54,7 +54,7 @@
       "kind": "question",
       "status": "draft",
       "baseRecipe": "research",
-      "shapeDigest": "sha256:12dce5300689c2966e9de6ea5f71dbffe48c061405fecd5bc01e9d0a86a42804",
+      "shapeDigest": "sha256:30622d1a3c2870e489c5c974e90dffc317c326bd680a8df291faff9b47ec153c",
       "context": [],
       "overview": {
         "summary": "Research accessible measurement methods, costs, constraints, and evidence quality.",
@@ -78,17 +78,17 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/research",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:eb13629d2118b223ab03ddcc52fc6fd94e70c646552de0a2cce01f2615e06075"
+        "version": "1.0.0-rc.7",
+        "digest": "sha256:1735d134b0c18200cca685967bd46463bcb5f4ebcb9de12ed850e2974d76fca2"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/question",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b"
+        "version": "1.0.0-rc.7",
+        "digest": "sha256:30ca5de2546a472e7462ef66bb8dd9fd7e7bba05d645798d16fb4331a4478c5d"
       }
     ],
-    "shapeDigest": "sha256:12dce5300689c2966e9de6ea5f71dbffe48c061405fecd5bc01e9d0a86a42804"
+    "shapeDigest": "sha256:30622d1a3c2870e489c5c974e90dffc317c326bd680a8df291faff9b47ec153c"
   },
   "contractDraft": {
     "envelope": {
@@ -108,17 +108,17 @@
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/research",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:eb13629d2118b223ab03ddcc52fc6fd94e70c646552de0a2cce01f2615e06075"
+          "version": "1.0.0-rc.7",
+          "digest": "sha256:1735d134b0c18200cca685967bd46463bcb5f4ebcb9de12ed850e2974d76fca2"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/question",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b"
+          "version": "1.0.0-rc.7",
+          "digest": "sha256:30ca5de2546a472e7462ef66bb8dd9fd7e7bba05d645798d16fb4331a4478c5d"
         }
       ],
-      "shapeDigest": "sha256:12dce5300689c2966e9de6ea5f71dbffe48c061405fecd5bc01e9d0a86a42804",
+      "shapeDigest": "sha256:30622d1a3c2870e489c5c974e90dffc317c326bd680a8df291faff9b47ec153c",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77741",
         "text": "Research whether smallholder farmers can access affordable soil carbon measurement in Kenya.",
@@ -190,6 +190,15 @@
         "responsibility": "unassigned",
         "priority": 400,
         "unlocks": "The answer can be reviewed and the Topic can progress toward completion."
+      },
+      {
+        "code": "setup.owner",
+        "path": "/ownerId",
+        "prompt": "Choose who is responsible for the result.",
+        "purpose": "The responsible person starts the work and records its result.",
+        "responsibility": "unassigned",
+        "priority": 400,
+        "unlocks": "The setup can be confirmed and the work can start."
       },
       {
         "code": "setup.editors",

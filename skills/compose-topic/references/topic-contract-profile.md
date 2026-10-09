@@ -4,8 +4,8 @@ This reference translates the pinned Topic Protocol release candidate into rules
 
 ## Pinned profile
 
-- package: `@ixo/topic-protocol@1.0.0-rc.4`
-- git source: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
+- package: `@ixo/topic-protocol@1.0.0-rc.7`
+- git source: `808c9aa4918db9ed8e6e244d5143af1c12a6dd95`
 - root version: `4`
 - contract body version: `4`
 - Matrix state profile: `qi.topic-contract-state/v4`
@@ -47,6 +47,8 @@ The activation policy keeps authority choices explicit:
 
 A Draft may omit any of these choices. It cannot become effective until Kind-required content and activation fields resolve, confirmation subjects resolve to actors, the required revision-bound confirmations exist, optional configured assent is satisfied, and configured time gates pass. Lifecycle timing and dispute authority are optional; an open dispute without a resolver projects a blocking resolver-assignment obligation.
 
+Since rc.7 a setup cannot be confirmed until it names who takes the Topic's steps: `ownerId` (who does the work) and `completion.acceptanceAuthorityIds` (who accepts the result) for every Kind except Project, and `project.lead` and `project.closer` for a Project. A Question's acceptors review its answer; an ongoing Discussion needs no acceptor. Each unnamed one stays a visible setup obligation; none is ever taken from the creator, owner, or room membership.
+
 `completion` carries only `definition` and `acceptanceAuthorityIds`. Never emit `completion.requiresOutcomeRecord` or `completion.reviewAt`: the Portal's Draft review does not show them, so it rejects any composition that sets them; they are set later by an authenticated Portal edit.
 
 Authorship is provenance only. Creator, owner, membership, role labels, and completion authority never grant setup confirmation. Confirmation permits progression and must never be called agreement. Optional assent is separate and is the only basis for signatory or agreement language.
@@ -57,7 +59,7 @@ An open dispute suppresses consequential moves. Resolution requires its own auth
 
 ## Fields the Portal reviews
 
-The Portal opens a Draft only for fields its editor can show. Compose these and nothing else in `contractDraft.semantic`: `kindRef`, `workingMode`, `baseRecipe`, `topicRecipeRef (optional)`, `shapeSources`, `shapeDigest`, `claimBinding (optional)`, `activationPolicy`, `assentPolicy (optional)`, `tags`, `appearance`, `intent`, `outcome (statement, status, target)`, `completion (definition, acceptanceAuthorityIds)`, `ownerId`, `project`, `scope`, `constraints`, `assumptions`, `questions`, `risks`, `decision (question, criteria as strings, method, governanceProposal)`, `fieldProvenance`. Never emit `participants`, `roles`, `plan`, `attachments`, `outcome.successCriteria`, `decision.options`, `completion.requiresOutcomeRecord`, `completion.reviewAt`, `kindProfile`, `kindResource`, `locale`, `timezone`, `temporalMode`: the Portal rejects the whole handoff when any of them is present, even empty.
+The Portal opens a Draft only for fields its editor can show. Compose these and nothing else in `contractDraft.semantic`: `kindRef`, `workingMode`, `baseRecipe`, `topicRecipeRef (optional)`, `shapeSources`, `shapeDigest`, `claimBinding (optional)`, `activationPolicy`, `assentPolicy (optional)`, `tags`, `appearance`, `intent`, `outcome (statement, status, target)`, `completion (definition, acceptanceAuthorityIds)`, `ownerId`, `project`, `scope`, `constraints`, `assumptions`, `questions`, `risks`, `decision (question, criteria as strings, method, governanceProposal)`, `temporalMode (Discussion only)`, `fieldProvenance`. Never emit `participants`, `roles`, `plan`, `attachments`, `outcome.successCriteria`, `decision.options`, `completion.requiresOutcomeRecord`, `completion.reviewAt`, `kindProfile`, `kindResource`, `locale`, `timezone`: the Portal rejects the whole handoff when any of them is present, even empty.
 
 ## Kind and Base Recipe
 

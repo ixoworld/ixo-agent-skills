@@ -61,6 +61,8 @@ If the Flow adapter is unavailable, present the `effecting` stage and a Flow han
 
 The Portal derives the Now phase and legal moves from the resolved Shape. Suggested agent activation is never a viewer-assigned legal transition. Do not use room membership or an agent label as authority.
 
-## rc.4 lifecycle contract
+## rc.7 lifecycle contract
+
+Before anyone can confirm the setup it must name the person responsible for the result (`ownerId`) and who accepts the result (`completion.acceptanceAuthorityIds`); the agent is neither. Keep each one the person has not named visible as `setup.owner` or `setup.acceptor`.
 
 Verify that a matching executable Flow or agent binding is available before describing agent execution as ready. The base Kind does not itself run an agent. A published recipe with delivery stages adds verification, decision, external Action, and successful-receipt obligations. A failed receipt enables a reviewed retry with a new request identity.

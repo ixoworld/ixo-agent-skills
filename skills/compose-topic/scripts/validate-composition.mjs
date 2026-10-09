@@ -30,10 +30,23 @@ const HOSTNAME = /^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?
 const TOPIC = /^ixo:topic:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const ENTRY = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
-const COMMIT = "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d";
-const PACKAGE_SHASUM = "b2d9b88b01c4fc3a16586845c96c369de0a96b9a";
-const PROTOCOL_VERSION = "1.0.0-rc.4";
-const COMPOSITION_VERSION = "3.3.2";
+const COMMIT = "808c9aa4918db9ed8e6e244d5143af1c12a6dd95";
+const PACKAGE_SHASUM = "c1c929923dee7005c3369108a73af37d696cded8";
+const PROTOCOL_VERSION = "1.0.0-rc.7";
+const COMPOSITION_VERSION = "3.4.0";
+const MATRIX_USER = /^@[^:\s]+:\S+$/u;
+// rc.7 confirm-setup gates: who does the work and who accepts the result must be named before anyone confirms the setup.
+const OWNER_KINDS = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
+const ACCEPTOR_OBLIGATION = {
+  task: "setup.acceptor",
+  agent_task: "setup.acceptor",
+  proposal: "setup.acceptor",
+  evaluation: "setup.acceptor",
+  claims: "setup.acceptor",
+  incident: "setup.acceptor",
+  discussion: "setup.acceptor",
+  question: "setup.answer-reviewer",
+};
 const PROFILE = "qi.topic-contract-state/v4";
 const KINDS = new Set(["project", "task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);
 const ROOM_TARGETS = new Set(ROOM_SCHEMA.properties.target.enum);
@@ -476,6 +489,7 @@ function validateContract(value, findings) {
   }
   validateSetupPolicy(draft, semantic, findings);
   validateProject(draft, semantic, kind, findings);
+  validatePeople(draft, semantic, kind, findings);
   const publication = draft.publication;
   if (["confidential", "restricted"].includes(publication?.dataClassification)) {
     add(findings, publication.disclosure === "reference-only", "SENSITIVE_INLINE", "/contractDraft/publication/disclosure", "sensitive contracts must be reference-only");
@@ -566,6 +580,32 @@ function validateProject(draft, semantic, kind, findings) {
     add(findings, child.kind === undefined || acceptedField(path), "PROJECT_CHILD_KIND_PROVENANCE", `/contractDraft/semantic/fieldProvenance${path}`, "a selected Project child Kind requires explicit or contextual accepted provenance");
   }
   add(findings, project?.methodManifestRef === undefined || acceptedField("/project/methodManifestRef"), "PROJECT_METHOD_MANIFEST_PROVENANCE", "/contractDraft/semantic/fieldProvenance/project/methodManifestRef", "a method manifest binding requires an immutable supplied or verified reference with accepted provenance");
+}
+
+function validatePeople(draft, semantic, kind, findings) {
+  const provenance = semantic?.fieldProvenance ?? {};
+  const obligationCodes = new Set((draft.setupObligations ?? []).map((item) => item?.code));
+  const accepted = (path) => isObject(provenance[path]) && ACCEPTABLE_ACCEPTED_BASIS.has(provenance[path].basis) && provenance[path].acceptance === "accepted";
+  const acceptors = semantic?.completion?.acceptanceAuthorityIds;
+  if (semantic?.ownerId !== undefined) {
+    add(findings, MATRIX_USER.test(semantic.ownerId), "OWNER_ID", "/contractDraft/semantic/ownerId", "must be one Matrix user ID");
+  }
+  if (acceptors !== undefined) {
+    add(findings, Array.isArray(acceptors) && acceptors.length > 0 && acceptors.every((id) => MATRIX_USER.test(id)), "ACCEPTOR_IDS", "/contractDraft/semantic/completion/acceptanceAuthorityIds", "must list Matrix user IDs");
+  }
+  if (OWNER_KINDS.has(kind)) {
+    const named = typeof semantic?.ownerId === "string" && accepted("/ownerId");
+    add(findings, named || obligationCodes.has("setup.owner"), "OWNER_OBLIGATION", "/contractDraft/setupObligations", "who does the work must stay visible as setup.owner until the person names them");
+  }
+  const acceptorCode = ACCEPTOR_OBLIGATION[kind];
+  const ongoing = kind === "discussion" && semantic?.temporalMode === "ongoing";
+  if (acceptorCode !== undefined && !ongoing) {
+    const named = Array.isArray(acceptors) && acceptors.length > 0 && accepted("/completion/acceptanceAuthorityIds");
+    add(findings, named || obligationCodes.has(acceptorCode), "ACCEPTOR_OBLIGATION", "/contractDraft/setupObligations", `who accepts the result must stay visible as ${acceptorCode} until the person names them`);
+  }
+  if (semantic?.temporalMode !== undefined) {
+    add(findings, kind === "discussion", "TEMPORAL_MODE_KIND", "/contractDraft/semantic/temporalMode", "only a Discussion can be ongoing");
+  }
 }
 
 function validateCanvas(value, findings) {

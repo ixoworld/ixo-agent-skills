@@ -37,7 +37,7 @@ Risks are Incident-only and Impact-only. Use description, status, optional Impac
 
 ## Smallest setup questions
 
-Ask what failed, who is responsible for the response, what proves containment and recovery, who confirms the setup, and who can resolve disputes. Urgency may shorten the questions, but it never permits invented authority or an invented expiry.
+Ask what failed, who is responsible for the response, what proves containment and recovery, who accepts the resolution, who confirms the setup, and who can resolve disputes. Urgency may shorten the questions, but it never permits invented authority or an invented expiry.
 
 ## Urgency and authority
 
@@ -47,6 +47,8 @@ Waiting or blocking must name the source and exact target. A failed Action recei
 
 Containment, recovery, and closure are distinct. A recovered service does not complete the Topic until the Shape's completion transition records the authorised closure.
 
-## rc.4 lifecycle contract
+## rc.7 lifecycle contract
+
+Before anyone can confirm the setup it must name the response owner (`ownerId`) and who accepts the resolution (`completion.acceptanceAuthorityIds`). Keep each one the person has not named visible as `setup.owner` or `setup.acceptor`.
 
 After resolution work is submitted, require an accepted `ixo.topic.incident-resolution` record with status `verified`, authorized by `topic/verify-resolution` for the completion authority. A failed check keeps verification open. Explicit Topic completion follows verification.

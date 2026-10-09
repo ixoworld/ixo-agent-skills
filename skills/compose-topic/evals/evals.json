@@ -1,11 +1,11 @@
 {
-  "version": "3.3.2",
+  "version": "3.4.0",
   "skill": "compose-topic",
   "protocol": {
-    "topicProtocolVersion": "1.0.0-rc.4",
+    "topicProtocolVersion": "1.0.0-rc.7",
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d"
+    "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95"
   },
   "cases": [
     {
@@ -769,6 +769,43 @@
       "must": [
         "Do not derive confirmation or dispute authority from ownership.",
         "Keep the policy choices unresolved until explicitly selected and verified."
+      ]
+    },
+    {
+      "id": "setup-names-owner-and-acceptor",
+      "input": "Draft a proposal to switch our payroll provider; I will put it together.",
+      "context": "The requester's Matrix user ID is supplied. Nobody named who accepts the result.",
+      "expected": {
+        "kind": "proposal",
+        "baseRecipe": "proposal",
+        "setupObligations": [
+          "setup.acceptor"
+        ]
+      },
+      "must": [
+        "Name the requester as ownerId with explicit, accepted provenance because they said they will do the work.",
+        "Keep setup.acceptor visible: who accepts the result is not the requester by default.",
+        "Do not treat the owner or acceptor as the decision authority or setup confirmer."
+      ]
+    },
+    {
+      "id": "discussion-ongoing",
+      "input": "Open a standing discussion where the team keeps sharing customer feedback; it never really ends.",
+      "expected": {
+        "kind": "discussion",
+        "baseRecipe": "discussion",
+        "templateFields": [
+          "completion",
+          "temporalMode"
+        ],
+        "setupObligations": [
+          "setup.owner"
+        ]
+      },
+      "must": [
+        "Set temporalMode to ongoing.",
+        "Do not add setup.acceptor: an ongoing Discussion never closes.",
+        "Keep setup.owner visible until someone is named to facilitate it."
       ]
     },
     {

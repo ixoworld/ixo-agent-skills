@@ -33,6 +33,8 @@ test("a brief, a wrong owner and an unknown command are refused before the resol
   assert.ok(staticIssues(recipe, { did: DID, version: "1.0.0", kind: "question" }).some((issue) => issue.includes("baseRecipe must be research")));
   const flying = { ...recipe, shape: { ...recipe.shape, transitions: [{ ...recipe.shape.transitions[0], command: "topic.fly" }] } };
   assert.ok(staticIssues(flying, { did: DID, version: "1.0.0" }).some((issue) => issue.includes("has no Portal handler")));
+  const recordingRun = { ...recipe, shape: { ...recipe.shape, transitions: [{ ...recipe.shape.transitions[0], command: "topic.record-flow-run" }] } };
+  assert.ok(!staticIssues(recordingRun, { did: DID, version: "1.0.0" }).some((issue) => issue.includes("has no Portal handler")));
 });
 
 test("a transition that names an axis the merged Shape lacks is refused by the resolver", async (t) => {

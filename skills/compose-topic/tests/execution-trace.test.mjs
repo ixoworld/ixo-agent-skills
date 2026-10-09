@@ -41,6 +41,11 @@ test("allows one stale-revision refresh without recreating the Topic", () => {
   assert.equal(validateTrace(trace(calls, { requestMode: "refine" })).valid, true);
   assert.ok(codes(trace([staged()], { requestMode: "refine" })).includes("RECREATED_TOPIC"));
 });
+test("counts read_open_topic as a read and update_topic as an edit", () => {
+  assert.ok(codes(trace([call("read_open_topic"), call("read_topic")], { requestMode: "refine" })).includes("REPEATED_TOPIC_READ"));
+  assert.ok(codes(trace([call("update_topic")], { requestMode: "continue" })).includes("UNREQUESTED_EDIT"));
+  assert.equal(validateTrace(trace([call("read_open_topic"), call("update_topic", {}, { status: "updated", success: true })], { requestMode: "refine" })).valid, true);
+});
 test("rejects duplicate reference loading, repository checks, and unverified editor claims", () => {
   const resource = { ...call("read_file"), resource: "compose-topic/SKILL.md" };
   assert.ok(codes(trace([resource, resource])).includes("REPEATED_RESOURCE_LOAD"));

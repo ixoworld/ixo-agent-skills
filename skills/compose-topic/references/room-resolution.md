@@ -29,7 +29,8 @@ Do not loop on a failed entity-profile request. Retry once only when the host ma
 
 | Tool | Correct use | Boundary |
 | --- | --- | --- |
-| `list_rooms` | list joined Topic-capable conversation rooms with names and room IDs | use this for room identity; a missing name is not proof that the named Domain has no room |
+| `list_topic_destinations` | list the rooms the person can create a Topic in, with room IDs and short-lived destination tokens; pass `roomId` to verify one exact room | the Portal's composition path offers this instead of `list_rooms` |
+| `list_rooms` | list joined Topic-capable conversation rooms with names and room IDs | not offered during a Portal composition; a missing name is not proof that the named Domain has no room |
 | `findEntity` | resolve a Domain/entity name to bookmark-first DID candidates | names are not unique; one DID is not a room |
 | `getEntityProfileDomain` | confirm the selected entity's type and profile | timeout or success does not establish Domain-to-room membership |
 | `propose_topic` | open a new Topic Draft in one resolved joined room and run its duplicate check | `roomId` is preferred; `roomName` is safe only when it resolves to exactly one joined room |

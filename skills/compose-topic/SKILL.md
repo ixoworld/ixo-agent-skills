@@ -4,9 +4,9 @@ description: "Compose or refine a reviewable Topic Protocol v4 Draft from a pers
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.3.2"
+  version: "3.4.0"
   category: collaboration
-  topic-protocol: "1.0.0-rc.4"
+  topic-protocol: "1.0.0-rc.7"
   topic-contract-profile: qi.topic-contract-state/v4
   profile-status: normative
 ---
@@ -19,15 +19,16 @@ The skill composes; the Topic Protocol resolves and projects; the Portal present
 
 For ordinary conversation in an existing Topic, answer or ask the next useful question. Do not restart composition for every reply. Use `facilitate-topic` only when already supplied by a bound shared Topic runtime. A private Personal Agent conversation does not establish that binding. Do not search for or delegate to another skill during a Portal composition turn.
 
-This package targets an unpublished rc.4 candidate. The skill publisher validates the bundled artifact and source lock at release time; the host verifies the exact protocol pins when staging. Preserve existing rc.3 Topic pins during refinement.
+This package targets the published `@ixo/topic-protocol` 1.0.0-rc.7. The skill publisher validates the bundled artifact and source lock at release time; the host verifies the exact protocol pins when staging. Preserve existing rc.3 and rc.4 Topic pins during refinement.
 
 ## Portal conversation path
 
 Use `requestMode` to choose the work before loading references. The Portal's `mode` describes the output format; `requestMode: continue` is conversation, not an instruction to stage an edit.
 
 - `create` or `clone`: preserve the captured source intent, select one Kind, compose one useful Draft, and call `stage_topic_composition` once when the host supplies a captured creation request. For a clone with an edit session, use `stage_topic_changes` to preserve the existing template draft and Kind instead. A clone supplies a template, not approval to copy assignments or authority. Ask one question first only when the clarification rule requires it.
-- `continue`: address the supplied missing detail first. If the question is already clear, ask it without reading or staging anything. Otherwise call `read_topic` once for the supplied Topic ID. Do not recreate the Topic or stage changes until the person supplies a concrete change.
-- `refine`: preserve the supplied unsaved draft. Use the current edit session and revision bindings; call `read_topic` only for missing or stale bindings. Merge the requested changes with the unsaved draft rather than replacing it with the persisted body. Stage through `stage_topic_changes` using its actual schema.
+- `continue`: address the supplied missing detail first. If the question is already clear, ask it without reading or staging anything. Otherwise read once: `read_open_topic` when the person asked from the Topic editor, `read_topic` for a supplied Topic ID. Do not recreate the Topic or stage changes until the person supplies a concrete change.
+- `refine`: preserve the supplied unsaved draft. Use the current edit session and revision bindings; read only for missing or stale bindings. Merge the requested changes with the unsaved draft rather than replacing it with the persisted body. When `update_topic` is available, commit an ordinary wording change the person asked for on the Topic they have open with it (title, purpose, scope, constraints, assumptions, questions, an incident's risks). Stage everything else through `stage_topic_changes` using its actual schema; `set-people` takes Matrix user IDs from the read's people.
+- When the tools offer `start_topic_composition` but not `stage_topic_composition`, there is no captured creation request: call `start_topic_composition` once with the person's own words and stop. The Portal opens its composer and returns with a request.
 
 When the person chose a room in the Portal and the active staging tool supports host completion, use `routing.roomResolution: { target: "current-room", status: "unresolved", evidence: [] }` and omit `destinationEvidenceToken`. Keep `execution.commitEligible: false`, `contractDraft.readiness: requires-host-fields`, and the unresolved host fields explicit. Do not add a room blocker solely for this supported host completion. Preserve genuine permission, confidentiality, Shape, or other blockers. The host verifies and fills the destination before opening the Draft; this is not authorization to write Matrix state.
 
@@ -39,7 +40,7 @@ Treat tool definitions already in context as the capability inventory. Load this
 
 After staging, return control to the person. Report the editor as open only when the host supplies the request-correlated render receipt. A pending approval, missing receipt, timeout, duplicate choice, or unresolved question is a stopping point, not a reason to poll or stage again.
 
-For an actionable validation error, make at most one targeted repair and retry with changed input. A stale revision permits one fresh `read_topic` and one rebased proposal; an expired destination token permits one exact-room lookup and one retry. Never repeat an unchanged failed call or remove meaningful content to pass validation. If the repair fails, explain the remaining issue and stop. Resume only on new user input or a host-delivered result. Never retry an uncertain write as a new operation.
+For an actionable validation error, make at most one targeted repair and retry with changed input. A stale revision permits one fresh read (`read_open_topic` or `read_topic`) and one rebased proposal; an expired destination token permits one exact-room lookup and one retry. Never repeat an unchanged failed call or remove meaningful content to pass validation. If the repair fails, explain the remaining issue and stop. Resume only on new user input or a host-delivered result. Never retry an uncertain write as a new operation.
 
 ## Load the controlled model
 
@@ -119,7 +120,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 ### 1. Pin and preflight
 
 - Use the verified bundled release and host-provided tool schemas; release validation belongs to maintainers.
-- Use composition version `3.3.2`, Topic Protocol `1.0.0-rc.4`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.4.0`, Topic Protocol `1.0.0-rc.7`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Use only tools supplied for this turn. Do not call discovery tools to inventory them.
 - Scan for secrets and excessive sensitive data.
 
@@ -172,7 +173,7 @@ Do not instantiate until the selected Kind can reach the editor or host adapter 
 
 Read the matching sub-skill before producing Kind-specific fields. Its setup questions are a menu for later turns, not a checklist to complete before showing a Draft. Ask at most one useful question at a time. Custom labels must extend exactly one canonical base Kind. `Thread` is a virtual Portal presentation and is never persisted as a Kind.
 
-For a Project, ask only the smallest unresolved questions: what exists when it is done; who leads it; the optional first named milestone; who may close it by accepting remaining risk; and, only when useful, who resolves a contested outcome. Outcome is required for a useful Draft. Lead is required for effectiveness. Closer is required only to enter closing. Never default any of them from creator, owner, room membership, or another authority.
+For a Project, ask only the smallest unresolved questions: what exists when it is done; who leads it; the optional first named milestone; who may close it by accepting remaining risk; and, only when useful, who resolves a contested outcome. Outcome is required for a useful Draft. Lead and closer must both be named before the setup can be confirmed; until then each stays a visible obligation. Never default any of them from creator, owner, room membership, or another authority.
 
 ### 5. Select the recipe source
 
@@ -205,6 +206,8 @@ Keep four decisions separate:
 - `activationPolicy.confirmation`: who must authorize progression, using `any`, `all`, or an explicit threshold;
 - `activationPolicy.dispute`: who may resolve a dispute and the optional Flow/resource process; and
 - optional `assentPolicy`: who must record mutual agreement, only when signatories are explicitly requested.
+
+Topic Protocol rc.7 also refuses to confirm a setup until it names who takes the Topic's steps. Every Kind except Project needs `ownerId`, the person who does the work, and `completion.acceptanceAuthorityIds`, who accepts the result; for a Question they review the answer, and an ongoing Discussion (`temporalMode: ongoing`) needs no acceptor. A Project needs its lead and closer. Fill one only when the person named that person and the request gives their Matrix user ID; otherwise keep it visible as `setup.owner`, `setup.acceptor`, `setup.answer-reviewer`, `setup.project-lead`, or `setup.project-closer`. Never take them from the creator, owner, or room membership.
 
 `activationPolicy.lifecycle.onExpiry` is always `pause-consequential` when lifecycle timing is configured. Omit `effectiveAt`, `reviewAt`, and `expiresAt` unless supplied. A Draft may remain incomplete. Effectiveness requires the Kind's activation fields, resolved editors and confirmation subjects, revision-bound confirmation, optional configured assent, and configured time gates. Lifecycle timing and dispute authority are optional until configured; if a dispute occurs without a resolver, assignment of one becomes a visible blocking obligation.
 
