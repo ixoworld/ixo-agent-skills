@@ -6,7 +6,7 @@
 
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -21,10 +21,16 @@ const PHASES = new Set(["forming", "working", "verifying", "deciding", "effectin
 const COMMANDS = new Set([
   "topic.edit-setup", "topic.confirm-setup", "topic.record-assent", "topic.raise-dispute", "topic.resolve-dispute",
   "topic.start-work", "topic.answer-question", "topic.change-due-date", "topic.unblock", "topic.record-outcome",
-  "topic.complete", "topic.close-project", "topic.request-action", "topic.confirm-action",
+  "topic.complete", "topic.close-project", "topic.request-action", "topic.confirm-action", "topic.record-flow-run",
   "topic.record-verification", "topic.record-decision", "topic.record-settlement",
 ]);
 const DID = /^did:ixo:entity:[0-9a-f]{32,}$/u;
+// The protocol hashes with @noble/hashes; this node:crypto stand-in keeps the skill free of runtime dependencies.
+const NOBLE_HASHES_SHIM = {
+  "package.json": `${JSON.stringify({ name: "@noble/hashes", type: "module" })}\n`,
+  "sha2.js": 'import { createHash } from "node:crypto";\nexport const sha256 = (bytes) => new Uint8Array(createHash("sha256").update(bytes).digest());\n',
+  "utils.js": 'export const bytesToHex = (bytes) => Buffer.from(bytes).toString("hex");\nexport const utf8ToBytes = (text) => new TextEncoder().encode(text);\n',
+};
 
 const isRecord = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 
@@ -37,6 +43,9 @@ export async function loadProtocol() {
   await mkdir(join(ROOT, ".cache"), { recursive: true });
   const temporary = await mkdtemp(join(ROOT, ".cache", "protocol-"));
   execFileSync("tar", ["-xzf", lock.topicProtocol.package.artifact, "-C", relative(ROOT, temporary)], { cwd: ROOT });
+  const shim = join(temporary, "package", "node_modules", "@noble", "hashes");
+  await mkdir(shim, { recursive: true });
+  for (const [name, content] of Object.entries(NOBLE_HASHES_SHIM)) await writeFile(join(shim, name), content);
   const resolver = await import(pathToFileURL(join(temporary, "package/dist/src/shapes/resolver.js")).href);
   const canonical = await import(pathToFileURL(join(temporary, "package/dist/src/shapes/canonical.js")).href);
   return { ...resolver, ...canonical, dispose: () => rm(temporary, { recursive: true, force: true }) };

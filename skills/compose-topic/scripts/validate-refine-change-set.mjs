@@ -14,7 +14,22 @@ const TEXT_PATHS = new Set([
   "/intent/text",
   "/outcome/statement/text",
   "/completion/definition",
+  "/decision/governanceProposal",
+  "/decision/question",
+  "/decision/method",
+  "/claimBinding/entityDid",
+  "/claimBinding/collectionId",
 ]);
+const PEOPLE_PATHS = new Set([
+  "/ownerId",
+  "/project/lead",
+  "/project/closer",
+  "/completion/acceptanceAuthorityIds",
+  "/roles/worker/assignees",
+  "/roles/evaluator/assignees",
+  "/roles/decision-authority/assignees",
+]);
+const MATRIX_USER = /^@[^:\s]+:\S+$/u;
 const DATE_PATHS = new Set(["/outcome/target/value"]);
 const isObject = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -115,6 +130,21 @@ export function validateRefineChangeSet(value) {
         "TEXT_VALUE",
         `${path}/value`,
         "must be text",
+      );
+    } else if (change.op === "set-people") {
+      add(
+        PEOPLE_PATHS.has(change.path),
+        "PEOPLE_PATH",
+        `${path}/path`,
+        "is not an editable people path",
+      );
+      add(
+        Array.isArray(change.value) &&
+          change.value.length <= 50 &&
+          change.value.every((id) => typeof id === "string" && MATRIX_USER.test(id)),
+        "PEOPLE_VALUE",
+        `${path}/value`,
+        "must list Matrix user IDs from the Topic's people",
       );
     } else if (change.op === "set-date") {
       add(

@@ -81,12 +81,50 @@
                   "/title",
                   "/intent/text",
                   "/outcome/statement/text",
-                  "/completion/definition"
+                  "/completion/definition",
+                  "/decision/governanceProposal",
+                  "/decision/question",
+                  "/decision/method",
+                  "/claimBinding/entityDid",
+                  "/claimBinding/collectionId"
                 ]
               },
               "value": {
                 "type": "string",
                 "maxLength": 4000
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "op",
+              "path",
+              "value"
+            ],
+            "properties": {
+              "op": {
+                "const": "set-people"
+              },
+              "path": {
+                "enum": [
+                  "/ownerId",
+                  "/project/lead",
+                  "/project/closer",
+                  "/completion/acceptanceAuthorityIds",
+                  "/roles/worker/assignees",
+                  "/roles/evaluator/assignees",
+                  "/roles/decision-authority/assignees"
+                ]
+              },
+              "value": {
+                "type": "array",
+                "maxItems": 50,
+                "items": {
+                  "type": "string",
+                  "pattern": "^@[^:\\s]+:\\S+$"
+                }
               }
             },
             "additionalProperties": false

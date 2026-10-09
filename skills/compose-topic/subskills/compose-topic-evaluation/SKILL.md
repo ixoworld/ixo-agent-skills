@@ -39,7 +39,7 @@ An evaluation result is not automatically a decision, external effect, or Topic 
 
 ## Smallest setup questions
 
-Ask what is being evaluated, which criteria decide whether the evaluation is adequate, who performs or owns the evaluation, who confirms the Topic setup, and who may record any later decision. Do not infer any of these actors from the creator or room membership.
+Ask what is being evaluated, which criteria decide whether the evaluation is adequate, who performs or owns the evaluation, who accepts the result, who confirms the Topic setup, and who may record any later decision. Do not infer any of these actors from the creator or room membership.
 
 ## Evaluation kit boundary
 
@@ -49,6 +49,8 @@ When a claim collection is involved, bind one `entityDid` and one `collectionId`
 
 If the evaluation adapter is unavailable, expose the verification phase and navigate to the linked Flow/resource rather than inventing an evaluation result.
 
-## rc.4 lifecycle contract
+## rc.7 lifecycle contract
+
+Before anyone can confirm the setup it must name the owner who runs the evaluation (`ownerId`) and who accepts the result (`completion.acceptanceAuthorityIds`). Neither grants evaluator or decision authority. Keep each one the person has not named visible as `setup.owner` or `setup.acceptor`.
 
 The standard Evaluation Shape includes an executable verification transition. After work submission, require an accepted `ixo.evaluation` record with status `verified` and independently verified `claim/evaluate` authority. A reviewer label alone does not grant that capability. Failure leaves the verification obligation open.

@@ -24,9 +24,9 @@ supplied or accepted.
 Ask only the smallest unresolved questions:
 
 1. What exists when this is done? This is required for the Draft.
-2. Who is the lead? This is required before setup can become effective.
+2. Who is the lead? This is required before setup can be confirmed.
 3. What first named milestone would count as progress? This is optional.
-4. Who may close the Project by accepting remaining risk? Ask, but never default.
+4. Who may close the Project by accepting remaining risk? This is also required before setup can be confirmed. Ask, but never default.
 5. If the outcome is contested, who resolves it? This is optional until a dispute exists.
 
 The lead maintains the plan and progress narrative, identifies the current
@@ -52,8 +52,9 @@ explicit or contextual accepted field provenance at
 ## Lifecycle and Now
 
 Project lifecycle is `proposed → effective → closing → closed`. Outcome, lead,
-setup confirmation, optional configured assent, and configured time gates must
-pass before work starts. Naming the lead only makes setup reviewable.
+closer, setup confirmation, optional configured assent, and configured time
+gates must pass before work starts. Naming the lead and closer only makes setup
+reviewable.
 
 Use Project-aware Now intent:
 
@@ -83,6 +84,8 @@ Portal resolved a recipe published by a `protocol/topic` domain
 (`resolve_published_recipe`); its `project` block then supplies milestone
 suggestions, child Kinds and entry-points. Nothing is bundled with this skill.
 
-## rc.4 lifecycle contract
+## rc.7 lifecycle contract
+
+Before anyone can confirm the setup it must name both the lead and the closer. Keep each one the person has not named visible as `setup.project-lead` or `setup.project-closer`.
 
 Project milestones, child links, waivers, and blockers are runtime progress. Review them against the authenticated projection. Linking a child does not prove completion. Close review and remaining-risk acceptance are separate steps. A new setup revision resets the checklist and earlier close acceptance.

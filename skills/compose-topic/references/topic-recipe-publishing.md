@@ -12,9 +12,8 @@ never poll, never ask whether the person signed.
 
 ## The file the Portal accepts: `shape.json`
 
-One JSON object of type `TopicRecipeV1` (see
-[topic-shape-pins.json](topic-shape-pins.json) for the built-in five and the
-protocol artifact in [source-lock.json](source-lock.json)), plus a `draft`
+One JSON object of type `TopicRecipeV1` (the protocol artifact in
+[source-lock.json](source-lock.json) defines the type), plus a `draft`
 block the Portal copies into the Topic Draft. Both halves are pinned under one
 digest, so a change to either is a new version.
 
@@ -67,7 +66,7 @@ The Portal renders nothing new for a recipe. Build from these parts only; anythi
 | --- | --- |
 | Axes | `contract`, `work`, `topic` (always present in the base); add `verification`, `decision`, `effect`, `settlement` |
 | Phases | `forming`, `working`, `verifying`, `deciding`, `effecting`, `settling`, `complete`, `dormant` |
-| Transition commands | `topic.edit-setup`, `topic.confirm-setup`, `topic.record-assent`, `topic.raise-dispute`, `topic.resolve-dispute`, `topic.start-work`, `topic.answer-question`, `topic.change-due-date`, `topic.unblock`, `topic.record-outcome`, `topic.complete`, `topic.close-project`, `topic.request-action`, `topic.confirm-action`, `topic.record-verification`, `topic.record-decision`, `topic.record-settlement` |
+| Transition commands | `topic.edit-setup`, `topic.confirm-setup`, `topic.record-assent`, `topic.raise-dispute`, `topic.resolve-dispute`, `topic.start-work`, `topic.answer-question`, `topic.change-due-date`, `topic.unblock`, `topic.record-outcome`, `topic.complete`, `topic.close-project`, `topic.request-action`, `topic.confirm-action`, `topic.record-flow-run`, `topic.record-verification`, `topic.record-decision`, `topic.record-settlement` |
 | Gates | `axis` (another axis in given states), `field` / `field-any` (paths present or accepted), `record` (a record type in the thread), `receipt`, `binding` (a bound flow), `condition` |
 | Confirmation | `none`, `viewer`, `authority` |
 | Evidence | `operation`, `record` (with `finality`), `receipt` |
@@ -91,7 +90,7 @@ It resolves the merged Shape with the pinned protocol artifact and prints the ca
 
 1. `propose_domain_creation({ requestKey, name, description, entityType: "protocol/topic", tags?, purpose?, image? })`. Skip when the person attached or named an existing `protocol/topic` domain they control. Outcome message: `Domain "<name>" created: <DID> …` or `… cancelled.` Use that DID as the recipe `id`; write the file only now, because the id is part of the bytes.
 2. `write_domain_files({ requestKey, entityDid, public, files: [{ path, content, mimeType }] })` with `shape.json` (and any companion files) under `/recipes/<slug>/<version>/`. Outcome message carries one receipt per file: `fileId`, `version`, `digest`, `publicUrl`. An existing path is reported, not replaced: use a new version folder rather than `overwrite`.
-3. `publish_recipe_release({ requestKey, entityDid, recipe: { version, protocolVersion, baseKind, baseRecipe, listingVisibility }, shape: { fileId, path, version, digest, mediaType, publicUrl? }, access })` with the `shape.json` receipt verbatim. The Portal downloads the file, checks the bytes against `digest`, resolves it as a recipe for `baseKind`, then asks for two signatures: the Domain Card re-issued with a `topicRecipe` block, and the `#top-nn` linked resource whose proof is the byte digest. Outcome message: `Recipe release "<requestKey>" published … Shape anchored as <DID>#top-nn …`, `… declined`, or `… failed (card_failed | shape_failed)`. A `card_failed` whose message names the file means the file, not the signature: fix the file, write a new version, release again.
+3. `publish_recipe_release({ requestKey, entityDid, recipe: { version, protocolVersion: "1.0.0-rc.7", baseKind, baseRecipe, listingVisibility }, shape: { fileId, path, version, digest, mediaType, publicUrl? }, access })` with the `shape.json` receipt verbatim. The Portal downloads the file, checks the bytes against `digest`, resolves it as a recipe for `baseKind`, then asks for two signatures: the Domain Card re-issued with a `topicRecipe` block, and the `#top-nn` linked resource whose proof is the byte digest. Outcome message: `Recipe release "<requestKey>" published … Shape anchored as <DID>#top-nn …`, `… declined`, or `… failed (card_failed | shape_failed)`. A `card_failed` whose message names the file means the file, not the signature: fix the file, write a new version, release again.
 
 After step 3 the recipe is discoverable: the Portal's Settings → Topics lists it under "Published recipe", the shelf pins it, and a Topic created from it carries `topicRecipeRef: { id: <DID>, version, digest }` where `digest` is the canonical Shape digest the checker printed, not the byte digest.
 

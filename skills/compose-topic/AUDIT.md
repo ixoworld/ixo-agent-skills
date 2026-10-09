@@ -1,12 +1,12 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.3.2`
-Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.4`
+Audit target: `compose-topic` `3.4.0`
+Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.7`
 Topic Contract profile: `qi.topic-contract-state/v4`
-Pinned protocol commit: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
-Candidate package source commit: `c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d`
-Candidate package shasum: `b2d9b88b01c4fc3a16586845c96c369de0a96b9a`
-Candidate package integrity: `sha512-jyZ1JauOXLyn06MOyAVv4nFYCWiIOVobbjmRYHM0ws3xyuvpR8Xd2niAZOt+MzE26ik/svjsR6zhidB4LwTriA==`
+Pinned protocol commit: `808c9aa4918db9ed8e6e244d5143af1c12a6dd95`
+Package source commit: `808c9aa4918db9ed8e6e244d5143af1c12a6dd95`
+Package shasum: `c1c929923dee7005c3369108a73af37d696cded8`
+Package integrity: `sha512-IpDt3g2OHDTUk2ipG5cn7fMHnn1Oy7jAL+rquiLJpD7RqKafkN5XSmdhfT2iEQvD0crj3lv/8TjyN9v2+4cv+A==`
 
 ## Review scope
 
@@ -29,6 +29,10 @@ The audit covers:
 - provenance, disclosure, revision, idempotency, and secret controls;
 - Portal-compatible Draft creation and refinement;
 - schemas, examples, scripts, tests, and behavioral eval coverage.
+
+## 3.4.0 Topic Protocol rc.7
+
+New Topics compose on the published rc.7 Shapes; existing rc.3 and rc.4 pins are preserved during refinement. rc.7 refuses `confirm-setup` until the setup names who does the work and who accepts the result (and a Project's lead and closer), so the template and validator keep `setup.owner`, `setup.acceptor`, `setup.answer-reviewer`, `setup.project-lead` and `setup.project-closer` visible until the person names them, and reject a named person that is not a Matrix user ID. A Discussion may be `ongoing`, which needs no acceptor. The skill knows the Portal's `read_open_topic`, `update_topic`, `start_topic_composition` and `set-people`, and a recipe may use `topic.record-flow-run`. rc.7 hashes with `@noble/hashes`; the scripts load the bundled package with a `node:crypto` stand-in so they stay dependency-free, and the lifecycle-pins test proves it reproduces the published digests. Locked local hashes are of LF text, so the audit passes on a CRLF checkout.
 
 ## 3.3.2 conversation execution
 
@@ -141,6 +145,6 @@ The skill cannot prove deployed Matrix, E2EE, VFS, UCAN, Entity/claim resolution
 
 The recipe Marketplace lookup is intentionally not implemented. The local pins cover only the nine Base Recipe compositions; Topic Recipes come exclusively from `protocol/topic` domains through the Portal.
 
-## rc.4 candidate status
+## rc.7 package status
 
-This update uses a locally committed source and a measured, bundled npm tarball. It does not claim registry publication or production deployment. Run the audit and tests to validate the candidate.
+This update pins the package published to npm as `@ixo/topic-protocol@1.0.0-rc.7` and bundles its exact tarball. It does not claim production deployment. Run the audit and tests to validate the package.

@@ -2,7 +2,7 @@
 
 Refinement changes a v4 Topic in place. It never creates a replacement Topic unless the person explicitly chooses to branch.
 
-For `requestMode: continue`, answer or ask the supplied missing detail before entering this sequence. Conversation alone does not request a revision. For `requestMode: refine`, retain unsaved draft edits across any `read_topic` refresh; that read supplies current bindings and persisted context, not permission to discard the draft.
+For `requestMode: continue`, answer or ask the supplied missing detail before entering this sequence. Conversation alone does not request a revision. For `requestMode: refine`, retain unsaved draft edits across any `read_open_topic` or `read_topic` refresh; that read supplies current bindings and persisted context, not permission to discard the draft.
 
 ## Preconditions
 
@@ -34,6 +34,8 @@ If any version is legacy, return `BLOCKED_LEGACY_TOPIC`. If a revision or digest
 
 Answer a question with `answer-question` and its stable statement ID. Preserve the question statement.
 
+Name people with `set-people`: `/ownerId`, `/completion/acceptanceAuthorityIds`, `/project/lead`, `/project/closer`, or a role's `/roles/<role>/assignees`, using Matrix user IDs from the read's people. Do this only for people the person named; it is how an rc.7 setup gains the owner and acceptor it needs before confirmation.
+
 Changing Kind or Topic Recipe requires resolving a new Effective Shape and digest before staging. Never carry an inherited pinned Shape across a Kind/Base Recipe mismatch.
 
 Changing effective setup creates a new proposed immutable revision and invalidates confirmations for that proposal. The previous effective head remains in force until the replacement is explicitly confirmed and becomes effective.
@@ -42,7 +44,7 @@ Do not persist the private edit-session ID, personal-agent session data, viewer 
 
 ## Preserve an existing release
 
-Keep the existing Shape sources and digest during refinement, including rc.3 pins. The bundled [rc.3 Shape pins](topic-shape-pins-rc3.json) provide compatibility references. Opening an editor does not upgrade the protocol release. An explicit upgrade proposes a new setup with rc.4 pins and explains new obligations. It requires fresh confirmation and assent, and it resets revision-bound work and Project progress.
+Keep the existing Shape sources and digest during refinement, including rc.3 and rc.4 pins. The bundled [rc.4 Shape pins](topic-shape-pins-rc4.json) and [rc.3 Shape pins](topic-shape-pins-rc3.json) provide compatibility references. Opening an editor does not upgrade the protocol release. An explicit upgrade proposes a new setup with rc.7 pins and explains new obligations, such as naming the owner and acceptor. It requires fresh confirmation and assent, and it resets revision-bound work and Project progress.
 
 ## Incomplete refinement preview
 

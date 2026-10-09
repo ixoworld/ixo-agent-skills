@@ -55,8 +55,10 @@ Verification, approval, Action success, and final settlement remain independent 
 
 ## Smallest setup questions
 
-Ask what is being claimed, which one Entity and collection govern it, who is responsible for submitting the evidence, who confirms the Topic setup, and who may resolve disputes. Keep evaluation-oracle authorization and any payment Flow as separately resolved external bindings.
+Ask what is being claimed, which one Entity and collection govern it, who is responsible for submitting the evidence, who accepts the result, who confirms the Topic setup, and who may resolve disputes. Keep evaluation-oracle authorization and any payment Flow as separately resolved external bindings.
 
-## rc.4 lifecycle contract
+## rc.7 lifecycle contract
+
+Before anyone can confirm the setup it must name the owner who submits the evidence (`ownerId`) and who accepts the result (`completion.acceptanceAuthorityIds`). Neither grants evaluation or decision authority. Keep each one the person has not named visible as `setup.owner` or `setup.acceptor`.
 
 The standard Claims Shape requires verification through accepted `ixo.evaluation` with status `verified`, then accepted `ixo.decision` with status `approved`. Verify `claim/evaluate` and `claim/decide` independently. A negative decision does not enable an external effect. All claim bodies and attachments remain Matrix-only.

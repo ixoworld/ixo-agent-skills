@@ -37,7 +37,7 @@ Do not use “Discussion” as a generic fallback for an unclear intent. Prefer 
 
 ## Smallest setup questions
 
-Ask what needs discussion, whether it is finite or ongoing, what closes it or branches from it, who facilitates when needed, and who confirms the setup. Add signatories only if the group explicitly wants a mutual agreement record.
+Ask what needs discussion, whether it is finite or ongoing, what closes it or branches from it, who facilitates it, who accepts its result when it is finite, and who confirms the setup. Add signatories only if the group explicitly wants a mutual agreement record.
 
 ## Progression
 
@@ -45,6 +45,8 @@ For a finite Discussion, setup and the closure rule must be confirmed before wor
 
 If deliberation yields a proposal, evaluation, or task with an independent lifecycle, branch it instead of mutating the Kind in place.
 
-## rc.4 lifecycle contract
+## rc.7 lifecycle contract
+
+Before anyone can confirm the setup it must name the owner who facilitates it (`ownerId`). A finite Discussion must also name who accepts its result (`completion.acceptanceAuthorityIds`); an ongoing one needs no acceptor. Keep each one the person has not named visible as `setup.owner` or `setup.acceptor`.
 
 A finite Discussion requires an explicit closure definition before confirmation. Only the actual value `temporalMode: ongoing` satisfies the ongoing alternative. Do not use the presence of the temporalMode field as proof that this requirement is met.

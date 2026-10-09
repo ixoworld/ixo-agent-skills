@@ -71,6 +71,19 @@ test("accepts a revision-bound activation policy replacement", () => {
   assert.deepEqual(validateRefineChangeSet(value), []);
 });
 
+test("names the owner and acceptor with Matrix user IDs and refuses anything else", () => {
+  const value = valid();
+  value.changes = [
+    { op: "set-people", path: "/ownerId", value: ["@alice:ixo.world"] },
+    { op: "set-people", path: "/completion/acceptanceAuthorityIds", value: ["@bob:ixo.world", "@carol:ixo.world"] },
+  ];
+  assert.deepEqual(validateRefineChangeSet(value), []);
+  value.changes = [{ op: "set-people", path: "/activationPolicy/editors", value: ["did:ixo:alice"] }];
+  const result = codes(value);
+  assert(result.has("PEOPLE_PATH"));
+  assert(result.has("PEOPLE_VALUE"));
+});
+
 test("an incomplete preview can never pass the staging validator", () => {
   assert(codes({ version: "3.0", status: "preview", topicId: null, sourceIntent: "Improve the answer review", proposedChanges: ["Merge clearer review criteria after loading the body"], assumptions: [], blockers: [{code: "BODY_UNAVAILABLE", reason: "Read the existing body first"}] }).has("STATUS"));
   assert(codes({...valid(), changes: {}}).has("CHANGES"));

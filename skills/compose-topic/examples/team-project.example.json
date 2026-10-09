@@ -1,5 +1,5 @@
 {
-  "version": "3.3.2",
+  "version": "3.4.0",
   "compositionId": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702",
   "mode": "commit",
   "disposition": "create",
@@ -10,14 +10,14 @@
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.4",
+    "topicProtocolVersion": "1.0.0-rc.7",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
-    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
+    "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95",
+    "packageShasum": "c1c929923dee7005c3369108a73af37d696cded8",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -58,7 +58,7 @@
       "kind": "project",
       "status": "draft",
       "baseRecipe": "project",
-      "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1",
+      "shapeDigest": "sha256:7cae888dcde3a551aa320632201deb6e2463fb92c44bd2ef5d0718a34635cad4",
       "context": [
         {
           "type": "ixo.domain",
@@ -87,17 +87,17 @@
       {
         "kind": "base-recipe",
         "id": "https://topic-protocol.ixo.world/base-recipes/project",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
+        "version": "1.0.0-rc.7",
+        "digest": "sha256:7e56c421fc5c7dd996d572fac46bc4fa115824ef5329b82ca5e1f7469b805103"
       },
       {
         "kind": "kind",
         "id": "https://topic-protocol.ixo.world/kinds/project",
-        "version": "1.0.0-rc.4",
-        "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
+        "version": "1.0.0-rc.7",
+        "digest": "sha256:fa57f96656fde7940036d0eab30315ffaacc1e6102cdd79258b69bfb4cc1ad43"
       }
     ],
-    "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1"
+    "shapeDigest": "sha256:7cae888dcde3a551aa320632201deb6e2463fb92c44bd2ef5d0718a34635cad4"
   },
   "contractDraft": {
     "envelope": {
@@ -117,17 +117,17 @@
         {
           "kind": "base-recipe",
           "id": "https://topic-protocol.ixo.world/base-recipes/project",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58"
+          "version": "1.0.0-rc.7",
+          "digest": "sha256:7e56c421fc5c7dd996d572fac46bc4fa115824ef5329b82ca5e1f7469b805103"
         },
         {
           "kind": "kind",
           "id": "https://topic-protocol.ixo.world/kinds/project",
-          "version": "1.0.0-rc.4",
-          "digest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389"
+          "version": "1.0.0-rc.7",
+          "digest": "sha256:fa57f96656fde7940036d0eab30315ffaacc1e6102cdd79258b69bfb4cc1ad43"
         }
       ],
-      "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1",
+      "shapeDigest": "sha256:7cae888dcde3a551aa320632201deb6e2463fb92c44bd2ef5d0718a34635cad4",
       "timezone": "Asia/Singapore",
       "intent": {
         "id": "019c9a5d-1b8a-7b0a-9a6e-28ed6fe77721",
@@ -214,8 +214,8 @@
         "prompt": "Who may close this Project by accepting remaining risk?",
         "purpose": "Project closure requires independent, explicit acceptance authority.",
         "responsibility": "unassigned",
-        "priority": 650,
-        "unlocks": "The Project may enter closing after its work is ready."
+        "priority": 450,
+        "unlocks": "The setup can be confirmed, and the Project can close once its work is ready."
       }
     ]
   },
@@ -327,7 +327,7 @@
         "requiredAbility": "topic/create",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:topic-create",
         "boundTo": {
-          "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1"
+          "shapeDigest": "sha256:7cae888dcde3a551aa320632201deb6e2463fb92c44bd2ef5d0718a34635cad4"
         }
       },
       {
@@ -339,7 +339,7 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:canvas",
         "boundTo": {
-          "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1"
+          "shapeDigest": "sha256:7cae888dcde3a551aa320632201deb6e2463fb92c44bd2ef5d0718a34635cad4"
         }
       },
       {
@@ -351,7 +351,7 @@
         "requiredAbility": "topic/write",
         "idempotencyKey": "urn:uuid:019c9a5d-1b8a-7b0a-9a6e-28ed6fe77702:projection",
         "boundTo": {
-          "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1"
+          "shapeDigest": "sha256:7cae888dcde3a551aa320632201deb6e2463fb92c44bd2ef5d0718a34635cad4"
         }
       }
     ],

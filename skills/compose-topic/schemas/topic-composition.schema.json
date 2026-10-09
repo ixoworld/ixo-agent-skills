@@ -16,7 +16,7 @@
   ],
   "properties": {
     "version": {
-      "const": "3.3.2"
+      "const": "3.4.0"
     },
     "compositionId": {
       "type": "string",
@@ -92,7 +92,7 @@
           "const": "@ixo/topic-protocol"
         },
         "topicProtocolVersion": {
-          "const": "1.0.0-rc.4"
+          "const": "1.0.0-rc.7"
         },
         "rootVersion": {
           "const": 4
@@ -110,10 +110,10 @@
           "const": "normative"
         },
         "sourceCommit": {
-          "const": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d"
+          "const": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95"
         },
         "packageShasum": {
-          "const": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a"
+          "const": "c1c929923dee7005c3369108a73af37d696cded8"
         },
         "authoritativeHistory": {
           "const": "topic-root+operations+records+projection"
@@ -965,7 +965,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 80,
-          "description": "A bundled catalog code, or the code of a host-supplied published recipe."
+          "description": "The code of a host-supplied published recipe."
         },
         "topicRecipeRef": {
           "$ref": "#/$defs/topicRecipeRef"

@@ -4,7 +4,8 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const STAGING = new Set(["stage_topic_composition", "stage_topic_changes"]);
+const STAGING = new Set(["stage_topic_composition", "stage_topic_changes", "update_topic"]);
+const READS = new Set(["read_topic", "read_open_topic"]);
 const STOP = new Set(["composition-staged-for-review", "changes-staged-for-review", "approval-pending", "awaiting-user", "possible-duplicates", "transport-timeout", "render-pending"]);
 const DISCOVERY = new Set(["findEntity", "getEntityProfileDomain", "resolve_domain_topic_rooms"]);
 function canonical(value) {
@@ -41,7 +42,7 @@ export function validateTrace(trace) {
         fail("UNNECESSARY_TOKEN_LOOKUP", index, "The host supplies the token for this room.");
       }
     }
-    if (call.tool === "read_topic" && ++readCount > 1 && !trace.calls.slice(0, index).some(c => c?.result?.status === "stale-topic-revision")) {
+    if (READS.has(call.tool) && ++readCount > 1 && !trace.calls.slice(0, index).some(c => c?.result?.status === "stale-topic-revision")) {
       fail("REPEATED_TOPIC_READ", index, "Read once unless the host reports a stale revision.");
     }
     if (readCount > 2) fail("READ_BUDGET", index, "Only one revision refresh is allowed.");

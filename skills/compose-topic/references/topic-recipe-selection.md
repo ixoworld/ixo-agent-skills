@@ -19,7 +19,7 @@ Every selection produces an editable Draft. Project Recipes configure only eligi
 - the selected `baseRecipe`;
 - `strategy: base-recipe`, with `registryLookup: not-performed` and `registryReason: pinned-catalog-only`; or
 - `strategy: topic-recipe`, with `topicRecipeCode` = the published recipe's code, its exact `topicRecipeRef`, `registryLookup: host-supplied` and `registryReason: portal-published-recipe`;
-- exact Shape sources and Effective Shape digest; and
+- exact Shape sources and Effective Shape digest (two sources for a Base Recipe, three for a published recipe: base recipe, Kind, and `topic-recipe`, exactly as `resolve_published_recipe` returned them); and
 - `reviewState: draft`.
 
 The same base recipe, optional ref, and digest must appear in `rootDraft` and `contractDraft.semantic`.

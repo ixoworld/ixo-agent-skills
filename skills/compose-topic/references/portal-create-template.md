@@ -8,7 +8,8 @@ Steps:
 2. Copy the skeleton below. Replace every `<<…>>` placeholder. Remove nothing else.
 3. Take `baseRecipe`, `shapeSources`, and `shapeDigest` for that Kind from the pins block and paste them verbatim into the three places marked `<<PINS.*>>`.
 4. Add the Kind-specific block from the table at the end. Do not add blocks that belong to other Kinds.
-5. Call `stage_topic_composition` once with `composition` set to the filled skeleton serialised as **one JSON string** (the text of the object, quotes escaped), not as a nested object: the runtime mangles nested objects inside arrays when they are passed structurally. Then stop.
+5. Add the people obligations the Kind needs from "People the setup must name". Keep them unless the person named that person.
+6. Call `stage_topic_composition` once with `composition` set to the filled skeleton serialised as **one JSON string** (the text of the object, quotes escaped), not as a nested object: the runtime mangles nested objects inside arrays when they are passed structurally. Then stop.
 
 Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y` ∈ `8 9 a b`. Use a fresh one per placeholder.
 
@@ -16,7 +17,7 @@ Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y
 
 ```json
 {
-  "version": "3.3.2",
+  "version": "3.4.0",
   "compositionId": "urn:uuid:<<UUIDV7>>",
   "mode": "preview",
   "disposition": "create",
@@ -27,14 +28,14 @@ Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y
   },
   "protocolBinding": {
     "package": "@ixo/topic-protocol",
-    "topicProtocolVersion": "1.0.0-rc.4",
+    "topicProtocolVersion": "1.0.0-rc.7",
     "rootVersion": 4,
     "contractBodyVersion": 4,
     "stateVersion": 4,
     "contractProfile": "qi.topic-contract-state/v4",
     "profileStatus": "normative",
-    "sourceCommit": "c17d7e8c1016f208dfef5bb6273c4bdc9e4aa59d",
-    "packageShasum": "b2d9b88b01c4fc3a16586845c96c369de0a96b9a",
+    "sourceCommit": "808c9aa4918db9ed8e6e244d5143af1c12a6dd95",
+    "packageShasum": "c1c929923dee7005c3369108a73af37d696cded8",
     "authoritativeHistory": "topic-root+operations+records+projection",
     "stateEventRole": "materialized-head-only",
     "legacyPolicy": "v4-only-no-migration"
@@ -227,25 +228,25 @@ Rules the skeleton already encodes; keep them:
 ```json
 {
   "baseRecipeSources": {
-    "project": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/project", "version": "1.0.0-rc.4", "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58" },
-    "flow": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/flow", "version": "1.0.0-rc.4", "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58" },
-    "proposal": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/proposal", "version": "1.0.0-rc.4", "digest": "sha256:bcefd9d41b784a86d705630d44c1e03a7f3a8881b1c9f3d3685c52fd80762179" },
-    "evaluation": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/evaluation", "version": "1.0.0-rc.4", "digest": "sha256:b9d28c66ffeca042fd2106570fced2df2f4439a65af901b61324011ee8935e7e" },
-    "claims": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/claims", "version": "1.0.0-rc.4", "digest": "sha256:79fc99b1a85fea39e0a17e62b173aba49c986047218eeafaa681001d9adb389e" },
-    "research": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/research", "version": "1.0.0-rc.4", "digest": "sha256:eb13629d2118b223ab03ddcc52fc6fd94e70c646552de0a2cce01f2615e06075" },
-    "discussion": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/discussion", "version": "1.0.0-rc.4", "digest": "sha256:51445331881881bf22cae04b1f7f6a9090149ae616710bef2492c5f3ea2fab58" },
-    "incident": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/incident", "version": "1.0.0-rc.4", "digest": "sha256:ffb184a1dd63698dd873456ce237c630eafe819a4ac366b36c1be2c0f399c634" }
+    "project": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/project", "version": "1.0.0-rc.7", "digest": "sha256:7e56c421fc5c7dd996d572fac46bc4fa115824ef5329b82ca5e1f7469b805103" },
+    "flow": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/flow", "version": "1.0.0-rc.7", "digest": "sha256:7e56c421fc5c7dd996d572fac46bc4fa115824ef5329b82ca5e1f7469b805103" },
+    "proposal": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/proposal", "version": "1.0.0-rc.7", "digest": "sha256:b6192207953e71079bf98a30fc8c05cfc225bb18242c0bc8f62e3970cb312380" },
+    "evaluation": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/evaluation", "version": "1.0.0-rc.7", "digest": "sha256:9dd2cd6eb4c02eeadd8747a53e7984229b6671364320a0b1674b92dbd30718ae" },
+    "claims": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/claims", "version": "1.0.0-rc.7", "digest": "sha256:647dc64cfdbea39692b6b116a1b4a25d7029e91b46b4180ef91ab9d77380e52f" },
+    "research": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/research", "version": "1.0.0-rc.7", "digest": "sha256:1735d134b0c18200cca685967bd46463bcb5f4ebcb9de12ed850e2974d76fca2" },
+    "discussion": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/discussion", "version": "1.0.0-rc.7", "digest": "sha256:7e56c421fc5c7dd996d572fac46bc4fa115824ef5329b82ca5e1f7469b805103" },
+    "incident": { "kind": "base-recipe", "id": "https://topic-protocol.ixo.world/base-recipes/incident", "version": "1.0.0-rc.7", "digest": "sha256:f3225f8aa0d20b738c2f31e939c969e286db75a38d63e7c7083a73c688df944c" }
   },
   "kinds": {
-    "project": { "baseRecipe": "project", "kindDigest": "sha256:9cba98879eb3db20d6caf4ee731b6db0d4ff25ca5cf8028c3a9d1ef538990389", "shapeDigest": "sha256:8feed96f0460800047301f4df0a43529dc70fcd4fb399dc55438366c92b8c5f1" },
-    "task": { "baseRecipe": "project", "kindDigest": "sha256:70fd94bfd73b2cccd65e841fda1dd90d6692ab1a53028d825ab4aabe30f31b25", "shapeDigest": "sha256:d3291c4dee659b80605ad2cbd75c706521429a0e206e7ee156fa08daf565826b" },
-    "agent_task": { "baseRecipe": "flow", "kindDigest": "sha256:fc14c140eb2849d1c5e424fa4449f5c39264a288cefc309ccdff8615c99724d2", "shapeDigest": "sha256:a8ff0560848f307a4b35fd5a639e526772c2ab3ce54cb92d20c6d46ddf8bccc5" },
-    "proposal": { "baseRecipe": "proposal", "kindDigest": "sha256:95a31fa7c9f6eb552497cdada32cff4a2dc4bb3ce741ca9ebe366596b787d1c8", "shapeDigest": "sha256:5da97ba0af374d41d680fb9ed67cc7b79caf015c0a9cfe14daa38a4ec1498d5c" },
-    "evaluation": { "baseRecipe": "evaluation", "kindDigest": "sha256:4663d2456abe432a946c17e7b8b15c5450853769d9d1ee8c4b7f9a761e3a7fc4", "shapeDigest": "sha256:80ce4e6216d20710f713ab4057cf2b6ad62b93fb67fc59690e2d993c9948c338" },
-    "claims": { "baseRecipe": "claims", "kindDigest": "sha256:604309d70c2d762551dc9c11572bf095c8879f255dcff0d78adb4f1b13815f47", "shapeDigest": "sha256:06fd9511ecbbb1cd6e321c03ef376b3cfe7154d3be4a25db5d9441de5e941cfe" },
-    "question": { "baseRecipe": "research", "kindDigest": "sha256:6362d3331476dccca6f025e2f07b218a49170c9e280d90c628b63ccd371db10b", "shapeDigest": "sha256:12dce5300689c2966e9de6ea5f71dbffe48c061405fecd5bc01e9d0a86a42804" },
-    "discussion": { "baseRecipe": "discussion", "kindDigest": "sha256:2f10a5bbc76b887e72c67d9d034d2f4fd7ee68ccb8d5816714c9dea956a313a3", "shapeDigest": "sha256:8f7c1de3f329e8de42a4eb9fcbe748aec7a0938a7d9752ddb6f82d0f97808b88" },
-    "incident": { "baseRecipe": "incident", "kindDigest": "sha256:a14882b721f319d93ff8616dfbdb29573088da2389852dd1adc04f44a3c5bf5d", "shapeDigest": "sha256:a3a8a19ca6434978c8318dfeb38ecc6fa61055005045523877c88d2dfe7d4796" }
+    "project": { "baseRecipe": "project", "kindDigest": "sha256:fa57f96656fde7940036d0eab30315ffaacc1e6102cdd79258b69bfb4cc1ad43", "shapeDigest": "sha256:7cae888dcde3a551aa320632201deb6e2463fb92c44bd2ef5d0718a34635cad4" },
+    "task": { "baseRecipe": "project", "kindDigest": "sha256:f0808bee6bbb9929405462992dd623ed27bce0650768c0779fdf088f9d453189", "shapeDigest": "sha256:c3acb31f39f93b3c08504aedb9e9e19fda440b8bd3fcd21cc71f61d2af74bd31" },
+    "agent_task": { "baseRecipe": "flow", "kindDigest": "sha256:eed3ea8992998843e13b2f73bcb6d4371603468be2c91815f0b74536be169c87", "shapeDigest": "sha256:3df9f3f474ac907da30bae73c207057c2def551b8e8f314e1632872f6bc3dbc9" },
+    "proposal": { "baseRecipe": "proposal", "kindDigest": "sha256:87983a69e81143e988023fed0b2d97cc8222b54c84341dad1881b2e738fef4fe", "shapeDigest": "sha256:5b6689f62437d5a6cb43389f27cdf54128b0bfc75e7dc1c88556c9e9cf11e922" },
+    "evaluation": { "baseRecipe": "evaluation", "kindDigest": "sha256:c156d27e93e170fe860096014c7ce39bf16a22825d14a5a31da31d0c45c8ece4", "shapeDigest": "sha256:29813102441073dc8e4b32450c2338d704498a38d12bb7cf83412c80b74241da" },
+    "claims": { "baseRecipe": "claims", "kindDigest": "sha256:1fc2ec2616aeab4fb9d533a4ab9f8075dc25b5df729b30e3689876343aaad6c8", "shapeDigest": "sha256:35770406f687aeab195b81c6df2f583c592e96da8e460a6e8ffb03033c02beee" },
+    "question": { "baseRecipe": "research", "kindDigest": "sha256:30ca5de2546a472e7462ef66bb8dd9fd7e7bba05d645798d16fb4331a4478c5d", "shapeDigest": "sha256:30622d1a3c2870e489c5c974e90dffc317c326bd680a8df291faff9b47ec153c" },
+    "discussion": { "baseRecipe": "discussion", "kindDigest": "sha256:d0cf903a9c0a44ca78836d88986270b8714ef43f315e8718fcfd1c968a6cd463", "shapeDigest": "sha256:32621efdfbc106b6f51d23b60ea6d442cd2ebd204b2d7fd118c353da9d22540e" },
+    "incident": { "baseRecipe": "incident", "kindDigest": "sha256:d9fb3371b016c51135d4b6848608e059604810c590c4cfcb4435b8ac01ef00ca", "shapeDigest": "sha256:8ad3face44d93c2e107c3ff07d4b0f245fea5460baf6b53f43a3e2659459a715" }
   }
 }
 ```
@@ -253,21 +254,44 @@ Rules the skeleton already encodes; keep them:
 `shapeSources` for a Kind is exactly two entries, in this order:
 
 1. `baseRecipeSources[kinds[KIND].baseRecipe]`
-2. `{ "kind": "kind", "id": "https://topic-protocol.ixo.world/kinds/<<KIND>>", "version": "1.0.0-rc.4", "digest": kinds[KIND].kindDigest }`
+2. `{ "kind": "kind", "id": "https://topic-protocol.ixo.world/kinds/<<KIND>>", "version": "1.0.0-rc.7", "digest": kinds[KIND].kindDigest }`
 
-`shapeDigest` is `kinds[KIND].shapeDigest`. These are the resolver's own values; the Portal recomputes them and rejects anything else.
+`shapeDigest` is `kinds[KIND].shapeDigest`. These are the resolver's own values; the Portal recomputes them and rejects anything else. A recipe returned by `resolve_published_recipe` replaces `baseRecipe`'s pins: copy the `shapeSources` (three entries, ending with the `topic-recipe` source) and `shapeDigest` it returned for the Kind, and the `topicRecipeRef`, exactly as given.
+
+## People the setup must name
+
+Topic Protocol rc.7 does not let anyone confirm a setup until it names who does the work, who accepts the result, and for a Project who leads it and who closes it. Add the Kind's obligations to `setupObligations`:
+
+| Kind | Obligations |
+| --- | --- |
+| `project` | `setup.project-lead`, `setup.project-closer` |
+| `task`, `agent_task`, `proposal`, `evaluation`, `claims`, `incident` | `setup.owner`, `setup.acceptor` |
+| `question` | `setup.owner`, `setup.answer-reviewer` |
+| `discussion` | `setup.owner`, and `setup.acceptor` unless it is ongoing |
+
+```json
+[
+  { "code": "setup.owner", "path": "/ownerId", "prompt": "Choose who is responsible for the result.", "purpose": "The responsible person starts the work and records its result.", "responsibility": "unassigned", "priority": 400, "unlocks": "The setup can be confirmed and the work can start." },
+  { "code": "setup.acceptor", "path": "/completion/acceptanceAuthorityIds", "prompt": "Choose who accepts the result.", "purpose": "Only the people who accept the result can close the Topic once the work is submitted.", "responsibility": "unassigned", "priority": 450, "unlocks": "The setup can be confirmed, and the Topic can close when its result is accepted." },
+  { "code": "setup.answer-reviewer", "path": "/completion/acceptanceAuthorityIds", "prompt": "Choose who reviews and accepts the answer.", "purpose": "An answer is accepted by a named reviewer, not by whoever wrote it.", "responsibility": "unassigned", "priority": 400, "unlocks": "The setup can be confirmed, and the question can close when its answer is accepted." },
+  { "code": "setup.project-lead", "path": "/project/lead", "prompt": "Choose who leads this Project.", "purpose": "The lead keeps the plan and the current blocker up to date.", "responsibility": "unassigned", "priority": 400, "unlocks": "The setup can be confirmed and the Project can start." },
+  { "code": "setup.project-closer", "path": "/project/closer", "prompt": "Choose who may close this Project.", "purpose": "Closing accepts the remaining risk, so the Project needs a named closer before its work starts.", "responsibility": "unassigned", "priority": 450, "unlocks": "The setup can be confirmed, and the Project can close once its work is ready." }
+]
+```
+
+Name a person instead of keeping their obligation only when the person who asked named them and this request gives you their Matrix user ID (`@name:server`), for example the requester themselves. Write `ownerId` as one ID or `completion.acceptanceAuthorityIds` as a list of IDs in `contractDraft.semantic`, add `fieldProvenance` for that path with `"basis": "explicit"` and `"acceptance": "accepted"`, and leave the obligation out. A Project lead or closer is `{ "kind": "actor", "id": "<<MATRIX_USER_ID>>" }` under `project`, with the same provenance. Otherwise keep the obligation: the Portal asks for the person in the editor. Never fill these from the creator, the room's members, or another role.
 
 ## Kind-specific additions to `contractDraft.semantic`
 
-| Kind | Add | Also add to `setupObligations` |
-| --- | --- | --- |
-| `project` | `"project": { "version": 1 }` (+ `milestones`/`childObligations` only when the person listed them, each with its own UUIDv7 `id`) | `setup.project-lead` at `/project/lead` and `setup.project-closer` at `/project/closer`, same shape as the two obligations above |
-| `task`, `agent_task` | optional `outcome.target` `{ "precision": "date", "value": "YYYY-MM-DD", "timezone": "<<IANA>>" }` only when a date was supplied | — |
-| `proposal` | `"decision": { "governanceProposal": "<<what is being put forward>>" }` | — |
-| `evaluation` | `"decision": { "question": "<<…>>", "criteria": ["<<string>>"], "method": "<<…>>" }` | — |
-| `question` | `"questions": [{ "statement": { "id": "<<UUIDV7>>", "text": "<<…>>", "provenance": { "basis": "explicit", "acceptance": "accepted", "sourceEventIds": [] } }, "status": "open" }]` | — |
-| `claims` | `"claimBinding": { "entityDid": "<<did:ixo:…>>", "collectionId": "<<…>>" }` only when both were supplied | — |
-| `incident` | `"risks": [{ "id": "<<UUIDV7>>", "description": "<<…>>", "impact": "high", "status": "open" }]` | — |
-| `discussion` | nothing | — |
+| Kind | Add |
+| --- | --- |
+| `project` | `"project": { "version": 1 }` (+ `milestones`/`childObligations` only when the person listed them, each with its own UUIDv7 `id`) |
+| `task`, `agent_task` | optional `outcome.target` `{ "precision": "date", "value": "YYYY-MM-DD", "timezone": "<<IANA>>" }` only when a date was supplied |
+| `proposal` | `"decision": { "governanceProposal": "<<what is being put forward>>" }` |
+| `evaluation` | `"decision": { "question": "<<…>>", "criteria": ["<<string>>"], "method": "<<…>>" }` |
+| `question` | `"questions": [{ "statement": { "id": "<<UUIDV7>>", "text": "<<…>>", "provenance": { "basis": "explicit", "acceptance": "accepted", "sourceEventIds": [] } }, "status": "open" }]` |
+| `claims` | `"claimBinding": { "entityDid": "<<did:ixo:…>>", "collectionId": "<<…>>" }` only when both were supplied |
+| `incident` | `"risks": [{ "id": "<<UUIDV7>>", "description": "<<…>>", "impact": "high", "status": "open" }]` |
+| `discussion` | `"temporalMode": "ongoing"` only when the person said it has no end; then it needs no acceptor |
 
-Never add `project` outside Project, `risks` outside Incident, `decision` outside Proposal/Evaluation, `claimBinding` outside Claims, or `outcome.target` outside Task/Agent Task. Never add `participants`, `roles`, `plan`, `attachments`, `timezone`, `locale`, `temporalMode`, `kindProfile`, `kindResource`, `successCriteria`, `requiresOutcomeRecord`, `reviewAt`.
+Never add `project` outside Project, `risks` outside Incident, `decision` outside Proposal/Evaluation, `claimBinding` outside Claims, `outcome.target` outside Task/Agent Task, or `temporalMode` outside Discussion. Never add `participants`, `roles`, `plan`, `attachments`, `timezone`, `locale`, `kindProfile`, `kindResource`, `successCriteria`, `requiresOutcomeRecord`, `reviewAt`.
