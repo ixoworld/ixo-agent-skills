@@ -16,7 +16,7 @@
   ],
   "properties": {
     "version": {
-      "const": "3.5.0"
+      "const": "3.5.2"
     },
     "compositionId": {
       "type": "string",

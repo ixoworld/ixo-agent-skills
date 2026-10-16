@@ -1,6 +1,6 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.5.0`
+Audit target: `compose-topic` `3.5.2`
 Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.7`
 Topic Contract profile: `qi.topic-contract-state/v4`
 Pinned protocol commit: `808c9aa4918db9ed8e6e244d5143af1c12a6dd95`
@@ -29,6 +29,14 @@ The audit covers:
 - provenance, disclosure, revision, idempotency, and secret controls;
 - Portal-compatible Draft creation and refinement;
 - schemas, examples, scripts, tests, and behavioral eval coverage.
+
+## 3.5.2 purpose apart from the request
+
+A live run of 3.5.1 composed a Project from a published recipe whose purpose was still the person's whole request, room and recipe DID included. The Portal template's skeleton set the contract intent to the verbatim request with explicit provenance and required it to match the request byte for byte, which beat the 3.5.0 rule to take the purpose from the recipe. The skeleton now carries a separate purpose, the verbatim request lives only in the intent record the validator checks, and the rules say when the purpose keeps explicit provenance.
+
+## 3.5.1 recipe publishing
+
+Live Portal runs of 3.5.0 published three recipes and a new version of one of them. Every recipe got a required evaluator verification step copied from the FPS example, even a Task whose lead simply accepts the result. Task and Evaluation recipes carried Project milestones the Portal drops. Domains were named as recipe collections although a domain card carries one recipe. The agent stopped after reading a recipe to ask for permission to continue. The publishing reference now keeps the overlay empty unless the person asks for an extra step, keeps the plan to Projects, names each domain after its recipe, keeps unchanged fields in a new version, and ends the turn only after the three tools that wait for the person. The Portal refuses a repeated version before signing.
 
 ## 3.5.0 new Drafts, people and plain replies
 

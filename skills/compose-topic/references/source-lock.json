@@ -228,7 +228,7 @@
   },
   "localArtifacts": {
     "schemas/topic-composition.schema.json": {
-      "sha256": "c59c3d691be0e6b1921a467e69358ae0c5dd0998e65c0fe2134a4e6623bc9273"
+      "sha256": "e35b1100203ad6a2e6720ae69889dd7073708ce7a6a1d9e7be6fbc0e239155f9"
     },
     "schemas/topic-contract-draft.schema.json": {
       "sha256": "d423b6bfb5f4c5e8005c29360455f2be5ca6e00e981d940dc908b4e7f7270505"
@@ -252,13 +252,13 @@
       "sha256": "9577337918211589ff58a87428336ad1dddd2aa24b9a8e0d6956453e2969e737"
     },
     "SKILL.md": {
-      "sha256": "ab846971734ed33b3944d9eb0e484dd637c6dd0848a5901ae9cc0fa2006ec774"
+      "sha256": "4d2e2f8d3d29090031cd333ee54e188c99a3661986a64dceeccf71f07035c3b2"
     },
     "AUDIT.md": {
-      "sha256": "49da340b32b05b4541e44af067fd5ee12be813781dd0a6a0df7cc72c42746678"
+      "sha256": "ad6fb43d536f863039346317c7cd9974279d945c496f44fd2fe3c55566b4e82a"
     },
     "evals/evals.json": {
-      "sha256": "bf460d1ae715c087554c45676ba3dacef938f098b22cca43b99efa828e000d31"
+      "sha256": "b3e6287c17a2bb776b989fcd451ed98c195478c2e5c43c9df9a22a5cec83959b"
     },
     "subskills/compose-topic-project/SKILL.md": {
       "sha256": "3b026a232602b68956193690183cf6fde35c3437e9638fb97feadece7de7e488"
@@ -312,7 +312,7 @@
       "sha256": "c10a633603d4baf3d79ae2ac7fc7f9600e937f4272b821c8ab841f734daaaf5f"
     },
     "references/topic-recipe-publishing.md": {
-      "sha256": "4a4729c74c13a15f1653acf38702a79b5d07471945dd5fcb3b898b028236dfc9"
+      "sha256": "3eb378cb70bbb15f548c990b973a53cf29c83ce25db22db01cbeeb35742c4139"
     },
     "scripts/validate-recipe.mjs": {
       "sha256": "fb2772adde2e03de950da8c6639cf14375e40295c4a477b45c88a8ff29a25d86"
@@ -321,7 +321,7 @@
       "sha256": "ac300710904ad6d0f229cb8e708c90be3089cf3c77fa05059af7467fafe5b464"
     },
     "references/portal-create-template.md": {
-      "sha256": "b8610484eba4f3c857d965f0e61ebc242927360404a81f0e687c99aaa3fddf9e"
+      "sha256": "5e8b8e8c382bac4cd420f48ff097c04670f9ca7a02d74aacba7040f36e9a7b7a"
     },
     "tests/portal-template.test.mjs": {
       "sha256": "617daa482bfa525b6b20ea55d312905c1bcca34841edc331e72bbff4c5feb9b8"
