@@ -1,6 +1,6 @@
 # Compose Topic production audit
 
-Audit target: `compose-topic` `3.4.1`
+Audit target: `compose-topic` `3.5.0`
 Topic Protocol baseline: `@ixo/topic-protocol@1.0.0-rc.7`
 Topic Contract profile: `qi.topic-contract-state/v4`
 Pinned protocol commit: `808c9aa4918db9ed8e6e244d5143af1c12a6dd95`
@@ -29,6 +29,10 @@ The audit covers:
 - provenance, disclosure, revision, idempotency, and secret controls;
 - Portal-compatible Draft creation and refinement;
 - schemas, examples, scripts, tests, and behavioral eval coverage.
+
+## 3.5.0 new Drafts, people and plain replies
+
+Live Portal runs of 3.4.1 showed four gaps. The agent refused to fill a new Draft open in the editor because the refine preconditions asked for a Topic ID and revisions a Draft does not have; a Draft is now staged by its `editSessionId` alone. A person named without a Matrix user ID became a different role and an opening message asking the room to assign them; roles are kept as given and the agent says the person must be invited first. Replies showed composition IDs, room IDs and terms like "setup obligation"; replies are now two or three plain sentences. Texts were written as full sentences that read badly inside the Portal's own ("there will be the HUD shows…"); each text now finishes its Portal sentence. A team choice made by talking it through is a Question or an Evaluation, not a Proposal. A Project composed from a published recipe came out with an empty plan, because the template allowed milestones only when the person listed them; recipe milestones and child work are now copied, the recipe pin is written to both places the Portal compares, and the Draft text comes from the recipe rather than the request.
 
 ## 3.4.1 list items and destination token
 

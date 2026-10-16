@@ -2,6 +2,15 @@
 
 Every change to the skill's behaviour bumps `metadata.version`. The Portal asks the agent for one version by name (`COMPOSE_TOPIC_SKILL_VERSION`), so a new version reaches people only when the Portal's pin moves to it.
 
+## 3.5.0
+
+- A new Draft open in the Portal editor is filled with `stage_topic_changes` and its `editSessionId` alone. The refine preconditions (Topic ID, revisions, digests) now apply only to a saved Topic; 3.4.1's agent refused to touch a Draft because it had none.
+- People keep the roles the person gave: "Mike should do it" is who does the work, "I accept" is the acceptor. Someone named without a Matrix user ID is usually not in the room: the agent says they must be invited first, and the opening message never asks the room to assign people.
+- After staging, the reply is two or three plain sentences: what was drafted and what still needs the person. No composition IDs, room IDs, field paths, obligation codes, "setup obligation" or "Matrix user ID".
+- Texts finish the Portal's sentences: purpose after "This Topic exists to", outcome as a noun phrase after "When it is done there will be", completion after "It is done when" without repeating "Done when", scope, constraints and assumptions as noun phrases.
+- A choice a few people make by talking it through is a Question or an Evaluation; a Proposal is for a group that must formally approve or vote.
+- A Topic composed from a published recipe puts the same `topicRecipeRef` in `rootDraft` and `contractDraft.semantic`, copies the recipe's milestones and child work into the Project plan, and fills its texts from the recipe's `draft` instead of using the person's request as the purpose. 3.4.1's Project from a recipe came out with an empty plan.
+
 ## 3.4.1
 
 - The Portal template gives the item shape for `scope.included`, `scope.excluded` and `constraints` (statement objects) and for `assumptions` (a wrapped statement). 3.4.0 showed only empty arrays, so the agent wrote plain strings and the Portal rejected the handoff.

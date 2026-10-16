@@ -6,7 +6,9 @@ For `requestMode: continue`, answer or ask the supplied missing detail before en
 
 ## Preconditions
 
-Require:
+A new Draft open in the editor is not a saved Topic: it has an `editSessionId` and none of the bindings below. Stage its changes with `stage_topic_changes` and that `editSessionId` alone.
+
+For a saved Topic, require:
 
 - root/body/state version `4`;
 - profile `qi.topic-contract-state/v4`;
