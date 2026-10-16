@@ -17,7 +17,7 @@ Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y
 
 ```json
 {
-  "version": "3.4.1",
+  "version": "3.5.0",
   "compositionId": "urn:uuid:<<UUIDV7>>",
   "mode": "preview",
   "disposition": "create",
@@ -219,7 +219,8 @@ Rules the skeleton already encodes; keep them:
 
 - `hostContext` stays `{}`. Never invent `actorId`, `matrixWrite`, or `verifiedAbilities`; the Portal knows who is signed in.
 - `activationPolicy` stays `{}` unless the person named editors, confirmers, dates, or a dispute resolver. Its only keys are `editors`, `confirmation`, `lifecycle`, `dispute`. `onExpiry` lives inside `lifecycle` and is written only together with a date.
-- `firstTurn.message` is the first message into the shared room: one question that advances the work, or the proposed next step. Never "I created a Draft…".
+- `firstTurn.message` is the first message into the shared room: one question that advances the work, or the proposed next step. Never "I created a Draft…". It never asks the room to assign or confirm people; who does what is the person's choice in the editor.
+- The Portal reads the contract as sentences, so write each text to finish its sentence, with no leading label: the purpose finishes "This Topic exists to …" (a verb phrase: `add a fuel bar to the HUD`); the outcome finishes "When it is done there will be …" (a noun phrase: `a HUD fuel bar that shows the fuel left`, not `the HUD shows…`); the completion definition finishes "It is done when …" (a clause, never starting with `Done when`); each scope item finishes "It covers …", each constraint "It has to respect …", each assumption "It assumes …" (noun phrases).
 - Every `id` is a fresh UUIDv7. The two `<<VERBATIM_INTENT>>` copies must equal `sourceIntent.verbatim` byte for byte.
 - `sourceEventId` is omitted unless the Portal supplied one in the request.
 - `scope.included`, `scope.excluded`, `constraints` and `assumptions` may stay `[]`. Their items are never plain text. A scope or constraint item is a statement: `{ "id": "<<UUIDV7>>", "text": "<<…>>", "provenance": { "basis": "suggested", "acceptance": "proposed", "sourceEventIds": [] } }`, with `"basis": "explicit", "acceptance": "accepted"` only for words the person said. An assumption wraps one: `{ "statement": { "id": …, "text": …, "provenance": … } }`.
@@ -281,6 +282,8 @@ Topic Protocol rc.7 does not let anyone confirm a setup until it names who does 
 ```
 
 Name a person instead of keeping their obligation only when the person who asked named them and this request gives you their Matrix user ID (`@name:server`), for example the requester themselves. Write `ownerId` as one ID or `completion.acceptanceAuthorityIds` as a list of IDs in `contractDraft.semantic`, add `fieldProvenance` for that path with `"basis": "explicit"` and `"acceptance": "accepted"`, and leave the obligation out. A Project lead or closer is `{ "kind": "actor", "id": "<<MATRIX_USER_ID>>" }` under `project`, with the same provenance. Otherwise keep the obligation: the Portal asks for the person in the editor. Never fill these from the creator, the room's members, or another role.
+
+Keep the roles the person gave: "Mike should do it" names who does the work (`ownerId`), "I accept the result" names the acceptor. When a named person has no Matrix user ID in this request, they are usually not in the room yet: keep their obligation and, in your reply, say in plain words that they need to be invited to the room before they can be named. Never write a role they were not given.
 
 ## Kind-specific additions to `contractDraft.semantic`
 

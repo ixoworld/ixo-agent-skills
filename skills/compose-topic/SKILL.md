@@ -4,7 +4,7 @@ description: "Compose or refine a reviewable Topic Protocol v4 Draft from a pers
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.4.1"
+  version: "3.5.0"
   category: collaboration
   topic-protocol: "1.0.0-rc.7"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -28,7 +28,10 @@ Use `requestMode` to choose the work before loading references. The Portal's `mo
 - `create` or `clone`: preserve the captured source intent, select one Kind, compose one useful Draft, and call `stage_topic_composition` once when the host supplies a captured creation request. For a clone with an edit session, use `stage_topic_changes` to preserve the existing template draft and Kind instead. A clone supplies a template, not approval to copy assignments or authority. Ask one question first only when the clarification rule requires it.
 - `continue`: address the supplied missing detail first. If the question is already clear, ask it without reading or staging anything. Otherwise read once: `read_open_topic` when the person asked from the Topic editor, `read_topic` for a supplied Topic ID. Do not recreate the Topic or stage changes until the person supplies a concrete change.
 - `refine`: preserve the supplied unsaved draft. Use the current edit session and revision bindings; read only for missing or stale bindings. Merge the requested changes with the unsaved draft rather than replacing it with the persisted body. When `update_topic` is available, commit an ordinary wording change the person asked for on the Topic they have open with it (title, purpose, scope, constraints, assumptions, questions, an incident's risks). Stage everything else through `stage_topic_changes` using its actual schema; `set-people` takes Matrix user IDs from the read's people.
+- A new Draft open in the editor comes with an `editSessionId` and no Topic ID. Fill it with `stage_topic_changes` using that `editSessionId` alone: an unsaved Draft has no Topic ID, revisions, or digests, and needs none. The revision bindings in [refine-existing-topic.md](references/refine-existing-topic.md) apply only to a saved Topic.
 - When the tools offer `start_topic_composition` but not `stage_topic_composition`, there is no captured creation request: call `start_topic_composition` once with the person's own words and stop. The Portal opens its composer and returns with a request.
+
+On every path, write texts the way the Portal reads them, as the end of a sentence with no leading label: the purpose finishes "This Topic exists to …", the outcome is a noun phrase finishing "When it is done there will be …", and the completion definition finishes "It is done when …" without repeating "Done when". Keep the roles the person gave ("Mike should do it" is who does the work, "I accept" is the acceptor) and name people only by IDs the host supplied; when someone named is not among them, say plainly that they need to be invited to the room first.
 
 When the person chose a room in the Portal and the active staging tool supports host completion, use `routing.roomResolution: { target: "current-room", status: "unresolved", evidence: [] }` and omit `destinationEvidenceToken`. Keep `execution.commitEligible: false`, `contractDraft.readiness: requires-host-fields`, and the unresolved host fields explicit. Do not add a room blocker solely for this supported host completion. Preserve genuine permission, confidentiality, Shape, or other blockers. The host verifies and fills the destination before opening the Draft; this is not authorization to write Matrix state.
 
@@ -38,7 +41,7 @@ For a `create` on this path read exactly two files: [portal-create-template.md](
 
 Treat tool definitions already in context as the capability inventory. Load this pinned skill once and reuse references already loaded in the conversation. Do not run repository audits, tests, dependency installs, or registry discovery while helping someone compose a Topic.
 
-After staging, return control to the person. Report the editor as open only when the host supplies the request-correlated render receipt. A pending approval, missing receipt, timeout, duplicate choice, or unresolved question is a stopping point, not a reason to poll or stage again.
+After staging, return control to the person. Tell them in two or three plain sentences what you drafted and what still needs them, such as a person to invite before they can be named. Never show composition IDs, room IDs, field paths, obligation codes, or terms like "setup obligation" or "Matrix user ID". Report the editor as open only when the host supplies the request-correlated render receipt. A pending approval, missing receipt, timeout, duplicate choice, or unresolved question is a stopping point, not a reason to poll or stage again.
 
 For an actionable validation error, make at most one targeted repair and retry with changed input. A stale revision permits one fresh read (`read_open_topic` or `read_topic`) and one rebased proposal; an expired destination token permits one exact-room lookup and one retry. Never repeat an unchanged failed call or remove meaningful content to pass validation. If the repair fails, explain the remaining issue and stop. Resume only on new user input or a host-delivered result. Never retry an uncertain write as a new operation.
 
@@ -120,7 +123,7 @@ Missing host identity, room, revision, Shape source, Matrix permission, or verif
 ### 1. Pin and preflight
 
 - Use the verified bundled release and host-provided tool schemas; release validation belongs to maintainers.
-- Use composition version `3.4.1`, Topic Protocol `1.0.0-rc.7`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
+- Use composition version `3.5.0`, Topic Protocol `1.0.0-rc.7`, root/body/state version `4`, and `qi.topic-contract-state/v4`.
 - Use only tools supplied for this turn. Do not call discovery tools to inventory them.
 - Scan for secrets and excessive sensitive data.
 
@@ -162,7 +165,7 @@ Use the job the Topic must do:
 | deliberately exchange views or align without a formed plan, decision, answer, approval, or deliverable | `discussion` | `discussion` |
 | contain and resolve an urgent failure | `incident` | `incident` |
 
-Infer the coordination job from the intended changed state, deliverable, lifecycle, and decision boundary together; do not classify from one verb or a generic noun such as “policy”, “governance”, or “topic”. A policy being drafted and put forward for approval is normally a `proposal`; comparing evidence or options before a judgment is an `evaluation`; implementing an already chosen policy is a `task` or `project` according to scope. `discussion` is never the fallback for uncertainty.
+Infer the coordination job from the intended changed state, deliverable, lifecycle, and decision boundary together; do not classify from one verb or a generic noun such as “policy”, “governance”, or “topic”. A policy being drafted and put forward for approval is normally a `proposal`; comparing evidence or options before a judgment is an `evaluation`; implementing an already chosen policy is a `task` or `project` according to scope. `discussion` is never the fallback for uncertainty. A choice a few people make by talking it through is a `question` (one answer someone accepts) or an `evaluation` (options judged against criteria); choose `proposal` only when a group must formally approve or vote.
 
 Record the best guess and concise basis in `routing.kindInference`. When one Kind clearly dominates, select it even if some Draft fields remain unknown. When two or more Kinds would produce materially different starting structures and none dominates, either:
 
