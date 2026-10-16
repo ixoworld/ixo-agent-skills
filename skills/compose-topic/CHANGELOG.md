@@ -2,6 +2,18 @@
 
 Every change to the skill's behaviour bumps `metadata.version`. The Portal asks the agent for one version by name (`COMPOSE_TOPIC_SKILL_VERSION`), so a new version reaches people only when the Portal's pin moves to it.
 
+## 3.5.2
+
+- The purpose is its own text, a verb phrase that finishes "This Topic exists to". The Portal template put the person's request into the purpose and asked for it to match the request byte for byte, which overrode 3.5.0's rule, so a Topic from a recipe still read "It exists to start a Project in this room from the published recipe … (did:…)". The request is now copied only into the intent record; a purpose in the person's own words keeps explicit provenance, a written one is a suggestion.
+
+## 3.5.1
+
+- A published recipe's overlay stays empty unless the person asks for a step the Kind does not have. A lead or reviewer accepting the result is the Kind's own acceptance; the FPS example's evaluator verification step is added only when asked. 3.5.0's agent copied that step into every recipe, so even a Task's lead acceptance needed `claim/evaluate` rights.
+- `milestones` and `childWork` go into a recipe's `draft` for Kind project only; the Portal drops them for every other Kind.
+- One `protocol/topic` domain publishes one recipe and its versions, so a new domain is named exactly like the recipe. When the person renames the domain in the Portal, the new name becomes the recipe label.
+- A new version keeps every field the person did not ask to change and must be a version the domain has not published; the Portal refuses a repeated one before anything is signed.
+- Only `propose_domain_creation`, `write_domain_files` and `publish_recipe_release` wait for the person. After a read such as `resolve_published_recipe` the agent keeps going instead of asking to continue.
+
 ## 3.5.0
 
 - A new Draft open in the Portal editor is filled with `stage_topic_changes` and its `editSessionId` alone. The refine preconditions (Topic ID, revisions, digests) now apply only to a saved Topic; 3.4.1's agent refused to touch a Draft because it had none.

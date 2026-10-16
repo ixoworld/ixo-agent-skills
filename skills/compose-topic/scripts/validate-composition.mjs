@@ -33,7 +33,7 @@ const DIGEST = /^sha256:[0-9a-f]{64}$/u;
 const COMMIT = "808c9aa4918db9ed8e6e244d5143af1c12a6dd95";
 const PACKAGE_SHASUM = "c1c929923dee7005c3369108a73af37d696cded8";
 const PROTOCOL_VERSION = "1.0.0-rc.7";
-const COMPOSITION_VERSION = "3.5.0";
+const COMPOSITION_VERSION = "3.5.2";
 const MATRIX_USER = /^@[^:\s]+:\S+$/u;
 // rc.7 confirm-setup gates: who does the work and who accepts the result must be named before anyone confirms the setup.
 const OWNER_KINDS = new Set(["task", "agent_task", "proposal", "evaluation", "claims", "question", "discussion", "incident"]);

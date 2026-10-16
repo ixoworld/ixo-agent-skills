@@ -17,7 +17,7 @@ Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y
 
 ```json
 {
-  "version": "3.5.0",
+  "version": "3.5.2",
   "compositionId": "urn:uuid:<<UUIDV7>>",
   "mode": "preview",
   "disposition": "create",
@@ -100,8 +100,8 @@ Generate UUIDv7 values yourself: `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx`, hex, `y
       "shapeDigest": "<<PINS.shapeDigest>>",
       "intent": {
         "id": "<<UUIDV7>>",
-        "text": "<<VERBATIM_INTENT>>",
-        "provenance": { "basis": "explicit", "acceptance": "accepted", "sourceEventIds": [] }
+        "text": "<<PURPOSE>>",
+        "provenance": { "basis": "suggested", "acceptance": "proposed", "sourceEventIds": [] }
       },
       "outcome": {
         "statement": {
@@ -221,7 +221,8 @@ Rules the skeleton already encodes; keep them:
 - `activationPolicy` stays `{}` unless the person named editors, confirmers, dates, or a dispute resolver. Its only keys are `editors`, `confirmation`, `lifecycle`, `dispute`. `onExpiry` lives inside `lifecycle` and is written only together with a date.
 - `firstTurn.message` is the first message into the shared room: one question that advances the work, or the proposed next step. Never "I created a Draft…". It never asks the room to assign or confirm people; who does what is the person's choice in the editor.
 - The Portal reads the contract as sentences, so write each text to finish its sentence, with no leading label: the purpose finishes "This Topic exists to …" (a verb phrase: `add a fuel bar to the HUD`); the outcome finishes "When it is done there will be …" (a noun phrase: `a HUD fuel bar that shows the fuel left`, not `the HUD shows…`); the completion definition finishes "It is done when …" (a clause, never starting with `Done when`); each scope item finishes "It covers …", each constraint "It has to respect …", each assumption "It assumes …" (noun phrases).
-- Every `id` is a fresh UUIDv7. The two `<<VERBATIM_INTENT>>` copies must equal `sourceIntent.verbatim` byte for byte.
+- `<<PURPOSE>>` is that verb phrase, never the request pasted in: no room names, IDs or "I want…". When the person's own words already finish the sentence, use them and mark the provenance `"basis": "explicit", "acceptance": "accepted"`; otherwise keep `suggested`/`proposed`.
+- Every `id` is a fresh UUIDv7. The `<<VERBATIM_INTENT>>` in the intent record must equal `sourceIntent.verbatim` byte for byte; it is the only place the request is copied.
 - `sourceEventId` is omitted unless the Portal supplied one in the request.
 - `scope.included`, `scope.excluded`, `constraints` and `assumptions` may stay `[]`. Their items are never plain text. A scope or constraint item is a statement: `{ "id": "<<UUIDV7>>", "text": "<<…>>", "provenance": { "basis": "suggested", "acceptance": "proposed", "sourceEventIds": [] } }`, with `"basis": "explicit", "acceptance": "accepted"` only for words the person said. An assumption wraps one: `{ "statement": { "id": …, "text": …, "provenance": … } }`.
 
