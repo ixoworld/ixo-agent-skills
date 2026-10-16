@@ -255,7 +255,7 @@
       "sha256": "ab846971734ed33b3944d9eb0e484dd637c6dd0848a5901ae9cc0fa2006ec774"
     },
     "AUDIT.md": {
-      "sha256": "9f54637ccff9f95d600b1dc59a06510f4706bf9ae092187fbe90a06e7d8f6bd3"
+      "sha256": "49da340b32b05b4541e44af067fd5ee12be813781dd0a6a0df7cc72c42746678"
     },
     "evals/evals.json": {
       "sha256": "bf460d1ae715c087554c45676ba3dacef938f098b22cca43b99efa828e000d31"
@@ -321,7 +321,7 @@
       "sha256": "ac300710904ad6d0f229cb8e708c90be3089cf3c77fa05059af7467fafe5b464"
     },
     "references/portal-create-template.md": {
-      "sha256": "4cfe8e853cdf90c015255e54c94a28ba797c4635baf5e65a4f9b2335b5ce655b"
+      "sha256": "b8610484eba4f3c857d965f0e61ebc242927360404a81f0e687c99aaa3fddf9e"
     },
     "tests/portal-template.test.mjs": {
       "sha256": "617daa482bfa525b6b20ea55d312905c1bcca34841edc331e72bbff4c5feb9b8"

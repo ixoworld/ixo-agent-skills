@@ -9,6 +9,7 @@ Every change to the skill's behaviour bumps `metadata.version`. The Portal asks 
 - After staging, the reply is two or three plain sentences: what was drafted and what still needs the person. No composition IDs, room IDs, field paths, obligation codes, "setup obligation" or "Matrix user ID".
 - Texts finish the Portal's sentences: purpose after "This Topic exists to", outcome as a noun phrase after "When it is done there will be", completion after "It is done when" without repeating "Done when", scope, constraints and assumptions as noun phrases.
 - A choice a few people make by talking it through is a Question or an Evaluation; a Proposal is for a group that must formally approve or vote.
+- A Topic composed from a published recipe puts the same `topicRecipeRef` in `rootDraft` and `contractDraft.semantic`, copies the recipe's milestones and child work into the Project plan, and fills its texts from the recipe's `draft` instead of using the person's request as the purpose. 3.4.1's Project from a recipe came out with an empty plan.
 
 ## 3.4.1
 

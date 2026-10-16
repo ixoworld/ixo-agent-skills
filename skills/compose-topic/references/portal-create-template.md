@@ -258,7 +258,7 @@ Rules the skeleton already encodes; keep them:
 1. `baseRecipeSources[kinds[KIND].baseRecipe]`
 2. `{ "kind": "kind", "id": "https://topic-protocol.ixo.world/kinds/<<KIND>>", "version": "1.0.0-rc.7", "digest": kinds[KIND].kindDigest }`
 
-`shapeDigest` is `kinds[KIND].shapeDigest`. These are the resolver's own values; the Portal recomputes them and rejects anything else. A recipe returned by `resolve_published_recipe` replaces `baseRecipe`'s pins: copy the `shapeSources` (three entries, ending with the `topic-recipe` source) and `shapeDigest` it returned for the Kind, and the `topicRecipeRef`, exactly as given.
+`shapeDigest` is `kinds[KIND].shapeDigest`. These are the resolver's own values; the Portal recomputes them and rejects anything else. A recipe returned by `resolve_published_recipe` replaces `baseRecipe`'s pins: copy the `shapeSources` (three entries, ending with the `topic-recipe` source) and `shapeDigest` it returned for the Kind, and the `topicRecipeRef`, exactly as given. The `topicRecipeRef` goes in two places with the same content: `rootDraft.topicRecipeRef` and `contractDraft.semantic.topicRecipeRef`; the Portal rejects the handoff when they differ or one is missing. Fill the purpose, outcome, completion definition and open questions from the recipe's `draft`, fitted to what the person asked for (for example "the flamethrower" in place of "one weapon"); the person's own request stays only in `sourceIntent.verbatim`, never as the purpose.
 
 ## People the setup must name
 
@@ -289,7 +289,7 @@ Keep the roles the person gave: "Mike should do it" names who does the work (`ow
 
 | Kind | Add |
 | --- | --- |
-| `project` | `"project": { "version": 1 }` (+ `milestones`/`childObligations` only when the person listed them, each with its own UUIDv7 `id`) |
+| `project` | `"project": { "version": 1 }` (+ `milestones`/`childObligations` when the person listed them or the published recipe's `draft` carries them, each with its own UUIDv7 `id`: a recipe milestone `{ name, evidenceRequired? }` becomes `{ "id": "<<UUIDV7>>", "name", "evidenceRequired" }`, a recipe `childWork` item `{ title, kind }` becomes `{ "id": "<<UUIDV7>>", "title", "kind" }`. Copy them all; they are why the recipe was chosen) |
 | `task`, `agent_task` | optional `outcome.target` `{ "precision": "date", "value": "YYYY-MM-DD", "timezone": "<<IANA>>" }` only when a date was supplied |
 | `proposal` | `"decision": { "governanceProposal": "<<what is being put forward>>" }` |
 | `evaluation` | `"decision": { "question": "<<…>>", "criteria": ["<<string>>"], "method": "<<…>>" }` |
