@@ -63,3 +63,20 @@ for (const [tool, status] of [["ask_user_question", "awaiting_answer"], ["write_
     assert.ok(codes(trace([call(tool, {}, {status}), call("publish_recipe_release")])).includes("CALL_AFTER_STOP"));
   });
 }
+
+
+test("recipe preflight continues to one write approval in the same turn", () => {
+  const args = { requestKey: "recipe-write", kindConfirmationKey: "chosen-kind", files: [{ path: "/recipes/example/1.0.0/shape.json", sourceArtifact: { url: "https://artifacts.example/recipe", digest: "a".repeat(64), sizeBytes: 100 } }] };
+  const calls = [
+    call("write_domain_files", { ...args, dryRun: true }, { status: "validated", success: true }),
+    call("write_domain_files", args, { status: "awaiting_approval", success: true }),
+  ];
+  assert.equal(validateTrace(trace(calls)).valid, true);
+  assert.ok(codes(trace([...calls, call("publish_recipe_release")])).includes("CALL_AFTER_STOP"));
+});
+
+test("failed recipe preflight cannot be retried unchanged", () => {
+  const args = { requestKey: "recipe-write", dryRun: true };
+  const failed = call("write_domain_files", args, { status: "error", success: false });
+  assert.ok(codes(trace([failed, failed])).includes("UNCHANGED_RETRY"));
+});

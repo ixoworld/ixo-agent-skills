@@ -252,7 +252,7 @@
       "sha256": "9577337918211589ff58a87428336ad1dddd2aa24b9a8e0d6956453e2969e737"
     },
     "SKILL.md": {
-      "sha256": "568910ebda39bae28c7c78f9e8feb0ff7223d2742a71ef94d991ca3331eacbac"
+      "sha256": "61b1afa97ae8bb5285bb4b163d4d45e5fdafdf38ca9e7a9bcb12819175d1d480"
     },
     "AUDIT.md": {
       "sha256": "ad6fb43d536f863039346317c7cd9974279d945c496f44fd2fe3c55566b4e82a"
@@ -303,16 +303,16 @@
       "sha256": "82a9376d445a81c7a74af091dff1e62c64580a786451cd20702ad3f49a7c0a31"
     },
     "evals/portal-execution.md": {
-      "sha256": "c35fcd57af39513628419cfdab51a3262f668434e423f2bf35cf6801a76d4ad1"
+      "sha256": "c7c373e93fac732a9ac69aa2e52eb58941f4a1146ea9fd32abc7e0f08f773550"
     },
     "scripts/validate-execution-trace.mjs": {
       "sha256": "b75be282cc114eca8a40c4ba6821fb489291a3372050b24229219fd7744330ea"
     },
     "tests/execution-trace.test.mjs": {
-      "sha256": "52ac309209b4086aa197f2b022169832e7eaedf63501629dd39491528aefa4d8"
+      "sha256": "94399cd3d0277fee30193d55a1080b4ec9d829f562926845ec0fa616ed9b9c8f"
     },
     "references/topic-recipe-publishing.md": {
-      "sha256": "6c4ad825d36b0f657600a4b7bd7f4dbabe88f8ddcaaffafca142c69216eba42e"
+      "sha256": "e208937cb48e1795e5f015e3beccb673fe38649612c6fa0cefbd13347a5387d6"
     },
     "scripts/validate-recipe.mjs": {
       "sha256": "fb2772adde2e03de950da8c6639cf14375e40295c4a477b45c88a8ff29a25d86"

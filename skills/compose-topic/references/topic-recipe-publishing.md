@@ -6,9 +6,10 @@ digest on a `protocol/topic` domain. Confirm the intended Kind first, then compo
 an extra exit, not a different skill. This reference replaces the older
 `topic-recipe-author` capsule. Do not load that obsolete skill alongside this one.
 
-The Portal owns every write. Three browser tools exist only while a Portal
-conversation is connected; each returns at once and the outcome arrives as the
-next Portal chat message. Never re-call a tool while its result is pending,
+The Portal owns every write. Its approval-producing browser calls return at
+once; the outcome arrives as the next Portal chat message. A successful
+`write_domain_files` dry run returns `validated` synchronously without an approval;
+continue immediately with the same request except omit `dryRun`. Never re-call a tool while its result is pending,
 never poll, never ask whether the person signed. `ask_user_question` also returns `awaiting_answer`; stop until the user’s
 answer arrives. End your turn after each approval request; reads such as
 `resolve_published_recipe` answer in the same turn, so keep going after them.
@@ -162,7 +163,8 @@ Save the file as a sandbox download artifact. Supply its HTTPS download URL,
 SHA-256 of the exact UTF-8 bytes, and byte count as `sourceArtifact: { url, digest,
 sizeBytes }`. Do not use a viewer page, placeholder, or guessed digest. First call
 `write_domain_files` with `dryRun: true` and `kindConfirmationKey`. A `validated`
-result permits the same input without `dryRun`; it does not mean anything was
+result requires continuing in the same turn with the same input except omit
+`dryRun`; it does not mean anything was
 written. If the source changes or expires, create a fresh verified artifact and
 validate it again. Inline `content` is supported for small complete files, never
 for truncating a large artifact.

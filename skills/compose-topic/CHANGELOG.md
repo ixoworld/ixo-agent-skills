@@ -4,6 +4,9 @@ Every change to the skill's behaviour bumps `metadata.version`. The Portal asks 
 
 ## 3.5.3
 
+- Continue directly from a successful write dry run to its single approval in
+  the same turn; stop on pending results, not on synchronous validation.
+
 - Guide recipe creation through Kind confirmation, preview, publishing home,
   validated publication, and a destination-specific Topic Draft.
 - Default to plain language, with explicit developer preference independent of model.
