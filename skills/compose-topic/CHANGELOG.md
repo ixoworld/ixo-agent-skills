@@ -2,6 +2,17 @@
 
 Every change to the skill's behaviour bumps `metadata.version`. The Portal asks the agent for one version by name (`COMPOSE_TOPIC_SKILL_VERSION`), so a new version reaches people only when the Portal's pin moves to it.
 
+## 3.5.3
+
+- Guide recipe creation through Kind confirmation, preview, publishing home,
+  validated publication, and a destination-specific Topic Draft.
+- Default to plain language, with explicit developer preference independent of model.
+- Use verified source artifacts and host preflight before approvals; preserve
+  receipts and stop on pending questions, approvals, and uncertain outcomes.
+- Keep the 3.5.2 composition handoff and rc.7 protocol unchanged. Requires the
+  Portal's `kindConfirmationKey` and deferred question support; publish the
+  capsule after those host tools are deployed.
+
 ## 3.5.2
 
 - The purpose is its own text, a verb phrase that finishes "This Topic exists to". The Portal template put the person's request into the purpose and asked for it to match the request byte for byte, which overrode 3.5.0's rule, so a Topic from a recipe still read "It exists to start a Project in this room from the published recipe … (did:…)". The request is now copied only into the intent record; a purpose in the person's own words keeps explicit provenance, a written one is a suggestion.

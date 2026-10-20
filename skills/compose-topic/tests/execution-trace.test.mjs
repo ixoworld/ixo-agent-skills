@@ -56,3 +56,10 @@ test("enforces the total call budget and validates input format", () => {
   assert.ok(codes(trace(Array.from({ length: 13 }, () => call("read_file")))) .includes("CALL_BUDGET"));
   assert.equal(validateTrace({}).valid, false);
 });
+
+for (const [tool, status] of [["ask_user_question", "awaiting_answer"], ["write_domain_files", "awaiting_approval"], ["publish_recipe_release", "awaiting_approval"]]) {
+  test(`recipe journey stops after ${tool}`, () => {
+    assert.equal(validateTrace(trace([call(tool, {}, {status})])).valid, true);
+    assert.ok(codes(trace([call(tool, {}, {status}), call("publish_recipe_release")])).includes("CALL_AFTER_STOP"));
+  });
+}

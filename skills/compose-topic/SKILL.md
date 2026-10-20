@@ -4,7 +4,7 @@ description: "Compose or refine a reviewable Topic Protocol v4 Draft from a pers
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.5.2"
+  version: "3.5.3"
   category: collaboration
   topic-protocol: "1.0.0-rc.7"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -20,6 +20,25 @@ The skill composes; the Topic Protocol resolves and projects; the Portal present
 For ordinary conversation in an existing Topic, answer or ask the next useful question. Do not restart composition for every reply. Use `facilitate-topic` only when already supplied by a bound shared Topic runtime. A private Personal Agent conversation does not establish that binding. Do not search for or delegate to another skill during a Portal composition turn.
 
 This package targets the published `@ixo/topic-protocol` 1.0.0-rc.7. The skill publisher validates the bundled artifact and source lock at release time; the host verifies the exact protocol pins when staging. Preserve existing rc.3 and rc.4 Topic pins during refinement.
+
+## Recipe creation journey
+
+When the person asks for a reusable recipe, follow the five steps in
+[topic-recipe-publishing.md](references/topic-recipe-publishing.md): describe and
+confirm the Kind, preview, choose its home, publish, use. Confirm the Kind with
+`ask_user_question` **before composing the detailed Shape**. A known Topic's
+Kind is a recommendation to confirm, not an implicit answer. Preserve an existing
+host-recorded confirmation for the same intent; changed intent or Kind needs a
+new confirmation.
+
+Default to a guided, plain-language experience. An explicit preference for a
+developer view enables protocol details; otherwise offer that choice only when
+useful. The selected model is not evidence of the person's technical ability or
+consent. Both views use exactly the same confirmation and validation gates.
+Keep identifiers, hashes, raw validator output, and implementation details in
+Advanced details or a linked artifact. Never require users to repair JSON.
+
+This skill release is 3.5.3; the unchanged composition handoff remains 3.5.2.
 
 ## Portal conversation path
 
