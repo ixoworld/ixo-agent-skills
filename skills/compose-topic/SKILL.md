@@ -4,7 +4,7 @@ description: "Compose or refine a reviewable Topic Protocol v4 Draft from a pers
 license: Apache-2.0
 metadata:
   author: IXO
-  version: "3.5.2"
+  version: "3.5.3"
   category: collaboration
   topic-protocol: "1.0.0-rc.7"
   topic-contract-profile: qi.topic-contract-state/v4
@@ -20,6 +20,25 @@ The skill composes; the Topic Protocol resolves and projects; the Portal present
 For ordinary conversation in an existing Topic, answer or ask the next useful question. Do not restart composition for every reply. Use `facilitate-topic` only when already supplied by a bound shared Topic runtime. A private Personal Agent conversation does not establish that binding. Do not search for or delegate to another skill during a Portal composition turn.
 
 This package targets the published `@ixo/topic-protocol` 1.0.0-rc.7. The skill publisher validates the bundled artifact and source lock at release time; the host verifies the exact protocol pins when staging. Preserve existing rc.3 and rc.4 Topic pins during refinement.
+
+## Recipe creation journey
+
+When the person asks for a reusable recipe, follow the five steps in
+[topic-recipe-publishing.md](references/topic-recipe-publishing.md): describe and
+confirm the Kind, preview, choose its home, publish, use. Confirm the Kind with
+`ask_user_question` **before composing the detailed Shape**. A known Topic's
+Kind is a recommendation to confirm, not an implicit answer. Preserve an existing
+host-recorded confirmation for the same intent; changed intent or Kind needs a
+new confirmation.
+
+Default to a guided, plain-language experience. An explicit preference for a
+developer view enables protocol details; otherwise offer that choice only when
+useful. The selected model is not evidence of the person's technical ability or
+consent. Both views use exactly the same confirmation and validation gates.
+Keep identifiers, hashes, raw validator output, and implementation details in
+Advanced details or a linked artifact. Never require users to repair JSON.
+
+This skill release is 3.5.3; the unchanged composition handoff remains 3.5.2.
 
 ## Portal conversation path
 
@@ -261,7 +280,9 @@ Check the composition against the active host schema and let the staging tool pe
 
 Nobody says "make it reusable" on their own: the Portal signals this exit explicitly, through the "Publish a Topic Recipe" composer chip (its instruction names this step) or a Portal message asking to publish a named Topic as a recipe. On that signal, read [topic-recipe-publishing.md](references/topic-recipe-publishing.md) and take the exit instead of staging a Draft. Without such a signal, never offer or perform publication. The composition stays the same: Kind, Base Recipe, the Shape overlay (built only from the protocol's existing axes and transitions) and the contract text become one `shape.json` of type `TopicRecipeV1` with a `draft` block. Strip everything personal: owners, assignees, dates, the room, records.
 
-Validate the exact bytes with `scripts/validate-recipe.mjs` before writing them. Then use the Portal browser tools in order, ending your turn after each call and waiting for the Portal's result message: `propose_domain_creation` (skipped when the person names or attaches a `protocol/topic` domain they control), `write_domain_files`, `publish_recipe_release`. The Portal validates the file the same way and asks the person to sign; you never sign, never upload a card yourself, and never re-call a tool while its result is pending. If any of the three tools is absent, report `BLOCKED_RECIPE_PUBLISHING_UNAVAILABLE` and keep the Draft.
+Validate the exact bytes with `scripts/validate-recipe.mjs` before writing them. Use `propose_domain_creation` only when a publishing domain is needed, then `write_domain_files`, then `publish_recipe_release`. End your turn after an approval-producing request and wait for its correlated Portal result; never re-call a pending tool.
+
+The write preflight is different: call `write_domain_files` with `dryRun: true` and the confirmed `kindConfirmationKey`. A successful `validated` result is synchronous and creates no approval. Continue in the same turn with the identical request except omit `dryRun`; stop when that write returns `awaiting_approval`. Only after its successful write receipt may you prepare `publish_recipe_release`, then stop for approval and signing. A failed preflight never permits the write; apply the bounded repair rules above. You never sign or upload a card yourself. If a required tool is absent, report `BLOCKED_RECIPE_PUBLISHING_UNAVAILABLE` and keep the Draft.
 
 Instantiating a published recipe is the reverse path and needs nothing from you: the Portal's shelf loads the file, verifies it, registers it and opens a Draft that carries the recipe's `topicRecipeRef`.
 

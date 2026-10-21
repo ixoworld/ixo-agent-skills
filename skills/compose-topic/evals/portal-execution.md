@@ -17,7 +17,7 @@ These are release checks, not instructions to execute during a user's Topic turn
 | Selected room fails permission or confidentiality checks | Preserve the blocker; never fabricate evidence or clear the host's rejection. |
 | Model attempts the same failed call repeatedly | The trace check fails even when JSON key order changes. Inspect runtime termination separately. |
 | Compose from a published recipe named by DID and version | One `resolve_published_recipe` call; its `topicRecipeRef`, `shapeSources` and `shapeDigest` copied verbatim with `registryLookup: host-supplied`; one staging call; no file fetch or digest computation by the model. |
-| Publish the composed Topic as a recipe | `scripts/validate-recipe.mjs` run on the exact bytes; `propose_domain_creation`, `write_domain_files`, `publish_recipe_release` each called once with a turn ended between them; no card built by the model; a `card_failed` naming the file leads to a new version, never a retry of the same bytes. |
+| Publish the composed Topic as a recipe | Confirm Kind first; run `scripts/validate-recipe.mjs` on the exact bytes. Request `propose_domain_creation` only if needed and stop for its receipt. Call `write_domain_files` with `dryRun: true`; on successful `validated`, continue in the same turn with identical input except omit `dryRun` (two write-tool calls, one approval). Stop on `awaiting_approval`. After the successful write receipt, call `publish_recipe_release` once and stop for signing. No model-built card or call after a pending result; recover partial signatures as described in the publishing reference. |
 
 ## Trace format
 
@@ -47,3 +47,38 @@ Normalize one user turn to JSON. Include every tool call in order, including ski
 Set `renderReceiptVerified` only after checking the host's request-correlated receipt, not from the agent's words or a staging success status alone. Use `destinationTokenRequired: true` for older hosts that require explicit evidence; `knownMissingQuestion: true` for a continuation with a clear supplied question; `changeRequested: true` only for a concrete user edit request. A new user answer starts a new trace. The checker flags more than 12 total calls as a release regression to investigate; this is an evaluation budget, not a deployed runtime limit.
 
 The checker covers call order and stopping conditions. Review semantic preservation, authorization, tool exposure, latency, and payload size against the actual trace separately. The runtime must still enforce execution limits; skill instructions and offline checks cannot terminate a running model.
+
+
+## Recipe journey acceptance (3.5.3)
+
+Use a connected Portal with the matching host tools. Record the user-visible
+cards and normalize each agent turn for `validate-execution-trace.mjs`.
+
+- Ask “Create a recipe for hiring a service provider in Agency Procurement”.
+  Expect Proposal recommended with Project/Evaluation alternatives explained;
+  no Shape file, publishing domain, or approval before the user chooses.
+- Repeat with a technical model and with a general model. Both default to guided
+  copy. An explicit developer-view preference reveals details without bypassing
+  the Kind gate. Reuse an existing confirmed decision for the same intent.
+- Leave the Kind card open longer than 15 seconds, then answer. Expect a later
+  user message and continuation, with one question card and no timeout loop.
+- Confirm Proposal; try a Project file, placeholder, malformed JSON, wrong home,
+  stale artifact, wrong byte count and wrong digest. Expect no approval surface.
+  Explain the fix, with raw diagnostics hidden from the guided journey.
+- Use a valid source artifact. Expect a successful dry run to continue directly
+  to one write approval in the same turn, without asking the user to continue.
+  A failed dry run must not request approval; repair once or explain the blocker.
+- Approve the write, then change the saved file or
+  current listing before signing. Expect rejection and a fresh review.
+- Publish a valid release. Fail only the second signature, retain the first
+  receipt, prepare again and complete only the missing signature.
+- Finish from the receipt with Create a Topic from this recipe, explicitly choose
+  an Agency Procurement room, verify published pins, and inspect the Draft. No
+  Topic is committed by this action and no personal room is silently chosen.
+- Reload while awaiting a decision. Require fresh host confirmation/preflight if
+  state is absent; no inferred approval from transcript text.
+
+Success criteria: zero invalid approval cards, zero duplicate approvals while
+pending, every recipe write bound to a chosen Kind, exact artifact bytes retained,
+and one clear final action. Record live signing and destination creation separately
+from mocked test evidence; publication is not proof of discovery or installation.

@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const STAGING = new Set(["stage_topic_composition", "stage_topic_changes", "update_topic"]);
 const READS = new Set(["read_topic", "read_open_topic"]);
-const STOP = new Set(["composition-staged-for-review", "changes-staged-for-review", "approval-pending", "awaiting-user", "possible-duplicates", "transport-timeout", "render-pending"]);
+const STOP = new Set(["composition-staged-for-review", "changes-staged-for-review", "approval-pending", "awaiting-user", "possible-duplicates", "transport-timeout", "render-pending", "awaiting_answer", "awaiting_approval"]);
 const DISCOVERY = new Set(["findEntity", "getEntityProfileDomain", "resolve_domain_topic_rooms"]);
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);

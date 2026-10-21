@@ -2,14 +2,16 @@
 
 A recipe is a Topic Draft that other people can instantiate: the same rules
 (Shape overlay) and the same starting text (brief), pinned by version and
-digest on a `protocol/topic` domain. Compose the Topic first, exactly as for a
-normal Draft; publishing is an extra exit, not a different skill.
+digest on a `protocol/topic` domain. Confirm the intended Kind first, then compose the Topic Draft; publishing is
+an extra exit, not a different skill. This reference replaces the older
+`topic-recipe-author` capsule. Do not load that obsolete skill alongside this one.
 
-The Portal owns every write. Three browser tools exist only while a Portal
-conversation is connected; each returns at once and the outcome arrives as the
-next Portal chat message. Never re-call a tool while its result is pending,
-never poll, never ask whether the person signed. Only these three wait for the
-person, so end your turn after each of them; reads such as
+The Portal owns every write. Its approval-producing browser calls return at
+once; the outcome arrives as the next Portal chat message. A successful
+`write_domain_files` dry run returns `validated` synchronously without an approval;
+continue immediately with the same request except omit `dryRun`. Never re-call a tool while its result is pending,
+never poll, never ask whether the person signed. `ask_user_question` also returns `awaiting_answer`; stop until the user’s
+answer arrives. End your turn after each approval request; reads such as
 `resolve_published_recipe` answer in the same turn, so keep going after them.
 
 A `protocol/topic` domain publishes one recipe and its versions: the domain
@@ -17,6 +19,57 @@ card carries a single `topicRecipe` block, and the recipe `id` is the domain
 DID. A different recipe needs its own domain, named exactly like the recipe,
 because lists show the card's name as the recipe title. A new version of the
 same recipe goes to the same domain.
+
+## Five steps, one conversation
+
+Use these as conversational steps in the existing cards; do not invent a separate
+wizard tool or send five forms at once. Default to Guided view. Honour an explicit
+Developer view preference, or ask “Would you like a guided view or technical
+details?” when useful. Never choose the view silently from a model name.
+
+1. **Describe and confirm Kind.** Restate the outcome the person wants. Recommend
+   the supported Kind that governs that outcome; explain plausible alternatives.
+   For “hire a provider”, recommend Proposal when the outcome is an authorised
+   selection; Project is for coordinating delivery after selection; Evaluation
+   assesses evidence against criteria. Ask with `ask_user_question`, setting
+   `recipeIntent` to the purpose and option IDs to canonical Kinds. Use one
+   single-select choice when the intent is unambiguous, or a few explained choices
+   when ambiguous. Do not enable free text or multiple selection for this gate.
+   Wait for an actual choice. Retain its `requestKey` as `kindConfirmationKey`.
+   A rejection, silence, timeout, or model assertion never confirms a Kind.
+2. **Preview.** Show the recipe name, purpose, outcome, how work finishes, and what
+   people will fill in when using it. Explain the selected Kind in ordinary words.
+   Describe narrative stages as guidance; do not add executable transitions merely
+   because the brief has seven steps. Inherit the base Shape unless a supported
+   change is necessary. If the purpose or Kind changes, confirm again and rebuild
+   the preview before preparing files.
+3. **Choose home.** Distinguish the recipe's publishing home (`protocol/topic`)
+   from the organisation where people will use it. “Agency Procurement” may be
+   the consumer domain, while “Agency Procurement — Hire a Service Provider” is
+   the recipe's publishing domain. Verify the existing domain type and controller
+   access, or use the existing domain-creation card. Confirm visibility in plain
+   language. Use the actual publishing domain DID in the file after it exists.
+4. **Publish.** Validate exact bytes, then request a file-write approval and await
+   its receipt. Prepare the release from that receipt, await approval and signing.
+   Explain what changes, what remains unchanged, and whether anyone can read it.
+   Do not present a signature as a validation step. Invalid files must be repaired
+   before an approval card exists.
+5. **Use.** After a successful public release receipt, show
+   “Published · Version <version> · Public · Ready to use”. Finish with the Portal action
+   **Create a Topic from this recipe**. The person chooses their destination room;
+   the Portal verifies the published pins and opens a reviewable Draft. Do not
+   silently select a personal room, claim that a Topic already exists, or claim
+   Agency Procurement has it installed without verifying that destination. For a
+   private recipe, report “Published · Version <version> · Private · Access
+   required”; do not promise instantiation until the host has an authorised
+   fetch path. This change does not add a new delegation or private-use flow.
+
+Supported Kind → Base Recipe mappings: `project` → `project`, `task` → `project`,
+`proposal` → `proposal`, `evaluation` → `evaluation`, `claims` → `claims`,
+`question` → `research`, `discussion` → `discussion`, `incident` → `incident`.
+Offer only Kinds enabled by the host; `agent_task` → `flow` is not available when
+marked coming soon. “Decision” may be a display label, never the wire Kind or
+Base Recipe. Do not infer Kind just from a title containing “project” or “task”.
 
 ## The file the Portal accepts: `shape.json`
 
@@ -38,10 +91,18 @@ digest, so a change to either is a new version.
   "shape": {
     "version": 1,
     "code": "recipe/fps-game-build",
-    "axes": [ /* empty unless the person asks for an extra step; then only axes the protocol already defines */ ],
-    "transitions": [ /* empty unless the person asks for an extra step; then only commands the Portal already handles */ ],
+    "axes": [],
+    "transitions": [],
     "progressRules": [],
     "inferredRecordPolicy": { "autoAccept": [], "neverAutoAccept": [] }
+  },
+  "project": {
+    "version": 1,
+    "compatibleKind": "project",
+    "compatibleShapeVersion": 1,
+    "allowedChildKinds": ["task", "proposal", "evaluation", "question"],
+    "entryPoints": [],
+    "milestoneSuggestions": []
   },
   "draft": {
     "intent": "…",
@@ -93,15 +154,35 @@ Run the bundled checker on the exact bytes you intend to upload:
 node scripts/validate-recipe.mjs /workspace/recipe/shape.json --did <recipe-domain-did> --version 1.0.0 --kind project
 ```
 
-It resolves the merged Shape with the pinned protocol artifact and prints the canonical `topicRecipeRef` the Portal will pin on Topics, the sha256 of the bytes the chain will anchor, and the resolved sources. Fix every error; the Portal runs the same resolution and refuses a file it cannot resolve.
+It resolves the merged Shape with the pinned protocol artifact and prints the canonical `topicRecipeRef` the Portal will pin on Topics, the sha256 of the bytes the chain will anchor, and the resolved sources. This one file check is allowed for recipe publishing; repository audits and
+composition test suites remain maintainer work. Fix actionable errors once, then
+stop and explain any remaining blocker. Use the same verified file throughout;
+never regenerate its JSON while copying it into a tool call.
+
+Save the file as a sandbox download artifact. Supply its HTTPS download URL,
+SHA-256 of the exact UTF-8 bytes, and byte count as `sourceArtifact: { url, digest,
+sizeBytes }`. Do not use a viewer page, placeholder, or guessed digest. First call
+`write_domain_files` with `dryRun: true` and `kindConfirmationKey`. A `validated`
+result requires continuing in the same turn with the same input except omit
+`dryRun`; it does not mean anything was
+written. If the source changes or expires, create a fresh verified artifact and
+validate it again. Inline `content` is supported for small complete files, never
+for truncating a large artifact.
+
+Translate errors into fixes: a namespace mismatch means choose the correct
+publishing home; version mismatch means align the new version folder and recipe;
+Kind mismatch means return to the confirmed outcome; digest/byte mismatch means
+use the original verified artifact; unreadable current listing means wait and
+retry its read, not replace it with an empty listing. Put raw diagnostics in
+Advanced details. Changing a request key never fixes invalid content.
 
 ## Publish through the Portal, in this order
 
 1. `propose_domain_creation({ requestKey, name, description, entityType: "protocol/topic", tags?, purpose?, image? })` with `name` exactly the recipe's name. Skip when the person attached or named an existing `protocol/topic` domain they control. Outcome message: `Domain "<name>" created: <DID> …` or `… cancelled.`; when it says the person renamed the domain, use the new name as the recipe `label`. Use that DID as the recipe `id`; write the file only now, because the id is part of the bytes.
-2. `write_domain_files({ requestKey, entityDid, public, files: [{ path, content, mimeType }] })` with `shape.json` (and any companion files) under `/recipes/<slug>/<version>/`. Outcome message carries one receipt per file: `fileId`, `version`, `digest`, `publicUrl`. An existing path is reported, not replaced: use a new version folder rather than `overwrite`.
-3. `publish_recipe_release({ requestKey, entityDid, recipe: { version, protocolVersion: "1.0.0-rc.7", baseKind, baseRecipe, listingVisibility }, shape: { fileId, path, version, digest, mediaType, publicUrl? }, access })` with the `shape.json` receipt verbatim. The Portal downloads the file, checks the bytes against `digest`, resolves it as a recipe for `baseKind`, then asks for two signatures: the Domain Card re-issued with a `topicRecipe` block, and the `#top-nn` linked resource whose proof is the byte digest. Outcome message: `Recipe release "<requestKey>" published … Shape anchored as <DID>#top-nn …`, `… declined`, or `… failed (card_failed | shape_failed)`. A `card_failed` whose message names the file means the file, not the signature: fix the file, write a new version, release again. A `card_failed` that says the version is already published means the same: pick the next version.
+2. `write_domain_files({ requestKey, kindConfirmationKey, entityDid, public, files: [{ path, sourceArtifact: { url, digest, sizeBytes }, mimeType }] })` with `shape.json` (and any companion files) under `/recipes/<slug>/<version>/`. Outcome message carries one receipt per file: `fileId`, `version`, `digest`, `publicUrl`. An existing path is reported, not replaced: use a new version folder rather than `overwrite`.
+3. `publish_recipe_release({ requestKey, kindConfirmationKey, entityDid, recipe: { version, protocolVersion: "1.0.0-rc.7", baseKind, baseRecipe, listingVisibility }, shape: { fileId, path, version, digest, mediaType, publicUrl? }, access })` with the `shape.json` receipt verbatim. The Portal downloads the file, checks the bytes against `digest`, resolves it as a recipe for `baseKind`, then asks for two signatures: the Domain Card re-issued with a `topicRecipe` block, and the `#top-nn` linked resource whose proof is the byte digest. Outcome message: `Recipe release "<requestKey>" published … Shape anchored as <DID>#top-nn …`, `… declined`, or `… failed (card_failed | shape_failed)`. A `card_failed` whose message names the file means the file, not the signature: fix the file, write a new version, release again. A `card_failed` that says the version is already published means the same: pick the next version.
 
-After step 3 the recipe is discoverable: the Portal's Settings → Topics lists it under "Published recipe", the shelf pins it, and a Topic created from it carries `topicRecipeRef: { id: <DID>, version, digest }` where `digest` is the canonical Shape digest the checker printed, not the byte digest.
+After step 3, use the release card’s action or the publishing domain’s recipe card. Public discovery can lag and private recipes require access; verify a listing before claiming it is discoverable. A Topic created from the verified recipe carries `topicRecipeRef: { id: <DID>, version, digest }` where `digest` is the canonical Shape digest the checker printed, not the byte digest.
 
 ## A new version of a published recipe
 
@@ -110,3 +191,16 @@ Load the current release with `resolve_published_recipe`, change only what the p
 ## Publishing from an existing Topic
 
 When the person says "save this Topic as a recipe", read the Topic once, take its Kind, Base Recipe, optional pinned recipe overlay and its contract text (intent, outcome, definition of done, open questions) as the brief, strip everything personal (owners, assignees, dates, room, records), and continue from step 1. The Topic itself is not modified.
+
+
+## Recovery
+
+Reuse the same operation key for an identical pending request and wait for its
+host result. Never send repeated approval cards to make progress. If the page
+reloads and the host no longer has the Kind confirmation or preview, explain
+that it needs a fresh confirmation and revalidate; do not reconstruct approval
+from a chat message. If the listing signature succeeds but the Shape signature
+fails, preserve the receipt and prepare the same release again. The host checks
+the current listing and resumes the missing signature when it matches. A changed
+listing or file needs a fresh preview. Never claim publication on the strength
+of the first signature alone.
