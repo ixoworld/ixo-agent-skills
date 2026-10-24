@@ -1,6 +1,6 @@
 ---
 name: software-review-accessibility-review
-description: Author bounded accessibility, usability and localisation review asks for named user tasks, with manual expert evidence and explicit limits on automated conclusions.
+description: "Draft a request (an ask) for a qualified human specialist to test the accessibility, usability or localisation of a named user task through IXO Expert Reviews: the agreed WCAG version and level, assistive technology, languages, devices and connectivity, the evidence the reviewer must return, and payment and follow-up terms. Use when someone wants an expert accessibility or usability audit, screen-reader or assistive-technology testing, a WCAG conformance review, or local-language usability testing commissioned from a specialist, even if they never say ask. Not for auditing a page or design yourself, and never for declaring WCAG conformance from an automated scan. For speed or cost use software-review-performance-review; for agent tool behaviour use software-review-agent-review."
 license: Apache-2.0
 metadata:
   namespace: software-review
@@ -11,25 +11,28 @@ metadata:
 
 # Accessibility, usability and localisation review asks
 
-Adapted import of Anthropic's `accessibility-review` SKILL.md. The categories,
-common issues, testing approach and evidence tables below retain its structure;
-IXO changes are recorded in [PROVENANCE.json](PROVENANCE.json).
+Modified from Anthropic's `accessibility-review` SKILL.md (Apache-2.0); the
+changes are listed in [PROVENANCE.json](PROVENANCE.json).
 
-First read [the ask contract](references/ask-contract.md). Author an ask for a
-qualified specialist to test a named user task on an agreed build/environment.
-Return `needs-input` for missing scope, access, user needs, success/failure,
-evidence, qualifications, payment or follow-up terms. Use the tables as requested
-evidence, never prefilled findings. This skill does not perform a review merely
-by drafting it.
+An ask is a request, posted through IXO Expert Reviews, for a qualified human
+specialist to review a named build. This skill drafts the ask for testing a named
+user task on an agreed build/environment; drafting it is not a review.
+
+Read [the ask contract](references/ask-contract.md) and start from the blank draft
+that `scripts/check_ask.py --template` prints (see the end of this file). Keep
+missing scope, access, user needs, success/failure, evidence, qualifications,
+payment or follow-up terms null, with a question in `missing_inputs`, and leave
+the draft `needs-input`. Use the tables below as the evidence you request, never
+as prefilled findings.
 
 Agree the standard/version/level, task sample and exclusions. Design inspection
 can identify intended semantics; only runtime testing can observe actual keyboard,
 focus or screen-reader behavior. Name browser, OS and assistive-technology versions.
 A passing automated check does not certify accessibility or establish complete
-compliance. Report untested areas and require manual/expert testing where needed.
-The source's 44px criterion was AAA, and its claimed automated coverage percentage
-has been removed. Consult the dated [WCAG 2.2 Recommendation](https://www.w3.org/TR/2024/REC-WCAG22-20241212/)
-for criterion level, scope and exceptions; this selected list is not the standard.
+compliance, because automated tools see only part of the criteria. Report untested
+areas and require manual/expert testing where needed. Consult the dated
+[WCAG 2.2 Recommendation](https://www.w3.org/TR/2024/REC-WCAG22-20241212/) for
+criterion level, scope and exceptions; this selected list is not the standard.
 
 ## Selected WCAG checks (not a complete conformance checklist)
 
@@ -44,7 +47,7 @@ for criterion level, scope and exceptions; this selected list is not the standar
 - **2.4.3** Logical focus order
 - **2.4.7** Visible focus indicator
 - **2.5.5 (AAA)** Enhanced target size: 44x44 CSS pixels, subject to exceptions. This is not an AA requirement.
-- For a WCAG 2.2 AA scope, consult **2.5.8** (minimum target size, including spacing and exceptions) in the dated standard linked below.
+- For a WCAG 2.2 AA scope, consult **2.5.8** (minimum target size, including spacing and exceptions) in the dated standard linked above.
 
 ### Understandable
 - **3.2.1** Predictable on focus (no unexpected changes)
@@ -139,3 +142,18 @@ Keep findings linked to observed interactions. State user impact and uncertainty
 then interpretation/recommendation, then the designated specialist's evaluation.
 No ticket creation, publishing, payment commitment or compliance certification is
 authorised by this skill. Follow-up tests the agreed fixes on a named new build.
+
+## Checking the draft
+
+`scripts/check_ask.py`, in this skill's folder, checks a JSON ask offline against
+the contract, this skill's pinned source identity and the draft-only decisions.
+Call it by its full path, since the working directory is usually the user's
+project:
+
+```bash
+python3 /path/to/software-review-accessibility-review/scripts/check_ask.py --template > ask.json
+python3 /path/to/software-review-accessibility-review/scripts/check_ask.py ask.json
+```
+
+It prints `ready-for-approval` (exit 0) or `needs-input` with the failing fields
+(exit 1). Passing is a structural check, not evidence of accessibility.

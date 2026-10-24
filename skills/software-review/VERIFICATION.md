@@ -6,7 +6,7 @@ Research downloads and the independent bare repository are outside this worktree
 and are not included in the PR. No private repository content, credentials or
 actual user data is included. All ask fixtures are synthetic.
 
-## Completed offline checks
+## Completed offline checks (at `e3dfe82`)
 
 - Repository validator: `bash scripts/validate-skill.sh <leaf-path>` — 4/4 pass.
 - Local skill-creator `scripts/quick_validate.py <leaf-path>` with cached
@@ -64,10 +64,30 @@ All manifests have `status: packaged` and `cid: null`; no publish command ran.
 This uses an unmerged helper snapshot, so it is provisional dependency integration
 evidence rather than a claim that current-main CI supports namespaces.
 
+## Skill optimisation patch (2026-10-24)
+
+Review fixes applied on top of `e3dfe82`: per-skill checker copies with
+`--template`, a typed ask shape in the contract, trigger-oriented descriptions,
+leaner SKILL.md bodies, and behaviour evals moved to skill-creator case folders.
+Checks run on the patched tree:
+
+- `bash scripts/validate-skill.sh <leaf-path>` — 4/4 pass (descriptions 790–855 chars).
+- skill-creator `scripts/quick_validate.py <leaf-path>` with PyYAML 6.0.2 — 4/4 pass.
+- `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/software-review/software-review-scenario-planning/tests -v`
+  — 11 tests pass. With the previous `check_ask.py` copied into every skill, 7
+  subtests fail (template, null `planned_actions`, reordered sources, broad target).
+- Ruff 0.15.12 `check` and `format --check` on `skills/software-review` — pass.
+- `git diff --check` — pass.
+
+Not re-run: the namespace helper (it lives in the separate infrastructure
+checkout), so the per-archive file counts above are for `e3dfe82`. Each archive
+now also carries `scripts/check_ask.py` and that skill's `evals/` cases. The seven
+behaviour evals were not run against a model.
+
 ## Limits and skipped checks
 
-- Seven behavior prompts/assertions are supplied in the planning skill's
-  `evals/behavior-cases.json`; no external model was run. Candidate structure
+- Seven behavior prompts/assertions are supplied as `evals/<case>/` folders in
+  the skills they exercise; no external model was run. Candidate structure
   checks do not prove model adherence, factual permission or product quality.
 - No paid model evaluations, upstream installers/evaluators, target tests,
   production scans, live capsule uploads, merges or deployments were performed.

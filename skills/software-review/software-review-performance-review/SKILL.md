@@ -1,6 +1,6 @@
 ---
 name: software-review-performance-review
-description: Author bounded performance and agent cost review asks using comparable task measurements, variance, correctness, permissions and user-agreed budgets.
+description: "Draft a request (an ask) for a qualified human specialist to measure the performance or running cost of software or an AI agent through IXO Expert Reviews: a comparable baseline, controlled repeated measurements and variance, correctness and permission checks, token and tool usage priced only from a dated rate card, and agreed budgets. Use when someone wants an expert performance, latency, load or agent cost review commissioned, wants to know what a reviewer should measure for a slow page, API or agent, or wants a fair comparison with a named competitor, even if they never say ask. Not for profiling or optimising code yourself, running benchmarks or paid model evaluations, or quoting savings without measurements. For accessibility use software-review-accessibility-review; for agent tool behaviour use software-review-agent-review."
 license: MIT
 metadata:
   namespace: software-review
@@ -11,15 +11,17 @@ metadata:
 
 # Performance and cost review asks
 
-Adapted import of Addy Osmani's `performance-optimization` SKILL.md. Retained
-measurement routing and bottleneck tables support a specialist review ask;
-implementation, installs, fixed budgets and automatic keep/revert/commit actions
-have been removed. See [PROVENANCE.json](PROVENANCE.json).
+An ask is a request, posted through IXO Expert Reviews, for a qualified human
+specialist to review a named build. This skill drafts the ask for measuring speed
+and cost; the output is an ask, not an optimisation or a benchmark run.
 
-Read [the ask contract](references/ask-contract.md) first. Name the user's task,
-version/environment and symptom or decision. Capture missing baselines, budget,
-permissions and payment/follow-up inputs as `needs-input`; do not invent targets
-or provider prices. The output is an ask, not an optimisation or benchmark run.
+Read [the ask contract](references/ask-contract.md) and start from the blank draft
+that `scripts/check_ask.py --template` prints (see the end of this file). Name the
+user's task, version/environment and symptom or decision. Keep missing baselines,
+budget, permissions and payment/follow-up inputs null with a question in
+`missing_inputs`, and leave the draft `needs-input`. Do not invent targets or
+provider prices: a made-up budget or rate turns into a claimed saving nobody
+measured.
 
 ## Measurement plan
 
@@ -108,3 +110,22 @@ report observed measurements, uncertainty, interpretation and proposed experimen
 separately. Follow-up repeats the protocol on the named changed build and adds a
 small regression check for correctness and permission. Release, code changes,
 payment authorisation and settlement are separate decisions.
+
+## Checking the draft
+
+`scripts/check_ask.py`, in this skill's folder, checks a JSON ask offline against
+the contract, this skill's pinned source identity and the draft-only decisions.
+Call it by its full path, since the working directory is usually the user's
+project:
+
+```bash
+python3 /path/to/software-review-performance-review/scripts/check_ask.py --template > ask.json
+python3 /path/to/software-review-performance-review/scripts/check_ask.py ask.json
+```
+
+It prints `ready-for-approval` (exit 0) or `needs-input` with the failing fields
+(exit 1). Passing is a structural check; it measures nothing.
+
+Adapted from Addy Osmani's `performance-optimization` SKILL.md (MIT): measurement
+routing and bottleneck tables kept; implementation, installs, fixed budgets and
+automatic keep/revert/commit actions removed. Details: [PROVENANCE.json](PROVENANCE.json).

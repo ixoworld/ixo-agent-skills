@@ -91,6 +91,21 @@
       "expected_error": "permissions.targets must be exact"
     },
     {
+      "id": "broad-named-authority",
+      "replace": {
+        "permissions.targets": [
+          "production"
+        ],
+        "planned_actions": [
+          {
+            "target": "production",
+            "action": "inspect-synthetic-fixture"
+          }
+        ]
+      },
+      "expected_error": "permissions.targets must be exact"
+    },
+    {
       "id": "source-drift",
       "replace": {
         "provenance.sources.0.revision": "0000000000000000000000000000000000000000"

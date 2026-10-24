@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: price-absent
+expected_outcome: |
+  Measured usage reported apart from prices and the specialist fee, a request for a dated rate card and an identified competitor with equivalent conditions, and no invented savings or paid model runs.

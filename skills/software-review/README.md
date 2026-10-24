@@ -20,8 +20,10 @@ use scenario/documentation/code references and are **not** vendor SKILL.md impor
 Select dimensions only when relevant. Localisation and regression are supporting
 references instead of overlapping standalone skills.
 
-Each skill has a local `references/ask-contract.md` so independent capsules are
-self-contained; tests require identical copies. Every ask requires defined user/task,
+Each skill has a local `references/ask-contract.md` and `scripts/check_ask.py` so
+independent capsules are self-contained; tests require identical copies. The checker
+defaults to its own skill's `PROVENANCE.json`, and `--template` prints a blank draft
+with that provenance already filled in. Every ask requires defined user/task,
 build/environment, scope, success/failure, evidence, reviewer qualifications,
 permissions, payment and follow-up terms. Missing inputs stay explicit. Observation,
 interpretation, authoritative evaluation, payment authorisation and settlement stay
@@ -81,14 +83,19 @@ done
 python3 -m unittest discover -s skills/software-review/software-review-scenario-planning/tests -v
 ```
 
-Maintainer fixtures/tests and the source catalog live inside the planning skill,
-so all non-documentation resources have a leaf owner. The offline suite checks four authored complete candidates, 19 insufficient/unsafe/
-misattributed variants, CLI error behavior, local references, contract copies,
-source/license identity and four canonical tar archive dry runs. The archive smoke
-test checks layout and does not duplicate namespace discovery/publication logic.
+Maintainer tests, their fixtures (`tests/fixtures/`) and the source catalog live
+inside the planning skill, so all non-documentation resources have a leaf owner.
+The offline suite checks four authored complete candidates against each skill's
+own checker, the `--template` draft, accepted contract shapes, 20
+insufficient/unsafe/misattributed variants, CLI error behavior, local references,
+identical contract and checker copies, the behaviour-eval layout, source/license
+identity and four canonical tar archive dry runs. The archive smoke test packs each
+leaf as `tar -C skills/software-review <leaf>` would and checks layout; it does not
+duplicate namespace discovery/publication logic.
 
-[Behavior fixtures](software-review-scenario-planning/evals/behavior-cases.json) contain seven prompts/assertions;
-these are **not executed model evaluations**. Deterministic checks validate
-candidate structure/resources, not model adherence, permission truth or product
-correctness. [Verification](VERIFICATION.md) records exact commands, results and
-skipped/blocked checks.
+Behaviour evals live in each skill's `evals/<case>/` folder (`prompt.md`,
+`case.yaml`, `graders/`), the layout skill-creator and `claude plugin eval` run:
+seven cases across the four skills. These are **not executed model evaluations**
+yet. Deterministic checks validate candidate structure/resources, not model
+adherence, permission truth or product correctness. [Verification](VERIFICATION.md)
+records exact commands, results and skipped/blocked checks.
