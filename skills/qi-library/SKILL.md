@@ -5,6 +5,11 @@ description: Find, read, create, edit, save, and organise persistent files for Q
 
 # Qi Library
 
+## Runtime contract
+
+The contract preserves reads, requested writes, sharing, deletion, and sandbox transfers. `vfs_search`, `vfs_list`, and `vfs_read` currently have conservative `write` scheduling effects in QiForge. Their business operations remain reads. The full capsule requires every declared dependency and capability. Narrow native file reads remain available independently. Namespace and subtree authority still comes from the original host handlers. See [skill-contract.json](skill-contract.json) for machine-checked dependencies. The declaration grants no authority.
+
+
 Resolve the user's file, choose the smallest adequate content-access route, and
 save the intended result without losing its identity or widening access. Use
 the runtime's actual tools; this skill supplies workflow, not a storage service.

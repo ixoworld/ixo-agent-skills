@@ -1,0 +1,20 @@
+{
+  "sourceRepository": "https://github.com/ixoworld/ixo-agent-skills",
+  "sourceClaim": "workflow-reported",
+  "sourceRevision": "stage6-unpublished-source",
+  "canonicalContract": "scripts/lib/skill-contract.ts",
+  "files": {
+    "package.json": "5dbcdba2b016c940d4dab7dda9f7e602daaff24e4b984bf658d8c522d4d8bd50",
+    "package-lock.json": "f018f722ee3a3e40fcc27fac73922c1fd21db1b5b1698e71317dabe4ed825cde",
+    "tsconfig.json": "d949aae7261a2d70651b6861dc7c2ff92cfa00c9afdfa0142764f638682ae479",
+    "scripts/package.json": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428",
+    "scripts/capsules.ts": "8b80413845ea60c68a1e2e405fb481da5e2f4bd44010110c4505c23ed39209b7",
+    "scripts/validate-skill.sh": "1a38c6b8b8ae0b9e327bc37457733bb4937763dae44fc59f92bba4509acda2d4",
+    "scripts/lib/publish.ts": "d7269be05135bbe32235f4c0d7e7f06948d9d1e698e0cd0fb369a3a05b2bb3ca",
+    "scripts/lib/skill-contract.ts": "22e2263e6a5d5179f29e4512879c83b511480db80e3811bf892781b76d352840",
+    "scripts/lib/archive.ts": "533f28626679a2e9c3f5a5cbcc8d9d8b02b7428aebc9dcd4d58e5c91b596eb86",
+    "scripts/lib/validate.ts": "a86166fb758fc214b589d44c9f9d18b7f216df1eef91bbbaf33d0eda13995480",
+    "scripts/lib/build.ts": "527c118f441866988ea675e009be81646cfe605d985f5f163123663fdb027a4a",
+    "scripts/tests/capsules.test.ts": "a6752554c2480194fe347855c9d5b1b514b31d1376ece466e468fa39c9cdb33a"
+  }
+}

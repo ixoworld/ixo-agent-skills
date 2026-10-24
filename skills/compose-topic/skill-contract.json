@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "skillName": "compose-topic",
+  "runtime": "qiforge-workers",
+  "audiences": [
+    "private",
+    "shared"
+  ],
+  "effects": [
+    "read",
+    "stage",
+    "write"
+  ],
+  "requiredTools": [
+    {
+      "name": "read_topic",
+      "effect": "read"
+    },
+    {
+      "name": "stage_topic_changes",
+      "effect": "write"
+    },
+    {
+      "name": "stage_topic_composition",
+      "effect": "write"
+    },
+    {
+      "name": "update_topic",
+      "effect": "write"
+    }
+  ],
+  "requiredCapabilities": [],
+  "requiredServices": []
+}

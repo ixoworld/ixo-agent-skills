@@ -66,34 +66,15 @@ The skill binds the gateway to its origin: `prepare` accepts a gateway only if i
 
 The gateway only honours grants that the user issued to the gateway, so the oracle can only authenticate searches the user already allowed. The receipt records the oracle as `actorDid` and the user as `rootActorDid`. Revoking the oracle delegation stops the oracle at once, because the gateway revocation-checks the hop.
 
-## Workers runtime change required
+## Source dependencies and installed compatibility
 
-The runtime does not do this today. `ctx.ucan.mintInvocation` hard-codes `facts: [{ nonce }]`, and nothing lists a user's grants for a service. The patch `qiforge-workers-search-gateway-authorize.patch` (against ixoworld/qiforge `e61b285`) makes three changes.
+The delegated route is implemented by the existing source changes below:
 
-**1. Facts passthrough.**
+- [QiForge PR 325](https://github.com/ixoworld/qiforge/pull/325), commit `4e2765565d065d85c5c369047435d7a7c636efd6`, supplies the request-digest-bound host authorizer.
+- [Search gateway PR 12](https://github.com/ixoworld/ixo-search-gateway/pull/12), commit `f8d06e3377813269faa16ea96626462ecb509d5f`, supplies delegated gateway verification.
 
-- `ctx.ucan.mintInvocation(target, { can, facts })` and `createInvocationFromDelegation(…, { facts })` merge caller facts into the invocation.
-- The host still generates `nonce` last, so a caller cannot choose it.
-- Files: `do/ucan-service.ts`, `do/ambient.ts`, `core/runtime-context.ts`, `plugin-api/types.ts`.
+These are source pins, not evidence that a deployment contains either change. The earlier patch against `e61b285` is historical and is not an installation route. Do not implement or apply a second authorizer from this skill.
 
-**2. `ctx.ucan.listAudienceGrants(userDid, { storeUrl, audienceDid })`.**
+Before execution, the host must expose `search_gateway_authorize` and `sandbox_write_blob` with write scheduling effects. Missing either tool is a concrete block. The gateway must independently prove delegated, request-digest-bound verification and denial of missing, revoked, or mismatched grants. A self-issued-only gateway cannot satisfy this route.
 
-- Returns every active UCAN-store delegation that the user issued **to that audience**, at most 20.
-- Issuer and audience are checked on the token itself. The existing `getServiceDelegation` matches store rows by capability only, and could hand back the user's oracle delegation instead.
-
-**3. New `search-gateway` plugin** (`plugins/search-gateway/`), bundled in `BUNDLED_WORKERS_PLUGINS`.
-
-- It contributes one request-time tool, `search_gateway_authorize({ requestDigest })`, only when the oracle has a signing key.
-- The tool:
-  1. resolves the gateway DID from `SEARCH_GATEWAY_URL`, or from the `NETWORK` defaults: `search.ixo.earth`, `testnet.search.ixo.earth`, `devnet.search.ixo.earth`;
-  2. mints `search/authenticate` on `ixo:search` with facts `{ iat, rd }`;
-  3. appends the user's gateway grants, read from `UCAN_STORE_URL`;
-  4. stores the Bearer value in the user-scoped blob store with a 300 s TTL;
-  5. returns `{ blobId, writeTo, audience, grantCount }`.
-- Error text tells the agent whether the user is missing the authentication capability or the gateway grants.
-
-Verified on a local clone of qiforge `e61b285`:
-
-- `tsc --noEmit`, ESLint (no new findings) and Prettier are clean.
-- The core suite passes: 52 files, 391 tests, including 4 new tests for the tool.
-- The workerd suite passes: 105 files, 785 tests.
+`delegated-search-v1` names this requirement in `skill-contract.json`. The current Workers gate has no installed service-profile evidence and blocks this requirement. Source tests or an unpublished archive cannot clear that block.

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "skillName": "facilitate-topic",
+  "runtime": "qiforge-workers",
+  "audiences": [
+    "private",
+    "shared"
+  ],
+  "effects": [
+    "read",
+    "stage",
+    "write"
+  ],
+  "requiredTools": [
+    {
+      "name": "read_topic",
+      "effect": "read"
+    },
+    {
+      "name": "propose_topic_changes",
+      "effect": "write"
+    }
+  ],
+  "requiredCapabilities": [],
+  "requiredServices": []
+}
