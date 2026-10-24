@@ -1,0 +1,219 @@
+{
+  "reviewed_at": "2026-10-24",
+  "policy": "Only selected paths in each skill PROVENANCE.json are adapted. Deferred root licenses are observed, not per-file clearance. Unknown/unverified licensing excludes content. No upstream endorsement.",
+  "candidates": [
+    {
+      "repository": "microsoft/ai-agent-eval-scenario-library",
+      "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+      "decision": "adapted-reference",
+      "reason": "Business/capability selection, tool/authority boundaries and regression concepts for original IXO adapters.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "microsoft/eval-guide",
+      "revision": "7a22a8957ced79a35fd7b4634fd5b5eac56c308e",
+      "decision": "adapted-reference",
+      "reason": "Planning/triage concepts only; no workbook, Copilot lifecycle, numeric defaults or ship decisions.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "7df20dcdf9197e9945c14858d41c60f11b52b93e5b69e2b63416b874d598d322",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "anthropics/knowledge-work-plugins",
+      "revision": "33d3dea41a341b341d4f5da2e8801ae0c89be2b8",
+      "decision": "adapted-skill-import",
+      "reason": "design/skills/accessibility-review/SKILL.md; retained categories/tables with documented corrections.",
+      "license": "Apache-2.0",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "addyosmani/agent-skills",
+      "revision": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "decision": "adapted-skill-import",
+      "reason": "skills/performance-optimization/SKILL.md; retained measurement routing/tables, removed mutation/commit paths.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "microsoft/waza",
+      "revision": "1b763c094145f2dd7e5148898bee957737c6922b",
+      "decision": "deferred",
+      "reason": "README/tree describe an evaluation CLI and runner skills; harness implementation is outside ask authoring.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "7df20dcdf9197e9945c14858d41c60f11b52b93e5b69e2b63416b874d598d322",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "aws-samples/sample-agent-skill-eval",
+      "revision": "13b2277b300d2beafa09bbbe425ca0cc41f34c8d",
+      "decision": "deferred",
+      "reason": "README/tree contain evaluator and permission fixtures; a future harness option, no content imported.",
+      "license": "MIT-0",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "7cb750713252efd1d578837ba8785b61319109906f0c10b87adab7cf4badfc42",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "langchain-ai/agentevals",
+      "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+      "decision": "adapted-reference",
+      "reason": "Pinned Python trajectory modes inspected as data; no code or evaluator imported/executed.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "ff1c7be3c5e3be6ae6ee8956ed7ee7c47c731c60e65540b332c108026713b30f",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "langchain-ai/openevals",
+      "revision": "d03e56a353cc3928db39586593f801eba289f4be",
+      "decision": "deferred",
+      "reason": "README describes evaluator code including external LLM judges; no code or model evaluation imported/run.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "ff1c7be3c5e3be6ae6ee8956ed7ee7c47c731c60e65540b332c108026713b30f",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "wshobson/agents",
+      "revision": "0874a27b17a22e2b7c2e2bcd725768e0803cad06",
+      "decision": "deferred",
+      "reason": "README/tree expose a broad agent/plugin inventory; avoid overlapping coding/review roles.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "f89abb55d9f073f38f1703e4518f0613c788c6174be7f13b8dfe48a1c076c746",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "magnus919/agent-skills",
+      "revision": "7f446e60055b335dd26831371a027fa6b59da3e2",
+      "decision": "deferred",
+      "reason": "Tree includes agent-evals-and-observability; broad observability overlaps selected trajectory/planning coverage.",
+      "license": "MIT",
+      "root_license_path": "LICENSE.md",
+      "root_license_sha256": "22fa3b1ec405fe440e86d0d293ce21de0c637ebc37f263dbe3032ee47215cfe2",
+      "inspected_paths": [
+        "LICENSE.md",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "charlieviettq/awesome-agent-skill",
+      "revision": "c567ae426d55fa498e919fc0f5a37c582d5c7a2c",
+      "decision": "deferred",
+      "reason": "Supplied .claude/skills/va-qa-expert/SKILL.md exists in the pinned tree, but no body imported; avoid overlapping QA roles. Root license is not per-file clearance.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "0740334b09227d1d8be05ce1bbc99cf95dda03e41ae95cee72b629bd8d75259f",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "sebastianwessel/skills",
+      "revision": "c8fceb4c22e759c4c40927a445fad63ee6513bb2",
+      "decision": "deferred",
+      "reason": "Tree includes spec readiness/implementation review; a different implementation workflow from specialist ask authoring.",
+      "license": "Apache-2.0",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "Kareem-Rashed/rubric-eval",
+      "revision": "bdd1cabd9675b0d809f39b3c451d7faed8af1fc5",
+      "decision": "deferred",
+      "reason": "README/tree contain rubric evaluator package code; a future harness option, no code imported.",
+      "license": "MIT",
+      "root_license_path": "LICENSE",
+      "root_license_sha256": "638a470f77d6cdf8fa733d8c8af1764f4794af2d8f851686070b63e30d7f1dea",
+      "inspected_paths": [
+        "LICENSE",
+        "README.md",
+        "recursive tree (not truncated)"
+      ]
+    },
+    {
+      "repository": "darkrishabh/agent-skills-eval",
+      "revision": null,
+      "decision": "excluded-unverified",
+      "reason": "Commit resolution timed out; revision, source and applicable license unverified. No content used.",
+      "license": null,
+      "root_license_path": null,
+      "root_license_sha256": null,
+      "inspected_paths": []
+    },
+    {
+      "repository": "microsoft/skills",
+      "revision": null,
+      "decision": "excluded-unverified",
+      "reason": "Commit resolution timed out; revision, source and applicable license unverified. No content used.",
+      "license": null,
+      "root_license_path": null,
+      "root_license_sha256": null,
+      "inspected_paths": []
+    }
+  ],
+  "product_context": {
+    "requested_url": "https://asks.ixo.world/developers",
+    "page_canonical_url": "https://reviews.ixo.world/developers",
+    "retrieved_at": "2026-10-24",
+    "retrieved_html_sha256": "bb0b28a1ee81874172e39bc35fbcb1b0c946030b0d270692a316c223a348348b",
+    "use": "Public product context paraphrased: bounded approved ask/payment/terms, specialist review, findings-to-tests and follow-up. No page text, example commercial figures or install instructions copied."
+  },
+  "standards_reference": {
+    "url": "https://www.w3.org/TR/2024/REC-WCAG22-20241212/",
+    "use": "Dated link for criterion levels/exceptions; no imported text or conformance claim."
+  }
+}

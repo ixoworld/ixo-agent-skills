@@ -1,0 +1,158 @@
+{
+  "base_case": "accessible-form",
+  "cases": [
+    {
+      "id": "missing-user",
+      "replace": {
+        "user": null
+      },
+      "expected_error": "user"
+    },
+    {
+      "id": "missing-version",
+      "replace": {
+        "target.version": null
+      },
+      "expected_error": "target.version"
+    },
+    {
+      "id": "missing-evidence",
+      "replace": {
+        "evidence.required": []
+      },
+      "expected_error": "evidence.required"
+    },
+    {
+      "id": "missing-failure",
+      "replace": {
+        "criteria.failure": []
+      },
+      "expected_error": "criteria.failure"
+    },
+    {
+      "id": "missing-qualification",
+      "replace": {
+        "reviewer.qualifications": []
+      },
+      "expected_error": "reviewer.qualifications"
+    },
+    {
+      "id": "unknown-offer",
+      "replace": {
+        "terms.payment": null
+      },
+      "expected_error": "terms.payment"
+    },
+    {
+      "id": "unknown-follow-up",
+      "replace": {
+        "terms.follow_up": null
+      },
+      "expected_error": "terms.follow_up"
+    },
+    {
+      "id": "unknown-authority",
+      "replace": {
+        "permissions.authorisation_evidence": null
+      },
+      "expected_error": "permissions.authorisation_evidence"
+    },
+    {
+      "id": "third-party-target",
+      "replace": {
+        "planned_actions": [
+          {
+            "target": "https://third-party.example.invalid",
+            "action": "inspect-synthetic-fixture"
+          }
+        ]
+      },
+      "expected_error": "planned_actions exceed"
+    },
+    {
+      "id": "ungranted-write",
+      "replace": {
+        "planned_actions": [
+          {
+            "target": "local-fixture://support-v1",
+            "action": "execute-refund"
+          }
+        ]
+      },
+      "expected_error": "planned_actions exceed"
+    },
+    {
+      "id": "wildcard-authority",
+      "replace": {
+        "permissions.targets": [
+          "*"
+        ]
+      },
+      "expected_error": "permissions.targets must be exact"
+    },
+    {
+      "id": "source-drift",
+      "replace": {
+        "provenance.sources.0.revision": "0000000000000000000000000000000000000000"
+      },
+      "expected_error": "provenance.sources"
+    },
+    {
+      "id": "source-renamed",
+      "replace": {
+        "provenance.upstream_skill_name": "ixo-original"
+      },
+      "expected_error": "provenance.upstream_skill_name"
+    },
+    {
+      "id": "auto-payment",
+      "replace": {
+        "decisions.payment_authorisation": "approved"
+      },
+      "expected_error": "decisions.payment_authorisation"
+    },
+    {
+      "id": "auto-evaluation",
+      "replace": {
+        "decisions.authoritative_evaluation": "approved"
+      },
+      "expected_error": "decisions.authoritative_evaluation"
+    },
+    {
+      "id": "auto-settlement",
+      "replace": {
+        "decisions.settlement": "settled"
+      },
+      "expected_error": "decisions.settlement"
+    },
+    {
+      "id": "unnamed-competitor",
+      "replace": {
+        "comparison": {
+          "alternatives": [],
+          "equivalent_conditions": "same task"
+        }
+      },
+      "expected_error": "comparison requires"
+    },
+    {
+      "id": "unmatched-comparison",
+      "replace": {
+        "comparison": {
+          "alternatives": [
+            "named-fixture-A",
+            "named-fixture-B"
+          ]
+        }
+      },
+      "expected_error": "comparison requires"
+    },
+    {
+      "id": "invented-scenario-source",
+      "replace": {
+        "scenarios.0.source": "unverified-source"
+      },
+      "expected_error": "scenarios[0].source"
+    }
+  ]
+}

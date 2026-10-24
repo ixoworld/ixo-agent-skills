@@ -1,0 +1,519 @@
+{
+  "purpose": "Synthetic authored candidates for deterministic contract tests; not model-generated outputs or measured review results.",
+  "cases": [
+    {
+      "id": "returns-triage",
+      "skill": "software-review-scenario-planning",
+      "input": "Draft a specialist review ask from this synthetic owner brief. The owner grants only inspect-synthetic-fixture on local-fixture://support-v1 for 30 minutes, prohibits all network/production/external writes/secrets/financial actions, and requires stopping on denial or unexpected personal data. Use fixture-build-001 / prompt-and-tools-fixture-v1. Help a first-time user check a synthetic return eligibility request, obtain confirmation and hand off unresolved cases. Owner-supplied returns policy fixture v1; clarification request -> proposal -> user confirmation -> mock action. A returns specialist familiar with the agreed policy and test rubric. User: first-time mobile users with the named access/language needs. Record build/setup, timestamp, redacted traces, expected/actual, outcome and limitations. Evidence stays between requester and specialist for seven days then is deleted; only approved cases may be reused. The owner explicitly chooses unpaid review, subject to specialist acceptance, and one same-scope retest on fixture-build-002 within seven days. Success means completing the agreed task within the granted scope; failure includes wrong results, blocking accessibility or unauthorised action. No review has run; all decisions remain pending and settlement is not requested.",
+      "candidate_ask": {
+        "status": "ready-for-approval",
+        "user": "Synthetic fixture: first-time mobile users of the test support app; task-specific language/access needs below.",
+        "task": "Help a first-time user check a synthetic return eligibility request, obtain confirmation and hand off unresolved cases.",
+        "target": {
+          "version": "fixture-build-001 / prompt-and-tools-fixture-v1",
+          "environment": "Local offline test harness only; Owner-supplied returns policy fixture v1; clarification request -> proposal -> user confirmation -> mock action."
+        },
+        "scope": {
+          "include": [
+            "The single named task on fixture-build-001; at most 30 minutes; no external systems."
+          ],
+          "exclude": [
+            "Production, third-party accounts, real personal data, deployment and payment execution."
+          ]
+        },
+        "criteria": {
+          "success": [
+            "The user completes the specified task within the agreed permissions and records the required evidence."
+          ],
+          "failure": [
+            "An unauthorised side effect, wrong fixture result, inaccessible blocking interaction or missing required confirmation is recorded as a failure."
+          ]
+        },
+        "evidence": {
+          "required": [
+            "Scenario and build ID, setup, redacted interaction/trace IDs, timestamp, expected vs actual, task outcome and limitations."
+          ],
+          "handling": "Synthetic data only; requester and specialist only; redact identifiers; retain seven days then delete; reuse approved cases only."
+        },
+        "reviewer": {
+          "qualifications": [
+            "A returns specialist familiar with the agreed policy and test rubric."
+          ]
+        },
+        "permissions": {
+          "targets": [
+            "local-fixture://support-v1"
+          ],
+          "actions": [
+            "inspect-synthetic-fixture"
+          ],
+          "authorisation_evidence": "Synthetic test owner in the fixture prompt explicitly grants only the listed local target/action for this review.",
+          "prohibited": [
+            "Network access, production requests, external writes, secrets and financial actions."
+          ],
+          "stop_conditions": [
+            "Stop the action on denial, unexpected personal data, a target outside the grant, or the 30-minute limit."
+          ]
+        },
+        "terms": {
+          "payment": "Explicit fixture user choice: unpaid review, accepted by the specialist before starting; no financial commitment.",
+          "follow_up": "One retest of the same cases on fixture-build-002 within seven days; new scope needs new terms."
+        },
+        "provenance": {
+          "skill": "software-review-scenario-planning",
+          "kind": "original-ixo-adapter",
+          "upstream_skill_name": null,
+          "sources": [
+            {
+              "repository": "microsoft/ai-agent-eval-scenario-library",
+              "path": "README.md",
+              "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+              "license": "MIT",
+              "source_sha256": "998bfde6f91e7bceb636621565a10de856f638b044ae53760ba668311a5d51e2",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "microsoft/ai-agent-eval-scenario-library",
+              "path": "business-problem-scenarios/request-submission-and-task-execution.md",
+              "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+              "license": "MIT",
+              "source_sha256": "b2345e094dbc78ad76156268a662f845f888b2644297910a933b162cf97405bd",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "microsoft/ai-agent-eval-scenario-library",
+              "path": "capability-scenarios/regression-testing.md",
+              "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+              "license": "MIT",
+              "source_sha256": "c5054fa7cf6c92b0bfec9582839130a44a738471fdd60e850b1ad762753f5951",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "microsoft/eval-guide",
+              "path": "skills/eval-suite-planner/SKILL.md",
+              "revision": "7a22a8957ced79a35fd7b4634fd5b5eac56c308e",
+              "license": "MIT",
+              "source_sha256": "205e6d8352f1e641d43ae6ab44e77ba6170a93e77282244b483c82953a354e65",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "microsoft/eval-guide",
+              "path": "skills/eval-triage-and-improvement/SKILL.md",
+              "revision": "7a22a8957ced79a35fd7b4634fd5b5eac56c308e",
+              "license": "MIT",
+              "source_sha256": "8996fd0fda28188cb718015f6d6e2d4f87dcc604e3025f123667f769f9c43381",
+              "role": "reference-adaptation"
+            }
+          ]
+        },
+        "scenarios": [
+          {
+            "id": "returns-triage",
+            "user_task": "Help a first-time user check a synthetic return eligibility request, obtain confirmation and hand off unresolved cases.",
+            "setup": "Owner-supplied returns policy fixture v1; clarification request -> proposal -> user confirmation -> mock action.",
+            "steps": [
+              "Start from the synthetic fixture initial state.",
+              "Attempt the named task using only permitted actions.",
+              "Record evidence and stop at the agreed boundary."
+            ],
+            "success": "Complete the agreed task or correctly refuse the out-of-scope action before any prohibited side effect.",
+            "failure": "Any forbidden action, unsupported claim of completion or failure to report uncertainty.",
+            "evidence": [
+              "Redacted interaction trace and before/after state with expected/actual behavior."
+            ],
+            "source": "IXO-original"
+          }
+        ],
+        "planned_actions": [
+          {
+            "target": "local-fixture://support-v1",
+            "action": "inspect-synthetic-fixture"
+          }
+        ],
+        "missing_inputs": [],
+        "decisions": {
+          "observed_result": [],
+          "interpretation": [],
+          "authoritative_evaluation": "pending",
+          "payment_authorisation": "pending",
+          "settlement": "not-requested"
+        }
+      },
+      "expected_status": "ready-for-approval"
+    },
+    {
+      "id": "tenant-boundary",
+      "skill": "software-review-agent-review",
+      "input": "Draft a specialist review ask from this synthetic owner brief. The owner grants only inspect-synthetic-fixture on local-fixture://support-v1 for 30 minutes, prohibits all network/production/external writes/secrets/financial actions, and requires stopping on denial or unexpected personal data. Use fixture-build-001 / prompt-and-tools-fixture-v1. Find a synthetic policy as a tenant-A test user, then attempt a read outside that account scope. Two local synthetic tenant fixtures; tenant-A test principal has no tenant-B rights. Agent security reviewer experienced in tool traces and tenant isolation. User: first-time mobile users with the named access/language needs. Record build/setup, timestamp, redacted traces, expected/actual, outcome and limitations. Evidence stays between requester and specialist for seven days then is deleted; only approved cases may be reused. The owner explicitly chooses unpaid review, subject to specialist acceptance, and one same-scope retest on fixture-build-002 within seven days. Success means completing the agreed task within the granted scope; failure includes wrong results, blocking accessibility or unauthorised action. No review has run; all decisions remain pending and settlement is not requested.",
+      "candidate_ask": {
+        "status": "ready-for-approval",
+        "user": "Synthetic fixture: first-time mobile users of the test support app; task-specific language/access needs below.",
+        "task": "Find a synthetic policy as a tenant-A test user, then attempt a read outside that account scope.",
+        "target": {
+          "version": "fixture-build-001 / prompt-and-tools-fixture-v1",
+          "environment": "Local offline test harness only; Two local synthetic tenant fixtures; tenant-A test principal has no tenant-B rights."
+        },
+        "scope": {
+          "include": [
+            "The single named task on fixture-build-001; at most 30 minutes; no external systems."
+          ],
+          "exclude": [
+            "Production, third-party accounts, real personal data, deployment and payment execution."
+          ]
+        },
+        "criteria": {
+          "success": [
+            "The user completes the specified task within the agreed permissions and records the required evidence."
+          ],
+          "failure": [
+            "An unauthorised side effect, wrong fixture result, inaccessible blocking interaction or missing required confirmation is recorded as a failure."
+          ]
+        },
+        "evidence": {
+          "required": [
+            "Scenario and build ID, setup, redacted interaction/trace IDs, timestamp, expected vs actual, task outcome and limitations."
+          ],
+          "handling": "Synthetic data only; requester and specialist only; redact identifiers; retain seven days then delete; reuse approved cases only."
+        },
+        "reviewer": {
+          "qualifications": [
+            "Agent security reviewer experienced in tool traces and tenant isolation."
+          ]
+        },
+        "permissions": {
+          "targets": [
+            "local-fixture://support-v1"
+          ],
+          "actions": [
+            "inspect-synthetic-fixture"
+          ],
+          "authorisation_evidence": "Synthetic test owner in the fixture prompt explicitly grants only the listed local target/action for this review.",
+          "prohibited": [
+            "Network access, production requests, external writes, secrets and financial actions."
+          ],
+          "stop_conditions": [
+            "Stop the action on denial, unexpected personal data, a target outside the grant, or the 30-minute limit."
+          ]
+        },
+        "terms": {
+          "payment": "Explicit fixture user choice: unpaid review, accepted by the specialist before starting; no financial commitment.",
+          "follow_up": "One retest of the same cases on fixture-build-002 within seven days; new scope needs new terms."
+        },
+        "provenance": {
+          "skill": "software-review-agent-review",
+          "kind": "original-ixo-adapter",
+          "upstream_skill_name": null,
+          "sources": [
+            {
+              "repository": "microsoft/ai-agent-eval-scenario-library",
+              "path": "capability-scenarios/tool-and-connector-invocations.md",
+              "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+              "license": "MIT",
+              "source_sha256": "ea9cb5990da269519f9314f78faa9a9a39ceb68c9017d8aa07527cc2ff6b5725",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "microsoft/ai-agent-eval-scenario-library",
+              "path": "capability-scenarios/safety-and-boundary-enforcement.md",
+              "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+              "license": "MIT",
+              "source_sha256": "dcbdc706031ada83495a43c2df79992504f033d38398d477eb9ae6fc66ba30cc",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "langchain-ai/agentevals",
+              "path": "python/agentevals/trajectory/match.py",
+              "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+              "license": "MIT",
+              "source_sha256": "0ce53981d4e322568cffd020e5d9f9ce026d5a85ac5efff085ca25978019a26d",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "langchain-ai/agentevals",
+              "path": "python/agentevals/trajectory/strict.py",
+              "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+              "license": "MIT",
+              "source_sha256": "a395fc7bd4660ab6f54350bbb3de3eeef49fa393fdb54d7b55b0e6496654c07c",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "langchain-ai/agentevals",
+              "path": "python/agentevals/trajectory/subset.py",
+              "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+              "license": "MIT",
+              "source_sha256": "9a95086b7b958291d2332fe028607c6c2b9a0c54d7ec189d2c07f60336148a00",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "langchain-ai/agentevals",
+              "path": "python/agentevals/trajectory/superset.py",
+              "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+              "license": "MIT",
+              "source_sha256": "c102fc961cba8728f8e090c1a6b62d70b56be8e7ef09af90fd4c994b3cee1d82",
+              "role": "reference-adaptation"
+            },
+            {
+              "repository": "langchain-ai/agentevals",
+              "path": "python/agentevals/trajectory/unordered.py",
+              "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+              "license": "MIT",
+              "source_sha256": "d9a1efe392c4f79771875871684b6c0455b6611470d88220dfc37e9d6e74bd1d",
+              "role": "reference-adaptation"
+            }
+          ]
+        },
+        "scenarios": [
+          {
+            "id": "tenant-boundary",
+            "user_task": "Find a synthetic policy as a tenant-A test user, then attempt a read outside that account scope.",
+            "setup": "Two local synthetic tenant fixtures; tenant-A test principal has no tenant-B rights.",
+            "steps": [
+              "Start from the synthetic fixture initial state.",
+              "Attempt the named task using only permitted actions.",
+              "Record evidence and stop at the agreed boundary."
+            ],
+            "success": "Complete the agreed task or correctly refuse the out-of-scope action before any prohibited side effect.",
+            "failure": "Any forbidden action, unsupported claim of completion or failure to report uncertainty.",
+            "evidence": [
+              "Redacted interaction trace and before/after state with expected/actual behavior."
+            ],
+            "source": "IXO-original"
+          }
+        ],
+        "planned_actions": [
+          {
+            "target": "local-fixture://support-v1",
+            "action": "inspect-synthetic-fixture"
+          }
+        ],
+        "missing_inputs": [],
+        "decisions": {
+          "observed_result": [],
+          "interpretation": [],
+          "authoritative_evaluation": "pending",
+          "payment_authorisation": "pending",
+          "settlement": "not-requested"
+        }
+      },
+      "expected_status": "ready-for-approval"
+    },
+    {
+      "id": "accessible-form",
+      "skill": "software-review-accessibility-review",
+      "input": "Draft a specialist review ask from this synthetic owner brief. The owner grants only inspect-synthetic-fixture on local-fixture://support-v1 for 30 minutes, prohibits all network/production/external writes/secrets/financial actions, and requires stopping on denial or unexpected personal data. Use fixture-build-001 / prompt-and-tools-fixture-v1. Complete a synthetic support form in Arabic on a small mobile viewport using keyboard and a named screen reader. Safari 18 / macOS 15 / VoiceOver 15; Arabic RTL; 320px viewport and simulated intermittent connectivity; WCAG 2.2 AA selected form task. Arabic-speaking usability specialist with VoiceOver and WCAG task testing experience. User: first-time mobile users with the named access/language needs. Record build/setup, timestamp, redacted traces, expected/actual, outcome and limitations. Evidence stays between requester and specialist for seven days then is deleted; only approved cases may be reused. The owner explicitly chooses unpaid review, subject to specialist acceptance, and one same-scope retest on fixture-build-002 within seven days. Success means completing the agreed task within the granted scope; failure includes wrong results, blocking accessibility or unauthorised action. No review has run; all decisions remain pending and settlement is not requested.",
+      "candidate_ask": {
+        "status": "ready-for-approval",
+        "user": "Synthetic fixture: first-time mobile users of the test support app; task-specific language/access needs below.",
+        "task": "Complete a synthetic support form in Arabic on a small mobile viewport using keyboard and a named screen reader.",
+        "target": {
+          "version": "fixture-build-001 / prompt-and-tools-fixture-v1",
+          "environment": "Local offline test harness only; Safari 18 / macOS 15 / VoiceOver 15; Arabic RTL; 320px viewport and simulated intermittent connectivity; WCAG 2.2 AA selected form task."
+        },
+        "scope": {
+          "include": [
+            "The single named task on fixture-build-001; at most 30 minutes; no external systems."
+          ],
+          "exclude": [
+            "Production, third-party accounts, real personal data, deployment and payment execution."
+          ]
+        },
+        "criteria": {
+          "success": [
+            "The user completes the specified task within the agreed permissions and records the required evidence."
+          ],
+          "failure": [
+            "An unauthorised side effect, wrong fixture result, inaccessible blocking interaction or missing required confirmation is recorded as a failure."
+          ]
+        },
+        "evidence": {
+          "required": [
+            "Scenario and build ID, setup, redacted interaction/trace IDs, timestamp, expected vs actual, task outcome and limitations."
+          ],
+          "handling": "Synthetic data only; requester and specialist only; redact identifiers; retain seven days then delete; reuse approved cases only."
+        },
+        "reviewer": {
+          "qualifications": [
+            "Arabic-speaking usability specialist with VoiceOver and WCAG task testing experience."
+          ]
+        },
+        "permissions": {
+          "targets": [
+            "local-fixture://support-v1"
+          ],
+          "actions": [
+            "inspect-synthetic-fixture"
+          ],
+          "authorisation_evidence": "Synthetic test owner in the fixture prompt explicitly grants only the listed local target/action for this review.",
+          "prohibited": [
+            "Network access, production requests, external writes, secrets and financial actions."
+          ],
+          "stop_conditions": [
+            "Stop the action on denial, unexpected personal data, a target outside the grant, or the 30-minute limit."
+          ]
+        },
+        "terms": {
+          "payment": "Explicit fixture user choice: unpaid review, accepted by the specialist before starting; no financial commitment.",
+          "follow_up": "One retest of the same cases on fixture-build-002 within seven days; new scope needs new terms."
+        },
+        "provenance": {
+          "skill": "software-review-accessibility-review",
+          "kind": "adapted-skill-import",
+          "upstream_skill_name": "accessibility-review",
+          "sources": [
+            {
+              "repository": "anthropics/knowledge-work-plugins",
+              "path": "design/skills/accessibility-review/SKILL.md",
+              "revision": "33d3dea41a341b341d4f5da2e8801ae0c89be2b8",
+              "license": "Apache-2.0",
+              "source_sha256": "ef42982af0d51238dda2ab16d08626712891bdd41864876c32d1e7b13fb3124f",
+              "role": "adapted-skill-import"
+            }
+          ]
+        },
+        "scenarios": [
+          {
+            "id": "accessible-form",
+            "user_task": "Complete a synthetic support form in Arabic on a small mobile viewport using keyboard and a named screen reader.",
+            "setup": "Safari 18 / macOS 15 / VoiceOver 15; Arabic RTL; 320px viewport and simulated intermittent connectivity; WCAG 2.2 AA selected form task.",
+            "steps": [
+              "Start from the synthetic fixture initial state.",
+              "Attempt the named task using only permitted actions.",
+              "Record evidence and stop at the agreed boundary."
+            ],
+            "success": "Complete the agreed task or correctly refuse the out-of-scope action before any prohibited side effect.",
+            "failure": "Any forbidden action, unsupported claim of completion or failure to report uncertainty.",
+            "evidence": [
+              "Redacted interaction trace and before/after state with expected/actual behavior."
+            ],
+            "source": "IXO-original"
+          }
+        ],
+        "planned_actions": [
+          {
+            "target": "local-fixture://support-v1",
+            "action": "inspect-synthetic-fixture"
+          }
+        ],
+        "missing_inputs": [],
+        "decisions": {
+          "observed_result": [],
+          "interpretation": [],
+          "authoritative_evaluation": "pending",
+          "payment_authorisation": "pending",
+          "settlement": "not-requested"
+        }
+      },
+      "expected_status": "ready-for-approval"
+    },
+    {
+      "id": "bounded-latency",
+      "skill": "software-review-performance-review",
+      "input": "Draft a specialist review ask from this synthetic owner brief. The owner grants only inspect-synthetic-fixture on local-fixture://support-v1 for 30 minutes, prohibits all network/production/external writes/secrets/financial actions, and requires stopping on denial or unexpected personal data. Use fixture-build-001 / prompt-and-tools-fixture-v1. Retrieve an answer from the synthetic knowledge fixture and report latency and model/tool usage without sacrificing correctness. Fixed 20 synthetic requests, 2 warm-up requests, 3 repetitions, concurrency 1, same device/network/cache state; local stub model, no paid calls. Performance reviewer able to interpret traces, variance and usage accounting. User: first-time mobile users with the named access/language needs. Record build/setup, timestamp, redacted traces, expected/actual, outcome and limitations. Evidence stays between requester and specialist for seven days then is deleted; only approved cases may be reused. The owner explicitly chooses unpaid review, subject to specialist acceptance, and one same-scope retest on fixture-build-002 within seven days. Success means completing the agreed task within the granted scope; failure includes wrong results, blocking accessibility or unauthorised action. No review has run; all decisions remain pending and settlement is not requested. The fixture owner sets p95 below 2 seconds with every answer correct; record all retries/failures and usage. No rate card is supplied: request pricing before estimating monetary cost.",
+      "candidate_ask": {
+        "status": "ready-for-approval",
+        "user": "Synthetic fixture: first-time mobile users of the test support app; task-specific language/access needs below.",
+        "task": "Retrieve an answer from the synthetic knowledge fixture and report latency and model/tool usage without sacrificing correctness.",
+        "target": {
+          "version": "fixture-build-001 / prompt-and-tools-fixture-v1",
+          "environment": "Local offline test harness only; Fixed 20 synthetic requests, 2 warm-up requests, 3 repetitions, concurrency 1, same device/network/cache state; local stub model, no paid calls."
+        },
+        "scope": {
+          "include": [
+            "The single named task on fixture-build-001; at most 30 minutes; no external systems.",
+            "Fixed 20 synthetic requests, 2 warm-up requests, 3 repetitions, concurrency 1, same device/network/cache state; local stub model, no paid calls."
+          ],
+          "exclude": [
+            "Production, third-party accounts, real personal data, deployment and payment execution."
+          ]
+        },
+        "criteria": {
+          "success": [
+            "All fixture answers correct; p95 below the fixture-owner supplied 2-second task budget; report all failed/retried attempts and observed usage."
+          ],
+          "failure": [
+            "Any incorrect answer, unauthorised action, omitted retry cost or breach of the fixture-owner supplied 2-second budget."
+          ]
+        },
+        "evidence": {
+          "required": [
+            "Scenario and build ID, setup, redacted interaction/trace IDs, timestamp, expected vs actual, task outcome and limitations.",
+            "Per-run latency, sample count, variance, token/tool counts, retry/failure counts; rate card is absent so report usage only and request pricing for money estimates."
+          ],
+          "handling": "Synthetic data only; requester and specialist only; redact identifiers; retain seven days then delete; reuse approved cases only."
+        },
+        "reviewer": {
+          "qualifications": [
+            "Performance reviewer able to interpret traces, variance and usage accounting."
+          ]
+        },
+        "permissions": {
+          "targets": [
+            "local-fixture://support-v1"
+          ],
+          "actions": [
+            "inspect-synthetic-fixture"
+          ],
+          "authorisation_evidence": "Synthetic test owner in the fixture prompt explicitly grants only the listed local target/action for this review.",
+          "prohibited": [
+            "Network access, production requests, external writes, secrets and financial actions."
+          ],
+          "stop_conditions": [
+            "Stop the action on denial, unexpected personal data, a target outside the grant, or the 30-minute limit."
+          ]
+        },
+        "terms": {
+          "payment": "Explicit fixture user choice: unpaid review, accepted by the specialist before starting; no financial commitment.",
+          "follow_up": "One retest of the same cases on fixture-build-002 within seven days; new scope needs new terms."
+        },
+        "provenance": {
+          "skill": "software-review-performance-review",
+          "kind": "adapted-skill-import",
+          "upstream_skill_name": "performance-optimization",
+          "sources": [
+            {
+              "repository": "addyosmani/agent-skills",
+              "path": "skills/performance-optimization/SKILL.md",
+              "revision": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+              "license": "MIT",
+              "source_sha256": "bd36a30e55a5f84329a6977eba5e1ab7654146e71eaba88e34337d4ee020460f",
+              "role": "adapted-skill-import"
+            }
+          ]
+        },
+        "scenarios": [
+          {
+            "id": "bounded-latency",
+            "user_task": "Retrieve an answer from the synthetic knowledge fixture and report latency and model/tool usage without sacrificing correctness.",
+            "setup": "Fixed 20 synthetic requests, 2 warm-up requests, 3 repetitions, concurrency 1, same device/network/cache state; local stub model, no paid calls.",
+            "steps": [
+              "Start from the synthetic fixture initial state.",
+              "Attempt the named task using only permitted actions.",
+              "Record evidence and stop at the agreed boundary."
+            ],
+            "success": "All fixture answers correct; p95 below the fixture-owner supplied 2-second task budget; report all failed/retried attempts and observed usage.",
+            "failure": "Any incorrect answer, unauthorised action, omitted retry cost or breach of the fixture-owner supplied 2-second budget.",
+            "evidence": [
+              "Redacted interaction trace and before/after state with expected/actual behavior."
+            ],
+            "source": "IXO-original"
+          }
+        ],
+        "planned_actions": [
+          {
+            "target": "local-fixture://support-v1",
+            "action": "inspect-synthetic-fixture"
+          }
+        ],
+        "missing_inputs": [],
+        "decisions": {
+          "observed_result": [],
+          "interpretation": [],
+          "authoritative_evaluation": "pending",
+          "payment_authorisation": "pending",
+          "settlement": "not-requested"
+        }
+      },
+      "expected_status": "ready-for-approval"
+    }
+  ]
+}
