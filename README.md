@@ -28,6 +28,11 @@ Click the "Fork" button at the top right of this page.
 
 Add your skill to the `skills/` directory:
 
+Flat skills remain supported. Related new skills can also live in namespace
+containers such as `skills/software-review/software-review-security-review/`.
+Each leaf publishes independently under its globally unique qualified name.
+See [Namespaced skills](docs/namespaces.md) for layout, validation and dry runs.
+
 ```
 skills/
 └── your-skill-name/

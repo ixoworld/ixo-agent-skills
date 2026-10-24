@@ -16,6 +16,11 @@ Thumbs.db
 # Logs
 *.log
 
+# Local capsule dry runs and Python caches
+.publication/
+__pycache__/
+*.pyc
+
 # Node build artifacts
 node_modules/
 dist/
