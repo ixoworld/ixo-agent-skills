@@ -1,7 +1,7 @@
 {
   "sourceRepository": "https://github.com/ixoworld/ixo-agent-skills",
   "sourceClaim": "workflow-reported",
-  "sourceRevision": "stage6-unpublished-source",
+  "sourceRevision": "cd9971b6c1198f04888fcf1eb8da1cac89326edd",
   "canonicalContract": "scripts/lib/skill-contract.ts",
   "files": {
     "package.json": "5dbcdba2b016c940d4dab7dda9f7e602daaff24e4b984bf658d8c522d4d8bd50",
