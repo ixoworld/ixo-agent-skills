@@ -1,0 +1,105 @@
+{
+  "skill": "software-review-agent-review",
+  "namespace": "software-review",
+  "kind": "original-ixo-adapter",
+  "upstream_skill_name": null,
+  "modifications": [
+    "Original IXO ask workflow; scenario and matching concepts adapted, no framework code imported.",
+    "Restricted adversarial work to explicitly authorised sandbox/staging fixtures, synthetic data and bounded permissions; removed production execution and fixed thresholds."
+  ],
+  "sources": [
+    {
+      "repository": "microsoft/ai-agent-eval-scenario-library",
+      "path": "capability-scenarios/tool-and-connector-invocations.md",
+      "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+      "url": "https://github.com/microsoft/ai-agent-eval-scenario-library/blob/04fc731937cd2bb8b9ef5195540c6f53914f52a5/capability-scenarios/tool-and-connector-invocations.md",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "source_sha256": "ea9cb5990da269519f9314f78faa9a9a39ceb68c9017d8aa07527cc2ff6b5725",
+      "git_blob_sha": "ad360fc533a7225ad8d52375af3044fada073376",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/microsoft--ai-agent-eval-scenario-library--LICENSE"
+    },
+    {
+      "repository": "microsoft/ai-agent-eval-scenario-library",
+      "path": "capability-scenarios/safety-and-boundary-enforcement.md",
+      "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+      "url": "https://github.com/microsoft/ai-agent-eval-scenario-library/blob/04fc731937cd2bb8b9ef5195540c6f53914f52a5/capability-scenarios/safety-and-boundary-enforcement.md",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "source_sha256": "dcbdc706031ada83495a43c2df79992504f033d38398d477eb9ae6fc66ba30cc",
+      "git_blob_sha": "03bf7803e0781adbc8fbd36694e50df3faf5528d",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/microsoft--ai-agent-eval-scenario-library--LICENSE"
+    },
+    {
+      "repository": "langchain-ai/agentevals",
+      "path": "python/agentevals/trajectory/match.py",
+      "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+      "url": "https://github.com/langchain-ai/agentevals/blob/946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e/python/agentevals/trajectory/match.py",
+      "license": "MIT",
+      "license_path": "python/LICENSE",
+      "license_sha256": "ff1c7be3c5e3be6ae6ee8956ed7ee7c47c731c60e65540b332c108026713b30f",
+      "source_sha256": "0ce53981d4e322568cffd020e5d9f9ce026d5a85ac5efff085ca25978019a26d",
+      "git_blob_sha": "a47eaeac8cf3071137b8a1907d9b7484d2cd0939",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/langchain-ai--agentevals--python-LICENSE"
+    },
+    {
+      "repository": "langchain-ai/agentevals",
+      "path": "python/agentevals/trajectory/strict.py",
+      "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+      "url": "https://github.com/langchain-ai/agentevals/blob/946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e/python/agentevals/trajectory/strict.py",
+      "license": "MIT",
+      "license_path": "python/LICENSE",
+      "license_sha256": "ff1c7be3c5e3be6ae6ee8956ed7ee7c47c731c60e65540b332c108026713b30f",
+      "source_sha256": "a395fc7bd4660ab6f54350bbb3de3eeef49fa393fdb54d7b55b0e6496654c07c",
+      "git_blob_sha": "a4fcc625c09e0e68c2f79434f6f05f5221937dbe",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/langchain-ai--agentevals--python-LICENSE"
+    },
+    {
+      "repository": "langchain-ai/agentevals",
+      "path": "python/agentevals/trajectory/subset.py",
+      "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+      "url": "https://github.com/langchain-ai/agentevals/blob/946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e/python/agentevals/trajectory/subset.py",
+      "license": "MIT",
+      "license_path": "python/LICENSE",
+      "license_sha256": "ff1c7be3c5e3be6ae6ee8956ed7ee7c47c731c60e65540b332c108026713b30f",
+      "source_sha256": "9a95086b7b958291d2332fe028607c6c2b9a0c54d7ec189d2c07f60336148a00",
+      "git_blob_sha": "5c3b33c59bebbe4301d92a3e8110801c904c4dee",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/langchain-ai--agentevals--python-LICENSE"
+    },
+    {
+      "repository": "langchain-ai/agentevals",
+      "path": "python/agentevals/trajectory/superset.py",
+      "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+      "url": "https://github.com/langchain-ai/agentevals/blob/946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e/python/agentevals/trajectory/superset.py",
+      "license": "MIT",
+      "license_path": "python/LICENSE",
+      "license_sha256": "ff1c7be3c5e3be6ae6ee8956ed7ee7c47c731c60e65540b332c108026713b30f",
+      "source_sha256": "c102fc961cba8728f8e090c1a6b62d70b56be8e7ef09af90fd4c994b3cee1d82",
+      "git_blob_sha": "f7fe8ef309c4c327465b70a1e81f627315798514",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/langchain-ai--agentevals--python-LICENSE"
+    },
+    {
+      "repository": "langchain-ai/agentevals",
+      "path": "python/agentevals/trajectory/unordered.py",
+      "revision": "946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e",
+      "url": "https://github.com/langchain-ai/agentevals/blob/946ad15b9f2ce9bc9843edd2bb773bd07d78ca7e/python/agentevals/trajectory/unordered.py",
+      "license": "MIT",
+      "license_path": "python/LICENSE",
+      "license_sha256": "ff1c7be3c5e3be6ae6ee8956ed7ee7c47c731c60e65540b332c108026713b30f",
+      "source_sha256": "d9a1efe392c4f79771875871684b6c0455b6611470d88220dfc37e9d6e74bd1d",
+      "git_blob_sha": "e473094da4bb41f6e1dfdfdfd79ccfff1c67d99c",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/langchain-ai--agentevals--python-LICENSE"
+    }
+  ],
+  "notice_check": "Pinned recursive trees inspected for root and ancestor LICENSE/NOTICE; no additional applicable NOTICE found.",
+  "endorsement": "No upstream endorsement is implied."
+}
