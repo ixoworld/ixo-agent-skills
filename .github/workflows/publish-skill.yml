@@ -50,3 +50,4 @@ jobs:
           name: capsule-publication
           path: .publication/*.json
           if-no-files-found: ignore
+          include-hidden-files: true

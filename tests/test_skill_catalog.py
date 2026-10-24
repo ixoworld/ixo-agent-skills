@@ -410,6 +410,20 @@ class CatalogTests(unittest.TestCase):
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_mapping_artifacts_include_the_hidden_output_directory(self):
+        root = SCRIPT.parents[1] / ".github/workflows"
+        for filename in ["validate-skill.yml", "publish-skill.yml"]:
+            workflow = yaml.load((root / filename).read_text(), Loader=yaml.BaseLoader)
+            artifacts = [
+                step
+                for job in workflow["jobs"].values()
+                for step in job["steps"]
+                if step.get("uses", "").startswith("actions/upload-artifact@")
+            ]
+            self.assertEqual(len(artifacts), 1)
+            self.assertEqual(artifacts[0]["with"]["path"], ".publication/*.json")
+            self.assertEqual(artifacts[0]["with"]["include-hidden-files"], "true")
+
     def test_publication_requires_a_main_branch_push(self):
         path = SCRIPT.parents[1] / ".github/workflows/publish-skill.yml"
         workflow = yaml.load(path.read_text(), Loader=yaml.BaseLoader)

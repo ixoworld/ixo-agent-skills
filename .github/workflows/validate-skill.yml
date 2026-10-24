@@ -39,3 +39,4 @@ jobs:
         with:
           name: capsule-validation
           path: .publication/*.json
+          include-hidden-files: true
