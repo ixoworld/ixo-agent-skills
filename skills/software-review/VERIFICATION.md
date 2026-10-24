@@ -33,8 +33,36 @@ leaf frontmatter defect. The legacy publisher was not run.
 The pending namespace task's public helper was used **read-only** against this
 worktree. Its `validate` command passes for all **35 independent skill identities**
 (31 existing + 4 new), including global name uniqueness. No helper/workflow files
-were copied into this PR. Plan/package dry-run details will be recorded after
-committing the pack so the helper can use an exact Git range.
+were copied into this PR. The helper's SHA-256 for this run was
+`744f2413fd4464643edf8b4ea0089732ecc2c561b973649373bc567ed6a677be`.
+
+Read-only integration commands (helper supplied by the separate infrastructure
+checkout; output paths are local evidence, never an upload):
+
+```bash
+python3 "$NAMESPACE_HELPER" --repo "$PACK_REPO" validate
+python3 "$NAMESPACE_HELPER" --repo "$PACK_REPO" plan \
+  --base fb3d3bfb294a2447fa3e7dc7434dd8b1194bf7fb --head HEAD \
+  --output "$EVIDENCE/namespace-plan.json"
+python3 "$NAMESPACE_HELPER" --repo "$PACK_REPO" package \
+  --plan "$EVIDENCE/namespace-plan.json" \
+  --output-dir "$EVIDENCE/capsules" --manifest "$EVIDENCE/capsule-manifest.json"
+```
+
+The plan selected exactly 4 leaves, version `1.0.0`, namespace `software-review`,
+with no removals. README/verification were classified as namespace documentation.
+Packaging produced 4 independent local archives. Tar inspection confirmed:
+
+| Skill | Files | Result |
+| --- | --- | --- |
+| Accessibility review | 6 | Canonical root, entrypoint, resources/licenses, no siblings. |
+| Agent review | 7 | Canonical root, entrypoint, resources/licenses, no siblings. |
+| Performance review | 5 | Canonical root, entrypoint, resources/licenses, no siblings. |
+| Scenario planning | 13 | Canonical root, fixtures/tests/resources/licenses, no siblings. |
+
+All manifests have `status: packaged` and `cid: null`; no publish command ran.
+This uses an unmerged helper snapshot, so it is provisional dependency integration
+evidence rather than a claim that current-main CI supports namespaces.
 
 ## Limits and skipped checks
 

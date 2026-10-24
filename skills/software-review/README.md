@@ -66,8 +66,7 @@ here; no content was used and no license assumed.
 
 ## Validation and namespace dependency
 
-This pack depends on the **separate namespace discovery/packaging change** in task
-`01a16b73-44dc-76e2-89f2-2aca4fd9600a`. No pipeline implementation is included here.
+This pack depends on the **separate namespace discovery/packaging change** being prepared independently (infrastructure PR pending). No pipeline implementation is included here.
 Do not merge until that dependency supports these leaf paths. Current main treats
 `skills/software-review` as one skill: validation fails and publication would
 package the container incorrectly. Archives must contain one canonical skill root
