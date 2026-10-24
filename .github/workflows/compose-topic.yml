@@ -2,11 +2,13 @@ name: Compose Topic checks
 on:
   pull_request:
     paths:
+      - 'scripts/**'
       - 'skills/compose-topic/**'
       - '.github/workflows/compose-topic.yml'
   push:
     branches: [main]
     paths:
+      - 'scripts/**'
       - 'skills/compose-topic/**'
       - '.github/workflows/compose-topic.yml'
 permissions:
@@ -19,6 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install -r scripts/requirements.txt
       - run: bash scripts/validate-skill.sh skills/compose-topic
       - run: node --test tests/*.test.mjs
         working-directory: skills/compose-topic

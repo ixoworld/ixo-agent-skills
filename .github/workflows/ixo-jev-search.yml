@@ -2,11 +2,13 @@ name: IXO Jev Search skill checks
 on:
   pull_request:
     paths:
+      - 'scripts/**'
       - 'skills/ixo-jev-search/**'
       - '.github/workflows/ixo-jev-search.yml'
   push:
     branches: [main]
     paths:
+      - 'scripts/**'
       - 'skills/ixo-jev-search/**'
       - '.github/workflows/ixo-jev-search.yml'
 permissions:
@@ -19,6 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install -r scripts/requirements.txt
       - run: bash scripts/validate-skill.sh skills/ixo-jev-search
       - run: node --test tests/*.test.mjs
         working-directory: skills/ixo-jev-search

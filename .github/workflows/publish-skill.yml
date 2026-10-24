@@ -6,96 +6,48 @@ on:
       - main
     paths:
       - 'skills/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
 
 jobs:
   publish:
     name: Publish Skills to Server
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'ixoworld/ixo-agent-skills'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
-
-      - name: Publish each changed skill
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install validation dependency
+        run: python3 -m pip install -r scripts/requirements.txt
+      - name: Test catalog and packaging
+        run: python3 -m unittest discover -s tests -v
+      - name: Validate full catalog identities
+        run: python3 scripts/skill_catalog.py validate
+      - name: Validate and plan the complete push
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: python3 scripts/skill_catalog.py plan --base "$BASE_SHA" --head "$HEAD_SHA" --output .publication/plan.json
+      - name: Package independent skill capsules
+        run: python3 scripts/skill_catalog.py package --plan .publication/plan.json --output-dir .publication/archives --manifest .publication/manifest.json
+      - name: Publish planned capsules
         env:
           SKILLS_API_KEY: ${{ secrets.SKILLS_API_KEY }}
           SKILLS_SERVER_URL: https://capsules.skills.ixo.earth
-        run: |
-          set -uo pipefail
-
-          if ! git cat-file -e 'HEAD~1^{commit}' 2>/dev/null; then
-            echo "::error::HEAD~1 is not available, so the set of changed skills cannot be determined. Do not treat this as nothing to publish."
-            exit 1
-          fi
-
-          # Read NUL-delimited paths into an array rather than joining names with spaces and
-          # letting the shell split them again. A directory such as "skills/bad name" would
-          # otherwise become the two tokens "bad" and "name"; neither exists, so both take
-          # the deleted branch below and the job reports success having published nothing.
-          #
-          # Deduplicated with a plain loop rather than an associative array, so this runs on
-          # bash 3.2 as well as the runner's bash 5 and can be exercised locally. The list is
-          # a handful of entries.
-          NAMES=()
-          while IFS= read -r -d '' path; do
-            rest=${path#skills/}
-            name=${rest%%/*}
-            [ -n "$name" ] || continue
-            seen=""
-            for existing in ${NAMES+"${NAMES[@]}"}; do
-              if [ "$existing" = "$name" ]; then seen=1; break; fi
-            done
-            [ -n "$seen" ] || NAMES+=("$name")
-          done < <(git diff -z --name-only HEAD~1 HEAD -- skills/)
-
-          if [ ${#NAMES[@]} -eq 0 ]; then
-            echo "::error::No changed skills were detected, but this workflow only runs when skills/** changes. Something is wrong with change detection."
-            exit 1
-          fi
-
-          echo "Changed skills:"
-          printf '  %s\n' "${NAMES[@]}"
-
-          for SKILL_NAME in "${NAMES[@]}"; do
-            SKILL_DIR="skills/$SKILL_NAME"
-
-            # Skip if directory doesn't exist (was deleted)
-            if [ ! -d "$SKILL_DIR" ]; then
-              echo "Skipping $SKILL_NAME (deleted)"
-              continue
-            fi
-
-            echo "::group::Publishing $SKILL_NAME"
-
-            # Create tar.gz archive
-            tar -czf "${SKILL_NAME}.tar.gz" -C skills "$SKILL_NAME"
-
-            # Upload to skills server
-            RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-              -H "Authorization: Bearer $SKILLS_API_KEY" \
-              -H "Content-Type: application/gzip" \
-              --data-binary "@${SKILL_NAME}.tar.gz" \
-              "$SKILLS_SERVER_URL/capsules")
-
-            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-            BODY=$(echo "$RESPONSE" | sed '$d')
-
-            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
-              CID=$(echo "$BODY" | jq -r '.cid')
-              echo "Successfully published $SKILL_NAME"
-              echo "CID: $CID"
-              echo "URL: $SKILLS_SERVER_URL/capsules/$CID"
-            else
-              echo "::error::Failed to publish $SKILL_NAME (HTTP $HTTP_CODE)"
-              echo "$BODY"
-              exit 1
-            fi
-
-            # Cleanup
-            rm -f "${SKILL_NAME}.tar.gz"
-
-            echo "::endgroup::"
-          done
-
-          echo "All skills published successfully!"
+        run: python3 scripts/skill_catalog.py publish --manifest .publication/manifest.json --results .publication/results.json
+      - name: Save publication mapping
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capsule-publication
+          path: .publication/*.json
+          if-no-files-found: ignore
+          include-hidden-files: true

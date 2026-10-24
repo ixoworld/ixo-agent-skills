@@ -2,11 +2,13 @@ name: IXO Reporter skill checks
 on:
   pull_request:
     paths:
+      - 'scripts/**'
       - 'skills/ixo-reporter/**'
       - '.github/workflows/ixo-reporter.yml'
   push:
     branches: [main]
     paths:
+      - 'scripts/**'
       - 'skills/ixo-reporter/**'
       - '.github/workflows/ixo-reporter.yml'
 permissions:
@@ -19,6 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install -r scripts/requirements.txt
       - run: bash scripts/validate-skill.sh skills/ixo-reporter
       - name: Validate the format sub-skills
         run: for dir in skills/ixo-reporter/subskills/*/; do bash scripts/validate-skill.sh "${dir%/}"; done
