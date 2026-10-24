@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "skillName": "qi-library",
+  "runtime": "qiforge-workers",
+  "audiences": [
+    "private",
+    "shared"
+  ],
+  "effects": [
+    "read",
+    "write"
+  ],
+  "requiredTools": [
+    {
+      "name": "vfs_search",
+      "effect": "write"
+    },
+    {
+      "name": "vfs_grep",
+      "effect": "read"
+    },
+    {
+      "name": "vfs_glob",
+      "effect": "read"
+    },
+    {
+      "name": "vfs_list",
+      "effect": "write"
+    },
+    {
+      "name": "vfs_read",
+      "effect": "write"
+    },
+    {
+      "name": "vfs_write",
+      "effect": "write"
+    },
+    {
+      "name": "vfs_edit",
+      "effect": "write"
+    },
+    {
+      "name": "vfs_move",
+      "effect": "write"
+    },
+    {
+      "name": "vfs_delete",
+      "effect": "write"
+    },
+    {
+      "name": "vfs_share",
+      "effect": "write"
+    },
+    {
+      "name": "vfs_to_sandbox",
+      "effect": "write"
+    },
+    {
+      "name": "sandbox_to_vfs",
+      "effect": "write"
+    }
+  ],
+  "requiredCapabilities": [
+    {
+      "resource": "ixo:filesystem",
+      "action": "fs/list"
+    },
+    {
+      "resource": "ixo:filesystem",
+      "action": "fs/read"
+    },
+    {
+      "resource": "ixo:filesystem",
+      "action": "fs/write"
+    },
+    {
+      "resource": "ixo:filesystem",
+      "action": "fs/delete"
+    }
+  ],
+  "requiredServices": []
+}

@@ -132,3 +132,65 @@ This repository is licensed under [Apache 2.0](LICENSE). Individual skills may h
 ---
 
 **Questions?** Open an issue or reach out to the IXO team.
+
+## Validate and build capsule archives
+
+Use Node.js 22 and install the pinned dependencies with `npm ci --ignore-scripts`.
+Run `npm run check`, `npm test`, and `./scripts/validate-skill.sh skills/qi-library` before submitting a skill.
+
+Build committed source with its full 40-character Git SHA:
+
+```sh
+npm run build:capsules -- --commit <full-commit-sha> --repository https://github.com/ixoworld/ixo-agent-skills --skill qi-library
+```
+
+The builder reads Git blobs from that exact commit. Uncommitted edits do not enter the archive.
+It writes the archive and an `unpublished` build receipt under `.capsule-build/`, outside the capsule.
+The receipt records the repository claim, commit, declaration, archive SHA-256 and size, and expected folder CID.
+`sourceClaim: workflow-reported` records provenance reported by this workflow; it is not a repository signature or deployment attestation.
+
+Archives contain sorted regular files with deterministic gzip bytes, zero timestamps and owner IDs, and preserved executable modes.
+Symlinks, submodules, traversal, duplicate paths, PAX records, and names over 100 UTF-8 bytes are rejected.
+The folder CID uses `ipfs-unixfs-importer@16.0.2`, `blockstore-core@6.1.2`, CIDv0, UnixFS leaves, and no extra wrapper.
+The existing registry excludes empty files and tar metadata from its CID. The archive SHA-256 still binds those bytes and file modes.
+An expected CID is a local calculation, not a publication claim.
+
+CI builds actual archives for changed skills and the inventory in `scripts/contract-skills.json`.
+The same checks run when packaging scripts, dependencies, or workflows change.
+Unchanged legacy skills outside that inventory keep their existing source behavior.
+
+## Declare runtime requirements
+
+Put `skill-contract.json` beside `SKILL.md`. The canonical schema is `scripts/lib/skill-contract.ts`.
+`requiredTools` names exact tools and their host scheduling effects. `effects` describes the whole skill workflow.
+These can differ. For example, QiForge conservatively schedules several VFS read tools as writes.
+The original host handlers still authorize every sensitive operation; a declaration never grants access or enforces arbitrary shell effects.
+
+`runtime: external` marks a capsule whose external host dependencies are not established in Workers.
+Missing tools, capabilities, incompatible audiences, and unsupported service profiles prevent the Workers dependency gate from clearing.
+An absent sidecar is legacy reference material. Malformed or unknown-version sidecars fail new authoring builds.
+Inspection and dependency checks do not prove sandbox mounting, hosted execution, or production readiness.
+
+The search capsule pins existing QiForge PR 325 and search gateway PR 12.
+Its delegated service requirement remains blocked until the installed host and gateway provide independent compatibility evidence.
+The YellowCard capsule covers organizational disbursements, not the bounded native quote or USDC off-ramp route.
+
+## Verify a publication
+
+The main-branch workflow builds once, uploads those bytes, checks the server CID, then downloads and recomputes the CID and archive SHA-256.
+It retains separate `*.upload-accepted.json` and `*.release.json` receipts. Only the latter records `retrieval-verified`.
+A failed retrieval leaves upload acceptance visible and fails the job. This does not automatically undo an accepted upload.
+
+For an authorized manual publication, supply `SKILLS_API_KEY` and run:
+
+```sh
+npm run publish:capsules -- --receipt .capsule-build/qi-library.build.json --registry https://capsules.skills.ixo.earth
+```
+
+CI archives and receipts expire after 90 days. Export required release evidence to your approved durable store before expiry.
+Source changes alone do not publish a capsule. No previous or rollback CID is invented.
+`scripts/tooling-source.json` records source paths and SHA-256 hashes for the tooling copied into the private authoring repository.
+
+The [published archive baseline](docs/stage6-published-baseline.json) records read-only downloads of existing public capsules. It does not describe these unpublished source changes.
+
+The retrieval receipt records both transport hashes. Different gzip encoding can pass when every regular file, empty file, path and executable mode matches. A matching content CID alone cannot clear a mode or empty-file mismatch.

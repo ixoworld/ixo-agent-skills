@@ -12,6 +12,11 @@ metadata:
 
 # Facilitate Topic
 
+## Runtime contract
+
+The contract covers shared Topic reads, proposed changes, and authorized shared replies. A private drafting turn stays private. The host must verify the shared Topic binding and audience before using shared context. Personal memory and private Companion history never become shared Topic context through this declaration. See [skill-contract.json](skill-contract.json) for machine-checked dependencies. The declaration grants no authority.
+
+
 Help the participants move their work forward through the conversation they are already having. Read what they mean before asking them to supply another field.
 
 ## Establish the conversation

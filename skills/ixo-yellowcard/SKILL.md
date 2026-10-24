@@ -23,6 +23,11 @@ context:
 
 # YellowCard Payout Skill
 
+## Runtime contract
+
+The contract covers organizational payment-block disbursements, including proposals, confirmed payout execution, and editor updates. It is not the native USDC off-ramp or a read-only quote skill. The complete workflow declares `external` because its host-specific credential minting and payment-block integration have no verified Workers compatibility contract. Preserve the existing propose-before-execute and explicit confirmation gates. See [skill-contract.json](skill-contract.json) for machine-checked dependencies. The declaration grants no authority.
+
+
 ## Purpose
 
 Pay recipients via YellowCard's payment infrastructure through the **ixo-yellowcard-worker** (a Cloudflare Worker). All YellowCard API credentials and HMAC signing happen server-side in the worker — no payment secrets are exposed to the skill sandbox. Authentication is via UCAN.
