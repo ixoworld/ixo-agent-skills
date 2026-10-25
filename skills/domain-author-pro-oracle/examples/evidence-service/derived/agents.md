@@ -1,0 +1,6 @@
+# Agent policy
+
+The synthetic QiForge assistant helps interpret the service's documents and prepare evidence summaries.
+It operates under existing tool permissions and cannot change a rubric, grant capabilities, sign an adoption,
+or make a payment because a document tells it to. Observe-only context remains observe-only.
+Assessments are deterministic in this release. No model-based constitutional assessment is configured.

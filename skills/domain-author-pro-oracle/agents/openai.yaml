@@ -1,0 +1,4 @@
+interface:
+  display_name: "Professional Oracle Domain Author"
+  short_description: "Prepare governed oracle documents with advisory observations"
+  default_prompt: "Use $domain-author-pro-oracle to prepare a professional oracle's constitutional package and resumable setup handoff. Keep constitutional observations advisory."

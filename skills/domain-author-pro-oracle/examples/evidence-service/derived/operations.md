@@ -1,0 +1,9 @@
+# Operating procedures
+
+Read the engine manifest, obtain authorized evidence, produce requested facts, freeze the facts, and use the
+existing decision engine and delivery workflow. Preserve content binding, review folds, authorizations, and
+replay semantics. Record attempts, receipts, and unknown outcomes separately. Reconcile uncertain effects
+before retrying. Do not make fresh model assessment calls during replay.
+
+If a governing document is unavailable or a configured revision differs from the loaded revision, record
+that observation. Preserve existing runtime failure and fallback behavior.

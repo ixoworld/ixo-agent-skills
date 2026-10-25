@@ -1,0 +1,13 @@
+# Evidence methods
+
+## Method completion-evidence
+
+Match each requested fact to permitted source evidence. Produce the type and missing-evidence representation
+required by the engine manifest. The example fact schema documents a synthetic input for authoring tests.
+It is not a replacement for a live engine manifest or rubric.
+
+## source-corroboration
+
+The intended practice is to compare independent sources when available. The expert has not yet calibrated
+this practice or implemented an automated check. Record the gap as a learning opportunity. Do not introduce
+automatic abstention, a new human-review requirement, or a delivery block.
