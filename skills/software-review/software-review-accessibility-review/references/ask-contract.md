@@ -39,7 +39,7 @@ non-empty strings. These are the types the checker enforces.
 | `scenarios` | list of objects | Finite cases. Each has text `id` (unique), `user_task`, `setup`, `success`, `failure` and `source`, and lists `steps` and `evidence`. |
 | `planned_actions` | null or list of `{"target", "action"}` | Optional. Each pair uses a value from `permissions.targets` and one from `permissions.actions`, spelled exactly the same. |
 | `comparison` | omitted or object | Only once alternatives are identified: list `alternatives` and text `equivalent_conditions`. |
-| `missing_inputs` | list, may be empty | Unresolved field names with a focused question each, even when most of the ask can be drafted. |
+| `missing_inputs` | list of strings, may be empty | One string per unresolved field, naming the field and its focused question (for example `"target.version: Which build should the reviewer test?"`), even when most of the ask can be drafted. |
 | `decisions` | object | Draft-only state, below. |
 
 A scenario's `source` is `IXO-original` for a case written here, or

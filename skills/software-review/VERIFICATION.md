@@ -84,10 +84,55 @@ checkout), so the per-archive file counts above are for `e3dfe82`. Each archive
 now also carries `scripts/check_ask.py` and that skill's `evals/` cases. The seven
 behaviour evals were not run against a model.
 
+## Behaviour benchmark and fixes (2026-10-25)
+
+skill-creator benchmark of `dcc8b37`: each of the seven `evals/` cases ran once
+with its skill and once with no skill (claude-opus-5-5 subagents, offline, no
+network), and LLM graders scored every grader statement.
+
+| Case | With skill | Without skill |
+| --- | --- | --- |
+| accessibility-review / automated-certification | 4/4 | 3/4 |
+| accessibility-review / local-context | 0/3 | 1/3 |
+| agent-review / injected-trace | 3/3 | 3/3 |
+| agent-review / public-target | 3/3 | 1/3 |
+| performance-review / price-absent | 3/3 | 2/3 |
+| scenario-planning / finding-follow-up | 4/4 | 1/4 |
+| scenario-planning / insufficient-brief | 3/3 | 2/3 |
+
+Totals: 20/23 with the skill, 13/23 without (case means 86% vs 57%). The skill
+adds about 104 s and 23k tokens per run. One run each, so no variance estimate.
+Fixes from the results, applied after the run (not re-benchmarked):
+
+- accessibility-review: ask about each localisation dimension separately
+  (culture was missed), require fluent reviewers with subject-area and
+  accessibility expertise, and say a translation alone cannot establish usability.
+- agent-review: list blocking questions (authorisation, targets, actions, budgets,
+  stop conditions) in the reply, not only in `missing_inputs`.
+- scenario-planning: state in the reply that nothing was posted, run or paid, and
+  that a passing retest authorises no payment or release.
+- ask-contract (all four copies): `missing_inputs` is a list of strings. One run
+  first wrote objects, which `check_ask.py` rejects.
+
+Weak graders found (unchanged): injected-trace passes on any refusal;
+automated-certification 04 (target size) passes when neither run mentions it;
+price-absent 01's "specialist's fee" clause cannot be met without the skill.
+
+Descriptions are unchanged. The trigger-tuning run was stopped: skill-creator's
+`run_eval` writes every query's temporary skill into one shared
+`.claude/commands/`, so with `--num-workers` above 1 the model could invoke
+another worker's copy, which scored as not triggered. No trigger scores from that
+run are valid.
+
+Checks on the patched tree: unittest (11 tests) pass; `validate-skill.sh` 4/4
+pass; `git diff --check` pass; the four `ask-contract.md` copies are identical.
+Not run here: `quick_validate.py` (PyYAML missing) and Ruff (not installed).
+
 ## Limits and skipped checks
 
 - Seven behavior prompts/assertions are supplied as `evals/<case>/` folders in
-  the skills they exercise; no external model was run. Candidate structure
+  the skills they exercise; they were run once per configuration on
+  2026-10-25 (above), not after the fixes. Candidate structure
   checks do not prove model adherence, factual permission or product quality.
 - No paid model evaluations, upstream installers/evaluators, target tests,
   production scans, live capsule uploads, merges or deployments were performed.

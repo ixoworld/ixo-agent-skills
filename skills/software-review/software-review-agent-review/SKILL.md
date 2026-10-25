@@ -73,6 +73,11 @@ must separate observation, interpretation and accountable evaluation; settlement
 and payment authority stay separate. Define a follow-up that repeats corrected
 cases plus a small adjacent-risk set on the named new version.
 
+In the reply, list the open questions that block testing (authorisation evidence,
+exact targets, permitted actions, request/time budgets and stop conditions) rather
+than leaving them only in `missing_inputs`: the owner reads the reply, and a gap
+they never see stays open.
+
 ## Checking the draft
 
 `scripts/check_ask.py`, in this skill's folder, checks a JSON ask offline against

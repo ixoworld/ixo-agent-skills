@@ -45,7 +45,9 @@ approval can be mistaken for one.
    cases distinct from material used to optimise the agent.
 6. Check the draft, fix what the checker reports, then show the user the ask and
    any open questions. No posting, tool execution or payment follows from this
-   skill.
+   skill. Say so in the reply, and for a follow-up say that a passing retest
+   authorises no payment or release: the template's pending decisions are easy
+   to miss inside the JSON.
 
 Use [findings to regression](references/findings-to-regression.md) when expert
 findings already exist or follow-up is requested. It defines a finite follow-up

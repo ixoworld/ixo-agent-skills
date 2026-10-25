@@ -134,9 +134,15 @@ criterion level, scope and exceptions; this selected list is not the standard.
 
 Read [localisation scenarios](references/localisation.md) when the task spans
 languages, cultures, devices/connectivity or assistive technology. Select relevant
-combinations rather than assuming translation quality proves task usability.
-Require task completion, comprehensible errors and recovery observations; avoid
-concluding that a design screenshot proves runtime accessibility.
+combinations rather than assuming translation quality proves task usability. Ask
+about each of its four dimensions separately (language variant and script, culture
+and local task conventions, device and connectivity, assistive technology), because
+a language code says nothing about the others. Request reviewers fluent in the named
+language variant who also know the task's subject area and have accessibility
+expertise. Say in the ask that a translation or an automated scan alone cannot
+establish usability, and require task completion, comprehensible errors and
+recovery observations; avoid concluding that a design screenshot proves runtime
+accessibility.
 
 Keep findings linked to observed interactions. State user impact and uncertainty,
 then interpretation/recommendation, then the designated specialist's evaluation.
