@@ -1,0 +1,14 @@
+{
+  "version": "1",
+  "rules": [
+    {
+      "id": "evidence-attribution",
+      "documentRef": "charter"
+    },
+    {
+      "id": "source-corroboration",
+      "documentRef": "methods"
+    }
+  ],
+  "posture": "advisory"
+}

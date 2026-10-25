@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ixo:professional-oracle:profile:1",
+  "type": "object",
+  "required": [
+    "version",
+    "runtimeTargets",
+    "serviceScope",
+    "methods",
+    "rulePractices",
+    "observation"
+  ],
+  "properties": {
+    "version": {
+      "const": "1"
+    },
+    "runtimeTargets": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "decision-oracle",
+          "qiforge"
+        ]
+      },
+      "uniqueItems": true,
+      "maxItems": 2,
+      "minItems": 1
+    },
+    "serviceScope": {
+      "type": "object",
+      "required": [
+        "summary",
+        "exclusions",
+        "protocols"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "uniqueItems": true,
+          "maxItems": 64
+        },
+        "protocols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "uniqueItems": true,
+          "maxItems": 64
+        }
+      },
+      "additionalProperties": false
+    },
+    "methods": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "documentRef",
+          "resourceRefs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "documentRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "resourceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "uniqueItems": true,
+            "maxItems": 64
+          }
+        },
+        "additionalProperties": false
+      },
+      "uniqueItems": true,
+      "maxItems": 64,
+      "minItems": 1
+    },
+    "rulePractices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "ruleRef",
+          "documentRef",
+          "practice",
+          "responsibleRole",
+          "evidenceRefs",
+          "implementationStatus"
+        ],
+        "properties": {
+          "ruleRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "documentRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "practice": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "responsibleRole": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "uniqueItems": true,
+            "maxItems": 64
+          },
+          "implementationStatus": {
+            "enum": [
+              "documented",
+              "manual",
+              "observed",
+              "unimplemented"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "uniqueItems": true,
+      "maxItems": 64,
+      "minItems": 1
+    },
+    "observation": {
+      "type": "object",
+      "required": [
+        "mode",
+        "modelAssessments"
+      ],
+      "properties": {
+        "mode": {
+          "const": "advisory"
+        },
+        "modelAssessments": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

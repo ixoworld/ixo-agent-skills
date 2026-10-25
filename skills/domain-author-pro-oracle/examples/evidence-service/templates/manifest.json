@@ -1,0 +1,148 @@
+{
+  "synthetic": true,
+  "protocol": "did:ixo:entity:syntheticevidenceprotocol",
+  "version": "0.1.0",
+  "bundles": [
+    {
+      "derived_type": "oracle",
+      "files": [
+        {
+          "role": "domain.md",
+          "path": "templates/oracle/domain.md.tmpl",
+          "sha256": "e4175eb35c1db705a2620100b998753a4941498e5a5275b2828d835f132d6ada",
+          "cid": "bafkreihec5plgxa5w4c2eyqbac4zq5j2jfautds2kj23faunqnprgllk3i",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "description",
+          "path": "templates/oracle/description.md.tmpl",
+          "sha256": "8677d07ed5b012fd646e36fa63f63684c843de5c646d240abca99280b5f67d34",
+          "cid": "bafkreiego7ih5vnqcl6wi3rw7jr7mnuezbb54xdenusavpfjskall5t5gq",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "changelog",
+          "path": "templates/oracle/changelog.md.tmpl",
+          "sha256": "a80364fcdf27d71b2154e65031fd42d9b502176cc7c3d696b2ae88990e5ce754",
+          "cid": "bafkreifianspzxzh24nscvhgkay72qwzwubbo3ghypljnmvorcmq4xhhkq",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "manifest",
+          "path": "templates/oracle/charter.md.tmpl",
+          "sha256": "0207e3e6677436cd27f0dc2e03f116c430596384eca47dd5554a5e8cf0392428",
+          "cid": "bafkreiaca7r6mz3ug3gsp4g4fyb7cfwegbmwhbhmur65kvkkl2gpaojefa",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "governance",
+          "path": "templates/oracle/governance.md.tmpl",
+          "sha256": "16e044d58486fdf16ddc5ae221cf76897bd3c60ca5b52e88a8b20a3fadef38c8",
+          "cid": "bafkreiaw4bcnlbeg7xyw3xc24iq465ujppj4mdffwuxirkfsbi7233zyza",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "operations",
+          "path": "templates/oracle/operations.md.tmpl",
+          "sha256": "c4cc82f99dfed28f8fa76c282aaa0d2ef0153bff3d5cbe3fc0e4ce73c99d7e0b",
+          "cid": "bafkreigezsbpthp62khy7j3mfavkudjo6aktx7z5ls7d7qhezzz4thl6bm",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-evidence-policy",
+          "path": "templates/oracle/evidence-policy.md.tmpl",
+          "sha256": "10ac0c92667b4d726b032f7d021349b6c30a225c94aa9b8db7ff7ef60f204ea7",
+          "cid": "bafkreiaqvqgjezt3jvzgwazppubbgsnwymfcexeuvkny3n77p33a6icou4",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-methods",
+          "path": "templates/oracle/methods.md.tmpl",
+          "sha256": "29cce5e9f647ef16016dae20f7938a67fd47a7f94cd29f7b60293d8012e3aa0e",
+          "cid": "bafkreibjzts6t5sh54lac3noed3zhcth7vd2p6km2kpxwybjhwabfy5kby",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-conflicts-appeals",
+          "path": "templates/oracle/conflicts-appeals.md.tmpl",
+          "sha256": "bebe24e74e2bad9deff3ae2bd93a148237dd0ef6083b8c170ccb2bbb51d32c05",
+          "cid": "bafkreif6xysootrlvwo6745ofpmtufecg7oq55qihogbodglfo5vduzmau",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "data-policy",
+          "path": "templates/oracle/data-policy.md.tmpl",
+          "sha256": "1180df836d1327a4d9303be5a1a79574b0c31cad9981669aa1b531e484e7dd30",
+          "cid": "bafkreiarqdpyg3ite6snsmb34wq2pfluwdbrzlmzqftjvinvghsijz65ga",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-incidents",
+          "path": "templates/oracle/incidents.md.tmpl",
+          "sha256": "8945eaf918395a8dc194702b0ce3ba5bccc9b2a825a5c37a0713c8c36191062b",
+          "cid": "bafkreiejixvpsgbzlkg4dfdqfmgohos3zte3fkbfuxbxubytzdbwdeigfm",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-report-template",
+          "path": "templates/oracle/report-template.md.tmpl",
+          "sha256": "f4b9990560e8591ae9a5dddd33033722fcdc9882164b34fa030736d3fc013d40",
+          "cid": "bafkreihuxgmqkyhilenotjo53uzqgnzc7tojraqwjm2puayhg3j7yaj5ia",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "agents",
+          "path": "templates/oracle/agents.md.tmpl",
+          "sha256": "66d66188ac875c901b259aed64b9190b920d809c9fa2ccbfbb5f0a586bdc5594",
+          "cid": "bafkreidg2zqyrlehlsibwjm25vslsgilsigybhe7ulgl7o27bjmgxxcvsq",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-machine-resource",
+          "path": "templates/oracle/resources/service-norms.json.tmpl",
+          "sha256": "88c9a46ec620a3ed1998d9de0d6317a8235eebb163a00ea37882e00a46f4f9f4",
+          "cid": "bafkreieizgsg5rraupwrtggz3ygwgf5ienpoxmlduahkg6ec4afen5hz6q",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-machine-resource",
+          "path": "templates/oracle/resources/fact.schema.json.tmpl",
+          "sha256": "5299a69a9c00622e4da9d6fbbda128744c08ca8b6193db9cb2702274dd01a769",
+          "cid": "bafkreicstgtjvhaamixe3kow7o62ckdujqemvc3bspnzzmtqej2n2anhne",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-machine-resource",
+          "path": "templates/oracle/resources/observation-scenarios.json.tmpl",
+          "sha256": "c8d91f35150de0539e625b318e545a53f3a73558666bb639d64f6f85dbc018d1",
+          "cid": "bafkreigi3eptkfin4bjz4ys3gghfiwst6ottkwdgno3dtvspn6c5xqay2e",
+          "required": true,
+          "template_version": "0.1.0"
+        },
+        {
+          "role": "x-machine-resource",
+          "path": "templates/oracle/resources/audit-policy.md.tmpl",
+          "sha256": "6ed2abbde057b4531ad334a6a221c90621ce4a72a53dd55fc472f25312f0f39a",
+          "cid": "bafkreido2kv33ycxwrjrvuzuu2rcdsigehheu4vfhxkv7rds6jjrf4htti",
+          "required": true,
+          "template_version": "0.1.0"
+        }
+      ]
+    }
+  ]
+}
