@@ -1,0 +1,20 @@
+{
+  "subjects": {
+    "did:ixo:test:referrer1": "r_7f3a9c",
+    "did:ixo:test:other": "r_zzz999"
+  },
+  "attestations": [
+    {
+      "code": "K7P3Q",
+      "youth_did": "did:ixo:test:youth1",
+      "referrer_ref": "r_7f3a9c",
+      "registered": true,
+      "credentialed": true,
+      "status": "pending",
+      "created_at": "2026-10-29T08:05:00.000Z",
+      "expires_at": "2026-11-05T08:05:00.000Z",
+      "confirmed_at": null,
+      "confirmed_by_ref": null
+    }
+  ]
+}

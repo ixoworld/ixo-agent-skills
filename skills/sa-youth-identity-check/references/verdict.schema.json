@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ixo.sa-youth-identity-check/verdict/1.0.0",
+  "title": "sa-youth-identity-check verdict",
+  "description": "The record build-verdict.js hands to the calling flow. It never contains a raw ID number, a date of birth, a phone number, the sender digest, gender, or any message text. eligibility, identity and phone are absent for not_eligible, declined, not_applicable and paused_safeguarding.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schema_version", "check_id", "status", "reason", "assurance", "subject", "checks", "flags", "consent", "provenance", "timestamps", "retention", "escalation", "attestations"],
+  "properties": {
+    "schema": { "const": "ixo.sa-youth-identity-check/verdict" },
+    "schema_version": { "const": "1.0.0" },
+    "check_id": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
+    "status": { "enum": ["passed", "not_eligible", "inconclusive", "declined", "not_applicable", "paused_safeguarding", "error"] },
+    "reason": { "enum": ["under_18", "over_35", "id_invalid", "stated_year_mismatch", "consent_declined", "stopped", "no_sa_id", "safeguarding", null] },
+    "assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "statement", "dha_verified", "document_verified", "liveness_verified"],
+      "properties": {
+        "level": { "const": "basic" },
+        "statement": { "type": "string" },
+        "dha_verified": { "const": false },
+        "document_verified": { "const": false },
+        "liveness_verified": { "const": false }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["user_did", "channel"],
+      "properties": {
+        "user_did": { "type": "string", "pattern": "^did:" },
+        "channel": { "type": "string" }
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["band", "age_at_check", "in_band", "as_of"],
+      "properties": {
+        "band": { "const": "18-35" },
+        "age_at_check": { "type": "integer", "minimum": 0, "maximum": 130 },
+        "in_band": { "type": "boolean" },
+        "as_of": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document_type", "masked_id", "structurally_valid"],
+      "properties": {
+        "document_type": { "const": "za_id_number" },
+        "masked_id": { "type": "string", "pattern": "^[0-9]{6}\\*{5}[0-9]{2}$" },
+        "structurally_valid": { "type": "boolean" },
+        "citizenship_class": { "enum": ["citizen", "permanent_resident", null] },
+        "id_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "phone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified_sender_available", "sender_country", "ownership", "typed_number_supplied", "typed_is_za_mobile", "typed_matches_sender"],
+      "properties": {
+        "verified_sender_available": { "type": "boolean" },
+        "sender_country": { "type": ["string", "null"] },
+        "ownership": { "enum": ["self_attested_own", "borrowed_device", "unknown"] },
+        "typed_number_supplied": { "type": "boolean" },
+        "typed_is_za_mobile": { "type": ["boolean", "null"] },
+        "typed_matches_sender": { "type": ["boolean", "null"] }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "result", "method"],
+        "properties": {
+          "id": { "enum": ["consent", "age_gate", "id_structure", "id_luhn", "stated_year_consistent", "sender_match"] },
+          "result": { "enum": ["pass", "fail", "not_applicable"] },
+          "method": { "type": "string" }
+        }
+      }
+    },
+    "flags": { "type": "array", "items": { "type": "string", "pattern": "^[a-z_]+$" } },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["given", "notice_version", "language", "at"],
+      "properties": {
+        "given": { "type": "boolean" },
+        "notice_version": { "type": "string" },
+        "language": { "type": "string" },
+        "at": { "type": ["string", "null"] }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "skill_version", "classifier", "decision_provider", "retries_used"],
+      "properties": {
+        "skill": { "const": "sa-youth-identity-check" },
+        "skill_version": { "type": "string" },
+        "classifier": { "enum": ["decision_tool", "agent_rubric"] },
+        "decision_provider": { "type": ["string", "null"] },
+        "retries_used": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "timestamps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["started_at", "completed_at"],
+      "properties": { "started_at": { "type": "string" }, "completed_at": { "type": "string" } }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["delete_after", "basis"],
+      "properties": { "delete_after": { "type": "string" }, "basis": { "type": "string" } }
+    },
+    "escalation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommended", "skill", "reason"],
+      "properties": {
+        "recommended": { "type": "boolean" },
+        "skill": { "const": "ixo-identity-verification" },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "attestations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "referrer_ref", "referrer_registered", "referrer_credentialed", "status", "expires_at", "confirmed_at", "reward"],
+        "properties": {
+          "type": { "const": "referral_contact_card" },
+          "referrer_ref": { "type": "string" },
+          "referrer_registered": { "type": "boolean" },
+          "referrer_credentialed": { "type": "boolean" },
+          "status": { "enum": ["pending", "confirmed", "not_registered", "not_credentialed", "expired", "refused"] },
+          "code": { "type": "string", "pattern": "^[A-HJ-NP-Z2-9]{5}$" },
+          "expires_at": { "type": ["string", "null"] },
+          "confirmed_at": { "type": ["string", "null"] },
+          "reward": { "const": "owned by the calling flow" }
+        }
+      }
+    }
+  }
+}

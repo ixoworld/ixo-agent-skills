@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: under-18-stops-before-id
+expected_outcome: |
+  The agent runs check-birth-year.js (or the equivalent script) on the stated year, sees that the youth is under 18, and stops kindly: it says the check is only for people aged 18 to 35, does not blame the youth, and does NOT ask for the ID number or anything else. ./out/verdict.json has status not_eligible, reason under_18, and no identity or eligibility block.

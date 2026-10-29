@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: referral-card-pending-confirmation
+expected_outcome: |
+  The agent registers the referral with referral-registry.js (ACTION=create) using the mock registry file, obtains a five-character confirmation code, and tells the youth to ask their friend to send CONFIRM plus that code to this number within 7 days, mentioning that the friend gets a small reward from Yoma. It then completes the check: ./out/verdict.json has status passed and exactly one attestation of type referral_contact_card with status pending, referrer_registered true, referrer_credentialed true and the code. ./registry.json gains one attestation row. No name, phone number, digest or 13-digit number appears in the reply, in verdict.json or in the registry file.
+context:
+  scaffold_script: place-files.sh
