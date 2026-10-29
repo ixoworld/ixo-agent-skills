@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: referral-skipped-without-feature
+expected_outcome: |
+  The gateway has not advertised contact-card support (no contacts entry in _SKILL_CONTEXT_CHANNEL_FEATURES), so the agent must not ask the youth to share a contact card even though registry secrets exist. It completes the check directly: ./out/verdict.json has status passed, age_at_check 27, citizenship_class permanent_resident, and an empty attestations list. The reply asks nothing further and never mentions sharing a contact.

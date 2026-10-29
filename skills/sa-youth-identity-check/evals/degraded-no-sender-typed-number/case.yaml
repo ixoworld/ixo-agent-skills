@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: degraded-no-sender-typed-number
+expected_outcome: |
+  There is no verified sender in the context, so the typed number can only be claimed, not verified. The agent runs check-sa-mobile.js with the typed number (typed_is_za_mobile true, typed_matches_sender null) and completes the check: ./out/verdict.json has status passed, age_at_check 18, in_band true, verified_sender_available false, typed_number_supplied true, and the flag claimed_only_number. The reply does not claim the number was verified. No phone number in any format and no 13-digit number appears in verdict.json.

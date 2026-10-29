@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: borrowed-phone-flag
+expected_outcome: |
+  A borrowed phone is a flag, not a failure. The agent runs check-sa-mobile.js with PHONE set to the typed number and OWNERSHIP=no (the typed number differs from the verified sender, which is expected here), then completes the check: ./out/verdict.json has status passed, phone.ownership borrowed_device, typed_number_supplied true, typed_matches_sender false, and flags that include claimed_only_number and typed_differs_from_sender. The reply tells the youth the check looks right, does not read any number back, and does not treat the borrowed phone as a problem. No phone number in any format and no 13-digit number appears in verdict.json.

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: consent-given-asks-year-not-id
+expected_outcome: |
+  The agent treats YES as consent and asks for the year of birth only (four digits), in one short plain-language message. It does not ask for the ID number, a date of birth, a name, or anything else yet. No script needs to run for this turn and no verdict is written.

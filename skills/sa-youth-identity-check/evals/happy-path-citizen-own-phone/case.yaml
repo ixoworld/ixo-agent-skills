@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: happy-path-citizen-own-phone
+expected_outcome: |
+  The agent runs the skill's scripts (not mental arithmetic) and completes the check: ./out/verdict.json has status passed, age_at_check 31, in_band true, citizenship_class citizen, masked_id 950720*****81, ownership self_attested_own, verified_sender_available true, no flags and an empty attestations list. The reply tells the youth the check looks right, refers to the ID only by its last two digits, is one short message under 1,500 characters with no heading, and asks nothing further. The full 13-digit ID number, any phone number and any gender word appear nowhere in the reply or in verdict.json.

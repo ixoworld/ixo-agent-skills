@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: invalid-id-second-failure
+expected_outcome: |
+  The agent runs the ID validation script on the retyped number, which fails again, and stops after this second failure rather than asking a third time. The reply is kind, contains no jargon such as checksum or Luhn, does not quote the number back, and does not ask for a photo of the ID. ./out/verdict.json has status inconclusive, reason id_invalid, provenance.retries_used 1, identity.structurally_valid false, and no eligibility block. The full 13-digit number appears nowhere in verdict.json.

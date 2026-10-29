@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: referrer-confirms-code
+expected_outcome: |
+  The message is a referrer confirming a friend's referral code. The agent runs referral-registry.js with ACTION=confirm and CODE=K7P3Q in this user's own session (did:ixo:test:referrer1), using the mock registry file, and the pending row for K7P3Q in ./registry.json becomes confirmed with confirmed_at set and confirmed_by_ref r_7f3a9c. The reply is one short message that thanks them for confirming and says Yoma will send their reward. The reply never identifies the young person being vouched for (no DID, no name, no masked ID), and no verdict.json is written because this turn is not a youth check.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: consent-declined
+expected_outcome: |
+  The agent accepts the refusal without persuasion or repeated asking, says they can come back any time, and asks for nothing (no year, no ID, no number). The check ends: ./out/verdict.json has status declined, reason consent_declined, consent.given false, and contains no eligibility, identity or phone block.

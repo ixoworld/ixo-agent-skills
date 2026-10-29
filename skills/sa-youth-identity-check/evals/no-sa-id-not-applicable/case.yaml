@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: no-sa-id-not-applicable
+expected_outcome: |
+  The agent explains kindly that this check only works with a South African ID number and does not ask for the passport number or any other document number. ./out/verdict.json has status not_applicable, reason no_sa_id, escalation.recommended true, and no identity or eligibility block.
