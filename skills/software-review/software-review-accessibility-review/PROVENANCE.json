@@ -1,0 +1,28 @@
+{
+  "skill": "software-review-accessibility-review",
+  "namespace": "software-review",
+  "kind": "adapted-skill-import",
+  "upstream_skill_name": "accessibility-review",
+  "modifications": [
+    "Renamed skill and replaced frontmatter/slash-command/connectors with an IXO ask-authoring entrypoint and contract.",
+    "Retained selected WCAG checks, common issues, testing approach and evidence tables. Corrected 2.5.5 to AAA; removed unsupported automated coverage percentage.",
+    "Added observed runtime vs design distinction, localisation, manual expertise, incomplete-input handling and no-certification/payment boundaries."
+  ],
+  "sources": [
+    {
+      "repository": "anthropics/knowledge-work-plugins",
+      "path": "design/skills/accessibility-review/SKILL.md",
+      "revision": "33d3dea41a341b341d4f5da2e8801ae0c89be2b8",
+      "url": "https://github.com/anthropics/knowledge-work-plugins/blob/33d3dea41a341b341d4f5da2e8801ae0c89be2b8/design/skills/accessibility-review/SKILL.md",
+      "license": "Apache-2.0",
+      "license_path": "LICENSE",
+      "license_sha256": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
+      "source_sha256": "ef42982af0d51238dda2ab16d08626712891bdd41864876c32d1e7b13fb3124f",
+      "git_blob_sha": "3ef332cd837da5b4f7089503eb93e14c04090ccf",
+      "role": "adapted-skill-import",
+      "bundled_license": "licenses/anthropics--knowledge-work-plugins--LICENSE"
+    }
+  ],
+  "notice_check": "Pinned recursive trees inspected for root and ancestor LICENSE/NOTICE; no additional applicable NOTICE found.",
+  "endorsement": "No upstream endorsement is implied."
+}

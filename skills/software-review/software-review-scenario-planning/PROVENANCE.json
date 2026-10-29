@@ -1,0 +1,79 @@
+{
+  "skill": "software-review-scenario-planning",
+  "namespace": "software-review",
+  "kind": "original-ixo-adapter",
+  "upstream_skill_name": null,
+  "modifications": [
+    "Original IXO ask workflow and contract. Adapted scenario selection, capability/safety separation, grader validation and findings triage concepts.",
+    "Replaced workbook/Copilot dependencies with bounded review asks. Removed upstream numerical defaults, ship decisions and execution."
+  ],
+  "sources": [
+    {
+      "repository": "microsoft/ai-agent-eval-scenario-library",
+      "path": "README.md",
+      "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+      "url": "https://github.com/microsoft/ai-agent-eval-scenario-library/blob/04fc731937cd2bb8b9ef5195540c6f53914f52a5/README.md",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "source_sha256": "998bfde6f91e7bceb636621565a10de856f638b044ae53760ba668311a5d51e2",
+      "git_blob_sha": "4095c6484e833a9e3ed6b605fd72bb5b8fee9625",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/microsoft--ai-agent-eval-scenario-library--LICENSE"
+    },
+    {
+      "repository": "microsoft/ai-agent-eval-scenario-library",
+      "path": "business-problem-scenarios/request-submission-and-task-execution.md",
+      "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+      "url": "https://github.com/microsoft/ai-agent-eval-scenario-library/blob/04fc731937cd2bb8b9ef5195540c6f53914f52a5/business-problem-scenarios/request-submission-and-task-execution.md",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "source_sha256": "b2345e094dbc78ad76156268a662f845f888b2644297910a933b162cf97405bd",
+      "git_blob_sha": "7e5d8dcbb65a0900b08357beb87592876537b564",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/microsoft--ai-agent-eval-scenario-library--LICENSE"
+    },
+    {
+      "repository": "microsoft/ai-agent-eval-scenario-library",
+      "path": "capability-scenarios/regression-testing.md",
+      "revision": "04fc731937cd2bb8b9ef5195540c6f53914f52a5",
+      "url": "https://github.com/microsoft/ai-agent-eval-scenario-library/blob/04fc731937cd2bb8b9ef5195540c6f53914f52a5/capability-scenarios/regression-testing.md",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "source_sha256": "c5054fa7cf6c92b0bfec9582839130a44a738471fdd60e850b1ad762753f5951",
+      "git_blob_sha": "95a0bf0abe21d680b5de280534c3f6ff939b3633",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/microsoft--ai-agent-eval-scenario-library--LICENSE"
+    },
+    {
+      "repository": "microsoft/eval-guide",
+      "path": "skills/eval-suite-planner/SKILL.md",
+      "revision": "7a22a8957ced79a35fd7b4634fd5b5eac56c308e",
+      "url": "https://github.com/microsoft/eval-guide/blob/7a22a8957ced79a35fd7b4634fd5b5eac56c308e/skills/eval-suite-planner/SKILL.md",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "7df20dcdf9197e9945c14858d41c60f11b52b93e5b69e2b63416b874d598d322",
+      "source_sha256": "205e6d8352f1e641d43ae6ab44e77ba6170a93e77282244b483c82953a354e65",
+      "git_blob_sha": "cd591bf8821918bfc5653e003583004d8ffa0d38",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/microsoft--eval-guide--LICENSE"
+    },
+    {
+      "repository": "microsoft/eval-guide",
+      "path": "skills/eval-triage-and-improvement/SKILL.md",
+      "revision": "7a22a8957ced79a35fd7b4634fd5b5eac56c308e",
+      "url": "https://github.com/microsoft/eval-guide/blob/7a22a8957ced79a35fd7b4634fd5b5eac56c308e/skills/eval-triage-and-improvement/SKILL.md",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "7df20dcdf9197e9945c14858d41c60f11b52b93e5b69e2b63416b874d598d322",
+      "source_sha256": "8996fd0fda28188cb718015f6d6e2d4f87dcc604e3025f123667f769f9c43381",
+      "git_blob_sha": "a6d44edd19c61bfe6aee8f8b9911b30eb11484d3",
+      "role": "reference-adaptation",
+      "bundled_license": "licenses/microsoft--eval-guide--LICENSE"
+    }
+  ],
+  "notice_check": "Pinned recursive trees inspected for root and ancestor LICENSE/NOTICE; no additional applicable NOTICE found.",
+  "endorsement": "No upstream endorsement is implied."
+}
