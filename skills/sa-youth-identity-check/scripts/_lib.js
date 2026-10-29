@@ -152,10 +152,18 @@ function findSensitive(value, senderDigest) {
     s
       .replace(/\d{4}-\d{2}-\d{2}(?:T[\d:.]+Z?)?/g, ' ')
       .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, ' ');
+  // The salted ID digest is the one legitimate field whose hex can contain a
+  // run of 13 decimal digits or a phone-length run of digits (about one digest
+  // in ten does). It is script-computed, schema-validated to exactly
+  // "sha256:" + 64 hex, and sits only at identity.id_digest, so that field is
+  // exempt from the number-pattern scans. Every other field, and the sender
+  // digest check, stay as they are.
+  const isIdDigestField = (at, v) => at === 'identity.id_digest' && /^sha256:[0-9a-f]{64}$/.test(v);
   const visit = (v, at) => {
     if (typeof v === 'string') {
-      if (/\d{13}/.test(v)) hits.push({ at, kind: 'id_number' });
       if (senderDigest && v.includes(senderDigest)) hits.push({ at, kind: 'sender_digest' });
+      if (isIdDigestField(at, v)) return;
+      if (/\d{13}/.test(v)) hits.push({ at, kind: 'id_number' });
       const s = strip(v);
       const m = /\+?\d[\d\s().-]{7,}\d/.exec(s);
       if (m && (m[0].match(/\d/g) || []).length >= 9) hits.push({ at, kind: 'phone_number' });

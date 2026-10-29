@@ -389,6 +389,29 @@ function selfTest() {
     },
   });
   cases.push({
+    name: 'a salted ID digest whose hex contains a 13-digit run does not block the verdict (Codex review finding)',
+    fn: async () => {
+      const dir = fresh();
+      await birthYear.main({ outputDir: dir, asOf: AS_OF, statedBirthYear: '1995' });
+      // salt3 + 9507205123081 yields a digest containing the run 9146371620373
+      const idc = await validateId.main({ outputDir: dir, asOf: AS_OF, saId: '9507205123081', statedBirthYear: '1995', salt: 'salt3' });
+      lib.assert(/\d{13}/.test(idc.id_digest), `expected a 13-digit run inside ${idc.id_digest}`);
+      await mobile.main({ outputDir: dir, senderDigest: DIGEST, senderCountry: 'ZA', senderE164: '', ownership: 'yes', phone: '' });
+      const r = await main(common(dir));
+      lib.assert(r.success, r.error);
+      lib.assert(r.verdict.identity.id_digest === idc.id_digest && r.verdict.status === 'passed', JSON.stringify(r.verdict.identity));
+      // the exemption is for that one field only: the same string elsewhere is still refused
+      const leak = lib.findSensitive({ identity: { id_digest: idc.id_digest }, checks: [{ method: idc.id_digest }] });
+      lib.assert(leak && leak.at === 'checks[0].method' && leak.kind === 'id_number', JSON.stringify(leak));
+      // and a digest field that is not strictly sha256:<64 hex> gets no exemption
+      const leak2 = lib.findSensitive({ identity: { id_digest: `sha256:${idc.id_digest.slice(7)}0` } });
+      lib.assert(leak2 && leak2.at === 'identity.id_digest', JSON.stringify(leak2));
+      // and the sender digest is still caught even inside that field
+      const leak3 = lib.findSensitive({ identity: { id_digest: `sha256:${DIGEST}` } }, DIGEST);
+      lib.assert(leak3 && leak3.kind === 'sender_digest', JSON.stringify(leak3));
+    },
+  });
+  cases.push({
     name: 'refuses to write anything that looks like an ID, a phone number or the sender digest',
     fn: async () => {
       const dir = fresh();
