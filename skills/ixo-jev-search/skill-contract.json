@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "skillName": "ixo-jev-search",
+  "runtime": "qiforge-workers",
+  "audiences": [
+    "private",
+    "shared"
+  ],
+  "effects": [
+    "read",
+    "write",
+    "payment"
+  ],
+  "requiredTools": [
+    {
+      "name": "sandbox_run",
+      "effect": "write"
+    },
+    {
+      "name": "search_gateway_authorize",
+      "effect": "write"
+    },
+    {
+      "name": "sandbox_write_blob",
+      "effect": "write"
+    }
+  ],
+  "requiredCapabilities": [
+    {
+      "resource": "ixo:search",
+      "action": "search/authenticate"
+    }
+  ],
+  "requiredServices": [
+    {
+      "id": "search-gateway",
+      "profile": "delegated-search-v1"
+    }
+  ]
+}

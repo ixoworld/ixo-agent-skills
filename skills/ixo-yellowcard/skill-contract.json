@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "skillName": "ixo-yellowcard",
+  "runtime": "external",
+  "audiences": [
+    "private",
+    "shared"
+  ],
+  "effects": [
+    "read",
+    "stage",
+    "write",
+    "payment"
+  ],
+  "requiredTools": [
+    {
+      "name": "sandbox_run",
+      "effect": "write"
+    },
+    {
+      "name": "sandbox_write_blob",
+      "effect": "write"
+    },
+    {
+      "name": "read_block",
+      "effect": "read"
+    },
+    {
+      "name": "edit_block",
+      "effect": "write"
+    }
+  ],
+  "requiredCapabilities": [
+    {
+      "resource": "ixo:yellowcard",
+      "action": "yellowcard/balance"
+    },
+    {
+      "resource": "ixo:yellowcard",
+      "action": "yellowcard/payouts"
+    }
+  ],
+  "requiredServices": []
+}

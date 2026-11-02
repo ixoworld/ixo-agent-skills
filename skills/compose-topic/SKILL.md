@@ -13,6 +13,11 @@ metadata:
 
 # Compose Topic
 
+## Runtime contract
+
+The contract covers the full composition and refinement workflow, including host-staged proposals and requested committed wording changes. Each required tool must be present in the current host. A private turn does not establish a shared Topic binding. Read-only explanation can use `inspect_skill` without loading or executing this capsule. See [skill-contract.json](skill-contract.json) for machine-checked dependencies. The declaration grants no authority.
+
+
 Turn a person's intention into the smallest useful Topic Draft that people and agents can review, govern, progress, and complete together.
 
 The skill composes; the Topic Protocol resolves and projects; the Portal presents and commits. Do not duplicate those responsibilities.

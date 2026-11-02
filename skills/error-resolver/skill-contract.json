@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "skillName": "error-resolver",
+  "runtime": "qiforge-workers",
+  "audiences": [
+    "private",
+    "shared"
+  ],
+  "effects": [
+    "read"
+  ],
+  "requiredTools": [
+    {
+      "name": "sandbox_run",
+      "effect": "write"
+    }
+  ],
+  "requiredCapabilities": [],
+  "requiredServices": []
+}

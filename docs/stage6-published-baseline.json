@@ -1,0 +1,92 @@
+{
+  "checkedAt": "2026-10-24T09:59:43.651Z",
+  "registry": "https://capsules.skills.ixo.earth",
+  "scope": "Read-only baseline of existing published archives. These are not the modified Stage 6 sources. No upload performed.",
+  "records": [
+    {
+      "cid": "QmRk4UXS7PhoPiV36jJ7xb8bFq5iiSjQFL9DRJN1tcH5Xg",
+      "name": "compose-topic",
+      "archiveSize": 379491,
+      "createdAt": "2026-10-21T11:53:09.214Z",
+      "archiveSha256": "669984ff1a375bea360e051a39ce667fb226ca01a1222fb11495544880e2d77f",
+      "downloadedSize": 379491,
+      "recomputedCid": "QmRk4UXS7PhoPiV36jJ7xb8bFq5iiSjQFL9DRJN1tcH5Xg",
+      "cidMatches": true,
+      "declaration": {
+        "status": "legacy"
+      },
+      "status": "existing-published-archive-verified"
+    },
+    {
+      "cid": "QmQirzYeqopsFzhAJ7iihyPERaPFUKECx95AGJ57SEL7tD",
+      "name": "facilitate-topic",
+      "archiveSize": 7265,
+      "createdAt": "2026-09-09T09:28:09.493Z",
+      "archiveSha256": "61f88d9b03625bea40c1c4440e0599c766d46bade6dc20a8f6c949c2da894823",
+      "downloadedSize": 7265,
+      "recomputedCid": "QmQirzYeqopsFzhAJ7iihyPERaPFUKECx95AGJ57SEL7tD",
+      "cidMatches": true,
+      "declaration": {
+        "status": "legacy"
+      },
+      "status": "existing-published-archive-verified"
+    },
+    {
+      "cid": "QmVFTXiACLaXcGZRg4t6bBFQU3h3q5jjoG6aURFwYzamtG",
+      "name": "qi-library",
+      "archiveSize": 13498,
+      "createdAt": "2026-09-28T14:45:41.997Z",
+      "archiveSha256": "bb82d2c0d4bbb367080a194332d85c599ff3f4f7af510ef258e53168923dd7b4",
+      "downloadedSize": 13498,
+      "recomputedCid": "QmVFTXiACLaXcGZRg4t6bBFQU3h3q5jjoG6aURFwYzamtG",
+      "cidMatches": true,
+      "declaration": {
+        "status": "legacy"
+      },
+      "status": "existing-published-archive-verified"
+    },
+    {
+      "cid": "QmRmUfGvbgWxkVXph1K6nhS5T4xx4PhA5XpXQVHidNDpUR",
+      "name": "error-resolver",
+      "archiveSize": 25599,
+      "createdAt": "2026-05-14T11:00:11.215Z",
+      "archiveSha256": "7fb320b6fd28871b11e98066f00666a22e7f4f8eff3c767a1649a4c1ae9778ce",
+      "downloadedSize": 25599,
+      "recomputedCid": "QmRmUfGvbgWxkVXph1K6nhS5T4xx4PhA5XpXQVHidNDpUR",
+      "cidMatches": true,
+      "declaration": {
+        "status": "legacy"
+      },
+      "status": "existing-published-archive-verified"
+    },
+    {
+      "cid": "QmPBmGne311a4JFjERPcDNiez3QJKEQ297cFb8Eupd6UVy",
+      "name": "ixo-jev-search",
+      "archiveSize": 20339,
+      "createdAt": "2026-09-30T04:59:55.980Z",
+      "archiveSha256": "2dbc5f37c376e6abd6c05a2e937e21bcd703a7cf11803c091df441081ab0577d",
+      "downloadedSize": 20339,
+      "recomputedCid": "QmPBmGne311a4JFjERPcDNiez3QJKEQ297cFb8Eupd6UVy",
+      "cidMatches": true,
+      "declaration": {
+        "status": "legacy"
+      },
+      "status": "existing-published-archive-verified"
+    },
+    {
+      "cid": "QmQaJvCGSNaHAiiFJ5HmX5CYRvsx1rdJp4ZMeca8LbzULP",
+      "name": "ixo-yellowcard",
+      "archiveSize": 13716,
+      "createdAt": "2026-05-29T04:57:40.805Z",
+      "archiveSha256": "45258fa7c70687ca157e96fb9906b21834c1f60e37f27c81dd56ec42ee41922d",
+      "downloadedSize": 13716,
+      "status": "existing-published-archive-verified",
+      "recomputedCid": "QmQaJvCGSNaHAiiFJ5HmX5CYRvsx1rdJp4ZMeca8LbzULP",
+      "cidMatches": true,
+      "declaration": {
+        "status": "legacy"
+      },
+      "archiveCompatibility": "Inert type-x PaxHeader metadata is ignored without applying path or link overrides."
+    }
+  ]
+}

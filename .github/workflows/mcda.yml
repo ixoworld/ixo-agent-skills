@@ -4,11 +4,17 @@ on:
     paths:
       - 'skills/mcda/**'
       - '.github/workflows/mcda.yml'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
   push:
     branches: [main]
     paths:
       - 'skills/mcda/**'
       - '.github/workflows/mcda.yml'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
 permissions:
   contents: read
 jobs:
@@ -19,6 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - run: bash scripts/validate-skill.sh skills/mcda
       - run: npm install --ignore-scripts --no-audit --no-fund
         working-directory: skills/mcda

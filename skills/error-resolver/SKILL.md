@@ -5,6 +5,11 @@ description: Resolve IXO and Cosmos blockchain errors from codes, codespaces, fa
 
 # Error Resolver
 
+## Runtime contract
+
+The contract covers diagnosis of a supplied error artifact only. `sandbox_run` has the host scheduling effect `write`, even though this skill diagnoses without a chain mutation. A transaction hash alone does not provide an error artifact. Do not invent a transaction lookup or treat the contract as chain-read access. See [skill-contract.json](skill-contract.json) for machine-checked dependencies. The declaration grants no authority.
+
+
 Diagnose IXO/Cosmos blockchain errors and turn low-level failure output into a clear explanation, likely cause, and next action. The skill is read-only: never sign, submit, retry, or mutate chain state unless the user separately asks for that work.
 
 ## Instructions

@@ -27,6 +27,11 @@ context:
 
 # IXO Jev Search
 
+## Runtime contract
+
+The contract requires the exact host tools `search_gateway_authorize` and `sandbox_write_blob`, both scheduled as writes. If either is absent, report the missing tool and stop before search. The `delegated-search-v1` service profile is unresolved in the Workers compatibility gate and blocks execution until installed gateway compatibility is proven. Source pins in [host-contract.md](references/host-contract.md) do not prove deployment. See [skill-contract.json](skill-contract.json) for machine-checked dependencies. The declaration grants no authority.
+
+
 ## Purpose
 
 This skill searches IXO sources through the **IXO Search Gateway** and asks the gateway to rank results with **Jev**, a calibrated relevance classifier.

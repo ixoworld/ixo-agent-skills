@@ -2,100 +2,51 @@ name: Publish Skill
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'skills/**'
+    branches: [main]
+    paths: ['skills/**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-skills
+  cancel-in-progress: false
 
 jobs:
   publish:
-    name: Publish Skills to Server
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
-
-      - name: Publish each changed skill
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm test
+      - name: Build exact commit archives
+        env:
+          BASE: ${{ github.event.before }}
+          COMMIT: ${{ github.sha }}
+          REPOSITORY: ${{ github.server_url }}/${{ github.repository }}
+        run: npm run build:capsules -- --base "$BASE" --commit "$COMMIT" --repository "$REPOSITORY"
+      - name: Publish and verify stored bytes
         env:
           SKILLS_API_KEY: ${{ secrets.SKILLS_API_KEY }}
           SKILLS_SERVER_URL: https://capsules.skills.ixo.earth
+        shell: bash
         run: |
-          set -uo pipefail
-
-          if ! git cat-file -e 'HEAD~1^{commit}' 2>/dev/null; then
-            echo "::error::HEAD~1 is not available, so the set of changed skills cannot be determined. Do not treat this as nothing to publish."
-            exit 1
-          fi
-
-          # Read NUL-delimited paths into an array rather than joining names with spaces and
-          # letting the shell split them again. A directory such as "skills/bad name" would
-          # otherwise become the two tokens "bad" and "name"; neither exists, so both take
-          # the deleted branch below and the job reports success having published nothing.
-          #
-          # Deduplicated with a plain loop rather than an associative array, so this runs on
-          # bash 3.2 as well as the runner's bash 5 and can be exercised locally. The list is
-          # a handful of entries.
-          NAMES=()
-          while IFS= read -r -d '' path; do
-            rest=${path#skills/}
-            name=${rest%%/*}
-            [ -n "$name" ] || continue
-            seen=""
-            for existing in ${NAMES+"${NAMES[@]}"}; do
-              if [ "$existing" = "$name" ]; then seen=1; break; fi
-            done
-            [ -n "$seen" ] || NAMES+=("$name")
-          done < <(git diff -z --name-only HEAD~1 HEAD -- skills/)
-
-          if [ ${#NAMES[@]} -eq 0 ]; then
-            echo "::error::No changed skills were detected, but this workflow only runs when skills/** changes. Something is wrong with change detection."
-            exit 1
-          fi
-
-          echo "Changed skills:"
-          printf '  %s\n' "${NAMES[@]}"
-
-          for SKILL_NAME in "${NAMES[@]}"; do
-            SKILL_DIR="skills/$SKILL_NAME"
-
-            # Skip if directory doesn't exist (was deleted)
-            if [ ! -d "$SKILL_DIR" ]; then
-              echo "Skipping $SKILL_NAME (deleted)"
-              continue
-            fi
-
-            echo "::group::Publishing $SKILL_NAME"
-
-            # Create tar.gz archive
-            tar -czf "${SKILL_NAME}.tar.gz" -C skills "$SKILL_NAME"
-
-            # Upload to skills server
-            RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-              -H "Authorization: Bearer $SKILLS_API_KEY" \
-              -H "Content-Type: application/gzip" \
-              --data-binary "@${SKILL_NAME}.tar.gz" \
-              "$SKILLS_SERVER_URL/capsules")
-
-            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-            BODY=$(echo "$RESPONSE" | sed '$d')
-
-            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
-              CID=$(echo "$BODY" | jq -r '.cid')
-              echo "Successfully published $SKILL_NAME"
-              echo "CID: $CID"
-              echo "URL: $SKILLS_SERVER_URL/capsules/$CID"
-            else
-              echo "::error::Failed to publish $SKILL_NAME (HTTP $HTTP_CODE)"
-              echo "$BODY"
-              exit 1
-            fi
-
-            # Cleanup
-            rm -f "${SKILL_NAME}.tar.gz"
-
-            echo "::endgroup::"
+          set -euo pipefail
+          shopt -s nullglob
+          for receipt in .capsule-build/*.build.json; do
+            npm run publish:capsules -- --receipt "$receipt" --registry "$SKILLS_SERVER_URL"
           done
-
-          echo "All skills published successfully!"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capsule-publication-receipts
+          path: .capsule-build/
+          include-hidden-files: true
+          retention-days: 90
