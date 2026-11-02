@@ -38,6 +38,12 @@ See [SCRIPT_STANDARDS.md](SCRIPT_STANDARDS.md) for full details, examples, and t
 
 ## Naming Conventions
 
+New related skills may be grouped under a namespace container without its own
+`SKILL.md`, for example `skills/software-review/software-review-security-review/`.
+Use globally unique namespace-qualified leaf names. Existing flat skills retain
+their identities. See [Namespaced skills](docs/namespaces.md) for shared discovery,
+metadata, local dependency setup, tests and dry-run packaging.
+
 **Folder name must:**
 - Be 1-64 characters
 - Use only lowercase letters, numbers, and hyphens
@@ -188,7 +194,8 @@ Once merged, your skill will be:
 2. Assigned a unique content identifier (CID) following IPLD standards
 3. Available at `https://capsules.skills.ixo.earth/capsules/{cid}`
 
-The CID will be posted as a comment on your PR.
+The CID and source-to-capsule mapping are saved in the publish workflow's
+`capsule-publication` artifact. No PR comment is posted automatically.
 
 ## Updating a Skill
 

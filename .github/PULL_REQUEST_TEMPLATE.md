@@ -10,11 +10,11 @@
 
 Please ensure your skill meets all requirements:
 
-- [ ] Skill folder is in `skills/` directory
+- [ ] Skill leaf is under `skills/`, flat or inside namespace containers without their own `SKILL.md`
 - [ ] Folder name is lowercase with hyphens only (e.g., `my-skill-name`)
 - [ ] `SKILL.md` exists in the skill folder
 - [ ] `SKILL.md` has valid YAML frontmatter with `name` and `description`
-- [ ] Folder name matches the `name` field in frontmatter
+- [ ] Leaf folder matches the globally unique canonical `name`; namespaced names include the namespace prefix
 - [ ] I have read the [Contributing Guidelines](../CONTRIBUTING.md)
 - [ ] I have read the [Agent Skills Specification](https://agentskills.io/specification)
 - [ ] This skill does not contain harmful, malicious, or inappropriate content
