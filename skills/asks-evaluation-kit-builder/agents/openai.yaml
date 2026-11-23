@@ -1,0 +1,4 @@
+interface:
+  display_name: "Asks Evaluation Kit Builder"
+  short_description: "Build use-case-specific Asks evaluation protocols"
+  default_prompt: "Use $asks-evaluation-kit-builder to turn this Ask use case into a versioned evaluation kit and protocol handoff, with evidence-backed acceptance criteria and explicit validation limits."
