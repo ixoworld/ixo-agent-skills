@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: local-context
+expected_outcome: |
+  A draft ask for rural Arabic-speaking screen-reader users on intermittent mobile data that requests the locale, device/connectivity and assistive-technology combinations, fluent and accessibility-qualified reviewers, and task completion and recovery evidence.

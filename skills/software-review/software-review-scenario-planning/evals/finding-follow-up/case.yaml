@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: finding-follow-up
+expected_outcome: |
+  A bounded follow-up plan for build B that keeps the original finding's identity, asks for the approved expected behaviour and consent, tests confirmation order plus an adjacent boundary, and does not treat a pass as authorising payment or release.

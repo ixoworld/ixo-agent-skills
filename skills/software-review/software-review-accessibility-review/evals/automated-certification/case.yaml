@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: automated-certification
+expected_outcome: |
+  The reply declines to certify WCAG AA from an automated scan, asks for the agreed standard/level, task sample, runtime evidence and manual or assistive-technology review, and keeps the scan result apart from interpretation and evaluation.
