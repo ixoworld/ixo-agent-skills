@@ -1,0 +1,24 @@
+# Governance procedures
+
+## Founding adoption
+
+Before adoption, establish the creator or controller's authority from independent canonical evidence.
+The identities here are synthetic and provide no such evidence. An author cannot self-authorize by editing this file.
+Resolve the final subject identity and document references before obtaining approval of the exact bytes.
+
+## Amendments
+
+Apply the incumbent amendment procedure. Present the revision diff, rationale, affected rules, and supporting
+observations. Record approvals bound to the exact final revision and check the expected predecessor.
+Independent review is required only where the applicable procedure requires it. Preserve old revisions.
+
+## Interpretation and disputes
+
+Record competing interpretations and ask the authorized domain steward to resolve them. Record complaints
+and appeals separately from constitutional adoption. Existing claim-review rules continue to apply.
+
+## Suspension and dissolution
+
+Only an authorized operator or governing body can suspend, restore, or close the service through existing
+controls. An advisory observation cannot do so. The required failure-policy field describes refusing an
+unverified governance mutation; it is not a new runtime constitutional gate.

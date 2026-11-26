@@ -1,0 +1,35 @@
+---
+x-template:
+  is_template: true
+  instantiates_type: oracle
+  protocol: did:ixo:entity:syntheticevidenceprotocol
+  template_version: 0.1.0
+  parameters: []
+---
+{
+  "synthetic": true,
+  "executed": false,
+  "cases": [
+    {
+      "input": "source is attributable",
+      "expected": "consistent"
+    },
+    {
+      "input": "clear citation rule not followed",
+      "expected": "apparent_inconsistency"
+    },
+    {
+      "input": "independence has competing meanings",
+      "expected": "ambiguous_rule"
+    },
+    {
+      "input": "source unavailable",
+      "expected": "insufficient_evidence"
+    },
+    {
+      "input": "check flags cited evidence as uncited",
+      "expected": "suspected_check_error"
+    }
+  ],
+  "authoritativeOutcomeChange": false
+}

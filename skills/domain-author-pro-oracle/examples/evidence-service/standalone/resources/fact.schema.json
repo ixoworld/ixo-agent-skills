@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Synthetic fact fixture",
+  "type": "object",
+  "required": [
+    "sourceRef",
+    "completionObserved"
+  ],
+  "properties": {
+    "sourceRef": {
+      "type": "string"
+    },
+    "completionObserved": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
